@@ -32,9 +32,9 @@ function parseCSVData(csv) {
         rating: headers.indexOf('rating'),
         phone: headers.indexOf('phone'),
         website: headers.indexOf('website'),
-        googleProfileId: headers.indexOf('google profile id'),
-        twitterHandle: headers.indexOf('twitterhandle'), // Ensure this matches your sheet
-        facebookPageId: headers.indexOf('facebookpageid'), // Ensure this matches your sheet
+        googleProfileId: headers.indexOf('place id'),
+        twitterHandle: headers.indexOf('twitte'), // Ensure this matches your sheet
+        facebookPageId: headers.indexOf('facebook'), // Ensure this matches your sheet
         instagram: headers.indexOf('instagram') // Assuming direct Instagram link
     };
 

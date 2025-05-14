@@ -13,11 +13,11 @@ const DATA_FETCH_URL = PROXY_URL ? PROXY_URL + encodeURIComponent(GOOGLE_SHEET_D
 
 const markerColor = "#fcf403"; // yellow for shop markers
 
-const DEFAULT_MAP_ZOOM = 9;
-const USER_LOCATION_MAP_ZOOM = 11;
+const DEFAULT_MAP_ZOOM = 14;
+const USER_LOCATION_MAP_ZOOM = 14;
 const DEFAULT_MAP_CENTER = { lat: 43.4926, lng: -70.4537 }; // Biddeford center
-const DEFAULT_ZOOM = 9; // You might want this too
-const USER_LOCATION_ZOOM = 11; // Changed name for clarity
+const DEFAULT_ZOOM = 14; // You might want this too
+const USER_LOCATION_ZOOM = 14; // Changed name for clarity
 
 const mapStyles = {
     maineLicensePlate: [

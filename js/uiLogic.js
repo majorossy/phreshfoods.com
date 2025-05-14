@@ -163,11 +163,37 @@ if (canOpenLeft && detailsOverlaySocialElement) {
     console.log("--- openClickedShopOverlays: END ---");
 }
 
+// --- In uiLogic.js ---
+
 function closeClickedShopOverlays() {
     console.log("--- closeClickedShopOverlays: START ---");
-    if (detailsOverlayShopElement) detailsOverlayShopElement.classList.remove('is-open');
-    if (detailsOverlaySocialElement) detailsOverlaySocialElement.classList.remove('is-open');
-    document.body.style.overflow = '';
+
+    let anOverlayWasOpen = false; // Flag to see if we actually closed something
+
+    if (detailsOverlayShopElement && detailsOverlayShopElement.classList.contains('is-open')) {
+        detailsOverlayShopElement.classList.remove('is-open');
+        anOverlayWasOpen = true;
+        console.log("Shop overlay closed.");
+    }
+
+    if (detailsOverlaySocialElement && detailsOverlaySocialElement.classList.contains('is-open')) {
+        detailsOverlaySocialElement.classList.remove('is-open');
+        anOverlayWasOpen = true;
+        console.log("Social overlay closed.");
+    }
+
+    // Only attempt to close infowindow if an overlay was actually open and is now closed,
+    // and if infowindow is a valid Google Maps InfoWindow object.
+    if (anOverlayWasOpen) {
+        if (typeof infowindow !== 'undefined' && infowindow && typeof infowindow.close === 'function') {
+            console.log("Closing Google Maps infowindow as overlays are being closed.");
+            infowindow.close();
+        } else {
+            console.warn("Tried to close infowindow, but it's not defined or not a valid InfoWindow object.");
+        }
+    }
+
+    document.body.style.overflow = ''; // Restore body scroll
     console.log("--- closeClickedShopOverlays: END ---");
 }
 
@@ -188,8 +214,30 @@ function sortShopsByDistanceGoogle(shops, mapCenter) {
     }).sort((a, b) => a.distance - b.distance);
 }
 
+
+// --- In uiLogic.js (or wherever renderListings is defined) ---
+
+// Ensure listingsPanelElement, listingsContainer, noResultsDiv are defined, e.g.:
+// const listingsPanelElement = document.getElementById('your-listings-panel-id'); // Or the main container for listings
+// const listingsContainer = document.getElementById('your-actual-listings-container-id'); // Where cards are appended
+// const noResultsDiv = document.getElementById('your-no-results-div-id');
+// And GOOGLE_SHEET_DIRECT_URL, URL_NOT_CONFIGURED_PLACEHOLDER are defined.
+// And getStarRatingHTML is defined.
+
 function renderListings(shopsToRender, performSort = true, sortCenter = null) {
-    if (!listingsContainer || !noResultsDiv) return;
+    if (!listingsPanelElement) { // Assuming listingsPanelElement is the overall section
+        console.error("Listings panel element not found in renderListings.");
+        return;
+    }
+    if (!listingsContainer) { // listingsContainer is where individual cards go
+        console.error("Listings container element not found in renderListings.");
+        return;
+    }
+    if (!noResultsDiv) {
+        console.error("No results div element not found in renderListings.");
+        // return; // Decide if this is critical enough to stop rendering
+    }
+
 
     let shopsForDisplay = [...shopsToRender];
 
@@ -197,33 +245,42 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
         const centerForSort = sortCenter || map.getCenter();
         if (centerForSort) {
             console.log("Sorting listings by distance from:", centerForSort.lat(), centerForSort.lng());
-            shopsForDisplay = sortShopsByDistanceGoogle(shopsForDisplay, centerForSort);
+            shopsForDisplay = sortShopsByDistanceGoogle(shopsForDisplay, centerForSort); // Assuming sortShopsByDistanceGoogle is defined
         }
     }
-    currentlyDisplayedShops = shopsForDisplay;
+    currentlyDisplayedShops = shopsForDisplay; // Assuming currentlyDisplayedShops is global or accessible
 
-    listingsContainer.innerHTML = '';
+    listingsContainer.innerHTML = ''; // Clear previous listings from the specific container
+
     if (shopsForDisplay.length > 0) {
-        noResultsDiv.classList.add('hidden'); listingsContainer.classList.remove('hidden');
+        if (noResultsDiv) noResultsDiv.classList.add('hidden');
+        listingsContainer.classList.remove('hidden');
+
         shopsForDisplay.forEach(shop => {
             const card = document.createElement('div');
             card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ease-in-out cursor-pointer';
-            card.setAttribute('data-shop-id', shop.GoogleProfileID || shop.Name);
+            
+            // Use GoogleProfileID if available, otherwise fall back to Name for the data attribute.
+            // GoogleProfileID is preferred for linking to the map marker.
+            const shopIdentifier = shop.GoogleProfileID || shop.Name;
+            card.setAttribute('data-shop-id', shopIdentifier);
 
             const imageName = encodeURIComponent(shop.Name.split(' ')[0] + ' ' + (shop.Name.split(' ')[1] || 'Butcher'));
             const imageUrl = `https://placehold.co/400x250/E0E0E0/757575?text=${imageName}&font=inter`;
+            
             let contactInfoHTML = '';
-            if (shop.Phone) contactInfoHTML += `<a href="tel:${shop.Phone}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>Call</a>`;
-            if (shop.Website && !shop.Website.includes('googleusercontent.com')) contactInfoHTML += `<a href="${shop.Website}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-.707-.707a2 2 0 012.828-2.828l.707.707zm-4.242 0a2 2 0 00-2.828 2.828l3 3a2 2 0 002.828 0l.707-.707a2 2 0 00-2.828-2.828l-.707.707zM10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd"></path></svg>Website</a>`;
-            if (shop.GoogleProfileID) contactInfoHTML += `<a href="https://www.google.com/maps/search/?api=1&query_place_id=${shop.GoogleProfileID}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>Map</a>`;
+            if (shop.Phone) contactInfoHTML += `<a href="tel:${shop.Phone}" onclick="event.stopPropagation();" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg>Call</a>`;
+            if (shop.Website && !shop.Website.includes('googleusercontent.com')) contactInfoHTML += `<a href="${shop.Website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-.707-.707a2 2 0 012.828-2.828l.707.707zm-4.242 0a2 2 0 00-2.828 2.828l3 3a2 2 0 002.828 0l.707-.707a2 2 0 00-2.828-2.828l-.707.707zM10 18a8 8 0 100-16 8 8 0 000 16z" clip-rule="evenodd"></path></svg>Website</a>`;
+            if (shop.GoogleProfileID) contactInfoHTML += `<a href="https://www.google.com/maps/search/?api=1&query_place_id=${shop.GoogleProfileID}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>Map</a>`;
 
             let distanceText = '';
             if (shop.distance !== undefined && shop.distance !== Infinity) {
-                const distKm = (shop.distance / 1000).toFixed(1);
+                const distKm = (shop.distance / 1000).toFixed(1); // Assuming distance is in meters
                 distanceText = `<p class="text-xs text-blue-500 mt-1">~${distKm} km away</p>`;
             }
 
-            card.innerHTML = ` <img class="w-full h-40 sm:h-48 object-cover" src="${imageUrl}" alt="Image of ${shop.Name}" onerror="this.onerror=null;this.src='https://placehold.co/400x250/E0E0E0/757575?text=No+Image&font=inter';">
+            card.innerHTML = `
+                <img class="w-full h-40 sm:h-48 object-cover" src="${imageUrl}" alt="Image of ${shop.Name}" onerror="this.onerror=null;this.src='https://placehold.co/400x250/E0E0E0/757575?text=No+Image&font=inter';">
                 <div class="p-3 sm:p-4">
                     <div class="flex justify-between items-start mb-1">
                         <h2 class="text-lg sm:text-xl font-semibold text-gray-800 leading-tight truncate" title="${shop.Name}">${shop.Name}</h2>
@@ -231,19 +288,56 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
                     </div>
                     <p class="text-xs sm:text-sm text-gray-500 mb-0 truncate" title="${shop.Address}">
                         <svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-                        ${shop.Address}
+                        ${shop.Address || 'Address not available'}
                     </p>
                     ${distanceText}
                     <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-200">
                         ${contactInfoHTML || '<p class="text-xs text-gray-400">No contact information available.</p>'}
                     </div>
-                </div> `;
-            card.addEventListener('click', () => openClickedShopOverlays(shop)); // Ensure openClickedShopOverlays is defined
+                </div>
+            `;
+
+            // --- MODIFIED CLICK LISTENER ---
+            card.addEventListener('click', () => {
+                console.log(`Listing card clicked for shop ID: ${shopIdentifier}`);
+
+                // 1. Open your existing shop overlay (if you still want this behavior)
+                if (typeof openClickedShopOverlays === 'function') {
+                    openClickedShopOverlays(shop); // Pass the full shop object
+                } else {
+                    console.warn("openClickedShopOverlays function is not defined.");
+                }
+
+                // 2. Show the InfoWindow on the map
+                // We must use shop.GoogleProfileID for this, as it's the key for map markers and Places API.
+                if (shop.GoogleProfileID) {
+                    if (typeof showInfoWindowForShop === 'function') {
+                        showInfoWindowForShop(shop.GoogleProfileID);
+                    } else {
+                        console.error("showInfoWindowForShop function is not defined. Make sure it's in mapLogic.js and accessible.");
+                    }
+                } else {
+                    console.warn(`Cannot show InfoWindow for "${shop.Name}" as it's missing a GoogleProfileID.`);
+                    // Optionally, you could still try to pan the map if lat/lng are known
+                    if (shop.lat && shop.lng && map) {
+                        map.panTo({lat: shop.lat, lng: shop.lng});
+                        // map.setZoom(15); // Consider if you want to zoom
+                    }
+                }
+
+                // Optional: Highlight this card in the list
+                document.querySelectorAll('.bg-white.rounded-xl.shadow-lg').forEach(el => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2')); // Remove previous highlights
+                card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2'); // Add highlight to current card
+            });
+            // --- END OF MODIFIED CLICK LISTENER ---
+
             listingsContainer.appendChild(card);
         });
     } else {
-        noResultsDiv.textContent = GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ? '' : 'No butcher shops found matching your search or current view.';
-        noResultsDiv.classList.toggle('hidden', GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER && document.readyState !== "complete");
+        if (noResultsDiv) {
+            noResultsDiv.textContent = GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ? '' : 'No butcher shops found matching your search or current view.';
+            noResultsDiv.classList.toggle('hidden', GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER && document.readyState !== "complete");
+        }
         listingsContainer.classList.add('hidden');
     }
 }

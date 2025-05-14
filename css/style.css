@@ -176,3 +176,7 @@ main {
         margin-top: 2.5rem; /* sm:mt-10 */
     }
 }
+
+.gm-style-iw-c button.gm-ui-hover-effect {
+    display: none !important;
+}
