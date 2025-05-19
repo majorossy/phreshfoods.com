@@ -5,10 +5,14 @@ let map;
 let geocoder;
 let placesService; // ADDED: For Google Places API
 let infowindow;    // ADDED: For displaying info bubbles
+let directionsService;    // NEW
+let directionsRenderer;   // NEW
+let currentUserLocation = null; // NEW: To store user's fetched location
+
 
 // Ensure these are accessible if used by showInfoWindowForShop
 // These would typically be populated in main.js or apiService.js
-// let allButcherShops = []; // Example, ensure this is populated with your shop data
+// let allFarmStands = []; // Example, ensure this is populated with your shop data
 // let currentlyDisplayedShops = []; // Example
 
 function initAppMap() { // This is the callback for Google Maps API
@@ -34,6 +38,20 @@ function initAppMap() { // This is the callback for Google Maps API
     infowindow = new google.maps.InfoWindow();                // Initialized here
     console.log("InfoWindow initialized in initAppMap:", infowindow);
 
+
+ // --- INITIALIZE DIRECTIONS SERVICE & RENDERER ---
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(map); // Attach renderer to your map
+    const directionsPanelDiv = document.getElementById('directionsPanel'); // Get the div for text directions
+    if (directionsPanelDiv) {
+        directionsRenderer.setPanel(directionsPanelDiv); // Attach renderer to your panel for text directions
+    } else {
+        console.warn("Directions panel div ('directionsPanel') not found for textual directions.");
+    }
+    // --- END INITIALIZATION ---
+
+
     if (map) {
         map.addListener('click', () => {
             if (markerClickedRecently) { // markerClickedRecently from main.js
@@ -55,12 +73,12 @@ function initAppMap() { // This is the callback for Google Maps API
         map.addListener('idle', () => {
             console.log("Map idle, re-sorting listings.");
             const currentMapCenter = map.getCenter();
-            // Ensure allButcherShops and currentlyDisplayedShops are defined and accessible
-            if (currentMapCenter && ((typeof currentlyDisplayedShops !== 'undefined' && currentlyDisplayedShops.length > 0) || (typeof allButcherShops !== 'undefined' && allButcherShops.length > 0))) {
-                let shopsToSort = (typeof currentlyDisplayedShops !== 'undefined' && currentlyDisplayedShops.length > 0) ? [...currentlyDisplayedShops] : [...allButcherShops];
-                if (typeof searchInput !== 'undefined' && searchInput && searchInput.value.trim() !== '' && shopsToSort.length === allButcherShops.length) {
+            // Ensure allFarmStands and currentlyDisplayedShops are defined and accessible
+            if (currentMapCenter && ((typeof currentlyDisplayedShops !== 'undefined' && currentlyDisplayedShops.length > 0) || (typeof allFarmStands !== 'undefined' && allFarmStands.length > 0))) {
+                let shopsToSort = (typeof currentlyDisplayedShops !== 'undefined' && currentlyDisplayedShops.length > 0) ? [...currentlyDisplayedShops] : [...allFarmStands];
+                if (typeof searchInput !== 'undefined' && searchInput && searchInput.value.trim() !== '' && shopsToSort.length === allFarmStands.length) {
                      const searchTerm = searchInput.value.toLowerCase().trim();
-                     shopsToSort = allButcherShops.filter(shop =>
+                     shopsToSort = allFarmStands.filter(shop =>
                         shop.Name.toLowerCase().includes(searchTerm) ||
                         (shop.City && shop.City.toLowerCase().includes(searchTerm)) ||
                         (shop.Address && shop.Address.toLowerCase().includes(searchTerm)) // Added check for shop.Address
@@ -109,8 +127,8 @@ function finalizeMapSetup(center, zoom) {
                     map.setZoom(DEFAULT_ZOOM); // Assuming DEFAULT_ZOOM is defined
                     map.setCenter(getAdjustedMapCenter(userLocation));
                     google.maps.event.addListenerOnce(map, 'idle', () => {
-                        if (typeof renderListings === 'function' && typeof allButcherShops !== 'undefined' && typeof currentlyDisplayedShops !== 'undefined') {
-                            renderListings(currentlyDisplayedShops.length ? currentlyDisplayedShops : allButcherShops, true, map.getCenter());
+                        if (typeof renderListings === 'function' && typeof allFarmStands !== 'undefined' && typeof currentlyDisplayedShops !== 'undefined') {
+                            renderListings(currentlyDisplayedShops.length ? currentlyDisplayedShops : allFarmStands, true, map.getCenter());
                         }
                         if (typeof processAndPlotShops === 'function') { // Re-process if needed, or adjust logic
                            processAndPlotShops();
@@ -127,12 +145,129 @@ function finalizeMapSetup(center, zoom) {
 }
 
 
-function plotMarkers(shopsToPlot) {
-    if (typeof allButcherShops === 'undefined') {
-        console.error("allButcherShops is not defined in plotMarkers scope.");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --- NEW FUNCTION TO CALCULATE AND DISPLAY DIRECTIONS ---
+function calculateAndDisplayRoute(destination) {
+    if (!directionsService || !directionsRenderer) {
+        console.error("Directions service or renderer not initialized.");
         return;
     }
-    allButcherShops.forEach(s => { if (s.marker) s.marker.setMap(null); });
+    if (!destination) {
+        console.error("Directions: Destination not provided.");
+        return;
+    }
+
+    // Clear previous routes
+    directionsRenderer.setDirections({routes: []});
+    const directionsPanelDiv = document.getElementById('directionsPanel');
+    if (directionsPanelDiv) directionsPanelDiv.innerHTML = "";
+
+
+    let origin;
+    if (currentUserLocation) {
+        origin = currentUserLocation;
+        console.log("Directions: Using current user location as origin:", origin);
+    } else {
+        // Fallback: Ask user for origin, or use map center (less ideal)
+        // For now, let's prompt or use a default if no user location
+        // You could implement an input field for origin if geolocation fails.
+        const fallbackOrigin = prompt("Your location isn't available. Please enter a starting address for directions (e.g., '123 Main St, Anytown'):", map.getCenter().lat() + "," + map.getCenter().lng());
+        if (!fallbackOrigin) {
+            alert("Starting location is required for directions.");
+            return;
+        }
+        origin = fallbackOrigin; // Can be an address string or LatLngLiteral
+        console.log("Directions: Using fallback origin:", origin);
+    }
+
+    const destinationCoords = (destination.lat && destination.lng)
+        ? { lat: destination.lat, lng: destination.lng }
+        : destination.Address || destination.Name; // Can also be address string or Place ID
+
+    console.log("Directions: Requesting route from", origin, "to", destinationCoords);
+
+    directionsService.route(
+        {
+            origin: origin,
+            destination: destinationCoords,
+            travelMode: google.maps.TravelMode.DRIVING // Or WALKING, BICYCLING, TRANSIT
+        },
+        (response, status) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+                console.log("Directions: Route found.", response);
+                directionsRenderer.setDirections(response);
+                document.getElementById('clearShopDirectionsButton')?.classList.remove('hidden');
+                document.getElementById('getShopDirectionsButton')?.classList.add('hidden'); // Hide "Get Directions"
+            } else {
+                window.alert("Directions request failed due to " + status);
+                console.error("Directions request failed:", status, response);
+            }
+        }
+    );
+}
+
+// --- NEW FUNCTION TO CLEAR DIRECTIONS ---
+function clearDirections() {
+    if (directionsRenderer) {
+        directionsRenderer.setDirections({ routes: [] }); // Clears route from map
+    }
+    const directionsPanelDiv = document.getElementById('directionsPanel');
+    if (directionsPanelDiv) {
+        directionsPanelDiv.innerHTML = ""; // Clears text directions
+    }
+    document.getElementById('clearShopDirectionsButton')?.classList.add('hidden');
+    document.getElementById('getShopDirectionsButton')?.classList.remove('hidden');
+    console.log("Directions cleared.");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function plotMarkers(shopsToPlot) {
+    if (typeof allFarmStands === 'undefined') {
+        console.error("allFarmStands is not defined in plotMarkers scope.");
+        return;
+    }
+    allFarmStands.forEach(s => { if (s.marker) s.marker.setMap(null); });
 
     shopsToPlot.forEach(shop => {
         if (shop.lat && shop.lng) {
@@ -227,15 +362,15 @@ function showInfoWindowForShop(shopId) {
         console.error("MAPLOGIC: showInfoWindowForShop called without a shopId.");
         return;
     }
-    if (typeof allButcherShops === 'undefined' || !allButcherShops) {
-        console.error("MAPLOGIC: allButcherShops is not available in showInfoWindowForShop.");
+    if (typeof allFarmStands === 'undefined' || !allFarmStands) {
+        console.error("MAPLOGIC: allFarmStands is not available in showInfoWindowForShop.");
         return;
     }
 
-    const shop = allButcherShops.find(s => s.GoogleProfileID === shopId);
+    const shop = allFarmStands.find(s => s.GoogleProfileID === shopId);
 
     if (!shop) {
-        console.error(`MAPLOGIC: Shop with ID "${shopId}" not found in allButcherShops.`);
+        console.error(`MAPLOGIC: Shop with ID "${shopId}" not found in allFarmStands.`);
         return;
     }
 

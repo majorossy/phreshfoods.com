@@ -12,7 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
     window.shopDetailDistanceElement = document.getElementById('shopDetailDistance');
     window.socialLinksContainerElement = document.getElementById('socialLinksContainer');
     window.twitterTimelineContainerElement = document.getElementById('twitterTimelineContainer');
+    // NEW: Event listener for the "Get Directions" button in the overlay
+    const getDirectionsBtnOverlay = document.getElementById('getShopDirectionsButton');
+    if (getDirectionsBtnOverlay) {
+        getDirectionsBtnOverlay.addEventListener('click', () => {
+            if (currentShopForDirections) {
+                handleGetDirections(currentShopForDirections);
+            } else {
+                console.error("No shop selected to get directions for.");
+                alert("Please select a shop first.");
+            }
+        });
+    }
+
+    // NEW: Event listener for the "Clear Directions" button
+    const clearDirectionsBtn = document.getElementById('clearShopDirectionsButton');
+    if (clearDirectionsBtn) {
+        clearDirectionsBtn.addEventListener('click', () => {
+            if (typeof clearDirections === 'function') { // clearDirections is in mapLogic.js
+                clearDirections();
+            }
+        });
+    }
 });
+
 
 // DOM element variables will be defined in main.js and accessed globally here
 function openOverlay(overlay) {
@@ -258,6 +281,16 @@ async function openClickedShopOverlays(shop) {
                 }
             }
 
+            if (shopOverlayActuallyOpened && detailsOverlayShopElement) {
+                // Reset directions buttons visibility
+                document.getElementById('getShopDirectionsButton')?.classList.remove('hidden');
+                document.getElementById('clearShopDirectionsButton')?.classList.add('hidden');
+                const directionsPanelDiv = document.getElementById('directionsPanel');
+                if (directionsPanelDiv) directionsPanelDiv.innerHTML = ""; // Clear old text directions
+                // ... rest of right overlay population
+            }
+
+
         } catch (e) {
             console.error("UILOGIC: Error populating RIGHT overlay:", e);
         }
@@ -480,7 +513,7 @@ if (performSort && centerForSort) {
 
  // --- MODIFIED IMAGE URL LOGIC ---
             let actualImageUrl;
-            const placeholderImageName = encodeURIComponent(shop.Name.split(' ')[0] + ' ' + (shop.Name.split(' ')[1] || 'Butcher Shop')); // More descriptive placeholder
+            const placeholderImageName = encodeURIComponent(shop.Name.split(' ')[0] + ' ' + (shop.Name.split(' ')[1] || 'Farm Stand')); // More descriptive placeholder
             const fallbackImageUrl = `https://placehold.co/400x250/E0E0E0/757575?text=${placeholderImageName}&font=inter`;
 
             // Check if shop.ImageOne (from CSV's image_one column) is valid
@@ -541,7 +574,22 @@ if (performSort && centerForSort) {
                     </div>`;
             }
 
-            if (shop.GoogleProfileID) contactInfoHTML += `<a href="https://www.google.com/maps/search/?api=1&query_place_id=${shop.GoogleProfileID}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>Map</a>`;
+
+
+            if (shop.GoogleProfileID || (shop.lat && shop.lng)) { // Check if we have a destination
+                 contactInfoHTML += `
+                    <div class="w-full mt-2">
+                        <button data-shopid="${shop.GoogleProfileID || shop.Name}" class="listing-get-directions-button inline-flex items-center justify-center w-full px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                           <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                           Directions
+                        </button>
+                    </div>`;
+            }
+
+
+
+
+            
             let distanceText = '';
             if (shop.distance !== undefined && shop.distance !== Infinity) {
                 const distKm = (shop.distance / 1000).toFixed(1);
@@ -579,6 +627,25 @@ if (performSort && centerForSort) {
 
 
 
+            const directionsButtonOnCard = card.querySelector('.listing-get-directions-button');
+            if (directionsButtonOnCard) {
+                directionsButtonOnCard.addEventListener('click', (event) => {
+                    event.stopPropagation(); // Prevent card click if button is distinct
+                    console.log("UILOGIC: Directions button on card clicked for shop:", shop.Name);
+                    // Ensure overlays are open for this shop
+                    if (typeof openClickedShopOverlays === 'function') {
+                        openClickedShopOverlays(shop); // This populates overlays
+                    }
+                    // Trigger directions. Pass the shop object or its destination.
+                    // The 'Get Directions' button IN THE OVERLAY will be the main trigger after this.
+                    // For now, clicking this button ensures the overlay for THIS shop is open.
+                    // The user will then click the "Get Directions" button in the overlay.
+                    // OR: we can directly trigger directions from here. Let's do that for better UX.
+                    setTimeout(() => { // Delay to ensure overlay is ready
+                        handleGetDirections(shop); // New function we'll define
+                    }, 150); // Adjust delay
+                });
+            }
 
 
 
@@ -670,12 +737,42 @@ if (performSort && centerForSort) {
     } else {
         // ... (no results logic) ...
         if (noResultsDiv) {
-            noResultsDiv.textContent = (typeof GOOGLE_SHEET_DIRECT_URL !== 'undefined' && GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER) ? '' : 'No butcher shops found matching your search or current view.';
+            noResultsDiv.textContent = (typeof GOOGLE_SHEET_DIRECT_URL !== 'undefined' && GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER) ? '' : 'No farm stands found matching your search or current view.';
             noResultsDiv.classList.toggle('hidden', (typeof GOOGLE_SHEET_DIRECT_URL !== 'undefined' && GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER) && document.readyState !== "complete");
         }
         listingsContainer.classList.add('hidden');
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // You'll also need the populateInstagramTab function in uiLogic.js if it's not already there:
 function populateInstagramTab(shop, instagramFeedContainerElement) {
@@ -713,3 +810,68 @@ function populateInstagramTab(shop, instagramFeedContainerElement) {
     }
 }
 // ... (rest of uiLogic.js)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// NEW function in uiLogic.js to handle the directions request
+function handleGetDirections(shop) {
+    if (!shop) {
+        alert("Shop data not available for directions.");
+        return;
+    }
+    console.log("UILOGIC: handleGetDirections called for shop:", shop.Name);
+    currentShopForDirections = shop; // Store it in case overlay button is used
+
+    let destination;
+    if (shop.lat && shop.lng) {
+        destination = { lat: shop.lat, lng: shop.lng };
+    } else if (shop.GoogleProfileID) {
+        // If only Place ID, DirectionsService can use it if you specify placeId: shop.GoogleProfileID
+        // Or, you'd need to ensure lat/lng are fetched first via getDetails
+        destination = { placeId: shop.GoogleProfileID };
+        console.warn("Using Place ID for directions destination. Lat/Lng preferred for calculateAndDisplayRoute.");
+        // For calculateAndDisplayRoute, it might be better to ensure lat/lng is available.
+        // If shop.placeDetails exists from an infowindow load, use its geometry.
+        if (shop.placeDetails && shop.placeDetails.geometry && shop.placeDetails.geometry.location) {
+            destination = {
+                lat: shop.placeDetails.geometry.location.lat(),
+                lng: shop.placeDetails.geometry.location.lng()
+            };
+        } else if (shop.Address) {
+            destination = shop.Address; // Fallback to address string
+        } else {
+            alert("Cannot determine destination for directions for " + shop.Name);
+            return;
+        }
+    } else if (shop.Address) {
+        destination = shop.Address;
+    } else {
+        alert("Not enough information to get directions for " + shop.Name);
+        return;
+    }
+
+    if (typeof calculateAndDisplayRoute === 'function') { // calculateAndDisplayRoute is in mapLogic.js
+        // Ensure overlays don't obscure the map too much if user wants to see directions
+        // Optionally, you could choose to close the social overlay here:
+        // if (detailsOverlaySocialElement && detailsOverlaySocialElement.classList.contains('is-open')) {
+        //     closeOverlay(detailsOverlaySocialElement);
+        // }
+        calculateAndDisplayRoute(destination);
+    } else {
+        console.error("calculateAndDisplayRoute function not found in mapLogic.js");
+    }
+}

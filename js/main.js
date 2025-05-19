@@ -1,7 +1,7 @@
 ﻿// js/main.js
 
 // --- Global State Variables ---
-let allButcherShops = [];
+let allFarmStands = [];
 let currentlyDisplayedShops = []; // Shops currently shown in the list (can be all or filtered)
 let markerClickedRecently = false; // For map click vs marker click logic
 
@@ -17,12 +17,12 @@ let listingsContainer, searchInput, noResultsDiv, listingsPanelElement,
 
 async function processAndPlotShops() {
     console.log("processAndPlotShops called");
-    if (listingsContainer) listingsContainer.innerHTML = '<p class="text-center text-gray-700 p-4">Loading butcher shops...</p>';
+    if (listingsContainer) listingsContainer.innerHTML = '<p class="text-center text-gray-700 p-4">Loading farm stands...</p>';
 
-    allButcherShops = await fetchSheetData(); // from apiService.js
-    if (allButcherShops.length === 0) {
+    allFarmStands = await fetchSheetData(); // from apiService.js
+    if (allFarmStands.length === 0) {
         if (noResultsDiv) {
-             noResultsDiv.textContent = GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ? 'Data source not configured.' : 'No butcher shops data found.';
+             noResultsDiv.textContent = GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ? 'Data source not configured.' : 'No fa shops data found.';
              noResultsDiv.classList.remove('hidden');
         }
         if (listingsContainer) listingsContainer.classList.add('hidden');
@@ -30,10 +30,10 @@ async function processAndPlotShops() {
         return;
     }
     // Optional: Initial sort before distance, e.g., by rating
-    // allButcherShops.sort((a,b) => (parseFloat(b.Rating) || 0) - (parseFloat(a.Rating) || 0) || a.Name.localeCompare(b.Name));
-    currentlyDisplayedShops = [...allButcherShops];
+    // allFarmStands.sort((a,b) => (parseFloat(b.Rating) || 0) - (parseFloat(a.Rating) || 0) || a.Name.localeCompare(b.Name));
+    currentlyDisplayedShops = [...allFarmStands];
     renderListings(currentlyDisplayedShops, true); // from uiLogic.js - initial render will sort by distance
-    plotMarkers(allButcherShops); // from mapLogic.js
+    plotMarkers(allFarmStands); // from mapLogic.js
 }
 
 function handleSearch() {
@@ -41,9 +41,9 @@ function handleSearch() {
     const searchTerm = searchInput.value.toLowerCase().trim();
     let filteredShops;
     if (!searchTerm) {
-        filteredShops = [...allButcherShops];
+        filteredShops = [...allFarmStands];
     } else {
-        filteredShops = allButcherShops.filter(shop =>
+        filteredShops = allFarmStands.filter(shop =>
             shop.Name.toLowerCase().includes(searchTerm) ||
             (shop.City && shop.City.toLowerCase().includes(searchTerm)) ||
             (shop.Address && shop.Address.toLowerCase().includes(searchTerm))
@@ -97,3 +97,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // It's defined in mapLogic.js, which should be loaded before this point if order is correct,
 // but to be safe, we ensure it's on window if mapLogic.js defines it as a global function.
 // window.initAppMap = initAppMap; // This line is actually not needed if initAppMap is already global from mapLogic.js
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
