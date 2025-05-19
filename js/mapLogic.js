@@ -19,8 +19,16 @@ function initAppMap() { // This is the callback for Google Maps API
         zoom: DEFAULT_MAP_ZOOM,     // Assuming DEFAULT_MAP_ZOOM is defined
         mapTypeControl: false,
         styles: mapStyles.maineLicensePlate, // mapStyles from config.js
-        gestureHandling: 'greedy'
+        gestureHandling: 'greedy',
+        // --- HIDE CAMERA CONTROLS ---
+        zoomControl: false,            // Hides the zoom +/- buttons
+        streetViewControl: false,      // Hides the Pegman (Street View)
+        fullscreenControl: false,      // Hides the fullscreen button
+        rotateControl: false,          // Hides the rotation control (compass)
+        scaleControl: false            // Ensures map scale is not shown (usually false by default anyway)
+        // --- END OF HIDE CAMERA CONTROLS ---
     });
+    
     geocoder = new google.maps.Geocoder();
     placesService = new google.maps.places.PlacesService(map); // Initialized here
     infowindow = new google.maps.InfoWindow();                // Initialized here
@@ -204,19 +212,33 @@ function createMarkerForShop(shop) {
 
     shop.marker.addListener('click', () => {
         if (typeof markerClickedRecently !== 'undefined') markerClickedRecently = true;
-
-        console.log("Inside marker click, infowindow is:", infowindow);
-        if (infowindow) {
-            infowindow.close();
-        } else {
-            console.warn("Infowindow not available in marker click listener.");
-            infowindow = new google.maps.InfoWindow(); // Defensive re-initialization
+// 1. Open overlays (this will populate them too)
+        if (typeof openClickedShopOverlays === 'function') {
+            openClickedShopOverlays(shop);
         }
+
+        // 2. Show InfoWindow (this will pan the map *after* overlays are open)
+        // Use a slight delay to ensure DOM has updated from openClickedShopOverlays
+        setTimeout(() => {
+            if (shop.GoogleProfileID) {
+                showInfoWindowForShop(shop.GoogleProfileID);
+            } else {
+                // Handle case where there's no GoogleProfileID but we still want to pan and maybe show basic info
+                if (infowindow) infowindow.close();
+                map.panTo(getAdjustedMapCenter({ lat: shop.lat, lng: shop.lng }));
+                // Potentially open a simpler infowindow here if needed
+            }
+        }, 50); // Small delay for DOM updates from overlay opening
+
+        if (typeof markerClickedRecently !== 'undefined') {
+            setTimeout(() => { markerClickedRecently = false; }, 100);
+        }
+    });
 
         if (shop.GoogleProfileID && placesService) {
             const request = {
                 placeId: shop.GoogleProfileID,
-                fields: ['name', 'formatted_address', 'website', 'opening_hours', 'rating', 'user_ratings_total', 'photos', 'formatted_phone_number', 'url', 'icon', 'business_status', 'reviews']
+                fields: ['name', 'formatted_address', 'website', 'opening_hours', 'rating', 'user_ratings_total', 'photos', 'formatted_phone_number', 'url', 'icon', 'business_status']
             };
 
             placesService.getDetails(request, (place, status) => {
@@ -232,47 +254,20 @@ function createMarkerForShop(shop) {
                          contentString += `<p style="margin-bottom:5px; font-weight: bold; color: ${place.business_status === 'OPERATIONAL' ? 'green' : 'red'};">Status: ${place.business_status.replace(/_/g, ' ')}</p>`;
                     }
                     if (place.formatted_address) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-map-marker-alt"></i></strong> ${place.formatted_address}</p>`;
+                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-map-marker-alt"></i> Address:</strong> ${place.formatted_address}</p>`;
+                    }
+                    if (place.rating) {
+                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-star"></i> Rating:</strong> ${place.rating} / 5 (${place.user_ratings_total || 0} reviews)</p>`;
                     }
                     if (place.formatted_phone_number) {
                         contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-phone"></i> Phone:</strong> <a href="tel:${place.formatted_phone_number}">${place.formatted_phone_number}</a></p>`;
                     }
-                    if (place.opening_hours) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-clock"></i> Current Status:</strong> ${place.opening_hours.isOpen() ? '<span style="color:green;">Open now</span>' : '<span style="color:red;">Closed</span>'}</p>`;
-                        if (place.opening_hours.weekday_text) {
-                            contentString += `<details style="margin-bottom:10px; font-size:0.9em;">`;
-                            contentString += `<summary style="cursor:pointer; color: #007bff;">View Hours</summary>`;
-                            contentString += `<ul style="list-style-type:none; padding-left:10px; margin-top:5px;">`;
-                            place.opening_hours.weekday_text.forEach(dayHours => {
-                                contentString += `<li>${dayHours}</li>`;
-                            });
-                            contentString += `</ul></details>`;
-                        }
+                    if (place.website) {
+                        let simpleDomain = place.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-globe"></i> Website:</strong> <a href="${place.website}" target="_blank" rel="noopener noreferrer">${simpleDomain}</a></p>`;
                     }
                     if (place.opening_hours) {
                         contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-clock"></i> Status:</strong> ${place.opening_hours.isOpen() ? 'Open now' : 'Closed'}</p>`;
-                    }
-                    // --- REVIEWS ---
-                    if (place.reviews && place.reviews.length > 0) {
-                        contentString += `<h5 style="font-size: 1.1em; margin-top: 15px; margin-bottom: 8px; border-top: 1px solid #eee; padding-top: 10px;">Reviews:</h5>`;
-                        // Display up to 2-3 reviews
-                        const reviewsToShow = place.reviews.slice(0, 2); // Show first 2 reviews
-                        reviewsToShow.forEach(review => {
-                            contentString += `<div style="border: 1px solid #f0f0f0; border-radius: 4px; padding: 8px; margin-bottom: 8px; font-size: 0.9em;">`;
-                            contentString += `<p style="margin:0 0 3px 0;"><strong>${review.author_name}</strong> <span style="color:#666;">(${review.relative_time_description})</span></p>`;
-                            if (review.rating) {
-                                let stars = '';
-                                for (let i = 0; i < 5; i++) {
-                                    stars += i < review.rating ? '★' : '☆';
-                                }
-                                contentString += `<p style="margin:0 0 5px 0; color: #f5a623;">${stars}</p>`; // Gold color for stars
-                            }
-                            contentString += `<p style="margin:0; font-style: italic;">"${review.text.substring(0, 150)}${review.text.length > 150 ? '...' : ''}"</p>`; // Truncate long reviews
-                            if (review.profile_photo_url) { // Author's profile photo (often not available)
-                                // contentString += `<img src="${review.profile_photo_url}" alt="${review.author_name}" style="width:25px; height:25px; border-radius:50%; vertical-align:middle; margin-right:5px;">`;
-                            }
-                            contentString += `</div>`;
-                        });
                     }
                     if (place.url) {
                         contentString += `<p style="margin-bottom:0; margin-top:10px;"><a href="${place.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 8px 12px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px;">View on Google Maps</a></p>`;
@@ -355,81 +350,54 @@ function showInfoWindowForShop(shopId) {
     if (shop.GoogleProfileID && placesService) {
         const request = {
             placeId: shop.GoogleProfileID,
-            fields: ['name', 'formatted_address', 'website', 'opening_hours', 'rating', 'user_ratings_total', 'photos', 'formatted_phone_number', 'url', 'icon', 'business_status', 'reviews']
+            fields: ['name', 'formatted_address', 'website', 'opening_hours', 'rating', 'user_ratings_total', 'photos', 'formatted_phone_number', 'url', 'icon', 'business_status']
         };
 
-            placesService.getDetails(request, (place, status) => {
-                let contentString = '';
-                if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-                    contentString = `<div style="max-width: 320px; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;">`;
-                    contentString += `<h4 style="margin-top:0; margin-bottom: 10px; font-size: 18px; color: #333;">${place.name || shop.Name}</h4>`;
-                    // if (place.photos && place.photos.length > 0) { // Photo logic was commented out in your provided code
-                    //     const photoUrl = place.photos[0].getUrl({'maxWidth': 320, 'maxHeight': 160});
-                    //     contentString += `<img src="${photoUrl}" alt="${place.name || shop.Name}" style="width:100%; height:auto; margin-bottom:10px; border-radius: 4px; border: 1px solid #eee;"><br>`;
-                    // }
-                    if (place.business_status) {
-                         contentString += `<p style="margin-bottom:5px; font-weight: bold; color: ${place.business_status === 'OPERATIONAL' ? 'green' : 'red'};">Status: ${place.business_status.replace(/_/g, ' ')}</p>`;
-                    }
-                    if (place.formatted_address) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-map-marker-alt"></i></strong> ${place.formatted_address}</p>`;
-                    }
-                    if (place.formatted_phone_number) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-phone"></i> Phone:</strong> <a href="tel:${place.formatted_phone_number}">${place.formatted_phone_number}</a></p>`;
-                    }
-                    if (place.opening_hours) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-clock"></i> Current Status:</strong> ${place.opening_hours.isOpen() ? '<span style="color:green;">Open now</span>' : '<span style="color:red;">Closed</span>'}</p>`;
-                        if (place.opening_hours.weekday_text) {
-                            contentString += `<details style="margin-bottom:10px; font-size:0.9em;">`;
-                            contentString += `<summary style="cursor:pointer; color: #007bff;">View Hours</summary>`;
-                            contentString += `<ul style="list-style-type:none; padding-left:10px; margin-top:5px;">`;
-                            place.opening_hours.weekday_text.forEach(dayHours => {
-                                contentString += `<li>${dayHours}</li>`;
-                            });
-                            contentString += `</ul></details>`;
-                        }
-                    }
-                    if (place.opening_hours) {
-                        contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-clock"></i> Status:</strong> ${place.opening_hours.isOpen() ? 'Open now' : 'Closed'}</p>`;
-                    }
-                    // --- REVIEWS ---
-                    if (place.reviews && place.reviews.length > 0) {
-                        contentString += `<h5 style="font-size: 1.1em; margin-top: 15px; margin-bottom: 8px; border-top: 1px solid #eee; padding-top: 10px;">Reviews:</h5>`;
-                        // Display up to 2-3 reviews
-                        const reviewsToShow = place.reviews.slice(0, 2); // Show first 2 reviews
-                        reviewsToShow.forEach(review => {
-                            contentString += `<div style="border: 1px solid #f0f0f0; border-radius: 4px; padding: 8px; margin-bottom: 8px; font-size: 0.9em;">`;
-                            contentString += `<p style="margin:0 0 3px 0;"><strong>${review.author_name}</strong> <span style="color:#666;">(${review.relative_time_description})</span></p>`;
-                            if (review.rating) {
-                                let stars = '';
-                                for (let i = 0; i < 5; i++) {
-                                    stars += i < review.rating ? '★' : '☆';
-                                }
-                                contentString += `<p style="margin:0 0 5px 0; color: #f5a623;">${stars}</p>`; // Gold color for stars
-                            }
-                            contentString += `<p style="margin:0; font-style: italic;">"${review.text.substring(0, 150)}${review.text.length > 150 ? '...' : ''}"</p>`; // Truncate long reviews
-                            if (review.profile_photo_url) { // Author's profile photo (often not available)
-                                // contentString += `<img src="${review.profile_photo_url}" alt="${review.author_name}" style="width:25px; height:25px; border-radius:50%; vertical-align:middle; margin-right:5px;">`;
-                            }
-                            contentString += `</div>`;
-                        });
-                    }
-                    if (place.url) {
-                        contentString += `<p style="margin-bottom:0; margin-top:10px;"><a href="${place.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 8px 12px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px;">View on Google Maps</a></p>`;
-                    }
-                    contentString += `</div>`;
-                } else {
-                    contentString = `<div style="max-width: 250px; font-family: Arial, sans-serif;"><strong>${shop.Name}</strong>`;
-                    if (shop.Address && shop.Address !== 'N/A') contentString += `<br>${shop.Address}`;
-                    contentString += `<br><em style="font-size:0.9em; color: #555;">More details not available.`;
-                    if (status !== google.maps.places.PlacesServiceStatus.OK && status !== "ZERO_RESULTS") {
-                         contentString += `<br>Error: ${status}`;
-                    }
-                    contentString += `</em></div>`;
-                    console.warn(`Place details request failed for ${shop.Name} (ID: ${shop.GoogleProfileID}): ${status}`);
+        placesService.getDetails(request, (place, status) => {
+            let contentString = '';
+            if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                contentString = `<div style="max-width: 320px; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;">`;
+                contentString += `<h4 style="margin-top:0; margin-bottom: 10px; font-size: 18px; color: #333;">${place.name || shop.Name}</h4>`;
+                // if (place.photos && place.photos.length > 0) { // Photo logic was commented out
+                //     const photoUrl = place.photos[0].getUrl({'maxWidth': 320, 'maxHeight': 160});
+                //     contentString += `<img src="${photoUrl}" alt="${place.name || shop.Name}" style="width:100%; height:auto; margin-bottom:10px; border-radius: 4px; border: 1px solid #eee;"><br>`;
+                // }
+                if (place.business_status) {
+                     contentString += `<p style="margin-bottom:5px; font-weight: bold; color: ${place.business_status === 'OPERATIONAL' ? 'green' : 'red'};">Status: ${place.business_status.replace(/_/g, ' ')}</p>`;
                 }
-                infowindow.setContent(contentString);
-                infowindow.open(map, shop.marker);
-            });
+                if (place.formatted_address) {
+                    contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-map-marker-alt"></i> Address:</strong> ${place.formatted_address}</p>`;
+                }
+                if (place.rating) {
+                    contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-star"></i> Rating:</strong> ${place.rating} / 5 (${place.user_ratings_total || 0} reviews)</p>`;
+                }
+                if (place.formatted_phone_number) {
+                    contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-phone"></i> Phone:</strong> <a href="tel:${place.formatted_phone_number}">${place.formatted_phone_number}</a></p>`;
+                }
+                if (place.website) {
+                    let simpleDomain = place.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                    contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-globe"></i> Website:</strong> <a href="${place.website}" target="_blank" rel="noopener noreferrer">${simpleDomain}</a></p>`;
+                }
+                if (place.opening_hours) {
+                    contentString += `<p style="margin-bottom:5px;"><strong><i class="fas fa-clock"></i> Status:</strong> ${place.opening_hours.isOpen() ? 'Open now' : 'Closed'}</p>`;
+                }
+                if (place.url) {
+                    contentString += `<p style="margin-bottom:0; margin-top:10px;"><a href="${place.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 8px 12px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px;">View on Google Maps</a></p>`;
+                }
+                contentString += `</div>`;
+            } else {
+                contentString = `<div style="max-width: 250px; font-family: Arial, sans-serif;"><strong>${shop.Name}</strong>`;
+                if (shop.Address && shop.Address !== 'N/A') contentString += `<br>${shop.Address}`;
+                contentString += `<br><em style="font-size:0.9em; color: #555;">More details not available.`;
+                if (status !== google.maps.places.PlacesServiceStatus.OK && status !== "ZERO_RESULTS") {
+                     contentString += `<br>Error: ${status}`;
+                }
+                contentString += `</em></div>`;
+                console.warn(`Place details request failed for ${shop.Name} (ID: ${shop.GoogleProfileID}) when clicking listing: ${status}`);
+            }
+            infowindow.setContent(contentString);
+            infowindow.open(map, shop.marker); // Open on the shop's marker
+        });
     } else {
         let contentString = `<div style="max-width: 250px; font-family: Arial, sans-serif;"><strong>${shop.Name}</strong>`;
         if (shop.Address && shop.Address !== 'N/A') contentString += `<br>${shop.Address}`;

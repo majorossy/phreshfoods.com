@@ -11,7 +11,7 @@ const GOOGLE_SHEET_DIRECT_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-
 const PROXY_URL = 'https://api.allorigins.win/raw?url='; // Optional proxy
 const DATA_FETCH_URL = PROXY_URL ? PROXY_URL + encodeURIComponent(GOOGLE_SHEET_DIRECT_URL) : GOOGLE_SHEET_DIRECT_URL;
 
-const markerColor = "#fcf403"; // yellow for shop markers
+const markerColor = "#ed411a"; // red orange for shop markers
 
 const DEFAULT_MAP_ZOOM = 14;
 const USER_LOCATION_MAP_ZOOM = 14;
@@ -21,13 +21,13 @@ const USER_LOCATION_ZOOM = 14; // Changed name for clarity
 
 const mapStyles = {
     maineLicensePlate: [
-        { elementType: "geometry", stylers: [{ color: "#e4d7b8" }] },
+        { elementType: "geometry", stylers: [{ color: "#ede5d3" }] },
         { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
         { elementType: "labels.text.fill", stylers: [{ color: "#F0F0F0" }] },
         { elementType: "labels.text.stroke", stylers: [{ color: "#4a3b2c" }, { weight: 2.5 }] },
-        { featureType: "landscape.man_made", elementType: "geometry.fill", stylers: [{ color: "#e4d7b8" }] },
-        { featureType: "landscape.man_made", elementType: "geometry.stroke", stylers: [{ color: "#e4d7b8" }, { weight: 0.5 }] }, // Corrected from your HTML, was d8cbae
-        { featureType: "landscape.natural", elementType: "geometry.fill", stylers: [{ color: "#e4d7b8" }] }, // Corrected from your HTML, was a1b59c
+        { featureType: "landscape.man_made", elementType: "geometry.fill", stylers: [{ color: "#ede5d3" }] },
+        { featureType: "landscape.man_made", elementType: "geometry.stroke", stylers: [{ color: "#ede5d3" }, { weight: 0.5 }] }, // Corrected from your HTML, was d8cbae
+        { featureType: "landscape.natural", elementType: "geometry.fill", stylers: [{ color: "#ede5d3" }] }, // Corrected from your HTML, was a1b59c
         { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#294873" }] },
         { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#F0F0F0" }] },
         { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#294873" }, { weight: 3 }] },

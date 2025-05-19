@@ -33,9 +33,13 @@ function parseCSVData(csv) {
         phone: headers.indexOf('phone'),
         website: headers.indexOf('website'),
         googleProfileId: headers.indexOf('place id'),
-        twitterHandle: headers.indexOf('twitte'), // Ensure this matches your sheet
-        facebookPageId: headers.indexOf('facebook'), // Ensure this matches your sheet
-        instagram: headers.indexOf('instagram') // Assuming direct Instagram link
+        logo: headers.indexOf('logo'),
+        imageOne: headers.indexOf('image_one'),
+        imageTwo: headers.indexOf('image_two'),
+        imageThree: headers.indexOf('image_three'),        
+        twitterHandle: headers.indexOf('twitter'),
+        facebookPageId: headers.indexOf('facebook'),
+        instagram: headers.indexOf('instagram')        
     };
 
     Object.keys(headerMap).forEach(key => {
@@ -65,7 +69,10 @@ function parseCSVData(csv) {
             TwitterHandle: getValue(headerMap.twitterHandle),
             FacebookPageID: getValue(headerMap.facebookPageId),
             Instagram: getValue(headerMap.instagram), // For direct link
-            City: ''
+            City: '',
+            ImageOne: getValue(headerMap.imageOne),
+            ImageTwo: getValue(headerMap.imageTwo),
+            ImageThree: getValue(headerMap.imageThree)
         };
 
         if (shop.Address && shop.Address !== 'N/A') {
@@ -86,29 +93,3 @@ function parseCSVData(csv) {
     }).filter(shop => shop && shop.Name && shop.Name !== 'N/A' && shop.Name.trim() !== '');
 }
 
-
-async function fetchFacebookPosts(pageId) {
-    if (!pageId) {
-        console.log("No Facebook Page ID provided for fetching posts.");
-        return `<p class="text-sm text-gray-500 p-4">No Facebook Page ID configured.</p>`;
-    }
-    if (FACEBOOK_APP_ACCESS_TOKEN === 'PASTE_YOUR_APP_ACCESS_TOKEN_HERE' || !FACEBOOK_APP_ACCESS_TOKEN) {
-        console.error("Facebook App Access Token is not configured!");
-        return `<p class="text-red-500 text-sm p-4">Facebook integration error: Token not set.</p>`;
-    }
-    const fields = 'message,full_picture,permalink_url,created_time,attachments{type,media,subattachments}';
-    const url = `https://graph.facebook.com/${FACEBOOK_API_VERSION}/${pageId}/posts?fields=${fields}&limit=${POST_LIMIT}&access_token=${FACEBOOK_APP_ACCESS_TOKEN}`;
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('Facebook API Error Response:', errorData);
-            throw new Error(`API Error ${response.status}: ${errorData.error?.message || 'Unknown Facebook API error'}`);
-        }
-        const data = await response.json();
-        return data.data || [];
-    } catch (error) {
-        console.error("Error fetching Facebook posts:", error);
-        return `<p class="text-red-500 text-sm p-4">Could not load Facebook posts. ${error.message}</p>`;
-    }
-}

@@ -1,6 +1,6 @@
 ﻿body {
     font-family: 'Inter', sans-serif;
-    overscroll-behavior: none;
+    overscroll-behavior: none; /* Prevents pull-to-refresh on mobile when scrolling overlays */
 }
 
 .custom-scrollbar::-webkit-scrollbar {
@@ -8,15 +8,16 @@
     height: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #d8cbae;
+    /* background: #d8cbae; Slightly darker than body for better contrast */
+    background: #c9bcae;
     border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #a0aec0;
+    background: #a0aec0; /* gray-400 */
     border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #718096;
+    background: #718096; /* gray-500 */
 }
 
 #app-container {
@@ -27,14 +28,14 @@
 
 main {
     flex-grow: 1;
-    overflow: hidden;
-    position: relative;
+    overflow: hidden; /* Important for absolute positioning of children */
+    position: relative; /* Establishes a positioning context */
 }
 
 #mapPanel {
     height: 100%;
     width: 100%;
-    position: absolute;
+    position: absolute; /* Covers the entire main area initially */
     top: 0;
     left: 0;
 }
@@ -48,135 +49,380 @@ main {
     top: 0;
     right: 0;
     bottom: 0;
-    z-index: 10;
-    /* Tailwind classes for width, padding, bg, etc., are in index.html */
+    z-index: 10; /* Above map, below overlays */
+    width: 42%; /* Default width, can be overridden by Tailwind in HTML */
+    /* Tailwind classes for padding, bg, etc., are in index.html */
+    /* Ensure it's scrollable if content overflows */
+    overflow-y: auto; /* Added here for consistency, though also in HTML */
+    background: transparent;
 }
 
+
+
+
+
+
+
+
+
+
+/* --- Overlay Styling --- */
 .detail-pop-overlay {
-    display: none;
     position: absolute;
-    inset: 0;
-    background-color: rgba(255, 255, 255, 0.95);
+    inset: 0; /* Fullscreen by default on mobile (top:0, right:0, bottom:0, left:0) */
+    background-color: rgba(249, 250, 251, 0.95);
     backdrop-filter: blur(4px);
     padding: 1rem;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    z-index: 550; /* <-- Make this higher than header/listingsPanel */
-    overflow-y: auto;
+    overflow-y: auto; /* Make overlay itself scrollable */
     opacity: 0;
     visibility: hidden;
-    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out, visibility 0s linear 0.3s;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s, transform 0.3s ease-in-out;
+    z-index: 50;
 }
 
 @media (min-width: 768px) { /* md breakpoint */
     .detail-pop-overlay {
-        top: 0;
-        bottom: 0;
-        width: 40%;
-        inset-inline-start: auto;
-        inset-inline-end: auto;
+        top: 0; /* Explicitly set top */
+        bottom: 0; /* Explicitly set bottom */
+        width: 30%; /* Default width for overlays on md screens */
+        inset-inline-start: auto; /* Resets left/right from 'inset:0' */
+        inset-inline-end: auto;   /* Resets left/right from 'inset:0' */
+        /* 'inset: auto;' would also work to reset all sides from 'inset:0'
+           and then you'd re-apply top, bottom, and either left or right. */
     }
-}
-@media (min-width: 1024px) { /* lg breakpoint */
-    .detail-pop-overlay {
-        width: 33.333333%;
-    }
+    /* ... other styles like #listingsPanel width ... */
 }
 
 .detail-pop-overlay.is-open {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    z-index: 9999 !important;
-    transform: translateX(0) !important;
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+    z-index: 50; /* Ensure it's above other elements when open */
 }
 
+/* Specific Overlay Positioning & Transform for slide-in effect */
 #detailsOverlayShop {
+    right: 0; /* Anchored to the right for desktop */
     transform: translateX(100%);
 }
+#detailsOverlayShop.is-open {
+    transform: translateX(0%);
+}
 @media (min-width: 768px) {
-    #detailsOverlayShop { right: 0; left: auto; }
+    #detailsOverlayShop {
+        width: 42%; /* Specific width for shop details on desktop */
+        /* top: 0; bottom: 0; are inherited from .detail-pop-overlay's md styles */
+        left: auto; /* Ensure it's not trying to be on the left */
+    }
 }
 
 #detailsOverlaySocial {
+    left: 0; /* Anchored to the left for desktop */
     transform: translateX(-100%);
 }
+#detailsOverlaySocial.is-open {
+    transform: translateX(0%);
+}
 @media (min-width: 768px) {
-    #detailsOverlaySocial { left: 0; right: auto; }
+    #detailsOverlaySocial {
+        width: 30%; /* Specific width for social on desktop (was 25%, adjusted to match general) */
+        /* top: 0; bottom: 0; are inherited from .detail-pop-overlay's md styles */
+        right: auto; /* Ensure it's not trying to be on the right */
+    }
 }
 
-.social-link {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.5rem 1rem;
-    border: 1px solid #D1D5DB;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 0.375rem;
-    color: #374151;
-    background-color: white;
-    transition: background-color 0.2s;
-    text-decoration: none;
-    margin-bottom: 0.5rem; /* Added for spacing if they wrap */
-}
-.social-link:hover {
-    background-color: #F9FAFB;
-}
-.social-link svg {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
-}
 
-.facebook-posts-container .facebook-post {
-    padding: 0.75rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    margin-bottom: 1rem;
-    background-color: white;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-.facebook-posts-container .facebook-post img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 0.25rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    border: 1px solid #eee;
-}
-.facebook-posts-container .facebook-post p {
-    word-break: break-word;
-}
 
-#twitterTimelineContainer iframe {
-    max-width: 100% !important; /* Ensure iframe from Twitter scales */
-    min-height: 300px; /* Give it some initial height */
-}
+
+
+
+
+
+
+
+
 
 .overlay-close-button {
     position: absolute;
-    top: 0.75rem; /* Tailwind: top-3 */
-    right: 0.75rem; /* Tailwind: right-3 */
-    color: #4B5563; /* Tailwind: text-gray-600 */
-    z-index: 10; /* Ensure it's clickable */
+    top: 0.75rem; 
+    right: 0.75rem; 
+    color: #4B5563; 
+    z-index: 10; /* Above overlay content */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem; /* Make it easier to click */
 }
 .overlay-close-button:hover {
-    color: #1F2937; /* Tailwind: hover:text-gray-900 */
+    color: #1F2937; 
 }
 @media (min-width: 640px) { /* sm breakpoint */
     .overlay-close-button {
-        top: 1rem; /* sm:top-4 */
-        right: 1rem; /* sm:right-4 */
-    }
-}
-.overlay-content-wrapper {
-    margin-top: 2rem; /* Tailwind: mt-8 */
-}
-@media (min-width: 640px) { /* sm breakpoint */
-    .overlay-content-wrapper {
-        margin-top: 2.5rem; /* sm:mt-10 */
+        top: 1rem; 
+        right: 1rem; 
     }
 }
 
-.gm-style-iw-c button.gm-ui-hover-effect {
+.overlay-content-wrapper {
+    /* padding-top: 2.5rem; /* Space for the close button */
+     margin-top: 2rem; /* Replaced by padding-top on wrapper */
+}
+/* @media (min-width: 640px) { 
+    .overlay-content-wrapper {
+        margin-top: 2.5rem; 
+    }
+} */
+
+
+/* --- Social Media Specific Styling --- */
+
+/* Container for Facebook Plugin and Twitter */
+#socialLinksContainer, 
+#twitterTimelineContainer {
+    margin-bottom: 1.5rem; /* Space between social sections */
+}
+
+/* Facebook Page Plugin Styling */
+/* The #socialLinksContainer will be the direct parent if only FB plugin is inside */
+#socialLinksContainer .fb-page,
+#socialLinksContainer .fb-page iframe,
+#socialLinksContainer .fb-page span {
+    width: 100% !important; /* Force plugin to take full width of its container */
+    max-width: 100%; /* Ensure it doesn't overflow */
+    /* min-height: 400px; /* Optional: ensure it has some visible height */
+       /* data-height="500" in JS should handle height, but this can be a fallback */
+}
+
+/* If you had individual post styling before (now replaced by Page Plugin) */
+/* You can remove these if no longer used, or repurpose if needed elsewhere */
+.facebook-posts-container .facebook-post {
+    /* ... (keep if still used for something else, otherwise remove) ... */
+}
+
+
+/* Twitter Timeline Styling */
+#twitterTimelineContainer iframe {
+    width: 100% !important; /* Ensure iframe from Twitter scales */
+    max-width: 100%;
+    min-height: 300px; 
+    border-radius: 0.375rem; /* Match other elements */
+    border: 1px solid #e5e7eb; /* Optional border */
+}
+
+
+/* Google Maps InfoWindow close button hiding */
+.gm-style-iw-c button.gm-ui-hover-effect { /* Close button X */
     display: none !important;
 }
+.gm-style .gm-style-iw-tc::after { /* The little arrow tip of the infowindow */
+    /* display: none !important; /* Uncomment if you want to hide the tip too */
+}
+
+
+
+#socialLinksContainer .fb-page,
+#socialLinksContainer .fb-page iframe,
+#socialLinksContainer .fb-page span { /* Added span here based on your HTML output */
+    width: 100% !important;
+    max-width: 100%;
+    /* Let's add explicit height here too for the direct children for testing */
+    height: auto; /* For span */
+    min-height: 1px; /* To ensure it's not collapsed to 0 */
+}
+
+#socialLinksContainer .fb-page iframe {
+    min-height: 500px !important; /* Match data-height, ensure it takes space */
+    height: 500px !important;     /* For testing, force height */
+    visibility: visible !important; /* For testing, override FB SDK */
+}
+
+
+
+/* In style.css */
+
+/* ... (Keep all your existing styles for body, scrollbar, #app-container, main, mapPanel, #map, #listingsPanel, .detail-pop-overlay, overlay-close-button, .overlay-content-wrapper, etc. from your provided CSS) ... */
+
+/* --- Overlay Styling --- */
+/* .detail-pop-overlay general styles (ensure background, shadow, transitions are good) */
+/* #detailsOverlaySocial specific width/positioning (ensure these are good) */
+@media (min-width: 768px) { /* md breakpoint */
+    #detailsOverlaySocial {
+        width: 30%; /* Or your preferred width, e.g., 28%, 320px */
+        /* Consider a max-width too if using percentages */
+        /* max-width: 400px; */
+    }
+}
+
+
+/* --- Social Overlay Specific Styling within .overlay-content-wrapper --- */
+.social-feed-section {
+    /* No specific styles needed here if margins/padding handled by utility classes in HTML */
+    /* e.g., use mb-6 or mt-6 on the section itself for spacing */
+}
+
+.social-feed-title {
+    /* Tailwind: text-lg font-medium text-gray-600 mb-2 flex items-center */
+    /* Added SVG icon directly in HTML now */
+    display: flex; /* Align icon and text */
+    align-items: center; /* Align icon and text vertically */
+    padding-bottom: 0.25rem; /* Small space under title before content */
+    /* border-bottom: 1px solid #e5e7eb; /* Optional light separator under title */
+    /* margin-bottom: 0.75rem; /* Spacing after title, now using mb-2 on title and styling container directly */
+}
+
+.social-feed-title svg { /* For styling the icons next to titles */
+    /* Tailwind: inline-block w-5 h-5 mr-2 (colors set in HTML) */
+    /* You can add more specific styling if needed */
+}
+
+
+.social-feed-content {
+    /* Tailwind: bg-white rounded-lg shadow-sm overflow-hidden */
+    /* overflow-hidden is important to make border-radius apply to child iframes */
+    border: 1px solid #e5e7eb; /* Optional subtle border around content area */
+}
+
+/* Remove default margin/padding from placeholder paragraphs if the container handles it */
+.social-feed-content > p { /* Target only direct p child (the loading message) */
+    /* padding: 1rem; /* Tailwind p-4, already on the p tag */
+    /* margin: 0; /* Reset margin if any from browser defaults */
+}
+
+
+/* Facebook Page Plugin Styling - from your previous CSS */
+#socialLinksContainer .fb-page,
+#socialLinksContainer .fb-page iframe,
+#socialLinksContainer .fb-page span {
+    width: 100% !important;
+    max-width: 100%;
+    height: auto; /* For span */
+    min-height: 1px; /* To ensure it's not collapsed to 0 if content is weird */
+    display: block; /* Helps with some layout issues if span wraps iframe */
+}
+
+#socialLinksContainer .fb-page iframe {
+    min-height: 400px !important; /* Adjusted default height, can also be data-height in JS */
+    height: auto !important; /* Let it be defined by data-height or content if possible */
+    /* visibility: visible !important; /* REMOVE THIS - Let FB SDK handle visibility */
+    border: none !important; /* Ensure no border from iframe itself */
+}
+
+/* Twitter Timeline Styling - from your previous CSS */
+#twitterTimelineContainer iframe {
+    width: 100% !important;
+    max-width: 100%;
+    min-height: 400px; /* Consistent min-height */
+    border-radius: 0; /* If parent has border-radius and overflow:hidden, iframe doesn't need it */
+    border: none !important; /* Ensure no border from iframe itself */
+}
+
+/* If the embeds look "stuck" to the edges inside .social-feed-content: */
+/* This might happen if the plugins themselves have no internal padding */
+/* #socialLinksContainer .fb-page { padding: 0.5rem; box-sizing: border-box; } */ /* Usually not needed */
+
+
+/* ... (Keep shop image gallery, review card styling, etc. as they are separate) ... */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* In style.css */
+
+/* ... (all your existing styles) ... */
+
+/* --- Shop Detail Image Gallery Styling --- */
+.shop-image-gallery {
+    display: flex;
+    flex-wrap: wrap; /* Allow images to wrap if not enough space, though we aim for 3 side-by-side */
+    gap: 0.5rem; /* Tailwind: gap-2. Space between images */
+    justify-content: flex-start; /* Align images to the start */
+    align-items: flex-start; /* Align items at the top if they have different heights initially */
+}
+
+.gallery-image-container {
+    flex: 1 1 calc(33.333% - 0.5rem); /* Aim for 3 images per row, accounting for gap. */
+                                     /* Subtracted gap needs to be (N-1)/N * gap_size if N items. Here N=3, (2/3)*0.5rem approx */
+                                     /* A simpler calc(33.333% - (0.5rem * 2 / 3)) might be more accurate */
+                                     /* Or just let flex-basis handle it: flex: 1 0 30%; for example */
+    max-width: calc(33.333% - 0.34rem); /* (0.5rem gap * 2 inter-image gaps) / 3 images */
+    box-sizing: border-box;
+    display: flex; /* To center content if image fails to load */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6; /* Tailwind bg-gray-100 as placeholder */
+    border-radius: 0.375rem; /* Tailwind rounded-md */
+    overflow: hidden; /* Ensure image corners are rounded if image itself isn't */
+    aspect-ratio: 3 / 2; /* Maintain a 3:2 aspect ratio for the image container */
+}
+
+.gallery-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Cover the container, cropping if necessary */
+    display: block; /* Remove extra space below image */
+}
+
+/* Fallback text if image fails */
+.gallery-image-container .text-xs {
+    padding: 0.5rem;
+}
+
+
+/* Responsive adjustments for the gallery if needed */
+@media (max-width: 640px) { /* Example: sm breakpoint */
+    .gallery-image-container {
+        /* Make images take more width on smaller screens, e.g., 2 per row or 1 per row */
+        flex: 1 1 calc(50% - 0.25rem); /* Example: 2 images per row */
+        max-width: calc(50% - 0.25rem);
+        /* Or for 1 image per row:
+        flex: 1 1 100%;
+        max-width: 100%;
+        aspect-ratio: 16 / 9; /* Adjust aspect ratio if single column */
+        */
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
