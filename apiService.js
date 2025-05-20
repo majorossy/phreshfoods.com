@@ -1,6 +1,4 @@
-﻿// js/apiService.js
-
-async function fetchSheetData() {
+﻿async function fetchSheetData() {
   if (
     GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ||
     !GOOGLE_SHEET_DIRECT_URL
@@ -44,7 +42,9 @@ function parseCSVData(csv) {
     imageThree: headers.indexOf("image_three"),
     twitterHandle: headers.indexOf("twitter"),
     facebookPageId: headers.indexOf("facebook"),
-    instagram: headers.indexOf("instagram"),
+    instagramUsername: headers.indexOf("instagram username"), // For @handle
+    instagramEmbedCode: headers.indexOf("instagram embed code"), // For the blockquote embed
+    instagramLink: headers.indexOf("instagram"), // For direct link (if different from username page)
   };
 
   Object.keys(headerMap).forEach((key) => {
@@ -70,17 +70,20 @@ function parseCSVData(csv) {
       const shop = {
         Name: getValue(headerMap.name) || "N/A",
         Address: getValue(headerMap.address) || "N/A",
-        Rating: getValue(headerMap.rating) || "N/A",
+        Rating: getValue(headerMap.rating) || "N/A", // CSV Rating
         Phone: getValue(headerMap.phone),
         Website: getValue(headerMap.website),
         GoogleProfileID: getValue(headerMap.googleProfileId),
         TwitterHandle: getValue(headerMap.twitterHandle),
         FacebookPageID: getValue(headerMap.facebookPageId),
-        Instagram: getValue(headerMap.instagram), // For direct link
+        InstagramUsername: getValue(headerMap.instagramUsername),
+        InstagramRecentPostEmbedCode: getValue(headerMap.instagramEmbedCode),
+        InstagramLink: getValue(headerMap.instagramLink), // Direct link to profile
         City: "",
         ImageOne: getValue(headerMap.imageOne),
         ImageTwo: getValue(headerMap.imageTwo),
         ImageThree: getValue(headerMap.imageThree),
+        // placeDetails will be populated later for Google sourced rating, reviews, etc.
       };
 
       if (shop.Address && shop.Address !== "N/A") {

@@ -1,13 +1,9 @@
-﻿// js/uiLogic.js
-
-document.addEventListener('DOMContentLoaded', () => {
+﻿document.addEventListener('DOMContentLoaded', () => {
     window.detailsOverlayShopElement = document.getElementById('detailsOverlayShop');
     window.detailsOverlaySocialElement = document.getElementById('detailsOverlaySocial');
-    window.shopDetailNameElement = document.getElementById('shopDetailName');
-    window.socialLinksContainerElement = document.getElementById('socialLinksContainer');
-    window.twitterTimelineContainerElement = document.getElementById('twitterTimelineContainer');
+    window.shopDetailNameElement = document.getElementById('shopDetailName'); 
 
-    const getDirectionsBtnOverlay = document.getElementById('getShopDirectionsButton');
+    const getDirectionsBtnOverlay = document.getElementById('getShopDirectionsButton'); 
     if (getDirectionsBtnOverlay) {
         getDirectionsBtnOverlay.addEventListener('click', () => {
             if (currentShopForDirections) {
@@ -19,12 +15,61 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const clearDirectionsBtn = document.getElementById('clearShopDirectionsButton');
+    const clearDirectionsBtn = document.getElementById('clearShopDirectionsButton'); 
     if (clearDirectionsBtn) {
         clearDirectionsBtn.addEventListener('click', () => {
             if (typeof clearDirections === 'function') {
                 clearDirections();
             }
+        });
+    }
+
+    const closeSocialOverlayBtn = document.getElementById('closeDetailsOverlaySocialButton');
+    if (closeSocialOverlayBtn) {
+        closeSocialOverlayBtn.addEventListener('click', closeClickedShopOverlays);
+    }
+    const closeShopOverlayBtn = document.getElementById('closeDetailsOverlayShopButton');
+     if (closeShopOverlayBtn) {
+        closeShopOverlayBtn.addEventListener('click', closeClickedShopOverlays);
+    }
+
+    const socialTabsContainer = document.getElementById('socialOverlayTabs');
+    if (socialTabsContainer) {
+        const tabButtons = socialTabsContainer.querySelectorAll('.social-tab-button');
+        const tabContents = window.detailsOverlaySocialElement.querySelectorAll('.social-tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetPanelId = button.dataset.tabTarget;
+
+                tabButtons.forEach(btn => {
+                    btn.classList.remove('active-social-tab');
+                    btn.setAttribute('aria-selected', 'false');
+                });
+                button.classList.add('active-social-tab');
+                button.setAttribute('aria-selected', 'true');
+
+                tabContents.forEach(panel => {
+                    if (panel.id === targetPanelId) {
+                        panel.classList.remove('hidden');
+                        if (targetPanelId === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
+                             const fbContentContainer = document.getElementById('socialLinksContainer');
+                             if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) {
+                                setTimeout(() => FB.XFBML.parse(fbContentContainer), 50);
+                             }
+                        }
+                         if (targetPanelId === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) {
+                            const igContentContainer = document.getElementById('instagramFeedContainer');
+                            if (igContentContainer && igContentContainer.querySelector('.instagram-media')) {
+                                setTimeout(() => window.instgrm.Embeds.process(), 50);
+                            }
+                        }
+                    } else {
+                        panel.classList.add('hidden');
+                    }
+                });
+                if(detailsOverlaySocialElement) detailsOverlaySocialElement.scrollTop = 0;
+            });
         });
     }
 });
@@ -53,9 +98,9 @@ function getStarRatingHTML(ratingStringOrNumber, reviewCount) {
     let reviewCountText = '';
     if (typeof reviewCount === 'number' && reviewCount > 0) {
         reviewCountText = ` <span class="text-gray-500 text-xs ml-1">(${displayRatingValue} from ${reviewCount} reviews)</span>`;
-    } else if (reviewCount === 0) {
+    } else if (reviewCount === 0) { 
          reviewCountText = ` <span class="text-gray-500 text-xs ml-1">(${displayRatingValue}, no reviews)</span>`;
-    } else {
+    } else { 
          reviewCountText = ` <span class="text-gray-500 text-xs ml-1">(${displayRatingValue})</span>`;
     }
     return `<span class="text-yellow-400 text-lg">${stars}</span>${reviewCountText}`;
@@ -95,50 +140,72 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
             { height: '450', theme: 'light', chrome: 'noheader nofooter noborders noscrollbar transparent', tweetLimit: 5 }
         );
         if (!promise || typeof promise.then !== 'function') {
-            containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Twitter widget creation failed.</p>`;
+            if (containerElement.innerHTML.includes("Loading Twitter feed")) {
+                 containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Twitter widget creation may have failed for @${cleanHandle}.</p>`;
+            }
             return;
         }
         promise.then(el => {
-            if (el) {
-                if (containerElement.childNodes.length === 0 || (containerElement.childNodes.length === 1 && containerElement.firstChild.tagName === 'P' && containerElement.firstChild.textContent.startsWith("Loading Twitter feed"))) {
-                     containerElement.innerHTML = `<p class="text-sm text-orange-500 p-4">Timeline for @${cleanHandle} loaded, but might be empty.</p>`;
-                }
-            } else {
-                containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Could not embed Twitter for @${cleanHandle}.</p>`;
+            if (!el) { 
+                containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Could not embed Twitter for @${cleanHandle}. Account might be private/suspended or handle incorrect.</p>`;
             }
         }).catch(e => {
             console.error("Error creating Twitter timeline for @" + cleanHandle + ":", e);
             containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Error embedding Twitter for @${cleanHandle}.</p>`;
         });
     } catch (error) {
-        console.error("Synchronous error calling createTimeline:", error);
-        containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Failed to initiate Twitter embedding.</p>`;
+        console.error("Synchronous error calling createTimeline for @" + cleanHandle + ":", error);
+        containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Failed to initiate Twitter embedding for @${cleanHandle}.</p>`;
     }
 }
 
+// NEW function to display Google Place Photos
+function displayGooglePlacePhotos(placeDetails, containerElement) {
+    if (!containerElement) return;
+    containerElement.innerHTML = ''; // Clear previous photos
+
+    if (placeDetails && placeDetails.photos && placeDetails.photos.length > 0) {
+        placeDetails.photos.slice(0, 9).forEach(photo => { // Display up to 9 photos
+            const imgContainer = document.createElement('div');
+            // Reusing .gallery-image-container styles, adjust if needed for Google Photos
+            imgContainer.className = 'gallery-image-container google-photo-item'; 
+            const img = document.createElement('img');
+            // Get a URL for a reasonably sized image. Max width 400px.
+            img.src = photo.getUrl({ maxWidth: 400, maxHeight: 300 }); 
+            img.alt = `Photo of ${placeDetails.name || 'shop'}`;
+            // Reusing .gallery-image styles
+            img.className = 'gallery-image'; 
+            img.onerror = function() { 
+                this.parentElement.innerHTML = '<p class="text-xs text-gray-500 text-center p-2">Image unavailable</p>'; 
+            };
+            imgContainer.appendChild(img);
+            containerElement.appendChild(imgContainer);
+        });
+    } else {
+        containerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">No photos found on Google for this place.</p>';
+    }
+}
+
+
 async function openClickedShopOverlays(shop) {
     if (!shop) { console.error("Shop data is null in openClickedShopOverlays."); return; }
-    currentShopForDirections = shop;
+    currentShopForDirections = shop; 
     let shopOverlayActuallyOpened = false;
     let socialOverlayActuallyOpened = false;
 
+    // SHOP DETAILS OVERLAY (Right side - name, CSV photos, directions controls)
     if (detailsOverlayShopElement) {
         openOverlay(detailsOverlayShopElement);
         detailsOverlayShopElement.scrollTop = 0;
         shopOverlayActuallyOpened = true;
-    }
-    if (detailsOverlaySocialElement) {
-        openOverlay(detailsOverlaySocialElement);
-        detailsOverlaySocialElement.scrollTop = 0;
-        socialOverlayActuallyOpened = true;
-    }
 
-    if (shopOverlayActuallyOpened && detailsOverlayShopElement) {
         try {
             if (shopDetailNameElement) shopDetailNameElement.textContent = shop.Name || 'N/A';
-            const galleryContainer = document.getElementById('shopImageGallery');
-            if (galleryContainer) {
-                galleryContainer.innerHTML = '';
+            
+            // Populate CSV Image Gallery in Shop Overlay
+            const csvGalleryContainer = document.getElementById('shopImageGallery');
+            if (csvGalleryContainer) {
+                csvGalleryContainer.innerHTML = ''; 
                 const imageFilenames = [shop.ImageOne, shop.ImageTwo, shop.ImageThree].filter(Boolean);
                 if (imageFilenames.length > 0) {
                     imageFilenames.forEach(filename => {
@@ -148,80 +215,148 @@ async function openClickedShopOverlays(shop) {
                         imgContainer.className = 'gallery-image-container';
                         const img = document.createElement('img');
                         img.src = `images/${trimmedFilename}`;
-                        img.alt = `${shop.Name || 'Shop'} image - ${trimmedFilename}`;
+                        img.alt = `${shop.Name || 'Shop'} CSV image - ${trimmedFilename}`;
                         img.className = 'gallery-image';
                         img.onerror = function() { this.parentElement.innerHTML = '<p class="text-xs text-gray-500 text-center p-2">Image not found</p>'; };
                         imgContainer.appendChild(img);
-                        galleryContainer.appendChild(imgContainer);
+                        csvGalleryContainer.appendChild(imgContainer);
                     });
                 } else {
-                    galleryContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-4">No images available.</p>';
+                    csvGalleryContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-4 col-span-full">No listing photos available.</p>';
                 }
             }
-            const reviewsContainer = document.getElementById('shopReviewsContainer');
-            if (reviewsContainer) {
-                if (shop.placeDetails && shop.placeDetails.reviews && shop.placeDetails.reviews.length > 0) {
-                    if (typeof displayShopReviews === "function") displayShopReviews(shop.placeDetails, reviewsContainer);
-                } else {
-                    reviewsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-4">No reviews available.</p>';
-                }
-            }
+
             document.getElementById('getShopDirectionsButton')?.classList.remove('hidden');
             document.getElementById('clearShopDirectionsButton')?.classList.add('hidden');
-            const directionsPanelDiv = document.getElementById('directionsPanel');
+            const directionsPanelDiv = document.getElementById('directionsPanel'); 
             if (directionsPanelDiv) directionsPanelDiv.innerHTML = "";
-        } catch (e) { console.error("Error populating RIGHT overlay:", e); }
+
+        } catch (e) { console.error("Error populating RIGHT shop overlay:", e); }
     }
 
-    if (socialOverlayActuallyOpened && detailsOverlaySocialElement) {
+    // SOCIAL MEDIA, REVIEWS & GOOGLE PHOTOS OVERLAY (Left side - Tabs)
+    if (detailsOverlaySocialElement) {
+        openOverlay(detailsOverlaySocialElement);
+        detailsOverlaySocialElement.scrollTop = 0;
+        socialOverlayActuallyOpened = true;
+
         try {
-            const fbPanel = document.getElementById('social-facebook');
-            const twPanel = document.getElementById('social-twitter');
-            const igPanel = document.getElementById('social-instagram');
             const fbContentContainer = document.getElementById('socialLinksContainer');
             const twContentContainer = document.getElementById('twitterTimelineContainer');
             const igContentContainer = document.getElementById('instagramFeedContainer');
-            const allPanels = [fbPanel, twPanel, igPanel].filter(Boolean);
-            const tabButtons = detailsOverlaySocialElement.querySelectorAll('.css-target-tab-button');
-            let activeTabId = 'social-facebook';
-            if (!shop.FacebookPageID && shop.TwitterHandle) activeTabId = 'social-twitter';
-            else if (!shop.FacebookPageID && !shop.TwitterHandle && shop.InstagramUsername) activeTabId = 'social-instagram';
+            const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
+            const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer'); // New container
 
-            const showTab = (tabId) => {
-                allPanels.forEach(panel => { if (panel) panel.style.display = (panel.id === tabId) ? 'block' : 'none'; });
-                tabButtons.forEach(btn => btn.classList.toggle('active-social-tab-js', btn.getAttribute('href') === `#${tabId}`));
-                if (tabId === 'social-facebook' && fbContentContainer) {
-                    if (shop.FacebookPageID) {
-                        if (!fbContentContainer.querySelector('.fb-page') || fbContentContainer.dataset.currentPageId !== shop.FacebookPageID) {
-                            fbContentContainer.innerHTML = generateFacebookPagePluginHTML(shop.FacebookPageID, shop.Name);
-                            fbContentContainer.dataset.currentPageId = shop.FacebookPageID;
-                            if (typeof FB !== 'undefined' && FB.XFBML) setTimeout(() => FB.XFBML.parse(fbContentContainer), 50);
+            // --- Populate Social Media Tabs ---
+            if (fbContentContainer) { /* ... Facebook logic ... */ }
+            if (twContentContainer) { /* ... Twitter logic ... */ }
+            if (igContentContainer) { /* ... Instagram logic ... */ }
+             // Populate Facebook Tab
+            if (fbContentContainer) {
+                if (shop.FacebookPageID) {
+                    if (!fbContentContainer.querySelector('.fb-page') || fbContentContainer.dataset.currentPageId !== shop.FacebookPageID) {
+                        fbContentContainer.innerHTML = generateFacebookPagePluginHTML(shop.FacebookPageID, shop.Name);
+                        fbContentContainer.dataset.currentPageId = shop.FacebookPageID;
+                    }
+                } else { fbContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Facebook Page configured.</p>'; }
+            }
+
+            // Populate Twitter Tab
+            if (twContentContainer) {
+                if (shop.TwitterHandle) {
+                    if (twContentContainer.dataset.currentTwitterHandle !== shop.TwitterHandle) {
+                        displayTwitterTimeline(shop.TwitterHandle, twContentContainer);
+                        twContentContainer.dataset.currentTwitterHandle = shop.TwitterHandle;
+                    }
+                } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Twitter handle configured.</p>'; }
+            }
+            
+            // Populate Instagram Tab
+            if (igContentContainer) {
+                 if (shop.InstagramUsername) {
+                    if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
+                       populateInstagramTab(shop, igContentContainer); 
+                       igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
+                    }
+                } else { igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Instagram profile configured.</p>'; }
+            }
+
+
+            // --- Populate Reviews and Google Photos Tabs (requires Place Details) ---
+            if (reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>'; 
+            if (googlePhotosContainer) googlePhotosContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">Loading Google Photos...</p>';
+
+            if (shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
+                // Fetch Place Details if not already fully populated (reviews AND photos)
+                if (!shop.placeDetails || !shop.placeDetails.reviews || !shop.placeDetails.photos) {
+                    const fieldsToFetch = ['reviews', 'photos', 'rating', 'user_ratings_total', 'url', 'name', 'place_id'];
+                    placesService.getDetails(
+                        { placeId: shop.GoogleProfileID, fields: fieldsToFetch },
+                        (place, status) => {
+                            if (status === google.maps.places.PlacesServiceStatus.OK && place) {
+                                shop.placeDetails = { ...shop.placeDetails, ...place }; // Merge new details
+                                if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer);
+                                if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
+                            } else {
+                                if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); 
+                                if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer);
+                                console.warn(`Place details (reviews/photos) failed for ${shop.Name}: ${status}`);
+                            }
                         }
-                    } else { fbContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Facebook Page configured.</p>'; }
-                } else if (tabId === 'social-twitter' && twContentContainer) {
-                    if (shop.TwitterHandle) {
-                        if (twContentContainer.dataset.currentTwitterHandle !== shop.TwitterHandle) {
-                            displayTwitterTimeline(shop.TwitterHandle, twContentContainer);
-                            twContentContainer.dataset.currentTwitterHandle = shop.TwitterHandle;
-                        }
-                    } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Twitter handle configured.</p>'; }
-                } else if (tabId === 'social-instagram' && igContentContainer) {
-                     if (shop.InstagramUsername) {
-                        if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
-                           populateInstagramTab(shop, igContentContainer);
-                           igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
-                        }
-                    } else { igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Instagram profile configured.</p>'; }
+                    );
+                } else { // Already have details
+                     if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer); 
+                     if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
                 }
-                if(detailsOverlaySocialElement) detailsOverlaySocialElement.scrollTop = 0;
-            };
-            tabButtons.forEach(button => {
-                button.onclick = (e) => { e.preventDefault(); showTab(button.getAttribute('href').substring(1)); };
-            });
-            showTab(activeTabId);
-        } catch (e) { console.error("Error populating LEFT social overlay:", e); }
+            } else { // No GoogleProfileID
+                 if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); 
+                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer);
+            }
+
+            // Set default active tab
+            let defaultTabTarget = 'social-photos-panel'; // Default to Google Photos now
+                 if (!shop.GoogleProfileID && shop.FacebookPageID) defaultTabTarget = 'social-facebook-panel'; // Fallback if no GID
+                 else if (shop.GoogleProfileID && (!shop.placeDetails || !shop.placeDetails.photos || shop.placeDetails.photos.length === 0)) { // If GID but no photos, try reviews
+                    defaultTabTarget = 'social-reviews-panel';
+                 }
+                 // Add more fallbacks if needed
+
+            const socialTabsContainer = document.getElementById('socialOverlayTabs');
+            if (socialTabsContainer) {
+                const tabButtons = socialTabsContainer.querySelectorAll('.social-tab-button');
+                const tabContents = window.detailsOverlaySocialElement.querySelectorAll('.social-tab-content');
+                
+                let defaultButtonFound = false;
+                tabButtons.forEach(btn => {
+                    if (btn.dataset.tabTarget === defaultTabTarget) {
+                        btn.classList.add('active-social-tab');
+                        btn.setAttribute('aria-selected', 'true');
+                        defaultButtonFound = true;
+                    } else {
+                        btn.classList.remove('active-social-tab');
+                        btn.setAttribute('aria-selected', 'false');
+                    }
+                });
+                if (!defaultButtonFound && tabButtons.length > 0) { 
+                    tabButtons[0].classList.add('active-social-tab');
+                    tabButtons[0].setAttribute('aria-selected', 'true');
+                    defaultTabTarget = tabButtons[0].dataset.tabTarget;
+                }
+
+                tabContents.forEach(panel => {
+                    panel.classList.toggle('hidden', panel.id !== defaultTabTarget);
+                });
+
+                if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) { /* ... */ }
+                if (defaultTabTarget === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) { /* ... */ }
+            }
+
+        } catch (e) { console.error("Error populating LEFT social/reviews/photos overlay tabs:", e); }
     }
-    if (shopOverlayActuallyOpened || socialOverlayActuallyOpened) document.body.style.overflow = 'hidden';
+
+    if (shopOverlayActuallyOpened || socialOverlayActuallyOpened) {
+        document.body.style.overflow = 'hidden'; 
+    }
 }
 
 function closeClickedShopOverlays() {
@@ -232,12 +367,43 @@ function closeClickedShopOverlays() {
     if (detailsOverlaySocialElement && detailsOverlaySocialElement.classList.contains('is-open')) {
         closeOverlay(detailsOverlaySocialElement); anOverlayWasOpen = true;
     }
+
     if (anOverlayWasOpen) {
-        if (typeof infowindow !== 'undefined' && infowindow && typeof infowindow.close === 'function') infowindow.close();
-        document.body.style.overflow = '';
-        currentShopForDirections = null;
+        if (typeof infowindow !== 'undefined' && infowindow && typeof infowindow.close === 'function') {
+            infowindow.close();
+        }
+        document.body.style.overflow = ''; 
+        currentShopForDirections = null; 
+        
+        const fbContent = document.getElementById('socialLinksContainer');
+        if (fbContent) fbContent.dataset.currentPageId = '';
+        const twContent = document.getElementById('twitterTimelineContainer');
+        if (twContent) twContent.dataset.currentTwitterHandle = '';
+        const igContent = document.getElementById('instagramFeedContainer');
+        if (igContent) igContent.dataset.currentInstaUser = '';
+        const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
+        if(reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>';
+        const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer');
+        if(googlePhotosContainer) googlePhotosContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">Loading Google Photos...</p>';
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function sortShopsByDistanceGoogle(shops, mapCenter) {
     if (!google || !google.maps || !google.maps.geometry || !google.maps.geometry.spherical) {
@@ -277,17 +443,19 @@ function generateShopContentHTML(shop, context = 'card') {
     if (context === 'card') {
         finalImageHTML = `<div class="aspect-w-16 aspect-h-9 sm:aspect-h-7"><img class="w-full h-full object-cover" loading="lazy" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.onerror=null; this.src='${fallbackImageUrlCard}';"></div>`;
     } else if (context === 'infowindow') {
-        if (shop.ImageOne && shop.ImageOne.trim() !== '') { // Only show real image in infowindow
+        if (shop.ImageOne && shop.ImageOne.trim() !== '') { 
             finalImageHTML = `<img class="w-full h-auto object-cover mb-2 rounded-t-sm" style="max-height: 150px;" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.style.display='none';">`;
         }
     }
 
     let starsHTML = getStarRatingHTML("N/A");
-    if (shop.placeDetails && typeof shop.placeDetails.rating === 'number') {
-        starsHTML = getStarRatingHTML(shop.placeDetails.rating, shop.placeDetails.user_ratings_total);
-    } else if (shop.Rating && shop.Rating !== "N/A") {
-        starsHTML = getStarRatingHTML(shop.Rating);
+    let ratingSource = shop.placeDetails; 
+    if (!ratingSource && shop.Rating && shop.Rating !== "N/A") { 
+        starsHTML = getStarRatingHTML(shop.Rating); // CSV rating
+    } else if (ratingSource && typeof ratingSource.rating === 'number') {
+        starsHTML = getStarRatingHTML(ratingSource.rating, ratingSource.user_ratings_total); // Google rating
     }
+    
     const ratingContainerId = `rating-for-${shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-')}-${context}`;
 
     let contactLinksHTML = '';
@@ -306,15 +474,15 @@ function generateShopContentHTML(shop, context = 'card') {
         let buttonAction = '';
         if (context === 'card') {
             buttonAction = `event.stopPropagation(); document.getElementById('listing-btn-directions-${shopIdForButton}').dispatchEvent(new CustomEvent('cardbuttondirectionsclick', { bubbles: true }));`;
-        } else {
-            // NEW: Create a plain data object for stringification, excluding complex/circular objects
-            const shopDataForButton = {
+        } else { 
+            const shopDataForButton = { 
                 Name: shop.Name, Address: shop.Address, lat: shop.lat, lng: shop.lng,
                 GoogleProfileID: shop.GoogleProfileID,
-                ImageOne: shop.ImageOne, ImageTwo: shop.ImageTwo, ImageThree: shop.ImageThree, // Pass image names if overlays use them
+                ImageOne: shop.ImageOne, ImageTwo: shop.ImageTwo, ImageThree: shop.ImageThree,
                 Phone: shop.Phone, Website: shop.Website, FacebookPageID: shop.FacebookPageID,
-                TwitterHandle: shop.TwitterHandle, InstagramUsername: shop.InstagramUsername
-                // DO NOT pass shop.marker or the full shop.placeDetails object here
+                TwitterHandle: shop.TwitterHandle, 
+                InstagramUsername: shop.InstagramUsername, InstagramRecentPostEmbedCode: shop.InstagramRecentPostEmbedCode,
+                Rating: shop.Rating // Pass CSV rating as well
             };
             const shopDataString = encodeURIComponent(JSON.stringify(shopDataForButton));
             buttonAction = `handleInfoWindowDirectionsClick(JSON.parse(decodeURIComponent('${shopDataString}'))); return false;`;
@@ -324,7 +492,7 @@ function generateShopContentHTML(shop, context = 'card') {
     
     let finalContactInfoHTML = contactLinksHTML + directionsButtonHTML;
 
-    if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) {
+    if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) { // Show GMap link if no directions button
         finalContactInfoHTML += `<div class="mt-2"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 6px 10px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-size: 0.75rem;">View on Google Maps</a></div>`;
     }
     
@@ -347,7 +515,7 @@ function generateShopContentHTML(shop, context = 'card') {
     const nameSizeClass = "text-lg sm:text-xl";
     const addressSizeClass = "text-xs sm:text-sm";
     let textContentPaddingClass = (context === 'card') ? "p-3 sm:p-4" : "p-2";
-    if (context === 'infowindow' && finalImageHTML === '') { textContentPaddingClass = "p-2 pt-2"; }
+    if (context === 'infowindow' && finalImageHTML === '') { textContentPaddingClass = "p-2 pt-2"; } 
 
     const textAndContactContent = `
         <div class="${textContentPaddingClass}">
@@ -366,13 +534,13 @@ function generateShopContentHTML(shop, context = 'card') {
 
 function handleInfoWindowDirectionsClick(shopData) {
     if (typeof openClickedShopOverlays === 'function') {
-        openClickedShopOverlays(shopData);
+        openClickedShopOverlays(shopData); 
     }
     setTimeout(() => {
         if (typeof handleGetDirections === 'function') {
-            handleGetDirections(shopData);
+            handleGetDirections(shopData); 
         }
-    }, 100);
+    }, 150); 
 }
 
 function renderListings(shopsToRender, performSort = true, sortCenter = null) {
@@ -383,18 +551,20 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
     if (performSort && currentCenterForSort) {
         shopsForDisplay = sortShopsByDistanceGoogle(shopsForDisplay, currentCenterForSort);
     }
-    window.currentlyDisplayedShops = shopsForDisplay;
-    listingsContainer.innerHTML = '';
+    window.currentlyDisplayedShops = shopsForDisplay; 
+    listingsContainer.innerHTML = ''; 
 
     if (shopsForDisplay.length > 0) {
         if (noResultsDiv) noResultsDiv.classList.add('hidden');
         listingsContainer.classList.remove('hidden');
+
         shopsForDisplay.forEach(shop => {
             const card = document.createElement('div');
             const shopIdentifier = shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-');
             card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ease-in-out cursor-pointer group w-full';
             card.setAttribute('data-shop-id', shopIdentifier);
-            card.innerHTML = generateShopContentHTML(shop, 'card');
+            card.innerHTML = generateShopContentHTML(shop, 'card'); 
+
             const cardDirectionsButton = card.querySelector(`#listing-btn-directions-${shopIdentifier}`);
             if (cardDirectionsButton) {
                 cardDirectionsButton.addEventListener('cardbuttondirectionsclick', () => {
@@ -402,10 +572,11 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
                     setTimeout(() => { if (typeof handleGetDirections === 'function') handleGetDirections(shop);}, 150);
                 });
             }
+            
             const ratingContainerIdForCard = `rating-for-${shopIdentifier}-card`;
             if (!shop.placeDetails && shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
                 if (!shop._isFetchingCardDetails) { 
-                    shop._isFetchingCardDetails = true;
+                    shop._isFetchingCardDetails = true; 
                     placesService.getDetails({ placeId: shop.GoogleProfileID, fields: ['rating', 'user_ratings_total'] }, 
                         (place, status) => {
                             shop._isFetchingCardDetails = false; 
@@ -418,9 +589,11 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
                     );
                 }
             }
+
             card.addEventListener('click', () => {
                 if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
-                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 100);
+                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 100); 
+                
                 document.querySelectorAll('#listingsContainer .bg-white.rounded-xl').forEach(el => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2'));
                 card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
             });
@@ -441,30 +614,38 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
 
 function populateInstagramTab(shop, instagramFeedContainerElement) {
     if (!instagramFeedContainerElement) return;
-    instagramFeedContainerElement.innerHTML = '';
-    const username = shop.InstagramUsername;
-    if (username && username.trim() !== '') {
+    instagramFeedContainerElement.innerHTML = ''; 
+    const username = shop.InstagramUsername; 
+    const embedCode = shop.InstagramRecentPostEmbedCode; 
+
+    if (username && username.trim() !== '' && embedCode && embedCode.trim() !== '') {
         const cleanUsername = username.replace('@', '').trim();
-        if (shop.InstagramRecentPostEmbedCode) {
-            const embedWrapper = document.createElement('div');
-            embedWrapper.className = 'instagram-embed-wrapper p-2';
-            embedWrapper.innerHTML = shop.InstagramRecentPostEmbedCode; 
-            instagramFeedContainerElement.appendChild(embedWrapper);
-            if (window.instgrm && window.instgrm.Embeds) window.instgrm.Embeds.process();
-        }
+        
+        const embedWrapper = document.createElement('div');
+        embedWrapper.className = 'instagram-embed-wrapper p-2'; 
+        embedWrapper.innerHTML = embedCode; 
+        instagramFeedContainerElement.appendChild(embedWrapper);
+
         const profileLink = document.createElement('a');
         profileLink.href = `https://www.instagram.com/${cleanUsername}/`;
         profileLink.target = "_blank";
         profileLink.rel = "noopener noreferrer";
         profileLink.className = "block text-center mt-4 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm";
-        profileLink.innerHTML = `<svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166-.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747-.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847-.28 2.377-.48.575-.222 1.018-.567 1.465-1.015.447.447.793-.89 1.015-1.464-.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram`;
+        profileLink.innerHTML = `<svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram`;
         instagramFeedContainerElement.appendChild(profileLink);
+
+    } else if (username && username.trim() !== '') { // Username exists but no embed code
+         const cleanUsername = username.replace('@', '').trim();
+         instagramFeedContainerElement.innerHTML = `<p class="text-sm text-gray-500 p-4">No recent post embed code found for @${cleanUsername}.</p>
+            <a href="${shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`}" target="_blank" rel="noopener noreferrer" class="block text-center mt-2 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm">
+            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>
+            View @${cleanUsername} on Instagram</a>`; // Uses shop.InstagramLink if available
     } else {
         instagramFeedContainerElement.innerHTML = '<p class="text-sm text-gray-500 p-4">No Instagram profile configured.</p>';
     }
 }
 
-function handleGetDirections(shop) {
+function handleGetDirections(shop) { 
     if (!shop) { alert("Shop data not available for directions."); return; }
     let destinationPayload = {};
     if (shop.lat && shop.lng) {
@@ -476,8 +657,9 @@ function handleGetDirections(shop) {
     } else {
         alert("Not enough information for directions for " + shop.Name); return;
     }
+
     if (typeof calculateAndDisplayRoute === 'function') {
-        calculateAndDisplayRoute(destinationPayload);
+        calculateAndDisplayRoute(destinationPayload); 
     } else {
         console.error("calculateAndDisplayRoute function not found.");
         alert("Directions functionality unavailable.");
@@ -490,22 +672,40 @@ function displayShopReviews(placeDetails, containerElement) {
     if (placeDetails && placeDetails.reviews && placeDetails.reviews.length > 0) {
         const ul = document.createElement('ul');
         ul.className = 'space-y-3';
-        placeDetails.reviews.forEach(review => {
+        placeDetails.reviews.slice(0, 5).forEach(review => { 
             const li = document.createElement('li');
             li.className = 'p-3 bg-gray-50 rounded-md shadow-sm';
+            const reviewStarsMatch = getStarRatingHTML(review.rating).match(/<span class="text-yellow-400 text-lg">([^<]+)<\/span>/);
+            const reviewStars = reviewStarsMatch ? reviewStarsMatch[1] : '';
+
             let reviewHTML = `
                 <div class="flex items-center mb-1">
-                    ${review.profile_photo_url ? `<img src="${review.profile_photo_url}" alt="${review.author_name}" class="w-8 h-8 rounded-full mr-2">` : ''}
-                    <strong class="text-sm text-gray-700">${review.author_name}</strong>
-                    <span class="ml-auto text-xs text-gray-500">${review.relative_time_description}</span>
+                    ${review.profile_photo_url ? `<img src="${review.profile_photo_url.replace(/=s\d+(-c)?/, '=s40-c')}" alt="${review.author_name}" class="w-8 h-8 rounded-full mr-2">` : '<div class="w-8 h-8 rounded-full mr-2 bg-gray-200 flex items-center justify-center text-gray-400 text-xs"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" /></svg></div>'}
+                    <strong class="text-sm text-gray-700 truncate" title="${review.author_name}">${review.author_name}</strong>
+                    <span class="ml-auto text-xs text-gray-500 whitespace-nowrap">${review.relative_time_description}</span>
                 </div>
-                <div class="text-yellow-400 text-sm mb-1">${getStarRatingHTML(review.rating).match(/<span class="text-yellow-400 text-lg">([^<]+)<\/span>/)?.[1] || ''}</div>
-                <p class="text-xs text-gray-600 leading-relaxed">${review.text || ''}</p>`;
+                <div class="text-yellow-400 text-sm mb-1">${reviewStars}</div>
+                <p class="text-xs text-gray-600 leading-relaxed line-clamp-3 hover:line-clamp-none transition-all cursor-pointer" title="Click to expand/collapse review">${review.text || ''}</p>`;
             li.innerHTML = reviewHTML;
+            const reviewTextP = li.querySelector('p.text-xs');
+            if (reviewTextP) {
+                 reviewTextP.addEventListener('click', () => reviewTextP.classList.toggle('line-clamp-3'));
+            }
             ul.appendChild(li);
         });
         containerElement.appendChild(ul);
+         if (placeDetails.reviews.length > 5) {
+            const viewMoreLink = document.createElement('a');
+            // Use the Google Maps URL from placeDetails if available
+            viewMoreLink.href = placeDetails.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeDetails.name || '')}&query_place_id=${placeDetails.place_id || ''}`;
+            viewMoreLink.target = "_blank";
+            viewMoreLink.rel = "noopener noreferrer";
+            viewMoreLink.className = "block text-center text-xs text-blue-600 hover:underline mt-3 pt-2 border-t border-gray-200";
+            viewMoreLink.textContent = `View all ${placeDetails.reviews.length} reviews on Google Maps`;
+            containerElement.appendChild(viewMoreLink);
+        }
+
     } else {
-        containerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Google reviews available.</p>';
+        containerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Google reviews available for this shop.</p>';
     }
 }
