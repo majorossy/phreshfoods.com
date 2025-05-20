@@ -488,46 +488,47 @@ function generateShopContentHTML(shop, context = 'card') {
 
     let contactLinksHTML = '';
     if (shop.Phone) {
-        contactLinksHTML += `<div class="w-full mb-1"><a href="tel:${shop.Phone}" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline text-sm break-all flex items-center"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg><span class="truncate">${shop.Phone}</span></a></div>`;
+        contactLinksHTML += `<p class="text-xs sm:text-sm text-gray-500 mb-0 truncate"><a href="tel:${shop.Phone}" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" target="_blank" class="text-blue-600 hover:text-blue-800 hover:underline text-sm break-all flex items-center"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg><span class="truncate">${shop.Phone}</span></a></p>`;
     }
     if (shop.Website && shop.Website.trim() !== '' && !shop.Website.includes('googleusercontent.com')) {
         let dW = shop.Website; try { const uO = new URL(dW.startsWith('http')?dW:`http://${dW}`); dW = uO.hostname.replace(/^www\./,''); const mL=context==='infowindow'?20:30; if(dW.length>mL)dW=dW.substring(0,mL-3)+"...";}catch(e){const mL=context==='infowindow'?20:30;if(dW.length>mL)dW=dW.substring(0,mL-3)+"...";}
-        contactLinksHTML += `<div class="w-full"><a href="${shop.Website.startsWith('http')?shop.Website:`http://${shop.Website}`}" target="_blank" rel="noopener noreferrer" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" class="text-blue-600 hover:text-blue-800 hover:underline text-sm break-all flex items-center"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-4-4a2 2 0 012.828-2.828l3 3a2 2 0 010 2.828l-2.086 2.086a.5.5 0 01-.707-.707L11.172 8.172l1.414-1.414-3-3a.5.5 0 01.707-.707l3 3zm4.707-1.414a3 3 0 00-4.242 0l-3 3a3 3 0 000 4.242l4 4a3 3 0 004.242 0l3-3a3 3 0 000-4.242l-3-3z" clip-rule="evenodd"></path></svg><span class="truncate">${dW}</span></a></div>`;
+        contactLinksHTML += `<p class="text-xs sm:text-sm text-gray-500 mb-0 truncate"><a href="${shop.Website.startsWith('http')?shop.Website:`http://${shop.Website}`}" target="_blank" rel="noopener noreferrer" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" class="text-blue-600 hover:text-blue-800 hover:underline text-sm break-all flex items-center"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-4-4a2 2 0 012.828-2.828l3 3a2 2 0 010 2.828l-2.086 2.086a.5.5 0 01-.707-.707L11.172 8.172l1.414-1.414-3-3a.5.5 0 01.707-.707l3 3zm4.707-1.414a3 3 0 00-4.242 0l-3 3a3 3 0 000 4.242l4 4a3 3 0 004.242 0l3-3a3 3 0 000-4.242l-3-3z" clip-rule="evenodd"></path></svg><span class="truncate">${dW}</span></a></p>`;
     }
 
-    let directionsButtonHTML = '';
-    const shopIdForButton = shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-');
-    if (shop.lat && shop.lng) {
-        const buttonClasses = "inline-flex items-center justify-center w-full px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors";
-        let buttonAction = '';
-        if (context === 'card') {
-            buttonAction = `event.stopPropagation(); document.getElementById('listing-btn-directions-${shopIdForButton}').dispatchEvent(new CustomEvent('cardbuttondirectionsclick', { bubbles: true }));`;
-        } else { 
-            const shopDataForButton = { 
-                Name: shop.Name, Address: shop.Address, lat: shop.lat, lng: shop.lng,
-                GoogleProfileID: shop.GoogleProfileID,
-                ImageOne: shop.ImageOne, ImageTwo: shop.ImageTwo, ImageThree: shop.ImageThree,
-                Phone: shop.Phone, Website: shop.Website, FacebookPageID: shop.FacebookPageID,
-                TwitterHandle: shop.TwitterHandle, 
-                InstagramUsername: shop.InstagramUsername, InstagramRecentPostEmbedCode: shop.InstagramRecentPostEmbedCode,
-                Rating: shop.Rating 
-            };
-            const shopDataString = encodeURIComponent(JSON.stringify(shopDataForButton));
-            buttonAction = `handleInfoWindowDirectionsClick(JSON.parse(decodeURIComponent('${shopDataString}'))); return false;`;
-        }
-        directionsButtonHTML = `<div class="w-full mt-2"><button id="listing-btn-directions-${shopIdForButton}${context === 'infowindow' ? '-iw' : ''}" data-shopid="${shopIdForButton}" class="${buttonClasses} ${context === 'card' ? 'listing-get-directions-button' : 'infowindow-get-directions-button'}" onclick="${buttonAction}"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>Directions</button></div>`;
-    }
-    
-    let finalContactInfoHTML = contactLinksHTML + directionsButtonHTML;
-
-    if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) { 
-        finalContactInfoHTML += `<div class="mt-2"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 6px 10px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-size: 0.75rem;">View on Google Maps</a></div>`;
-    }
+    // let directionsButtonHTML = '';
+    // const shopIdForButton = shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-');
+    // if (shop.lat && shop.lng) {
+    //     const buttonClasses = "inline-flex items-center justify-center w-full px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors";
+    //     let buttonAction = '';
+    //     if (context === 'card') {
+    //         buttonAction = `event.stopPropagation(); document.getElementById('listing-btn-directions-${shopIdForButton}').dispatchEvent(new CustomEvent('cardbuttondirectionsclick', { bubbles: true }));`;
+    //     } else { 
+    //         const shopDataForButton = { 
+    //             Name: shop.Name, Address: shop.Address, lat: shop.lat, lng: shop.lng,
+    //             GoogleProfileID: shop.GoogleProfileID,
+    //             ImageOne: shop.ImageOne, ImageTwo: shop.ImageTwo, ImageThree: shop.ImageThree,
+    //             Phone: shop.Phone, Website: shop.Website, FacebookPageID: shop.FacebookPageID,
+    //             TwitterHandle: shop.TwitterHandle, 
+    //             InstagramUsername: shop.InstagramUsername, InstagramRecentPostEmbedCode: shop.InstagramRecentPostEmbedCode,
+    //             Rating: shop.Rating 
+    //         };
+    //         const shopDataString = encodeURIComponent(JSON.stringify(shopDataForButton));
+    //         buttonAction = `handleInfoWindowDirectionsClick(JSON.parse(decodeURIComponent('${shopDataString}'))); return false;`;
+    //     }
+    //     directionsButtonHTML = `<div class="w-full mt-2"><button id="listing-btn-directions-${shopIdForButton}${context === 'infowindow' ? '-iw' : ''}" data-shopid="${shopIdForButton}" class="${buttonClasses} ${context === 'card' ? 'listing-get-directions-button' : 'infowindow-get-directions-button'}" onclick="${buttonAction}"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>Directions</button></div>`;
+    // }
+    // 
+    let finalContactInfoHTML = contactLinksHTML;
+    // let finalContactInfoHTML = contactLinksHTML + directionsButtonHTML;
+    // 
+    // if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) { 
+    //     finalContactInfoHTML += `<div class="mt-2"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 6px 10px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-size: 0.75rem;">View on Google Maps</a></div>`;
+    // }
     
     let distanceText = '';
     if (shop.distance !== undefined && shop.distance !== Infinity && shop.distance !== null) {
         const distKm = (shop.distance / 1000); const distMiles = kmToMiles(distKm);
-        distanceText = `<p class="text-xs text-blue-500 mt-1">~${distMiles.toFixed(1)} mi / ${distKm.toFixed(1)} km away</p>`;
+        distanceText = `<p class="text-xs sm:text-sm text-gray-500 mb-0 truncate">~${distMiles.toFixed(1)} mi / ${distKm.toFixed(1)} km away</p>`;
     } else if (context === 'infowindow' && typeof map !== 'undefined' && map && map.getCenter() && shop.lat && shop.lng) {
         try {
             const shopLoc = new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng));
@@ -535,7 +536,7 @@ function generateShopContentHTML(shop, context = 'card') {
             if (shopLoc && mapCenter) {
                 const distMeters = google.maps.geometry.spherical.computeDistanceBetween(mapCenter, shopLoc);
                 const distKm = (distMeters / 1000); const distMiles = kmToMiles(distKm);
-                distanceText = `<p class="text-xs text-blue-500 mt-1">~${distMiles.toFixed(1)} mi / ${distKm.toFixed(1)} km from map center</p>`;
+                distanceText = `<p class="text-xs sm:text-sm text-gray-500 mb-0 truncate">~${distMiles.toFixed(1)} mi / ${distKm.toFixed(1)} km from map center</p>`;
             }
         } catch(e) { /* silent */ }
     }
@@ -551,7 +552,7 @@ function generateShopContentHTML(shop, context = 'card') {
             <div id="${ratingContainerId}" class="shop-card-rating mb-2">${starsHTML}</div>
             <p class="${addressSizeClass} text-gray-500 mb-0 truncate" title="${shop.Address||'N/A'}"><svg class="w-3.5 h-3.5 inline-block mr-1 -mt-0.5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>${shop.Address||'N/A'}</p>
             ${distanceText}
-            <div class="flex flex-col gap-1 mt-3 pt-3 border-t border-gray-200">${finalContactInfoHTML || '<p class="text-xs text-gray-400">No contact.</p>'}</div>
+            <p class="text-xs sm:text-sm text-gray-500 mb-0 truncate">${finalContactInfoHTML || '<span class="text-xs text-gray-400">No contact.</span>'}</p>
         </div>`;
 
     if (context === 'infowindow') {
@@ -593,13 +594,13 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
             card.setAttribute('data-shop-id', shopIdentifier);
             card.innerHTML = generateShopContentHTML(shop, 'card'); 
 
-            const cardDirectionsButton = card.querySelector(`#listing-btn-directions-${shopIdentifier}`);
-            if (cardDirectionsButton) {
-                cardDirectionsButton.addEventListener('cardbuttondirectionsclick', () => {
-                    if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
-                    setTimeout(() => { if (typeof handleGetDirections === 'function') handleGetDirections(shop);}, 150);
-                });
-            }
+            // const cardDirectionsButton = card.querySelector(`#listing-btn-directions-${shopIdentifier}`);
+            // if (cardDirectionsButton) {
+            //     cardDirectionsButton.addEventListener('cardbuttondirectionsclick', () => {
+            //         if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
+            //         setTimeout(() => { if (typeof handleGetDirections === 'function') handleGetDirections(shop);}, 150);
+            //     });
+            // }
             
             const ratingContainerIdForCard = `rating-for-${shopIdentifier}-card`;
             if (!shop.placeDetails && shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
