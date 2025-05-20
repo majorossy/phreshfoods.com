@@ -110,8 +110,18 @@ function generateFacebookPagePluginHTML(pageId, pageName) {
     if (!pageId) return '<!-- Error: Facebook Page ID missing. -->';
     const facebookPageLink = `https://www.facebook.com/${pageId}/`;
     const displayName = pageName || pageId;
+    // Removed data-height; will control with CSS. data-width="" allows adaptive width.
+    // Added use_container_width="true" for more reliable full width behavior
     return `
-<div class="fb-page" data-href="${facebookPageLink}" data-tabs="timeline" data-width="" data-height="500" data-small-header="true" data-adapt-container-width="true" data-hide-cover="true" data-show-facepile="false">
+<div class="fb-page" 
+    data-href="${facebookPageLink}" 
+    data-tabs="timeline" 
+    data-width="" 
+    data-use-container-width="true" 
+    data-small-header="true" 
+    data-adapt-container-width="true" 
+    data-hide-cover="true" 
+    data-show-facepile="false"> 
     <blockquote cite="${facebookPageLink}" class="fb-xfbml-parse-ignore"><a href="${facebookPageLink}">${displayName}</a></blockquote>
 </div>`;
 }
@@ -134,10 +144,28 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
         return;
     }
     try {
+        // For Twitter, explicitly set height via JS options as it's more reliable than CSS for the timeline widget
+        const timelineOptions = {
+            height: '100%', // This might not directly work as expected, Twitter's widget is finicky with % height
+            theme: 'light',
+            chrome: 'noheader nofooter noborders noscrollbar transparent', // Remove scrollbar, let parent scroll
+            tweetLimit: 10 // Show more tweets if space allows
+        };
+        // A more reliable approach for Twitter height is often to calculate parent height and pass a pixel value.
+        // For now, we'll try with a large pixel value and let the parent container clip/scroll.
+        // Or set a fixed pixel height that works well.
+        // Let's try to make parent scroll if Twitter widget overflows by setting a large initial height for Twitter
+        // and let the parent #twitterTimelineContainer handle the scrolling with flex-grow and overflow-y: auto.
+        // We won't set height in JS for twitter for now, let CSS handle it.
+
         const promise = twttr.widgets.createTimeline(
             { sourceType: 'profile', screenName: cleanHandle },
             containerElement,
-            { height: '450', theme: 'light', chrome: 'noheader nofooter noborders noscrollbar transparent', tweetLimit: 5 }
+            { /* height removed, will be handled by CSS */
+              theme: 'light', 
+              chrome: 'noheader nofooter noborders noscrollbar transparent', 
+              tweetLimit: 10 
+            }
         );
         if (!promise || typeof promise.then !== 'function') {
             if (containerElement.innerHTML.includes("Loading Twitter feed")) {
@@ -148,6 +176,13 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
         promise.then(el => {
             if (!el) { 
                 containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Could not embed Twitter for @${cleanHandle}. Account might be private/suspended or handle incorrect.</p>`;
+            } else {
+                 // Optional: If Twitter widget creates an iframe, try to style it
+                const iframe = containerElement.querySelector('iframe');
+                if (iframe) {
+                    iframe.style.height = '100%'; // Attempt to make iframe take full height of its direct parent
+                    iframe.style.minHeight = '400px'; // Ensure a minimum height
+                }
             }
         }).catch(e => {
             console.error("Error creating Twitter timeline for @" + cleanHandle + ":", e);
@@ -159,21 +194,17 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
     }
 }
 
-// NEW function to display Google Place Photos
 function displayGooglePlacePhotos(placeDetails, containerElement) {
     if (!containerElement) return;
-    containerElement.innerHTML = ''; // Clear previous photos
+    containerElement.innerHTML = ''; 
 
     if (placeDetails && placeDetails.photos && placeDetails.photos.length > 0) {
-        placeDetails.photos.slice(0, 9).forEach(photo => { // Display up to 9 photos
+        placeDetails.photos.slice(0, 9).forEach(photo => { 
             const imgContainer = document.createElement('div');
-            // Reusing .gallery-image-container styles, adjust if needed for Google Photos
             imgContainer.className = 'gallery-image-container google-photo-item'; 
             const img = document.createElement('img');
-            // Get a URL for a reasonably sized image. Max width 400px.
             img.src = photo.getUrl({ maxWidth: 400, maxHeight: 300 }); 
             img.alt = `Photo of ${placeDetails.name || 'shop'}`;
-            // Reusing .gallery-image styles
             img.className = 'gallery-image'; 
             img.onerror = function() { 
                 this.parentElement.innerHTML = '<p class="text-xs text-gray-500 text-center p-2">Image unavailable</p>'; 
@@ -193,7 +224,6 @@ async function openClickedShopOverlays(shop) {
     let shopOverlayActuallyOpened = false;
     let socialOverlayActuallyOpened = false;
 
-    // SHOP DETAILS OVERLAY (Right side - name, CSV photos, directions controls)
     if (detailsOverlayShopElement) {
         openOverlay(detailsOverlayShopElement);
         detailsOverlayShopElement.scrollTop = 0;
@@ -202,7 +232,6 @@ async function openClickedShopOverlays(shop) {
         try {
             if (shopDetailNameElement) shopDetailNameElement.textContent = shop.Name || 'N/A';
             
-            // Populate CSV Image Gallery in Shop Overlay
             const csvGalleryContainer = document.getElementById('shopImageGallery');
             if (csvGalleryContainer) {
                 csvGalleryContainer.innerHTML = ''; 
@@ -234,7 +263,6 @@ async function openClickedShopOverlays(shop) {
         } catch (e) { console.error("Error populating RIGHT shop overlay:", e); }
     }
 
-    // SOCIAL MEDIA, REVIEWS & GOOGLE PHOTOS OVERLAY (Left side - Tabs)
     if (detailsOverlaySocialElement) {
         openOverlay(detailsOverlaySocialElement);
         detailsOverlaySocialElement.scrollTop = 0;
@@ -245,56 +273,48 @@ async function openClickedShopOverlays(shop) {
             const twContentContainer = document.getElementById('twitterTimelineContainer');
             const igContentContainer = document.getElementById('instagramFeedContainer');
             const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
-            const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer'); // New container
+            const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer'); 
 
-            // --- Populate Social Media Tabs ---
-            if (fbContentContainer) { /* ... Facebook logic ... */ }
-            if (twContentContainer) { /* ... Twitter logic ... */ }
-            if (igContentContainer) { /* ... Instagram logic ... */ }
-             // Populate Facebook Tab
             if (fbContentContainer) {
                 if (shop.FacebookPageID) {
+                    // Check if it needs re-rendering only if ID changed or not present
                     if (!fbContentContainer.querySelector('.fb-page') || fbContentContainer.dataset.currentPageId !== shop.FacebookPageID) {
                         fbContentContainer.innerHTML = generateFacebookPagePluginHTML(shop.FacebookPageID, shop.Name);
                         fbContentContainer.dataset.currentPageId = shop.FacebookPageID;
+                        // FB.XFBML.parse will be called when tab becomes active
                     }
-                } else { fbContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Facebook Page configured.</p>'; }
+                } else { fbContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Facebook Page configured.</p>'; }
             }
 
-            // Populate Twitter Tab
             if (twContentContainer) {
                 if (shop.TwitterHandle) {
                     if (twContentContainer.dataset.currentTwitterHandle !== shop.TwitterHandle) {
                         displayTwitterTimeline(shop.TwitterHandle, twContentContainer);
                         twContentContainer.dataset.currentTwitterHandle = shop.TwitterHandle;
                     }
-                } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Twitter handle configured.</p>'; }
+                } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Twitter handle configured.</p>'; }
             }
             
-            // Populate Instagram Tab
             if (igContentContainer) {
                  if (shop.InstagramUsername) {
                     if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
                        populateInstagramTab(shop, igContentContainer); 
                        igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
                     }
-                } else { igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4">No Instagram profile configured.</p>'; }
+                } else { igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>'; }
             }
 
-
-            // --- Populate Reviews and Google Photos Tabs (requires Place Details) ---
             if (reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>'; 
             if (googlePhotosContainer) googlePhotosContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">Loading Google Photos...</p>';
 
             if (shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
-                // Fetch Place Details if not already fully populated (reviews AND photos)
                 if (!shop.placeDetails || !shop.placeDetails.reviews || !shop.placeDetails.photos) {
                     const fieldsToFetch = ['reviews', 'photos', 'rating', 'user_ratings_total', 'url', 'name', 'place_id'];
                     placesService.getDetails(
                         { placeId: shop.GoogleProfileID, fields: fieldsToFetch },
                         (place, status) => {
                             if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-                                shop.placeDetails = { ...shop.placeDetails, ...place }; // Merge new details
+                                shop.placeDetails = { ...shop.placeDetails, ...place }; 
                                 if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer);
                                 if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
                             } else {
@@ -304,51 +324,67 @@ async function openClickedShopOverlays(shop) {
                             }
                         }
                     );
-                } else { // Already have details
+                } else { 
                      if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer); 
                      if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
                 }
-            } else { // No GoogleProfileID
+            } else { 
                  if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); 
-                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer);
+                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer); // Will show no GID message
             }
 
-            // Set default active tab
-            let defaultTabTarget = 'social-photos-panel'; // Default to Google Photos now
-                 if (!shop.GoogleProfileID && shop.FacebookPageID) defaultTabTarget = 'social-facebook-panel'; // Fallback if no GID
-                 else if (shop.GoogleProfileID && (!shop.placeDetails || !shop.placeDetails.photos || shop.placeDetails.photos.length === 0)) { // If GID but no photos, try reviews
-                    defaultTabTarget = 'social-reviews-panel';
-                 }
-                 // Add more fallbacks if needed
+            let defaultTabTarget;
+            if (shop.GoogleProfileID) {
+                defaultTabTarget = 'social-photos-panel';
+            } else if (shop.FacebookPageID) {
+                defaultTabTarget = 'social-facebook-panel';
+            } else if (shop.InstagramUsername) {
+                defaultTabTarget = 'social-instagram-panel';
+            } else if (shop.TwitterHandle) {
+                defaultTabTarget = 'social-twitter-panel';
+            } else {
+                defaultTabTarget = 'social-photos-panel'; 
+            }
 
             const socialTabsContainer = document.getElementById('socialOverlayTabs');
             if (socialTabsContainer) {
                 const tabButtons = socialTabsContainer.querySelectorAll('.social-tab-button');
                 const tabContents = window.detailsOverlaySocialElement.querySelectorAll('.social-tab-content');
                 
-                let defaultButtonFound = false;
+                let defaultButtonActuallyActivated = false;
                 tabButtons.forEach(btn => {
                     if (btn.dataset.tabTarget === defaultTabTarget) {
                         btn.classList.add('active-social-tab');
                         btn.setAttribute('aria-selected', 'true');
-                        defaultButtonFound = true;
+                        defaultButtonActuallyActivated = true;
                     } else {
                         btn.classList.remove('active-social-tab');
                         btn.setAttribute('aria-selected', 'false');
                     }
                 });
-                if (!defaultButtonFound && tabButtons.length > 0) { 
+
+                if (!defaultButtonActuallyActivated && tabButtons.length > 0) {
                     tabButtons[0].classList.add('active-social-tab');
                     tabButtons[0].setAttribute('aria-selected', 'true');
-                    defaultTabTarget = tabButtons[0].dataset.tabTarget;
+                    defaultTabTarget = tabButtons[0].dataset.tabTarget; 
                 }
 
                 tabContents.forEach(panel => {
                     panel.classList.toggle('hidden', panel.id !== defaultTabTarget);
                 });
 
-                if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) { /* ... */ }
-                if (defaultTabTarget === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) { /* ... */ }
+                if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
+                    const fbContentContainer = document.getElementById('socialLinksContainer');
+                    if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) {
+                       setTimeout(() => FB.XFBML.parse(fbContentContainer), 100); 
+                    }
+                }
+                if (defaultTabTarget === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) {
+                     const igContentContainer = document.getElementById('instagramFeedContainer');
+                     if(igContentContainer && igContentContainer.querySelector('.instagram-media')) {
+                        setTimeout(() => window.instgrm.Embeds.process(), 100);
+                     }
+                }
             }
 
         } catch (e) { console.error("Error populating LEFT social/reviews/photos overlay tabs:", e); }
@@ -376,34 +412,26 @@ function closeClickedShopOverlays() {
         currentShopForDirections = null; 
         
         const fbContent = document.getElementById('socialLinksContainer');
-        if (fbContent) fbContent.dataset.currentPageId = '';
+        if (fbContent) {
+            fbContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading Facebook feed...</p>'; // Reset placeholder
+            fbContent.dataset.currentPageId = '';
+        }
         const twContent = document.getElementById('twitterTimelineContainer');
-        if (twContent) twContent.dataset.currentTwitterHandle = '';
+        if (twContent) {
+            twContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading Twitter feed...</p>'; // Reset placeholder
+            twContent.dataset.currentTwitterHandle = '';
+        }
         const igContent = document.getElementById('instagramFeedContainer');
-        if (igContent) igContent.dataset.currentInstaUser = '';
+        if (igContent) {
+            igContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Instagram content will load here.</p>'; // Reset placeholder
+            igContent.dataset.currentInstaUser = '';
+        }
         const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
         if(reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>';
         const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer');
         if(googlePhotosContainer) googlePhotosContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">Loading Google Photos...</p>';
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function sortShopsByDistanceGoogle(shops, mapCenter) {
     if (!google || !google.maps || !google.maps.geometry || !google.maps.geometry.spherical) {
@@ -451,9 +479,9 @@ function generateShopContentHTML(shop, context = 'card') {
     let starsHTML = getStarRatingHTML("N/A");
     let ratingSource = shop.placeDetails; 
     if (!ratingSource && shop.Rating && shop.Rating !== "N/A") { 
-        starsHTML = getStarRatingHTML(shop.Rating); // CSV rating
+        starsHTML = getStarRatingHTML(shop.Rating); 
     } else if (ratingSource && typeof ratingSource.rating === 'number') {
-        starsHTML = getStarRatingHTML(ratingSource.rating, ratingSource.user_ratings_total); // Google rating
+        starsHTML = getStarRatingHTML(ratingSource.rating, ratingSource.user_ratings_total); 
     }
     
     const ratingContainerId = `rating-for-${shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-')}-${context}`;
@@ -482,7 +510,7 @@ function generateShopContentHTML(shop, context = 'card') {
                 Phone: shop.Phone, Website: shop.Website, FacebookPageID: shop.FacebookPageID,
                 TwitterHandle: shop.TwitterHandle, 
                 InstagramUsername: shop.InstagramUsername, InstagramRecentPostEmbedCode: shop.InstagramRecentPostEmbedCode,
-                Rating: shop.Rating // Pass CSV rating as well
+                Rating: shop.Rating 
             };
             const shopDataString = encodeURIComponent(JSON.stringify(shopDataForButton));
             buttonAction = `handleInfoWindowDirectionsClick(JSON.parse(decodeURIComponent('${shopDataString}'))); return false;`;
@@ -492,7 +520,7 @@ function generateShopContentHTML(shop, context = 'card') {
     
     let finalContactInfoHTML = contactLinksHTML + directionsButtonHTML;
 
-    if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) { // Show GMap link if no directions button
+    if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url && !directionsButtonHTML) { 
         finalContactInfoHTML += `<div class="mt-2"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 6px 10px; background-color: #4285F4; color: white; text-decoration: none; border-radius: 4px; font-size: 0.75rem;">View on Google Maps</a></div>`;
     }
     
@@ -634,14 +662,13 @@ function populateInstagramTab(shop, instagramFeedContainerElement) {
         profileLink.innerHTML = `<svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram`;
         instagramFeedContainerElement.appendChild(profileLink);
 
-    } else if (username && username.trim() !== '') { // Username exists but no embed code
+    } else if (username && username.trim() !== '') { 
          const cleanUsername = username.replace('@', '').trim();
          instagramFeedContainerElement.innerHTML = `<p class="text-sm text-gray-500 p-4">No recent post embed code found for @${cleanUsername}.</p>
             <a href="${shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`}" target="_blank" rel="noopener noreferrer" class="block text-center mt-2 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm">
-            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>
-            View @${cleanUsername} on Instagram</a>`; // Uses shop.InstagramLink if available
+            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram</a>`; 
     } else {
-        instagramFeedContainerElement.innerHTML = '<p class="text-sm text-gray-500 p-4">No Instagram profile configured.</p>';
+        instagramFeedContainerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>';
     }
 }
 
@@ -696,7 +723,6 @@ function displayShopReviews(placeDetails, containerElement) {
         containerElement.appendChild(ul);
          if (placeDetails.reviews.length > 5) {
             const viewMoreLink = document.createElement('a');
-            // Use the Google Maps URL from placeDetails if available
             viewMoreLink.href = placeDetails.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeDetails.name || '')}&query_place_id=${placeDetails.place_id || ''}`;
             viewMoreLink.target = "_blank";
             viewMoreLink.rel = "noopener noreferrer";
