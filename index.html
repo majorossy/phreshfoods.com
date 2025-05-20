@@ -1,119 +1,273 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maine Farm Stand Finder</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="bg-[#ffffff] antialiased">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body class="bg-[#ffffff] antialiased">
     <!-- Facebook SDK Root Element -->
     <div id="fb-root"></div>
 
     <div id="app-container">
+      <header class="bg-[#e8dcc3] shadow-md z-30 print:hidden">
+        <div
+          class="flex flex-col sm:flex-row justify-start items-center sm:items-stretch gap-3 sm:gap-4 h-full w-full"
+        >
+          <div class="flex items-center gap-2 self-center sm:self-stretch py-1">
+            <img
+              src="images/flag.png"
+              alt="Maine Flag"
+              class="h-8 sm:h-full w-auto object-contain"
+            />
+            <h1
+              class="text-xl sm:text-2xl font-bold whitespace-nowrap"
+              style="color: #1b4a7b"
+            >
+              Farm Stand Finder
+            </h1>
+          </div>
 
+          <div class="flex items-center w-full sm:w-auto sm:max-w-md flex-grow">
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="enter starting location..."
+              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 w-full text-sm h-10"
+            />
+          </div>
 
+          <div
+            class="flex flex-col sm:flex-row items-center w-full sm:w-auto gap-3 sm:gap-4"
+          >
+            <label
+              for="radiusSlider"
+              class="text-xs sm:text-sm font-medium"
+              style="color: #3c4043"
+              >Radius:</label
+            >
+            <input
+              type="range"
+              id="radiusSlider"
+              name="radius"
+              min="10"
+              max="100"
+              value="30"
+              step="5"
+              class="w-24 sm:w-32 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+            />
+            <span
+              id="radiusValue"
+              class="text-sm font-semibold w-10 text-right"
+              style="color: #c53030"
+              >30 mi</span
+            >
+          </div>
+        </div>
+      </header>
 
-
-        <header class="bg-[#e8dcc3] shadow-md z-30 print:hidden">
-            <div class="flex flex-col sm:flex-row justify-start items-stretch gap-3 sm:gap-6 h-full w-full">
-                
-                <div class="flex items-center gap-2 self-stretch">
-                    <img src="images/flag.png" alt="Maine Flag" class="h-full w-auto object-contain"> 
-                    <h1 class="text-xl sm:text-2xl font-bold whitespace-nowrap" style="color:#1b4a7b;">Farm Stand Finder</h1>                    
-                </div>
-                <div class="w-full sm:w-auto flex-grow sm:flex-grow-0 flex items-center"> 
-                    <input type="text" id="searchInput" placeholder="enter starting location..."
-                           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 w-full sm:w-64 md:w-80 lg:w-96 text-sm">
-                </div>
-            </div>
-        </header>
-
-
-
-
-        <main class="flex">
-            <!-- LEFT SOCIAL MEDIA OVERLAY -->
-            <div id="detailsOverlaySocial" class="detail-pop-overlay detail-pop-overlay-social custom-scrollbar hidden">
-                <!--button id="closeDetailsOverlaySocialButton" class="overlay-close-button">
+      <main class="flex">
+        <!-- LEFT SOCIAL MEDIA OVERLAY -->
+        <div
+          id="detailsOverlaySocial"
+          class="detail-pop-overlay detail-pop-overlay-social custom-scrollbar hidden"
+        >
+          <!--button id="closeDetailsOverlaySocialButton" class="overlay-close-button">
                     <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button-->
-                <div class="overlay-content-wrapper"> <!-- Good for consistent padding -->
-                    <!-- Section for Facebook -->
-                    <div class="social-feed-section">
-                        <h3 class="social-feed-title text-lg font-medium text-gray-600 mb-2">
-                            <svg class="inline-block w-5 h-5 mr-2 text-blue-600" viewBox="0 0 24 24" fill="currentColor"> <path d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.407.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.41c0-3.1 1.893-4.785 4.659-4.785 1.325 0 2.463.099 2.795.142v3.24h-1.92c-1.505 0-1.796.716-1.796 1.765v2.312h3.584l-.467 3.622h-3.116V24h6.116C23.407 24 24 23.407 24 22.676V1.324C24 .593 23.407 0 22.676 0z"></path></svg>
-                            On Facebook
-                        </h3>
-                        <div id="socialLinksContainer" class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden">
-                            <p class="text-sm text-gray-500 p-4">Loading Facebook feed...</p> <!-- Kept for initial state -->
-                        </div>
-                    </div>
-
-                    <!-- Section for Twitter -->
-                    <div class="social-feed-section mt-6"> <!-- Added mt-6 for spacing -->
-                        <h3 class="social-feed-title text-lg font-medium text-gray-600 mb-2">
-                            <svg class="inline-block w-5 h-5 mr-1 text-blue-400" viewBox="0 0 24 24" fill="currentColor"><path d="M23.643 4.937c-.835.37-1.732.62-2.675.733a4.67 4.67 0 0 0 2.048-2.578a9.3 9.3 0 0 1-2.958 1.13a4.66 4.66 0 0 0-7.938 4.25a13.229 13.229 0 0 1-9.602-4.868a4.662 4.662 0 0 0 1.444 6.216a4.613 4.613 0 0 1-2.11-.583v.06a4.656 4.656 0 0 0 3.737 4.567a4.615 4.615 0 0 1-2.105.08a4.662 4.662 0 0 0 4.351 3.234a9.368 9.368 0 0 1-5.786 1.995a9.5 9.5 0 0 1-1.112-.065a13.177 13.177 0 0 0 7.14 2.094c8.567 0 13.255-7.098 13.255-13.254c0-.203-.005-.405-.014-.606a9.46 9.46 0 0 0 2.323-2.41z"></path></svg>
-                            Latest Tweets
-                        </h3>
-                        <div id="twitterTimelineContainer" class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden">
-                            <p class="text-sm text-gray-500 p-4">Loading Twitter feed...</p> <!-- Kept for initial state -->
-                        </div>
-                    </div>
-
-
-                    <!-- NEW: Section for Instagram -->
-                    <div class="social-feed-section mt-6">
-                        <h3 class="social-feed-title text-lg font-medium text-gray-600 mb-2">
-                            <svg class="inline-block w-5 h-5 mr-2 text-pink-600" viewBox="0 0 24 24" fill="currentColor"> <!-- Instagram Icon --> <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166-.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747-.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847-.28 2.377-.48.575-.222 1.018-.567 1.465-1.015.447-.447.793-.89 1.015-1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>
-                            On Instagram
-                        </h3>
-                        <div id="instagramFeedContainer" class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden p-4"> <!-- Added p-4 for button/link -->
-                            <p class="text-sm text-gray-500">Instagram content will load here.</p>
-                        </div>
-                    </div>
-                </div>
+          <div class="overlay-content-wrapper">
+            <!-- Good for consistent padding -->
+            <!-- Section for Facebook -->
+            <div class="social-feed-section">
+              <h3
+                class="social-feed-title text-lg font-medium text-gray-600 mb-2"
+              >
+                <svg
+                  class="inline-block w-5 h-5 mr-2 text-blue-600"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M22.676 0H1.324C.593 0 0 .593 0 1.324v21.352C0 23.407.593 24 1.324 24h11.494v-9.294H9.689v-3.621h3.129V8.41c0-3.1 1.893-4.785 4.659-4.785 1.325 0 2.463.099 2.795.142v3.24h-1.92c-1.505 0-1.796.716-1.796 1.765v2.312h3.584l-.467 3.622h-3.116V24h6.116C23.407 24 24 23.407 24 22.676V1.324C24 .593 23.407 0 22.676 0z"
+                  ></path>
+                </svg>
+                On Facebook
+              </h3>
+              <div
+                id="socialLinksContainer"
+                class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden"
+              >
+                <p class="text-sm text-gray-500 p-4">
+                  Loading Facebook feed...
+                </p>
+                <!-- Kept for initial state -->
+              </div>
             </div>
 
-            <section id="mapPanel"><div id="map"></div></section>
-
-            <section id="listingsPanel" class="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-[#ffffff]">
-                <div id="listingsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
-                    <p class="text-center text-gray-700 p-4 col-span-1 md:col-span-2">Loading Farm Stands...</p>
-                </div>
-                <div id="noResults" class="hidden text-center text-gray-600 mt-10 p-4"></div>
-            </section>
-
-      <!-- In index.html -->
-            <div id="detailsOverlayShop" class="detail-pop-overlay custom-scrollbar hidden">
-                <button id="closeDetailsOverlayShopButton" class="overlay-close-button">
-                    <svg class="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-                <div id="shopDetailsContent" class="overlay-content-wrapper">
-                    <h2 id="shopDetailName" class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 w-full"></h2>
-                    <div id="shopImageGallery" class="shop-image-gallery mb-4">
-                        <!-- Images -->
-                    </div>
-
-                    <!-- NEW: Directions Section -->
-                    <div id="directionsControlSection" class="mt-4 pt-4 border-t border-gray-200">
-                        <button id="getShopDirectionsButton" class="w-full mb-2 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                            Get Directions
-                        </button>
-                        <button id="clearShopDirectionsButton" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors hidden">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                            Clear Directions
-                        </button>
-                    </div>
-                    <div id="directionsPanel" class="mt-2 text-sm custom-scrollbar" style="max-height: 200px; overflow-y: auto;">
-                        <!-- Textual directions will appear here -->
-                    </div>
-                </div>
+            <!-- Section for Twitter -->
+            <div class="social-feed-section mt-6">
+              <!-- Added mt-6 for spacing -->
+              <h3
+                class="social-feed-title text-lg font-medium text-gray-600 mb-2"
+              >
+                <svg
+                  class="inline-block w-5 h-5 mr-1 text-blue-400"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M23.643 4.937c-.835.37-1.732.62-2.675.733a4.67 4.67 0 0 0 2.048-2.578a9.3 9.3 0 0 1-2.958 1.13a4.66 4.66 0 0 0-7.938 4.25a13.229 13.229 0 0 1-9.602-4.868a4.662 4.662 0 0 0 1.444 6.216a4.613 4.613 0 0 1-2.11-.583v.06a4.656 4.656 0 0 0 3.737 4.567a4.615 4.615 0 0 1-2.105.08a4.662 4.662 0 0 0 4.351 3.234a9.368 9.368 0 0 1-5.786 1.995a9.5 9.5 0 0 1-1.112-.065a13.177 13.177 0 0 0 7.14 2.094c8.567 0 13.255-7.098 13.255-13.254c0-.203-.005-.405-.014-.606a9.46 9.46 0 0 0 2.323-2.41z"
+                  ></path>
+                </svg>
+                Latest Tweets
+              </h3>
+              <div
+                id="twitterTimelineContainer"
+                class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden"
+              >
+                <p class="text-sm text-gray-500 p-4">Loading Twitter feed...</p>
+                <!-- Kept for initial state -->
+              </div>
             </div>
-        </main>
+
+            <!-- NEW: Section for Instagram -->
+            <div class="social-feed-section mt-6">
+              <h3
+                class="social-feed-title text-lg font-medium text-gray-600 mb-2"
+              >
+                <svg
+                  class="inline-block w-5 h-5 mr-2 text-pink-600"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <!-- Instagram Icon -->
+                  <path
+                    d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166-.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747-.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847-.28 2.377-.48.575-.222 1.018-.567 1.465-1.015.447-.447.793-.89 1.015-1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"
+                  ></path>
+                </svg>
+                On Instagram
+              </h3>
+              <div
+                id="instagramFeedContainer"
+                class="social-feed-content bg-white rounded-lg shadow-sm overflow-hidden p-4"
+              >
+                <!-- Added p-4 for button/link -->
+                <p class="text-sm text-gray-500">
+                  Instagram content will load here.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section id="mapPanel"><div id="map"></div></section>
+
+        <section
+          id="listingsPanel"
+          class="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-[#ffffff]"
+        >
+          <div
+            id="listingsContainer"
+            class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4"
+          >
+            <p class="text-center text-gray-700 p-4 col-span-1 md:col-span-2">
+              Loading Farm Stands...
+            </p>
+          </div>
+          <div
+            id="noResults"
+            class="hidden text-center text-gray-600 mt-10 p-4"
+          ></div>
+        </section>
+
+        <!-- In index.html -->
+        <div
+          id="detailsOverlayShop"
+          class="detail-pop-overlay custom-scrollbar hidden"
+        >
+          <button
+            id="closeDetailsOverlayShopButton"
+            class="overlay-close-button"
+          >
+            <svg
+              class="w-6 h-6 sm:w-7 sm:h-7"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+          <div id="shopDetailsContent" class="overlay-content-wrapper">
+            <h2
+              id="shopDetailName"
+              class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 w-full"
+            ></h2>
+            <div id="shopImageGallery" class="shop-image-gallery mb-4">
+              <!-- Images -->
+            </div>
+
+            <!-- NEW: Directions Section -->
+            <div
+              id="directionsControlSection"
+              class="mt-4 pt-4 border-t border-gray-200"
+            >
+              <button
+                id="getShopDirectionsButton"
+                class="w-full mb-2 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              >
+                <svg
+                  class="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                Get Directions
+              </button>
+              <button
+                id="clearShopDirectionsButton"
+                class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors hidden"
+              >
+                <svg
+                  class="w-5 h-5 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  ></path>
+                </svg>
+                Clear Directions
+              </button>
+            </div>
+            <div
+              id="directionsPanel"
+              class="mt-2 text-sm custom-scrollbar"
+              style="max-height: 200px; overflow-y: auto"
+            >
+              <!-- Textual directions will appear here -->
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
 
     <!-- JavaScript Files (Order Matters!) -->
@@ -129,37 +283,52 @@
     <!-- but for basic Page Plugin rendering, it often works without it. -->
     <!-- Keep xfbml=1 to parse social plugins on page load. -->
     <div id="fb-root"></div>
-<script>
-  window.fbAsyncInit = function() {
-    console.log('[DEBUG] fbAsyncInit called.');
-    FB.init({
-      appId      : 'YOUR_APP_ID', //  <--- !!! REPLACE WITH YOUR ACTUAL APP ID !!!
-      cookie     : true,
-      xfbml      : true,
-      version    : 'v19.0' // Use a current Graph API version
-    });
-    console.log('[DEBUG] FB.init completed.');
-    // You can set a global flag if needed elsewhere to check SDK readiness
-    window.facebookSDKReady = true;
-    // FB.AppEvents.logPageView(); // Optional
-  };
+    <script>
+      window.fbAsyncInit = function () {
+        console.log("[DEBUG] fbAsyncInit called.");
+        FB.init({
+          appId: "YOUR_APP_ID", //  <--- !!! REPLACE WITH YOUR ACTUAL APP ID !!!
+          cookie: true,
+          xfbml: true,
+          version: "v19.0", // Use a current Graph API version
+        });
+        console.log("[DEBUG] FB.init completed.");
+        // You can set a global flag if needed elsewhere to check SDK readiness
+        window.facebookSDKReady = true;
+        // FB.AppEvents.logPageView(); // Optional
+      };
 
-  // Load the SDK asynchronously
-  (function(d, s, id){
-     var js, fjs = d.getElementsByTagName(s)[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement(s); js.id = id;
-     js.src = "https://connect.facebook.net/en_US/sdk.js";
-     fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
-</script>
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0"></script>
+      // Load the SDK asynchronously
+      (function (d, s, id) {
+        var js,
+          fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+          return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      })(document, "script", "facebook-jssdk");
+    </script>
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v22.0"
+    ></script>
 
     <!-- Google Maps API -->
-    <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&callback=initAppMap&libraries=places,geometry&v=weekly">
-    </script>
+    <script
+      async
+      defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&callback=initAppMap&libraries=places,geometry&v=weekly"
+    ></script>
     <!-- Twitter Widget Script -->
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-</body>
+    <script
+      async
+      src="https://platform.twitter.com/widgets.js"
+      charset="utf-8"
+    ></script>
+  </body>
 </html>

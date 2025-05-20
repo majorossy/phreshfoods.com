@@ -457,3 +457,65 @@ main {
 #directionsPanel .adp-directions {
     /* Main container for steps */
 }
+
+
+
+
+
+
+      /* Optional: Custom styling for the range input track and thumb for better cross-browser appearance if needed */
+      /* For a simple red thumb: */
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #c53030; /* red-700 */
+        cursor: pointer;
+        border-radius: 50%;
+        margin-top: -6px; /* Adjust to center thumb on track */
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        background: #c53030; /* red-700 */
+        cursor: pointer;
+        border-radius: 50%;
+        border: none;
+      }
+      input[type="range"]::-ms-thumb {
+        width: 16px;
+        height: 16px;
+        background: #c53030; /* red-700 */
+        cursor: pointer;
+        border-radius: 50%;
+        border: 0;
+      }
+      input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        cursor: pointer;
+        background: #cbd5e0; /* gray-400 */
+        border-radius: 2px;
+      }
+      input[type="range"]::-moz-range-track {
+        height: 4px;
+        cursor: pointer;
+        background: #cbd5e0; /* gray-400 */
+        border-radius: 2px;
+      }
+      input[type="range"]::-ms-track {
+        height: 4px;
+        cursor: pointer;
+        background: transparent;
+        border-color: transparent;
+        color: transparent;
+      }
+      input[type="range"]::-ms-fill-lower {
+        background: #cbd5e0; /* gray-400 */
+        border-radius: 2px;
+      }
+      input[type="range"]::-ms-fill-upper {
+        background: #cbd5e0; /* gray-400 */
+        border-radius: 2px;
+      }
