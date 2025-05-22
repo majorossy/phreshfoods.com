@@ -54,15 +54,21 @@
                         panel.classList.remove('hidden');
                         if (targetPanelId === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
                              const fbContentContainer = document.getElementById('socialLinksContainer');
-                             if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) {
-                                setTimeout(() => FB.XFBML.parse(fbContentContainer), 50);
+                             if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) { 
+                                setTimeout(() => {
+                                    console.log("FB.XFBML.parse on tab click for:", fbContentContainer.dataset.currentPageId);
+                                    FB.XFBML.parse(fbContentContainer);
+                                }, 50);
                              }
                         }
-                         if (targetPanelId === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) {
-                            const igContentContainer = document.getElementById('instagramFeedContainer');
-                            if (igContentContainer && igContentContainer.querySelector('.instagram-media')) {
-                                setTimeout(() => window.instgrm.Embeds.process(), 50);
-                            }
+                        if (targetPanelId === 'social-instagram-panel' && typeof window.instgrm !== 'undefined' && window.instgrm.Embeds) {
+                            const igContainer = document.getElementById('instagramFeedContainer');
+                            console.log("Instagram tab clicked. Container content before process:", igContainer ? igContainer.innerHTML.substring(0,150) + "..." : "IG Container not found!");
+                            console.log("Calling window.instgrm.Embeds.process().");
+                            setTimeout(() => {
+                                console.log("Executing window.instgrm.Embeds.process() for IG tab now.");
+                                window.instgrm.Embeds.process();
+                            }, 100); 
                         }
                     } else {
                         panel.classList.add('hidden');
@@ -111,7 +117,6 @@ function getStarRatingHTML(ratingStringOrNumber, reviewCount) {
 
     let reviewCountHTML = '';
     if (typeof reviewCount === 'number' && reviewCount >= 0) {
-        // The group-hover classes assume this HTML is within a card that has the `group` class.
         reviewCountHTML = `<span class="text-gray-500 group-hover:text-gray-700 group-hover:underline">(${reviewCount.toLocaleString()})</span>`;
     }
 
@@ -124,6 +129,35 @@ function getStarRatingHTML(ratingStringOrNumber, reviewCount) {
     `;
 }
 
+
+// ADD THIS NEW FUNCTION
+function getStarsVisualHTML(ratingStringOrNumber, starSizeClass = 'w-5 h-5') {
+    const rating = parseFloat(ratingStringOrNumber);
+    if (ratingStringOrNumber === "N/A" || isNaN(rating) || rating < 0 || rating > 5) {
+        return '<span class="text-sm text-gray-500">No rating</span>';
+    }
+    const roundedForStarDisplay = Math.round(rating); // Use original rating for rounding stars
+    const starSVGPath = "M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z";
+
+    let starsHTML = `<span class="inline-flex items-center">`;
+    for (let i = 0; i < 5; i++) {
+        if (i < roundedForStarDisplay) {
+            starsHTML += `<svg class="${starSizeClass} fill-current text-yellow-400" viewBox="0 0 20 20"><path d="${starSVGPath}"/></svg>`;
+        } else {
+            starsHTML += `<svg class="${starSizeClass} fill-current text-gray-300" viewBox="0 0 20 20"><path d="${starSVGPath}"/></svg>`;
+        }
+    }
+    starsHTML += `</span>`;
+    return starsHTML;
+}
+
+
+
+
+
+
+
+
 function generateFacebookPagePluginHTML(pageId, pageName) {
     if (!pageId) return '<!-- Error: Facebook Page ID missing. -->';
     const facebookPageLink = `https://www.facebook.com/${pageId}/`;
@@ -132,7 +166,8 @@ function generateFacebookPagePluginHTML(pageId, pageName) {
 <div class="fb-page" 
     data-href="${facebookPageLink}" 
     data-tabs="timeline" 
-    data-width="" 
+    data-width="100%" 
+    data-height="100%" 
     data-use-container-width="true" 
     data-small-header="true" 
     data-adapt-container-width="true" 
@@ -256,6 +291,17 @@ async function openClickedShopOverlays(shop) {
                 }
             }
 
+            // --- NEW: Populate Product Icons ---
+            const productIconsContainer = document.getElementById('shopProductIconsContainer');
+            if (productIconsContainer) {
+                if (shop.ProductsAvailable) { // Check if the property exists on the shop object
+                    productIconsContainer.innerHTML = generateProductIconsHTML(shop.ProductsAvailable);
+                } else {
+                    productIconsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Product categories not available.</p>';
+                }
+            }
+            // --- END: Populate Product Icons ---
+
             document.getElementById('getShopDirectionsButton')?.classList.remove('hidden');
             document.getElementById('clearShopDirectionsButton')?.classList.add('hidden');
             const directionsPanelDiv = document.getElementById('directionsPanel'); 
@@ -294,13 +340,21 @@ async function openClickedShopOverlays(shop) {
                 } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Twitter handle configured.</p>'; }
             }
             
-            if (igContentContainer) {
-                 if (shop.InstagramUsername) {
-                    if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
+            if (igContentContainer) { 
+                 if (shop.InstagramUsername && shop.InstagramRecentPostEmbedCode) { 
+                    if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername || !igContentContainer.innerHTML.includes('instagram-media')) { // also re-populate if not processed
                        populateInstagramTab(shop, igContentContainer); 
                        igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
                     }
-                } else { igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>'; }
+                } else if (shop.InstagramUsername) { 
+                     if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
+                        populateInstagramTab(shop, igContentContainer);
+                        igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
+                     }
+                } else { 
+                    igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>'; 
+                    igContentContainer.dataset.currentInstaUser = '';
+                }
             }
 
             if (reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>'; 
@@ -335,7 +389,7 @@ async function openClickedShopOverlays(shop) {
             let defaultTabTarget;
             if (shop.GoogleProfileID) { defaultTabTarget = 'social-photos-panel'; } 
             else if (shop.FacebookPageID) { defaultTabTarget = 'social-facebook-panel'; } 
-            else if (shop.InstagramUsername) { defaultTabTarget = 'social-instagram-panel'; } 
+            else if (shop.InstagramUsername && shop.InstagramRecentPostEmbedCode) { defaultTabTarget = 'social-instagram-panel'; }
             else if (shop.TwitterHandle) { defaultTabTarget = 'social-twitter-panel'; } 
             else { defaultTabTarget = 'social-photos-panel';  }
 
@@ -362,17 +416,26 @@ async function openClickedShopOverlays(shop) {
                 tabContents.forEach(panel => {
                     panel.classList.toggle('hidden', panel.id !== defaultTabTarget);
                 });
-                if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
-                    const fbContentContainer = document.getElementById('socialLinksContainer');
-                    if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) {
-                       setTimeout(() => FB.XFBML.parse(fbContentContainer), 100); 
+
+                if (socialOverlayActuallyOpened) { // Only process if the overlay was actually opened/re-opened
+                    if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
+                        const fbCC = document.getElementById('socialLinksContainer');
+                        if (fbCC && fbCC.querySelector('.fb-page')) {
+                            setTimeout(() => {
+                                console.log("FB.XFBML.parse on overlay open (default tab) for:", fbCC.dataset.currentPageId);
+                                FB.XFBML.parse(fbCC);
+                            }, 100);
+                        }
                     }
-                }
-                if (defaultTabTarget === 'social-instagram-panel' && window.instgrm && window.instgrm.Embeds) {
-                     const igContentContainer = document.getElementById('instagramFeedContainer');
-                     if(igContentContainer && igContentContainer.querySelector('.instagram-media')) {
-                        setTimeout(() => window.instgrm.Embeds.process(), 100);
-                     }
+                    if (defaultTabTarget === 'social-instagram-panel' && typeof window.instgrm !== 'undefined' && window.instgrm.Embeds) {
+                         const igDefContainer = document.getElementById('instagramFeedContainer');
+                         console.log("Instagram is default tab on overlay open. Container content:", igDefContainer ? igDefContainer.innerHTML.substring(0,150)+"..." : "IG Container not found!");
+                         console.log("Calling window.instgrm.Embeds.process() for IG default tab.");
+                         setTimeout(() => {
+                            console.log("Executing window.instgrm.Embeds.process() for IG default tab now.");
+                            window.instgrm.Embeds.process();
+                         }, 150);
+                    }
                 }
             }
         } catch (e) { console.error("Error populating LEFT social/reviews/photos overlay tabs:", e); }
@@ -404,7 +467,10 @@ function closeClickedShopOverlays() {
         const twContent = document.getElementById('twitterTimelineContainer');
         if (twContent) { twContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading Twitter feed...</p>'; twContent.dataset.currentTwitterHandle = ''; }
         const igContent = document.getElementById('instagramFeedContainer');
-        if (igContent) { igContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Instagram content will load here.</p>'; igContent.dataset.currentInstaUser = ''; }
+        if (igContent) { 
+            igContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Instagram content will load here.</p>'; 
+            igContent.dataset.currentInstaUser = ''; 
+        }
         const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
         if(reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>';
         const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer');
@@ -434,7 +500,6 @@ function sortShopsByDistanceGoogle(shops, mapCenter) {
 function generateShopContentHTML(shop, context = 'card') {
     if (!shop) return '<p>Shop data unavailable.</p>';
 
-    // --- Image Setup ---
     let actualImageUrl;
     const placeholderText = encodeURIComponent(shop.Name.split(' ').slice(0, 2).join(' ') || 'Farm Stand');
     const fallbackImageUrlCard = `https://placehold.co/400x250/E0E0E0/757575?text=${placeholderText}&font=inter`;
@@ -445,14 +510,15 @@ function generateShopContentHTML(shop, context = 'card') {
     } else {
         actualImageUrl = (context === 'card') ? fallbackImageUrlCard : fallbackImageUrlBubble;
     }
+
     let finalImageHTML = '';
     if (context === 'card') {
         finalImageHTML = `<div class="aspect-w-16 aspect-h-9 sm:aspect-h-7"><img class="w-full h-full object-cover" loading="lazy" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.onerror=null; this.src='${fallbackImageUrlCard}';"></div>`;
     } else if (context === 'infowindow' && shop.ImageOne && shop.ImageOne.trim() !== '') { 
-        finalImageHTML = `<img class="w-full h-auto object-cover mb-2 rounded-t-sm" style="max-height: 150px;" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.style.display='none';">`;
+        // MODIFIED: Added mb-1 for spacing below image in infowindow, similar to card's implicit spacing
+        finalImageHTML = `<img class="w-full h-auto object-cover rounded-t-sm mb-1" style="max-height: 150px;" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.style.display='none';">`;
     }
 
-    // --- Rating ---
     let starsAndRatingHTML = getStarRatingHTML("N/A"); 
     let ratingSource = shop.placeDetails; 
     if (!ratingSource && shop.Rating && shop.Rating !== "N/A") { 
@@ -462,13 +528,18 @@ function generateShopContentHTML(shop, context = 'card') {
     }
     const ratingContainerId = `rating-for-${shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-')}-${context}`;
 
-    // --- Detail Rows ---
-    let detailRowsHTML = '<div class="space-y-1 mt-2">'; // Container for address, distance, phone, website
-    const iconClasses = "w-3.5 h-3.5 mr-2 text-gray-400 flex-shrink-0";
-    const rowTextClasses = "text-sm text-gray-600 truncate";
+    // MODIFIED: Adjust classes for infowindow to be scaled versions of card
+    const iconMarginClass = (context === 'infowindow') ? "mr-1" : "mr-2";
+    const iconClasses = `w-3.5 h-3.5 ${iconMarginClass} text-gray-400 flex-shrink-0`;
+    
+    const rowTextClasses = "text-sm text-gray-600 truncate"; // Kept same as card, font-size: 13px on wrapper helps
     const rowContainerClasses = "flex items-center";
 
-    // Address
+    // MODIFIED: Scaled down space-y and mt for infowindow
+    const detailRowsOuterDivClasses = (context === 'infowindow') ? "space-y-1 mt-1" : "space-y-1 mt-2";
+    let detailRowsHTML = `<div class="${detailRowsOuterDivClasses}">`;
+
+
     if (shop.Address && shop.Address !== 'N/A') {
         detailRowsHTML += `
             <div class="${rowContainerClasses}" title="${shop.Address}">
@@ -477,11 +548,10 @@ function generateShopContentHTML(shop, context = 'card') {
             </div>`;
     }
 
-    // Distance
     let distanceString = '';
     if (shop.distance !== undefined && shop.distance !== Infinity && shop.distance !== null) {
         const distKm = (shop.distance / 1000); const distMiles = kmToMiles(distKm);
-        distanceString = `${distMiles.toFixed(1)} miles away`;
+        distanceString = `~${distMiles.toFixed(1)} mi / ${distKm.toFixed(1)} km away`;
     } else if (context === 'infowindow' && typeof map !== 'undefined' && map && map.getCenter() && shop.lat && shop.lng) {
         try {
             const shopLoc = new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng));
@@ -501,7 +571,6 @@ function generateShopContentHTML(shop, context = 'card') {
             </div>`;
     }
     
-    // Phone
     if (shop.Phone) {
         detailRowsHTML += `
             <div class="${rowContainerClasses}" title="${shop.Phone}">
@@ -510,7 +579,6 @@ function generateShopContentHTML(shop, context = 'card') {
             </div>`;
     }
 
-    // Website
     if (shop.Website && shop.Website.trim() !== '' && !shop.Website.includes('googleusercontent.com')) {
         let displayWebsite = shop.Website; 
         try { 
@@ -528,25 +596,27 @@ function generateShopContentHTML(shop, context = 'card') {
                 <a href="${shop.Website.startsWith('http')?shop.Website:`http://${shop.Website}`}" target="_blank" rel="noopener noreferrer" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" class="${rowTextClasses} text-blue-600 hover:text-blue-800 hover:underline break-all"><span class="truncate">${displayWebsite}</span></a>
             </div>`;
     }
-    detailRowsHTML += '</div>'; // Close space-y-1
+    detailRowsHTML += '</div>'; 
 
 
-    // Google Maps link for infowindow
     let googleMapsLinkHTML = '';
     // if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url) { 
     //     googleMapsLinkHTML = `<div class="mt-3 pt-2 border-t border-gray-200"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M19.167 2.5a.833.833 0 00-1.08-.433L7.03 6.213a.833.833 0 00-.25.368l-2.5 8.333a.833.833 0 00.886 1.09l2.494-.754a.833.833 0 00.612-.135l8.582-6.26a.833.833 0 00.393-.78V2.5zM8.583 7.276l7.402-4.012v2.752l-7.402 4.011V7.276zm-1.416 4.97L3.75 13.58v-3.055l3.417-1.858v4.579zM10 18.333A8.333 8.333 0 1010 1.667a8.333 8.333 0 000 16.666z"/></svg>View on Google Maps</a></div>`;
     // }
 
-    // Main content layout
-    const nameSizeClass = (context === 'card') ? "text-base sm:text-lg" : "text-md"; // Adjusted name size slightly for card
-    const textContentPaddingClass = (context === 'card') ? "p-3 sm:p-4" : "p-2";
+    const nameSizeClass = (context === 'card') ? "text-base sm:text-lg" : "text-md"; 
+    // MODIFIED: Overall padding and individual margins for infowindow
+    const textContentPaddingClass = (context === 'card') ? "p-3 sm:p-4" : "p-2"; // p-2 for infowindow
+    const nameMarginClass = "mb-1"; // Same for both, but font size is smaller in infowindow
+    const ratingMarginClass = (context === 'infowindow') ? "mb-1" : "mb-2"; // Scaled down for infowindow
+
 
     const textAndContactContent = `
         <div class="${textContentPaddingClass} flex-grow flex flex-col">
-            <h2 class="${nameSizeClass} font-semibold text-gray-800 leading-tight truncate mb-1" title="${shop.Name}">${shop.Name}</h2>
-            <div id="${ratingContainerId}" class="shop-card-rating mb-2">${starsAndRatingHTML}</div>
+            <h2 class="${nameSizeClass} font-semibold text-gray-800 leading-tight truncate ${nameMarginClass}" title="${shop.Name}">${shop.Name}</h2>
+            <div id="${ratingContainerId}" class="shop-card-rating ${ratingMarginClass}">${starsAndRatingHTML}</div>
             ${detailRowsHTML}
-            <div class="mt-auto"> <!-- Pushes Google Maps link to bottom for infowindow -->
+            <div class="mt-auto"> 
                 ${googleMapsLinkHTML}
             </div>
         </div>`;
@@ -586,7 +656,6 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
         shopsForDisplay.forEach(shop => {
             const card = document.createElement('div');
             const shopIdentifier = shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-');
-            // Added `flex flex-col h-full` to ensure card content can take full height
             card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ease-in-out cursor-pointer group w-full flex flex-col h-full';
             card.setAttribute('data-shop-id', shopIdentifier);
             card.innerHTML = generateShopContentHTML(shop, 'card'); 
@@ -635,21 +704,23 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
 }
 
 function populateInstagramTab(shop, instagramFeedContainerElement) {
-    if (!instagramFeedContainerElement) return;
-    instagramFeedContainerElement.innerHTML = ''; 
+    if (!instagramFeedContainerElement) {
+        console.error("populateInstagramTab: instagramFeedContainerElement is null");
+        return;
+    }
+    console.log("Populating Instagram tab for:", shop.Name, ". Embed code available:", !!shop.InstagramRecentPostEmbedCode, ". Username:", shop.InstagramUsername);
+
     const username = shop.InstagramUsername; 
     const embedCode = shop.InstagramRecentPostEmbedCode; 
 
     if (username && username.trim() !== '' && embedCode && embedCode.trim() !== '') {
         const cleanUsername = username.replace('@', '').trim();
+        console.log("Instagram - Using embed code for:", cleanUsername);
         
-        const embedWrapper = document.createElement('div');
-        embedWrapper.className = 'instagram-embed-wrapper p-2'; 
-        embedWrapper.innerHTML = embedCode; 
-        instagramFeedContainerElement.appendChild(embedWrapper);
+        instagramFeedContainerElement.innerHTML = embedCode; 
 
         const profileLink = document.createElement('a');
-        profileLink.href = `https://www.instagram.com/${cleanUsername}/`;
+        profileLink.href = shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`;
         profileLink.target = "_blank";
         profileLink.rel = "noopener noreferrer";
         profileLink.className = "block text-center mt-4 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm";
@@ -658,10 +729,12 @@ function populateInstagramTab(shop, instagramFeedContainerElement) {
 
     } else if (username && username.trim() !== '') { 
          const cleanUsername = username.replace('@', '').trim();
+         console.log("Instagram - Username found, but no embed code for:", cleanUsername);
          instagramFeedContainerElement.innerHTML = `<p class="text-sm text-gray-500 p-4">No recent post embed code found for @${cleanUsername}.</p>
             <a href="${shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`}" target="_blank" rel="noopener noreferrer" class="block text-center mt-2 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm">
             <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram</a>`; 
     } else {
+        console.log("Instagram - No username available. Setting no profile message.");
         instagramFeedContainerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>';
     }
 }
@@ -689,14 +762,77 @@ function handleGetDirections(shop) {
 
 function displayShopReviews(placeDetails, containerElement) {
     if (!containerElement) return;
-    containerElement.innerHTML = ''; 
+    containerElement.innerHTML = ''; // Clear previous content
+
+    let summaryHTML = '';
+    let reviewDistributionHTML = ''; // For the star breakdown bars
+
+    if (placeDetails && typeof placeDetails.rating === 'number' && typeof placeDetails.user_ratings_total === 'number') {
+        const ratingValue = placeDetails.rating.toFixed(1);
+        const totalReviews = placeDetails.user_ratings_total.toLocaleString();
+        const starsVisual = getStarsVisualHTML(placeDetails.rating, 'w-5 h-5 text-yellow-400');
+
+        summaryHTML = `
+            <div class="place-review-summary p-4 mb-4 border-b border-gray-200">
+                <div class="flex items-center gap-x-3 sm:gap-x-4">
+                    <div class="flex-shrink-0">
+                        <p class="text-4xl sm:text-5xl font-bold text-gray-800">${ratingValue}</p>
+                    </div>
+                    <div class="flex flex-col">
+                        <div class="stars-container">
+                            ${starsVisual}
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1">${totalReviews} reviews</p>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- START: Calculate and Generate Review Distribution Bars (from sampled reviews) ---
+        if (placeDetails.reviews && placeDetails.reviews.length > 0) {
+            const starCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+            let sampleTotal = 0;
+            placeDetails.reviews.forEach(review => {
+                const r = Math.round(review.rating); // Round to nearest integer star
+                if (r >= 1 && r <= 5) {
+                    starCounts[r]++;
+                    sampleTotal++;
+                }
+            });
+
+            if (sampleTotal > 0) {
+                reviewDistributionHTML = '<div class="review-distribution-bars px-4 mb-4 text-sm">';
+                // Optional: Add a note about the data source
+                // reviewDistributionHTML += `<p class="text-xs text-gray-500 mb-2 italic">Distribution based on ${sampleTotal} shown reviews:</p>`;
+
+                for (let i = 5; i >= 1; i--) {
+                    const count = starCounts[i];
+                    const percentage = (count / sampleTotal) * 100;
+                    // Tailwind classes for the bar. Adjust width based on percentage.
+                    // bg-yellow-400 for the filled part, bg-gray-200 for the track
+                    reviewDistributionHTML += `
+                        <div class="flex items-center gap-x-2 mb-1">
+                            <span class="w-2 text-right text-gray-600">${i}</span>
+                            <div class="flex-grow bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-yellow-400 h-2.5 rounded-full" style="width: ${percentage.toFixed(1)}%;"></div>
+                            </div>
+                        </div>
+                    `;
+                }
+                reviewDistributionHTML += '</div>';
+            }
+        }
+        // --- END: Calculate and Generate Review Distribution Bars ---
+    }
+
+
     if (placeDetails && placeDetails.reviews && placeDetails.reviews.length > 0) {
         const ul = document.createElement('ul');
-        ul.className = 'space-y-3';
-        placeDetails.reviews.slice(0, 5).forEach(review => { 
+        ul.className = 'space-y-3 px-4'; // Added px-4 for consistency with summary padding
+        placeDetails.reviews.slice(0, 5).forEach(review => {
             const li = document.createElement('li');
             li.className = 'p-3 bg-gray-50 rounded-md shadow-sm';
-            const starsDisplay = getStarRatingHTML(review.rating); 
+            const starsDisplayForIndividualReview = getStarRatingHTML(review.rating);
 
             let reviewHTML = `
                 <div class="flex items-center mb-1">
@@ -704,7 +840,7 @@ function displayShopReviews(placeDetails, containerElement) {
                     <strong class="text-sm text-gray-700 truncate" title="${review.author_name}">${review.author_name}</strong>
                     <span class="ml-auto text-xs text-gray-500 whitespace-nowrap">${review.relative_time_description}</span>
                 </div>
-                <div class="review-stars-individual mb-1">${starsDisplay}</div>
+                <div class="review-stars-individual mb-1">${starsDisplayForIndividualReview}</div>
                 <p class="text-xs text-gray-600 leading-relaxed line-clamp-3 hover:line-clamp-none transition-all cursor-pointer" title="Click to expand/collapse review">${review.text || ''}</p>`;
             li.innerHTML = reviewHTML;
             const reviewTextP = li.querySelector('p.text-xs');
@@ -713,18 +849,133 @@ function displayShopReviews(placeDetails, containerElement) {
             }
             ul.appendChild(li);
         });
-        containerElement.appendChild(ul);
-         if (placeDetails.reviews.length > 5) {
+
+        // Prepend summary and distribution, then add reviews list
+        containerElement.innerHTML = summaryHTML + reviewDistributionHTML; // Add summary and distribution first
+        containerElement.appendChild(ul); // Then append the reviews list
+
+         if (placeDetails.reviews.length > 5 || (placeDetails.url && placeDetails.reviews.length > 0)) {
             const viewMoreLink = document.createElement('a');
             viewMoreLink.href = placeDetails.url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(placeDetails.name || '')}&query_place_id=${placeDetails.place_id || ''}`;
             viewMoreLink.target = "_blank";
             viewMoreLink.rel = "noopener noreferrer";
-            viewMoreLink.className = "block text-center text-xs text-blue-600 hover:underline mt-3 pt-2 border-t border-gray-200";
-            viewMoreLink.textContent = `View all ${placeDetails.reviews.length} reviews on Google Maps`;
+            viewMoreLink.className = "block text-center text-xs text-blue-600 hover:underline mt-3 pt-2 border-t border-gray-200 mx-4"; // Added mx-4
+            viewMoreLink.textContent = `View all ${placeDetails.user_ratings_total ? placeDetails.user_ratings_total.toLocaleString() : ''} reviews on Google Maps`;
             containerElement.appendChild(viewMoreLink);
         }
 
     } else {
-        containerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Google reviews available for this shop.</p>';
+        // If no reviews, but we have summary data (and potentially distribution if we had reviews earlier)
+        let contentToShow = summaryHTML + reviewDistributionHTML;
+        if (contentToShow) {
+            containerElement.innerHTML = contentToShow + '<p class="text-sm text-gray-500 p-4 text-center">No Google reviews found to display individually.</p>';
+        } else {
+            containerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Google reviews or rating summary available for this shop.</p>';
+        }
     }
+}
+
+
+
+
+
+
+
+
+// At the top of uiLogic.js
+const PRODUCT_ICONS_CONFIG = {
+    'beef': {
+        csvHeader: 'has beef',
+        name: 'Beef',
+        icon_available: 'beef_1.png',
+        icon_unavailable: 'beef_0.jpg'
+    },
+    'lamb': {
+        csvHeader: 'has lamb',
+        name: 'Lamb',
+        icon_available: 'lamb_1.jpg',
+        icon_unavailable: 'lamb_0.jpg'
+    },
+    'eggs': {
+        csvHeader: 'has eggs',
+        name: 'Eggs',
+        icon_available: 'eggs_1.jpg',
+        icon_unavailable: 'eggs_0.jpg'
+    },
+    'chicken': {
+        csvHeader: 'has chicken',
+        name: 'Chicken',
+        icon_available: 'chicken_1.jpg',
+        icon_unavailable: 'chicken_0.jpg'
+    },
+
+    'carrots': {
+        csvHeader: 'has carrots',
+        name: 'Carrots',
+        icon_available: 'carrots_1.jpg',
+        icon_unavailable: 'carrots_0.jpg'
+    },
+    'corn': {
+        csvHeader: 'has corn',
+        name: 'Corn',
+        icon_available: 'corn_1.jpg',
+        icon_unavailable: 'corn_0.jpg'
+    },
+    'pork': {
+        csvHeader: 'has pork',
+        name: 'Pork',
+        icon_available: 'pork_1.jpg',
+        icon_unavailable: 'pork_0.jpg'
+    },
+
+
+
+
+
+// In uiLogic.js
+
+// In uiLogic.js
+
+function generateProductIconsHTML(shopProductAvailabilityData) {
+    // shopProductAvailabilityData might be undefined if the shop object didn't have it.
+    // Or it might be an empty object if no relevant columns were found for that shop.
+    // We will always loop through PRODUCT_ICONS_CONFIG and check availability.
+
+    let iconsHTML = '<div id="shopProductIconsGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1">';
+    let hasAtLeastOneDefinedProduct = false; // To check if we should show a "none available" message
+
+    for (const internalKey in PRODUCT_ICONS_CONFIG) {
+        hasAtLeastOneDefinedProduct = true; // At least one icon will be processed
+        const config = PRODUCT_ICONS_CONFIG[internalKey];
+        const csvHeaderForProduct = config.csvHeader.toLowerCase(); // Ensure lowercase for matching
+
+        let iconFileToUse = config.icon_unavailable; // Default to unavailable icon
+        let itemClasses = "product-icon-item flex flex-col items-center text-center p-1 opacity-50"; // Default to less opacity
+        let altText = `${config.name} (not listed)`;
+
+        // Check if the shop has this product marked as available
+        if (shopProductAvailabilityData && // Ensure the availability data object exists
+            shopProductAvailabilityData.hasOwnProperty(csvHeaderForProduct) &&
+            shopProductAvailabilityData[csvHeaderForProduct] === true) {
+            
+            iconFileToUse = config.icon_available;
+            itemClasses = "product-icon-item flex flex-col items-center text-center p-1 rounded-md hover:bg-gray-100 transition-colors"; // Full opacity, hover effect
+            altText = config.name;
+        }
+
+        iconsHTML += `
+            <div class="${itemClasses}">
+                <img src="images/icons/${iconFileToUse}" alt="${altText}" class="w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1">
+                <span class="text-xs font-medium text-gray-700">${config.name}</span>
+            </div>
+        `;
+    }
+
+    if (!hasAtLeastOneDefinedProduct) { // Should not happen if PRODUCT_ICONS_CONFIG is not empty
+        iconsHTML = '<p class="text-sm text-gray-500 text-center p-2 col-span-full">No product categories configured to display.</p>';
+    } else {
+        iconsHTML += '</div>'; // Close shopProductIconsGrid
+    }
+
+    return iconsHTML;
 }

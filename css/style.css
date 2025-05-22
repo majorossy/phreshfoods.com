@@ -236,12 +236,17 @@ main {
 
 .gm-style-iw-c button.gm-ui-hover-effect { display: none !important; }
 
+/* --- Gallery Styling (Shop & Social) --- */
 #shopImageGallery,
 #socialOverlayGooglePhotosContainer { 
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 0.5rem;
+    /* MODIFIED: Increased minimum width for larger image containers */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 0.5rem; 
     padding-bottom: 0.5rem; 
+    
+    width: 100%; 
+    box-sizing: border-box; 
 }
 #shopImageGallery .gallery-image-container,
 #socialOverlayGooglePhotosContainer .gallery-image-container {
@@ -304,3 +309,93 @@ input[type="range"]::-ms-fill-upper { background: #cbd5e0; border-radius: 2px; }
 
 
 
+/* --- Customizations for InfoWindow Padding Removal --- */
+.gm-style-iw-c {
+    padding: 0 !important; /* Override Google's default padding for the main bubble */
+    max-width: none !important; /* Allow our content to dictate width */
+    min-width: 0 !important; /* Allow our content to dictate min-width */
+    box-shadow: none !important; /* Optional: remove Google's default shadow if you want a flatter look */
+    background-color: transparent !important; /* Optional: if you want only your content's background */
+}
+
+.gm-style-iw-d {
+    overflow: hidden !important; /* Prevent scrollbars if content fits snugly */
+    padding: 0 !important; /* Ensure no padding on the direct content container from Google */
+}
+
+/* Optional: If you made the .gm-style-iw-c background transparent, 
+   you might want to ensure your custom content wrapper has a background.
+   It already has max-width: 280px set inline. */
+.infowindow-content-wrapper {
+    background-color: white; /* Or your desired bubble background */
+    /* padding: 0 !important; /* This should be handled by Tailwind p-0 in uiLogic.js, but can be a fallback */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* Example: Add a custom shadow if Google's is removed */
+    border-radius: 4px; /* Example: Add border-radius if needed */
+}
+
+/* Hides the small arrow/tail of the InfoWindow if desired for a completely boxy look */
+/* .gm-style-iw-t {
+    display: none !important;
+} */
+
+/* Ensure images within the no-padding infowindow don't cause overflow if they have borders/margins not reset */
+.infowindow-content-wrapper img {
+    display: block; /* Helps manage spacing */
+    max-width: 100%; /* Ensure image is responsive within the new tight bounds */
+}
+
+
+
+
+/* style.css */
+
+/* Product Icons Section in Shop Details Overlay */
+.product-icons-section {
+    /* border-top: 1px solid #e5e7eb; /* Optional separator */
+    /* padding-top: 1rem; /* Optional space above the title */
+}
+
+#shopProductIconsGrid {
+    /* Tailwind classes handle grid: grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1 */
+    /* You can adjust 'gap' and 'p' (padding) here if needed */
+}
+
+.product-icon-item {
+    /* Tailwind handles most: flex flex-col items-center text-center p-1 rounded-md hover:bg-gray-100 */
+    /* min-height: 80px; /* Example: if you want to ensure a minimum height for each item */
+}
+
+.product-icon-item img {
+    /* Tailwind handles: w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1 */
+    /* max-width: 100%; /* Ensure image doesn't overflow its container */
+}
+
+.product-icon-item span {
+    /* Tailwind handles: text-xs font-medium text-gray-700 */
+    /* word-break: break-word; /* If names are long */
+}
+
+/* style.css */
+
+.product-icon-item {
+    /* Tailwind handles most: flex flex-col items-center text-center p-1 */
+    /* Default transition for hover effects if any */
+    transition: background-color 0.15s ease-in-out, opacity 0.15s ease-in-out;
+}
+
+.product-icon-item.is-unavailable { /* Example if you want a dedicated class */
+    opacity: 0.4;
+    /* filter: grayscale(100%); */ /* Uncomment for grayscale effect */
+}
+
+.product-icon-item.is-available:hover {
+    background-color: #f3f4f6; /* Tailwind bg-gray-100 */
+}
+
+.product-icon-item img {
+    /* Tailwind: w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1 */
+}
+
+.product-icon-item span {
+    /* Tailwind: text-xs font-medium text-gray-700 */
+}

@@ -45,6 +45,12 @@ function parseCSVData(csv) {
     instagramUsername: headers.indexOf("instagram username"), // For @handle
     instagramEmbedCode: headers.indexOf("instagram embed code"), // For the blockquote embed
     instagramLink: headers.indexOf("instagram"), // For direct link (if different from username page)
+    beef: headers.indexOf("beef"),
+    pork: headers.indexOf("pork"),
+    lamb: headers.indexOf("lamb"),
+    chicken: headers.indexOf("chicken"),
+    eggs: headers.indexOf("eggs"),
+    corn: headers.indexOf("corn"),
   };
 
   Object.keys(headerMap).forEach((key) => {
@@ -57,34 +63,78 @@ function parseCSVData(csv) {
   });
 
   return lines
-    .map((line) => {
+    .map((line, lineIndex) => { // Add lineIndex here
       if (!line.trim()) return null;
       const rawValues = parseCSVLine(line);
-      const getValue = (index) => {
+      
+      // Enhanced getValue for debugging
+      const getValue = (index, headerName) => { // Add headerName for context
         let val = rawValues[index] || "";
-        if (val.startsWith('"') && val.endsWith('"'))
+        if (val.startsWith('"') && val.endsWith('"')) {
           val = val.substring(1, val.length - 1);
-        return val.replace(/""/g, '"').trim();
+        }
+        const cleanedVal = val.replace(/""/g, '"').trim();
+        
+        // Log if a suspicious value (like one containing <script>) is found
+        if (cleanedVal.toLowerCase().includes("<script")) {
+            console.warn(`apiService.js: Suspicious <script> tag found in CSV data. Line: ${lineIndex + 2}, Header: ${headerName}, Value (first 50 chars): ${cleanedVal.substring(0,50)}`);
+        }
+        return cleanedVal;
       };
 
+
+
+      // Get the encoded embed code
+      const encodedEmbedCode = getValue(headerMap.instagramEmbedCode, "instagram embed code");
+      let decodedEmbedCode = '';
+
+      if (encodedEmbedCode) {
+        try {
+          // --- CHOOSE ONE DECODING METHOD ---
+          // Option 1: If you used Base64 encoding in your CSV
+          decodedEmbedCode = atob(encodedEmbedCode); 
+          console.log(`[apiService] Decoded (Base64) IG Embed for line ${lineIndex+2}:`, decodedEmbedCode.substring(0,100));
+
+          // Option 2: If you used Percent-encoding (encodeURIComponent) in your CSV
+          // decodedEmbedCode = decodeURIComponent(encodedEmbedCode);
+          // console.log(`[apiService] Decoded (Percent) IG Embed for line ${lineIndex+2}:`, decodedEmbedCode.substring(0,100));
+
+        } catch (e) {
+          console.error(`[apiService] Error decoding Instagram embed code for line ${lineIndex + 2}:`, e);
+          console.error(`[apiService] Original encoded value (first 100 chars): ${encodedEmbedCode.substring(0,100)}`);
+          decodedEmbedCode = encodedEmbedCode; // Fallback to the raw value if decoding fails (it might be unencoded)
+        }
+      }
+
+
+
       const shop = {
-        Name: getValue(headerMap.name) || "N/A",
-        Address: getValue(headerMap.address) || "N/A",
-        Rating: getValue(headerMap.rating) || "N/A", // CSV Rating
-        Phone: getValue(headerMap.phone),
-        Website: getValue(headerMap.website),
-        GoogleProfileID: getValue(headerMap.googleProfileId),
-        TwitterHandle: getValue(headerMap.twitterHandle),
-        FacebookPageID: getValue(headerMap.facebookPageId),
-        InstagramUsername: getValue(headerMap.instagramUsername),
-        InstagramRecentPostEmbedCode: getValue(headerMap.instagramEmbedCode),
-        InstagramLink: getValue(headerMap.instagramLink), // Direct link to profile
-        City: "",
-        ImageOne: getValue(headerMap.imageOne),
-        ImageTwo: getValue(headerMap.imageTwo),
-        ImageThree: getValue(headerMap.imageThree),
-        // placeDetails will be populated later for Google sourced rating, reviews, etc.
+        Name: getValue(headerMap.name, "name") || "N/A", // Pass header name
+        Address: getValue(headerMap.address, "address") || "N/A",
+        Rating: getValue(headerMap.rating, "rating") || "N/A", 
+        Phone: getValue(headerMap.phone, "phone"),
+        Website: getValue(headerMap.website, "website"),
+        GoogleProfileID: getValue(headerMap.googleProfileId, "place id"),
+        TwitterHandle: getValue(headerMap.twitterHandle, "twitter"),
+        FacebookPageID: getValue(headerMap.facebookPageId, "facebook"),
+        InstagramUsername: getValue(headerMap.instagramUsername, "instagram username"),
+        InstagramRecentPostEmbedCode: getValue(headerMap.instagramEmbedCode, "instagram embed code"),
+        InstagramLink: getValue(headerMap.instagramLink, "instagram"),
+        City: "", // This will be populated later
+        ImageOne: getValue(headerMap.imageOne, "image_one"),
+        ImageTwo: getValue(headerMap.imageTwo, "image_two"),
+        ImageThree: getValue(headerMap.imageThree, "image_three"),
+        beef: getValue(headerMap.beef, "beef") || "N/A",
+        pork: getValue(headerMap.pork, "pork") || "N/A",
+        lamb: getValue(headerMap.lamb, "lamb") || "N/A",
+        chicken: getValue(headerMap.chicken, "chicken") || "N/A",
+        eggs: getValue(headerMap.eggs, "eggs") || "N/A",
+        corn: getValue(headerMap.corn, "corn") || "N/A",
       };
+
+      // console.log(`Parsed Shop (line ${lineIndex + 2}):`, JSON.stringify(shop).substring(0,200) + "..."); // Optional: log every parsed shop (can be noisy)
+
+      
 
       if (shop.Address && shop.Address !== "N/A") {
         const addressParts = shop.Address.split(",");

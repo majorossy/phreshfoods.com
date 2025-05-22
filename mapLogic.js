@@ -41,6 +41,38 @@ function initAppMap() {
   });
   // console.log("InfoWindow initialized in initAppMap:", infowindow);
 
+  // ---- START OF NEW CODE ----
+// Listen for the 'domready' event on the infowindow
+google.maps.event.addListener(infowindow, 'domready', () => {
+    // The InfoWindow's DOM is now ready.
+    // Find the container for the tail and close button.
+    // Note: Google's internal class names can change, but '.gm-style-iw-chr'
+    // has been relatively stable for the tail/close button container.
+    const tailAndCloseContainer = document.querySelector('.gm-style-iw-chr');
+
+    if (tailAndCloseContainer) {
+        // Remove the element from the DOM
+        tailAndCloseContainer.remove();
+        console.log("Removed .gm-style-iw-chr element from InfoWindow DOM.");
+    } else {
+        // This might happen if Google changes their class names significantly
+        // or if the selector is too broad and picks up something else first.
+        // For more robustness, you might try to find it relative to the infowindow's main content
+        // but that's more complex.
+        // console.warn("Could not find .gm-style-iw-chr to remove from InfoWindow DOM.");
+    }
+
+    // Optional: If you previously had CSS to hide the close button itself,
+    // you might also want to remove any explicit height/width it might have caused on its parent,
+    // though removing .gm-style-iw-chr usually handles this.
+    // For example, if the button itself was '.gm-ui-hover-effect':
+    // const closeButtonDirect = document.querySelector('.gm-style-iw-c .gm-ui-hover-effect');
+    // if (closeButtonDirect) {
+    //    closeButtonDirect.remove();
+    // }
+});
+// ---- END OF NEW CODE ----
+
   directionsService = new google.maps.DirectionsService();
   // --- CONFIGURE DirectionsRenderer HERE ---
   directionsRenderer = new google.maps.DirectionsRenderer({

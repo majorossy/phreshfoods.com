@@ -1,15 +1,10 @@
 ﻿// js/config.js
 
-// --- Social API Config ---
-const FACEBOOK_APP_ACCESS_TOKEN = "PASTE_YOUR_APP_ACCESS_TOKEN_HERE"; // Replace! IMPORTANT!
-const FACEBOOK_API_VERSION = "v19.0";
-const POST_LIMIT = 3;
 
 // --- App Configuration ---
 const URL_NOT_CONFIGURED_PLACEHOLDER =
   "YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE";
-const GOOGLE_SHEET_DIRECT_URL =
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vSoWds2ab32jpobSg0c8Shqdo9cSv_hz7j9J9_GLAapRR0kI4tSZiKuK2yHgBBQOl_jB3zj63PokE54/pub?output=csv";
+const GOOGLE_SHEET_DIRECT_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQlW0lYZ-sW70lJ_eK6IgmD0INk187Aee_R1l3V5TID_vVDSmbpJr3bSofzCAvIGj3FcDETus9ndhkx/pub?output=csv";
 const PROXY_URL = "https://api.allorigins.win/raw?url="; // Optional proxy
 const DATA_FETCH_URL = PROXY_URL
   ? PROXY_URL + encodeURIComponent(GOOGLE_SHEET_DIRECT_URL)

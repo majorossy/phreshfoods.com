@@ -175,11 +175,21 @@
               id="shopDetailName"
               class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 w-full shrink-0"
             ></h2>
-            
-            <h3 class="text-lg font-medium text-gray-700 mb-2 shrink-0">Photos from Listing</h3>
+                        
             <div id="shopImageGallery" class="mb-4 shrink-0">
               <p class="text-sm text-gray-500 text-center p-4 col-span-full">Loading listing photos...</p>
             </div>
+
+
+            <!-- ========= NEW SECTION FOR PRODUCT ICONS ========= -->
+            <div class="product-icons-section mb-4 shrink-0">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2 px-1">Products Available</h3>
+                <div id="shopProductIconsContainer">
+                    <p class="text-sm text-gray-500 text-center p-2">Loading product icons...</p>
+                </div>
+            </div>
+            <!-- ========= END NEW SECTION ========= -->
+            
 
             <div class="shrink-0">
               <div id="directionsControlSection" class="mt-4 pt-4 border-t border-gray-200">
@@ -201,12 +211,13 @@
     <script src="mapLogic.js"></script>
     <script src="main.js"></script>
     <div id="fb-root"></div>
-    <script>
-      window.fbAsyncInit = function () {FB.init({appId: "YOUR_APP_ID",cookie: true,xfbml: true,version: "v19.0", }); window.facebookSDKReady = true;};
-      (function (d, s, id) {var js, fjs = d.getElementsByTagName(s)[0]; if (d.getElementById(id)) { return; } js = d.createElement(s); js.id = id; js.src = "https://connect.facebook.net/en_US/sdk.js"; fjs.parentNode.insertBefore(js, fjs);}(document, "script", "facebook-jssdk"));
-    </script>
+    <script async defer crossorigin="anonymous" 
+            src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0"></script>
+
+
+
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&callback=initAppMap&libraries=places,geometry&v=weekly"></script>
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    <script async src="//www.instagram.com/embed.js"></script>
+    <script async src="https://www.instagram.com/embed.js"></script>
   </body>
 </html>
