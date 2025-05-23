@@ -168,18 +168,11 @@
         <div
           id="detailsOverlayShop"
           class="detail-pop-overlay custom-scrollbar hidden flex flex-col" /* Added flex flex-col */
-        >
-          <button id="closeDetailsOverlayShopButton" class="overlay-close-button"></button>
-          <div id="shopDetailsContent" class="flex-grow overflow-y-auto custom-scrollbar pt-10 sm:pt-12">
-            <h2
-              id="shopDetailName"
-              class="text-2xl sm:text-3xl font-bold text-gray-800 mb-4 w-full shrink-0"
-            ></h2>
-                        
+        >          
+          <div id="shopDetailsContent" class="flex-grow overflow-y-auto custom-scrollbar pt-6 sm:pt-8">
             <div id="shopImageGallery" class="mb-4 shrink-0">
               <p class="text-sm text-gray-500 text-center p-4 col-span-full">Loading listing photos...</p>
             </div>
-
 
             <!-- ========= NEW SECTION FOR PRODUCT ICONS ========= -->
             <div class="product-icons-section mb-4 shrink-0">
@@ -191,13 +184,16 @@
             <!-- ========= END NEW SECTION ========= -->
             
 
-            <div class="shrink-0">
-              <div id="directionsControlSection" class="mt-4 pt-4 border-t border-gray-200">
-                <button id="getShopDirectionsButton" class="w-full mb-2 inline-flex items-center justify-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"></button>
-                <button id="clearShopDirectionsButton" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors hidden"></button>
-              </div>
-              <div id="directionsPanel" class="mt-2 text-sm custom-scrollbar" style="max-height: 200px; overflow-y: auto"></div>
+                        <!-- ========= NEW SECTION FOR OPENING HOURS ========= -->
+            <div class="opening-hours-section mb-4 border-t border-b border-gray-200 py-3 shrink-0">
+                <h3 class="text-lg font-semibold text-gray-700 mb-2 px-1">Hours of Operation</h3>
+                <div id="shopOpeningHoursContainer" class="px-1">
+                    <p class="text-sm text-gray-500 text-center p-2">Loading hours...</p>
+                </div>
             </div>
+            <!-- ========= END NEW SECTION ========= -->
+
+            
           </div>
         </div>
       </main>

@@ -254,11 +254,22 @@ function displayGooglePlacePhotos(placeDetails, containerElement) {
 }
 
 
+// In uiLogic.js
+
 async function openClickedShopOverlays(shop) {
     if (!shop) { console.error("Shop data is null in openClickedShopOverlays."); return; }
-    currentShopForDirections = shop; 
+    currentShopForDirections = shop;
     let shopOverlayActuallyOpened = false;
     let socialOverlayActuallyOpened = false;
+
+    // Declare container variables at a higher scope, initialized to null or assigned later
+    let fbContentContainer = null;
+    let twContentContainer = null;
+    let igContentContainer = null;
+    let reviewsSocialContainer = null;
+    let googlePhotosContainer = null;
+    let openingHoursContainer = null; // For the shop details overlay
+    // csvGalleryContainer is specific to the shop overlay block, can remain local there.
 
     if (detailsOverlayShopElement) {
         openOverlay(detailsOverlayShopElement);
@@ -267,10 +278,10 @@ async function openClickedShopOverlays(shop) {
 
         try {
             if (shopDetailNameElement) shopDetailNameElement.textContent = shop.Name || 'N/A';
-            
+
             const csvGalleryContainer = document.getElementById('shopImageGallery');
             if (csvGalleryContainer) {
-                csvGalleryContainer.innerHTML = ''; 
+                csvGalleryContainer.innerHTML = '';
                 const imageFilenames = [shop.ImageOne, shop.ImageTwo, shop.ImageThree].filter(Boolean);
                 if (imageFilenames.length > 0) {
                     imageFilenames.forEach(filename => {
@@ -291,20 +302,24 @@ async function openClickedShopOverlays(shop) {
                 }
             }
 
-            // --- NEW: Populate Product Icons ---
+            // Initialize openingHoursContainer for the shop details panel
+            openingHoursContainer = document.getElementById('shopOpeningHoursContainer');
+            if (openingHoursContainer) {
+                openingHoursContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Loading hours...</p>';
+            }
+
             const productIconsContainer = document.getElementById('shopProductIconsContainer');
             if (productIconsContainer) {
-                if (shop.ProductsAvailable) { // Check if the property exists on the shop object
-                    productIconsContainer.innerHTML = generateProductIconsHTML(shop.ProductsAvailable);
+                if (shop) { 
+                    productIconsContainer.innerHTML = generateProductIconsHTML(shop);
                 } else {
-                    productIconsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Product categories not available.</p>';
+                    productIconsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Shop data error.</p>';
                 }
             }
-            // --- END: Populate Product Icons ---
 
             document.getElementById('getShopDirectionsButton')?.classList.remove('hidden');
             document.getElementById('clearShopDirectionsButton')?.classList.add('hidden');
-            const directionsPanelDiv = document.getElementById('directionsPanel'); 
+            const directionsPanelDiv = document.getElementById('directionsPanel');
             if (directionsPanelDiv) directionsPanelDiv.innerHTML = "";
 
         } catch (e) { console.error("Error populating RIGHT shop overlay:", e); }
@@ -316,11 +331,12 @@ async function openClickedShopOverlays(shop) {
         socialOverlayActuallyOpened = true;
 
         try {
-            const fbContentContainer = document.getElementById('socialLinksContainer');
-            const twContentContainer = document.getElementById('twitterTimelineContainer');
-            const igContentContainer = document.getElementById('instagramFeedContainer');
-            const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
-            const googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer'); 
+            // Initialize social overlay DOM elements
+            fbContentContainer = document.getElementById('socialLinksContainer');
+            twContentContainer = document.getElementById('twitterTimelineContainer');
+            igContentContainer = document.getElementById('instagramFeedContainer');
+            reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
+            googlePhotosContainer = document.getElementById('socialOverlayGooglePhotosContainer');
 
             if (fbContentContainer) {
                 if (shop.FacebookPageID) {
@@ -339,59 +355,71 @@ async function openClickedShopOverlays(shop) {
                     }
                 } else { twContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Twitter handle configured.</p>'; }
             }
-            
-            if (igContentContainer) { 
-                 if (shop.InstagramUsername && shop.InstagramRecentPostEmbedCode) { 
-                    if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername || !igContentContainer.innerHTML.includes('instagram-media')) { // also re-populate if not processed
-                       populateInstagramTab(shop, igContentContainer); 
+
+            if (igContentContainer) {
+                 if (shop.InstagramUsername && shop.InstagramRecentPostEmbedCode) {
+                    if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername || !igContentContainer.innerHTML.includes('instagram-media')) {
+                       populateInstagramTab(shop, igContentContainer);
                        igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
                     }
-                } else if (shop.InstagramUsername) { 
+                } else if (shop.InstagramUsername) {
                      if (igContentContainer.dataset.currentInstaUser !== shop.InstagramUsername) {
                         populateInstagramTab(shop, igContentContainer);
                         igContentContainer.dataset.currentInstaUser = shop.InstagramUsername;
                      }
-                } else { 
-                    igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>'; 
+                } else {
+                    igContentContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>';
                     igContentContainer.dataset.currentInstaUser = '';
                 }
             }
 
-            if (reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>'; 
+            if (reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>';
             if (googlePhotosContainer) googlePhotosContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 col-span-full text-center">Loading Google Photos...</p>';
 
+            // Google Places API call and subsequent UI updates
             if (shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
-                if (!shop.placeDetails || !shop.placeDetails.reviews || !shop.placeDetails.photos) {
-                    const fieldsToFetch = ['reviews', 'photos', 'rating', 'user_ratings_total', 'url', 'name', 'place_id'];
+                // CORRECTED: Use 'utc_offset_minutes'
+                const fieldsToFetch = ['reviews', 'photos', 'rating', 'user_ratings_total', 'url', 'name', 'place_id', 'opening_hours', 'utc_offset_minutes', 'business_status'];
+
+                if (!shop.placeDetails || !shop.placeDetails.opening_hours) { // Check if we need to fetch (or re-fetch if hours missing)
                     placesService.getDetails(
                         { placeId: shop.GoogleProfileID, fields: fieldsToFetch },
                         (place, status) => {
                             if (status === google.maps.places.PlacesServiceStatus.OK && place) {
-                                shop.placeDetails = { ...shop.placeDetails, ...place }; 
+                                shop.placeDetails = { ...shop.placeDetails, ...place };
+                                
+                                // These containers are now in scope from their declaration/assignment above
                                 if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer);
                                 if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
+                                // openingHoursContainer is for the *other* overlay, but if logic dictates it could be updated too
+                                if (openingHoursContainer) displayOpeningHours(shop.placeDetails, openingHoursContainer);
                             } else {
-                                if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); 
+                                if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer);
                                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer);
-                                console.warn(`Place details (reviews/photos) failed for ${shop.Name}: ${status}`);
+                                if (openingHoursContainer) displayOpeningHours(null, openingHoursContainer);
+                                console.warn(`Place details (reviews/photos/hours) failed for ${shop.Name}: ${status}`);
                             }
                         }
                     );
-                } else { 
-                     if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer); 
+                } else {
+                     // Details already exist, use them
+                     if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer);
                      if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
+                     if (openingHoursContainer) displayOpeningHours(shop.placeDetails, openingHoursContainer);
                 }
-            } else { 
-                 if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); 
-                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer); 
+            } else {
+                 // No GoogleProfileID, so cannot fetch Google specific details
+                 if (reviewsSocialContainer) displayShopReviews(null, reviewsSocialContainer); // Show 'unavailable' for reviews
+                 if (googlePhotosContainer) displayGooglePlacePhotos(null, googlePhotosContainer); // Show 'unavailable' for photos
+                 if (openingHoursContainer) displayOpeningHours(null, openingHoursContainer); // Show 'unavailable' for hours
             }
 
             let defaultTabTarget;
-            if (shop.GoogleProfileID) { defaultTabTarget = 'social-photos-panel'; } 
-            else if (shop.FacebookPageID) { defaultTabTarget = 'social-facebook-panel'; } 
+            if (shop.GoogleProfileID) { defaultTabTarget = 'social-photos-panel'; }
+            else if (shop.FacebookPageID) { defaultTabTarget = 'social-facebook-panel'; }
             else if (shop.InstagramUsername && shop.InstagramRecentPostEmbedCode) { defaultTabTarget = 'social-instagram-panel'; }
-            else if (shop.TwitterHandle) { defaultTabTarget = 'social-twitter-panel'; } 
-            else { defaultTabTarget = 'social-photos-panel';  }
+            else if (shop.TwitterHandle) { defaultTabTarget = 'social-twitter-panel'; }
+            else { defaultTabTarget = 'social-photos-panel';  } // Fallback
 
             const socialTabsContainer = document.getElementById('socialOverlayTabs');
             if (socialTabsContainer) {
@@ -411,30 +439,26 @@ async function openClickedShopOverlays(shop) {
                 if (!defaultButtonActuallyActivated && tabButtons.length > 0) {
                     tabButtons[0].classList.add('active-social-tab');
                     tabButtons[0].setAttribute('aria-selected', 'true');
-                    defaultTabTarget = tabButtons[0].dataset.tabTarget; 
+                    defaultTabTarget = tabButtons[0].dataset.tabTarget;
                 }
                 tabContents.forEach(panel => {
                     panel.classList.toggle('hidden', panel.id !== defaultTabTarget);
                 });
 
-                if (socialOverlayActuallyOpened) { // Only process if the overlay was actually opened/re-opened
+                if (socialOverlayActuallyOpened) {
                     if (defaultTabTarget === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
-                        const fbCC = document.getElementById('socialLinksContainer');
-                        if (fbCC && fbCC.querySelector('.fb-page')) {
+                        if (fbContentContainer && fbContentContainer.querySelector('.fb-page')) { // Use the scoped fbContentContainer
                             setTimeout(() => {
-                                console.log("FB.XFBML.parse on overlay open (default tab) for:", fbCC.dataset.currentPageId);
-                                FB.XFBML.parse(fbCC);
+                                FB.XFBML.parse(fbContentContainer);
                             }, 100);
                         }
                     }
                     if (defaultTabTarget === 'social-instagram-panel' && typeof window.instgrm !== 'undefined' && window.instgrm.Embeds) {
-                         const igDefContainer = document.getElementById('instagramFeedContainer');
-                         console.log("Instagram is default tab on overlay open. Container content:", igDefContainer ? igDefContainer.innerHTML.substring(0,150)+"..." : "IG Container not found!");
-                         console.log("Calling window.instgrm.Embeds.process() for IG default tab.");
-                         setTimeout(() => {
-                            console.log("Executing window.instgrm.Embeds.process() for IG default tab now.");
-                            window.instgrm.Embeds.process();
-                         }, 150);
+                         if (igContentContainer) { // Use the scoped igContentContainer
+                             setTimeout(() => {
+                                window.instgrm.Embeds.process();
+                             }, 150);
+                         }
                     }
                 }
             }
@@ -442,9 +466,74 @@ async function openClickedShopOverlays(shop) {
     }
 
     if (shopOverlayActuallyOpened || socialOverlayActuallyOpened) {
-        document.body.style.overflow = 'hidden'; 
+        document.body.style.overflow = 'hidden';
     }
 }
+
+
+
+// In uiLogic.js
+
+function displayOpeningHours(placeDetails, containerElement) {
+    if (!containerElement) return;
+
+    if (placeDetails && placeDetails.opening_hours && placeDetails.opening_hours.weekday_text) {
+        let hoursHTML = '<ul class="opening-hours-list space-y-1 text-sm text-gray-700">';
+        
+        // Optional: Display "Open now" status
+        if (typeof placeDetails.opening_hours.isOpen === 'function') { // Check if isOpen method exists
+            const isOpenNow = placeDetails.opening_hours.isOpen(); // This considers current time
+            if (isOpenNow !== undefined) { // isOpen() might return undefined if not determinable
+                 hoursHTML = `<p class="text-sm font-semibold mb-2 ${isOpenNow ? 'text-green-600' : 'text-red-600'}">${isOpenNow ? 'Open now' : 'Closed now'}</p>` + hoursHTML;
+            }
+        } else if (placeDetails.business_status === "OPERATIONAL" && placeDetails.opening_hours.open_now !== undefined) {
+            // Fallback to open_now if isOpen() method isn't available but business is operational
+            // (open_now might not be as accurate as isOpen() for future/past times)
+            const isOpenNow = placeDetails.opening_hours.open_now;
+            hoursHTML = `<p class="text-sm font-semibold mb-2 ${isOpenNow ? 'text-green-600' : 'text-red-600'}">${isOpenNow ? 'Open now' : 'Closed now'}</p>` + hoursHTML;
+        }
+
+
+        placeDetails.opening_hours.weekday_text.forEach(daySchedule => {
+            const parts = daySchedule.split(/:\s*(.*)/s); // Split day from hours, robust for multiple hour ranges
+            const day = parts[0];
+            const hours = parts[1] ? parts[1].trim() : 'Closed'; // Handle if no hours listed after colon
+
+            // Highlight current day (optional, requires knowing the current day)
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+            const isTodayClass = (day.toLowerCase() === today.toLowerCase()) ? 'font-bold text-blue-600' : '';
+
+            hoursHTML += `
+                <li class="flex justify-between ${isTodayClass}">
+                    <span>${day}:</span>
+                    <span class="text-right">${hours}</span>
+                </li>`;
+        });
+        hoursHTML += '</ul>';
+        containerElement.innerHTML = hoursHTML;
+    } else if (placeDetails && placeDetails.business_status && placeDetails.business_status !== "OPERATIONAL") {
+        let statusMessage = "Hours information not available.";
+        if (placeDetails.business_status === "CLOSED_TEMPORARILY") {
+            statusMessage = "Temporarily Closed";
+        } else if (placeDetails.business_status === "CLOSED_PERMANENTLY") {
+            statusMessage = "Permanently Closed";
+        }
+        containerElement.innerHTML = `<p class="text-sm text-red-500 font-semibold text-center p-2">${statusMessage}</p>`;
+    }
+    
+    else {
+        containerElement.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Hours information not available.</p>';
+    }
+}
+
+
+
+
+
+
+
+
+
 
 function closeClickedShopOverlays() {
     let anOverlayWasOpen = false;
@@ -885,50 +974,132 @@ function displayShopReviews(placeDetails, containerElement) {
 // At the top of uiLogic.js
 const PRODUCT_ICONS_CONFIG = {
     'beef': {
-        csvHeader: 'has beef',
+        csvHeader: 'beef',
         name: 'Beef',
-        icon_available: 'beef_1.png',
+        icon_available: 'beef_1.jpg',
         icon_unavailable: 'beef_0.jpg'
     },
-    'lamb': {
-        csvHeader: 'has lamb',
-        name: 'Lamb',
-        icon_available: 'lamb_1.jpg',
-        icon_unavailable: 'lamb_0.jpg'
-    },
-    'eggs': {
-        csvHeader: 'has eggs',
-        name: 'Eggs',
-        icon_available: 'eggs_1.jpg',
-        icon_unavailable: 'eggs_0.jpg'
-    },
-    'chicken': {
-        csvHeader: 'has chicken',
-        name: 'Chicken',
-        icon_available: 'chicken_1.jpg',
-        icon_unavailable: 'chicken_0.jpg'
-    },
-
-    'carrots': {
-        csvHeader: 'has carrots',
-        name: 'Carrots',
-        icon_available: 'carrots_1.jpg',
-        icon_unavailable: 'carrots_0.jpg'
-    },
-    'corn': {
-        csvHeader: 'has corn',
-        name: 'Corn',
-        icon_available: 'corn_1.jpg',
-        icon_unavailable: 'corn_0.jpg'
-    },
     'pork': {
-        csvHeader: 'has pork',
+        csvHeader: 'pork',
         name: 'Pork',
         icon_available: 'pork_1.jpg',
         icon_unavailable: 'pork_0.jpg'
     },
-
-
+    'lamb': {
+        csvHeader: 'lamb',
+        name: 'Lamb',
+        icon_available: 'lamb_1.jpg',
+        icon_unavailable: 'lamb_0.jpg'
+    },
+    'chicken': {
+        csvHeader: 'chicken',
+        name: 'Chicken',
+        icon_available: 'chicken_1.jpg',
+        icon_unavailable: 'chicken_0.jpg'
+    },
+    'turkey': {
+        csvHeader: 'turkey',
+        name: 'Turkey',
+        icon_available: 'turkey_1.jpg',
+        icon_unavailable: 'turkey_0.jpg'
+    },
+    'duck': {
+        csvHeader: 'duck',
+        name: 'Duck',
+        icon_available: 'duck_1.jpg',
+        icon_unavailable: 'duck_0.jpg'
+    },
+    'eggs': {
+        csvHeader: 'eggs',
+        name: 'Eggs',
+        icon_available: 'eggs_1.jpg',
+        icon_unavailable: 'eggs_0.jpg'
+    },
+    'corn': {
+        csvHeader: 'corn',
+        name: 'Corn',
+        icon_available: 'corn_1.jpg',
+        icon_unavailable: 'corn_0.jpg'
+    },
+    'carrots': {
+        csvHeader: 'carrots',
+        name: 'Carrots',
+        icon_available: 'carrots_1.jpg',
+        icon_unavailable: 'carrots_0.jpg'
+    },
+    'garlic': {
+        csvHeader: 'garlic',
+        name: 'Garlic',
+        icon_available: 'garlic_1.jpg',
+        icon_unavailable: 'garlic_0.jpg'
+    },
+    'onions': {
+        csvHeader: 'onions',
+        name: 'Onions',
+        icon_available: 'onions_1.jpg',
+        icon_unavailable: 'onions_0.jpg'
+    },
+    'potatoes': {
+        csvHeader: 'potatoes',
+        name: 'Potatoes',
+        icon_available: 'potatoes_1.jpg',
+        icon_unavailable: 'potatoes_0.jpg'
+    },
+    'lettus': {
+        csvHeader: 'lettus',
+        name: 'Lettus',
+        icon_available: 'lettus_1.jpg',
+        icon_unavailable: 'lettus_0.jpg'
+    },
+    'spinach': {
+        csvHeader: 'spinach',
+        name: 'Spinach',
+        icon_available: 'spinach_1.jpg',
+        icon_unavailable: 'spinach_0.jpg'
+    },
+    'squash': {
+        csvHeader: 'squash',
+        name: 'Squash',
+        icon_available: 'squash_1.jpg',
+        icon_unavailable: 'squash_0.jpg'
+    },
+    'tomatoes': {
+        csvHeader: 'tomatoes',
+        name: 'Tomatoes',
+        icon_available: 'tomatoes_1.jpg',
+        icon_unavailable: 'tomatoes_0.jpg'
+    },
+    'peppers': {
+        csvHeader: 'peppers',
+        name: 'Peppers',
+        icon_available: 'peppers_1.jpg',
+        icon_unavailable: 'peppers_0.jpg'
+    },
+    'cucumbers': {
+        csvHeader: 'cucumbers',
+        name: 'Cucumbers',
+        icon_available: 'cucumbers_1.jpg',
+        icon_unavailable: 'cucumbers_0.jpg'
+    },
+    'zucchini': {
+        csvHeader: 'zucchini',
+        name: 'Zucchini',
+        icon_available: 'zucchini_1.jpg',
+        icon_unavailable: 'zucchini_0.jpg'
+    },
+    'strawberries': {
+        csvHeader: 'strawberries',
+        name: 'Strawberries',
+        icon_available: 'strawberries_1.jpg',
+        icon_unavailable: 'strawberries_0.jpg'
+    },
+    'blueberries': {
+        csvHeader: 'blueberries',
+        name: 'Blueberries',
+        icon_available: 'blueberries_1.jpg',
+        icon_unavailable: 'blueberries_0.jpg'
+    },
+}
 
 
 
@@ -936,33 +1107,33 @@ const PRODUCT_ICONS_CONFIG = {
 
 // In uiLogic.js
 
-function generateProductIconsHTML(shopProductAvailabilityData) {
-    // shopProductAvailabilityData might be undefined if the shop object didn't have it.
-    // Or it might be an empty object if no relevant columns were found for that shop.
-    // We will always loop through PRODUCT_ICONS_CONFIG and check availability.
+// In uiLogic.js
+
+function generateProductIconsHTML(shop) { // Changed argument to 'shop'
+    if (!shop) { // Basic check for the shop object
+        return '<p class="text-sm text-gray-500 text-center p-2 col-span-full">Shop data not available for products.</p>';
+    }
 
     let iconsHTML = '<div id="shopProductIconsGrid" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1">';
-    let hasAtLeastOneDefinedProduct = false; // To check if we should show a "none available" message
+    let displayedIconCount = 0;
 
     for (const internalKey in PRODUCT_ICONS_CONFIG) {
-        hasAtLeastOneDefinedProduct = true; // At least one icon will be processed
         const config = PRODUCT_ICONS_CONFIG[internalKey];
-        const csvHeaderForProduct = config.csvHeader.toLowerCase(); // Ensure lowercase for matching
+        // config.csvHeader is now the direct property name on the shop object (e.g., 'beef', 'pork')
+        const productPropertyKey = config.csvHeader; 
 
-        let iconFileToUse = config.icon_unavailable; // Default to unavailable icon
-        let itemClasses = "product-icon-item flex flex-col items-center text-center p-1 opacity-50"; // Default to less opacity
+        let iconFileToUse = config.icon_unavailable;
+        let itemClasses = "product-icon-item flex flex-col items-center text-center p-1 opacity-50";
         let altText = `${config.name} (not listed)`;
 
-        // Check if the shop has this product marked as available
-        if (shopProductAvailabilityData && // Ensure the availability data object exists
-            shopProductAvailabilityData.hasOwnProperty(csvHeaderForProduct) &&
-            shopProductAvailabilityData[csvHeaderForProduct] === true) {
-            
+        // Check if the shop object has the property and if it's true
+        if (shop.hasOwnProperty(productPropertyKey) && shop[productPropertyKey] === true) {
+            displayedIconCount++; // Increment only if available and displayed with active icon
             iconFileToUse = config.icon_available;
-            itemClasses = "product-icon-item flex flex-col items-center text-center p-1 rounded-md hover:bg-gray-100 transition-colors"; // Full opacity, hover effect
+            itemClasses = "product-icon-item flex flex-col items-center text-center p-1 rounded-md hover:bg-gray-100 transition-colors";
             altText = config.name;
         }
-
+        // Always render an icon container (either active or inactive style)
         iconsHTML += `
             <div class="${itemClasses}">
                 <img src="images/icons/${iconFileToUse}" alt="${altText}" class="w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1">
@@ -971,11 +1142,19 @@ function generateProductIconsHTML(shopProductAvailabilityData) {
         `;
     }
 
-    if (!hasAtLeastOneDefinedProduct) { // Should not happen if PRODUCT_ICONS_CONFIG is not empty
+    // This condition is now less critical if we always show all icons (faded or active)
+    // but can be kept if you only want a message if PRODUCT_ICONS_CONFIG itself is empty.
+    if (Object.keys(PRODUCT_ICONS_CONFIG).length === 0) {
         iconsHTML = '<p class="text-sm text-gray-500 text-center p-2 col-span-full">No product categories configured to display.</p>';
+    } else if (displayedIconCount === 0 && Object.keys(PRODUCT_ICONS_CONFIG).length > 0) {
+        // If you prefer to show a message when NO products are available for THIS shop, even if icons are shown faded:
+        // iconsHTML += '</div><p class="text-sm text-gray-500 text-center p-2 col-span-full">No featured products available for this shop.</p>';
+        // For now, we always show the grid.
+        iconsHTML += '</div>';
     } else {
         iconsHTML += '</div>'; // Close shopProductIconsGrid
     }
+
 
     return iconsHTML;
 }

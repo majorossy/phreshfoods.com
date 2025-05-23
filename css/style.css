@@ -399,3 +399,36 @@ input[type="range"]::-ms-fill-upper { background: #cbd5e0; border-radius: 2px; }
 .product-icon-item span {
     /* Tailwind: text-xs font-medium text-gray-700 */
 }
+
+
+
+
+/* style.css - (add if needed, Tailwind might be sufficient) */
+
+.opening-hours-section {
+    /* Tailwind classes py-3, mb-4, border-t, border-b handle spacing and borders */
+}
+
+#shopOpeningHoursContainer {
+    /* Tailwind px-1 handles horizontal padding */
+}
+
+.opening-hours-list {
+    /* Tailwind space-y-1 handles vertical spacing between list items */
+}
+
+.opening-hours-list li {
+    /* Tailwind flex justify-between handles layout of day vs hours */
+    /* font-size might be inherited or set by text-sm on parent */
+}
+
+.opening-hours-list li span:first-child {
+    /* Day name */
+    /* color: #374151; /* Tailwind text-gray-700 */
+}
+
+.opening-hours-list li span:last-child {
+    /* Hours text */
+    /* color: #4b5563; /* Tailwind text-gray-600 or similar */
+    /* white-space: pre-line; /* If hours can have multiple lines */
+}

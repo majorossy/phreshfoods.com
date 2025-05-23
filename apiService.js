@@ -1,10 +1,11 @@
-﻿async function fetchSheetData() {
+﻿// REVISED apiService.js
+
+async function fetchSheetData() {
   if (
     GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER ||
     !GOOGLE_SHEET_DIRECT_URL
   ) {
     console.error("ERROR: Google Sheet URL not configured.");
-    // Handle UI update for error in main.js or uiLogic.js
     return [];
   }
   try {
@@ -18,7 +19,6 @@
     return parseCSVData(csvText);
   } catch (error) {
     console.error("Could not fetch/parse Google Sheet data:", error);
-    // Handle UI update for error in main.js or uiLogic.js
     return [];
   }
 }
@@ -29,130 +29,131 @@ function parseCSVData(csv) {
   const headerLine = lines.shift();
   const headers = parseCSVLine(headerLine).map((h) => h.trim().toLowerCase());
 
+  // headerMap keys should be lowercase and match what you intend to use as shop object keys
   const headerMap = {
     name: headers.indexOf("name"),
     address: headers.indexOf("address"),
     rating: headers.indexOf("rating"),
     phone: headers.indexOf("phone"),
     website: headers.indexOf("website"),
-    googleProfileId: headers.indexOf("place id"),
+    googleprofileid: headers.indexOf("place id"), // key is lowercase
     logo: headers.indexOf("logo"),
-    imageOne: headers.indexOf("image_one"),
-    imageTwo: headers.indexOf("image_two"),
-    imageThree: headers.indexOf("image_three"),
-    twitterHandle: headers.indexOf("twitter"),
-    facebookPageId: headers.indexOf("facebook"),
-    instagramUsername: headers.indexOf("instagram username"), // For @handle
-    instagramEmbedCode: headers.indexOf("instagram embed code"), // For the blockquote embed
-    instagramLink: headers.indexOf("instagram"), // For direct link (if different from username page)
+    imageone: headers.indexOf("image_one"),     // key is lowercase
+    imagetwo: headers.indexOf("image_two"),     // key is lowercase
+    imagethree: headers.indexOf("image_three"),   // key is lowercase
+    twitterhandle: headers.indexOf("twitter"),  // key is lowercase
+    facebookpageid: headers.indexOf("facebook"),// key is lowercase
+    instagramusername: headers.indexOf("instagram username"),
+    instagramembedcode: headers.indexOf("instagram embed code"),
+    instagramlink: headers.indexOf("instagram"),
     beef: headers.indexOf("beef"),
     pork: headers.indexOf("pork"),
     lamb: headers.indexOf("lamb"),
     chicken: headers.indexOf("chicken"),
+    turkey: headers.indexOf("turkey"),
+    duck: headers.indexOf("duck"),
     eggs: headers.indexOf("eggs"),
     corn: headers.indexOf("corn"),
+    carrots: headers.indexOf("carrots"),
+    garlic: headers.indexOf("garlic"),
+    onions: headers.indexOf("onions"),
+    potatoes: headers.indexOf("potatoes"),
+    lettus: headers.indexOf("lettus"),
+    spinach: headers.indexOf("spinach"),
+    squash: headers.indexOf("squash"),
+    tomatoes: headers.indexOf("tomatoes"),
+    peppers: headers.indexOf("peppers"),
+    cucumbers: headers.indexOf("cucumbers"),
+    zucchini: headers.indexOf("zucchini"),
+    strawberries: headers.indexOf("strawberries"),
+    blueberries: headers.indexOf("blueberries"),    
   };
 
-  Object.keys(headerMap).forEach((key) => {
-    if (headerMap[key] === -1 && ["name", "address"].includes(key)) {
-      // Only warn for essential missing headers
-      console.warn(`Warning: Essential CSV Header "${key}" not found.`);
-    } else if (headerMap[key] === -1) {
-      // console.log(`Info: Optional CSV Header "${key}" not found.`);
-    }
-  });
-
   return lines
-    .map((line, lineIndex) => { // Add lineIndex here
+    .map((line, lineIndex) => {
       if (!line.trim()) return null;
       const rawValues = parseCSVLine(line);
       
-      // Enhanced getValue for debugging
-      const getValue = (index, headerName) => { // Add headerName for context
+      const getStringValueFromMap = (headerMapKey) => {
+        const index = headerMap[headerMapKey]; // headerMapKey is already lowercase
+        if (index === -1 || index === undefined || index >= rawValues.length) {
+            return ""; 
+        }
         let val = rawValues[index] || "";
         if (val.startsWith('"') && val.endsWith('"')) {
           val = val.substring(1, val.length - 1);
         }
-        const cleanedVal = val.replace(/""/g, '"').trim();
-        
-        // Log if a suspicious value (like one containing <script>) is found
-        if (cleanedVal.toLowerCase().includes("<script")) {
-            console.warn(`apiService.js: Suspicious <script> tag found in CSV data. Line: ${lineIndex + 2}, Header: ${headerName}, Value (first 50 chars): ${cleanedVal.substring(0,50)}`);
-        }
-        return cleanedVal;
+        return val.replace(/""/g, '"').trim();
       };
 
-
-
-      // Get the encoded embed code
-      const encodedEmbedCode = getValue(headerMap.instagramEmbedCode, "instagram embed code");
+      // THIS IS THE KEY FUNCTION FOR PRODUCTS
+      const getProductBoolean = (productHeaderMapKey) => {
+          const stringVal = getStringValueFromMap(productHeaderMapKey).toLowerCase();
+          return ['true', '1', 'yes', 't', 'x'].includes(stringVal);
+      };
+      
+      const encodedEmbedCode = getStringValueFromMap("instagramembedcode");
       let decodedEmbedCode = '';
-
       if (encodedEmbedCode) {
         try {
-          // --- CHOOSE ONE DECODING METHOD ---
-          // Option 1: If you used Base64 encoding in your CSV
           decodedEmbedCode = atob(encodedEmbedCode); 
-          console.log(`[apiService] Decoded (Base64) IG Embed for line ${lineIndex+2}:`, decodedEmbedCode.substring(0,100));
-
-          // Option 2: If you used Percent-encoding (encodeURIComponent) in your CSV
-          // decodedEmbedCode = decodeURIComponent(encodedEmbedCode);
-          // console.log(`[apiService] Decoded (Percent) IG Embed for line ${lineIndex+2}:`, decodedEmbedCode.substring(0,100));
-
         } catch (e) {
-          console.error(`[apiService] Error decoding Instagram embed code for line ${lineIndex + 2}:`, e);
-          console.error(`[apiService] Original encoded value (first 100 chars): ${encodedEmbedCode.substring(0,100)}`);
-          decodedEmbedCode = encodedEmbedCode; // Fallback to the raw value if decoding fails (it might be unencoded)
+          console.error(`[apiService] Error decoding Instagram embed code for line ${lineIndex + 2}:`, e, `Original: ${encodedEmbedCode.substring(0,100)}`);
+          decodedEmbedCode = encodedEmbedCode;
         }
       }
 
-
-
       const shop = {
-        Name: getValue(headerMap.name, "name") || "N/A", // Pass header name
-        Address: getValue(headerMap.address, "address") || "N/A",
-        Rating: getValue(headerMap.rating, "rating") || "N/A", 
-        Phone: getValue(headerMap.phone, "phone"),
-        Website: getValue(headerMap.website, "website"),
-        GoogleProfileID: getValue(headerMap.googleProfileId, "place id"),
-        TwitterHandle: getValue(headerMap.twitterHandle, "twitter"),
-        FacebookPageID: getValue(headerMap.facebookPageId, "facebook"),
-        InstagramUsername: getValue(headerMap.instagramUsername, "instagram username"),
-        InstagramRecentPostEmbedCode: getValue(headerMap.instagramEmbedCode, "instagram embed code"),
-        InstagramLink: getValue(headerMap.instagramLink, "instagram"),
-        City: "", // This will be populated later
-        ImageOne: getValue(headerMap.imageOne, "image_one"),
-        ImageTwo: getValue(headerMap.imageTwo, "image_two"),
-        ImageThree: getValue(headerMap.imageThree, "image_three"),
-        beef: getValue(headerMap.beef, "beef") || "N/A",
-        pork: getValue(headerMap.pork, "pork") || "N/A",
-        lamb: getValue(headerMap.lamb, "lamb") || "N/A",
-        chicken: getValue(headerMap.chicken, "chicken") || "N/A",
-        eggs: getValue(headerMap.eggs, "eggs") || "N/A",
-        corn: getValue(headerMap.corn, "corn") || "N/A",
+        Name: getStringValueFromMap("name") || "N/A",
+        Address: getStringValueFromMap("address") || "N/A",
+        City: getStringValueFromMap("city") || "N/A",
+        Zip: getStringValueFromMap("zip") || "N/A",
+        Rating: getStringValueFromMap("rating") || "N/A", 
+        Phone: getStringValueFromMap("phone"),
+        Website: getStringValueFromMap("website"),
+        GoogleProfileID: getStringValueFromMap("googleprofileid"), // Use lowercase key
+        TwitterHandle: getStringValueFromMap("twitterhandle"),   // Use lowercase key
+        FacebookPageID: getStringValueFromMap("facebookpageid"), // Use lowercase key
+        InstagramUsername: getStringValueFromMap("instagramusername"),
+        InstagramRecentPostEmbedCode: decodedEmbedCode,
+        InstagramLink: getStringValueFromMap("instagramlink"),        
+        ImageOne: getStringValueFromMap("imageone"),   // Use lowercase key
+        ImageTwo: getStringValueFromMap("imagetwo"),   // Use lowercase key
+        ImageThree: getStringValueFromMap("imagethree"), // Use lowercase key
+        beef: getProductBoolean("beef"),
+        pork: getProductBoolean("pork"),
+        lamb: getProductBoolean("lamb"),
+        chicken: getProductBoolean("chicken"),
+        turkey: getProductBoolean("turkey"),
+        duck: getProductBoolean("duck"),
+        eggs: getProductBoolean("eggs"),
+        corn: getProductBoolean("corn"),
+        carrots: getProductBoolean("carrots"),
+        garlic: getProductBoolean("garlic"),
+        onions: getProductBoolean("onions"),
+        potatoes: getProductBoolean("potatoes"),
+        lettus: getProductBoolean("lettus"),
+        spinach: getProductBoolean("spinach"),
+        squash: getProductBoolean("squash"),
+        tomatoes: getProductBoolean("tomatoes"),
+        peppers: getProductBoolean("peppers"),
+        cucumbers: getProductBoolean("cucumbers"),
+        zucchini: getProductBoolean("zucchini"),
+        strawberries: getProductBoolean("strawberries"),
+        blueberries: getProductBoolean("blueberries"),
       };
-
-      // console.log(`Parsed Shop (line ${lineIndex + 2}):`, JSON.stringify(shop).substring(0,200) + "..."); // Optional: log every parsed shop (can be noisy)
-
       
+      // console.log(`[apiService] Shop: ${shop.Name}, Beef: ${shop.beef} (Type: ${typeof shop.beef}), Corn: ${shop.corn}`);
 
       if (shop.Address && shop.Address !== "N/A") {
         const addressParts = shop.Address.split(",");
         if (addressParts.length >= 2) {
           let cityCandidate = addressParts[addressParts.length - 2]?.trim();
-          if (
-            cityCandidate &&
-            !/^\d{5}(-\d{4})?$/.test(cityCandidate) &&
-            !/^[A-Z]{2}$/.test(cityCandidate.toUpperCase())
-          ) {
+          if (cityCandidate && !/^\d{5}(-\d{4})?$/.test(cityCandidate) && !/^[A-Z]{2}$/.test(cityCandidate.toUpperCase())) {
             shop.City = cityCandidate;
           } else if (addressParts.length >= 3) {
             cityCandidate = addressParts[addressParts.length - 3]?.trim();
-            if (
-              cityCandidate &&
-              !/^\d{5}(-\d{4})?$/.test(cityCandidate) &&
-              !/^[A-Z]{2}$/.test(cityCandidate.toUpperCase())
-            ) {
+            if (cityCandidate && !/^\d{5}(-\d{4})?$/.test(cityCandidate) && !/^[A-Z]{2}$/.test(cityCandidate.toUpperCase())) {
               shop.City = cityCandidate;
             }
           }
@@ -161,7 +162,6 @@ function parseCSVData(csv) {
       return shop;
     })
     .filter(
-      (shop) =>
-        shop && shop.Name && shop.Name !== "N/A" && shop.Name.trim() !== ""
+      (shop) => shop && shop.Name && shop.Name !== "N/A" && shop.Name.trim() !== ""
     );
 }
