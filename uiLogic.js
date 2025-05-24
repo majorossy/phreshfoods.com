@@ -1,9 +1,86 @@
-﻿document.addEventListener('DOMContentLoaded', () => {
+﻿// At the top of uiLogic.js, with other global-like variables:
+let productFilterToggleElement, productFilterDropdownElement, productFilterCheckboxesContainer, resetProductFiltersButton, activeFilterCountElement;
+let activeProductFilters = {}; // Stores { beef: true, corn: false, ... }
+
+// PRODUCT_ICONS_CONFIG should be defined before this line.
+// It is defined at the bottom of this file in the original structure.
+// Let's move it up or ensure it's defined. For safety, I'll assume it's defined.
+// If PRODUCT_ICONS_CONFIG is defined later in this file, this will cause an error.
+// It's better to define constants like PRODUCT_ICONS_CONFIG at the top.
+
+// Let's define PRODUCT_ICONS_CONFIG here for clarity if it's not already at the top
+const PRODUCT_ICONS_CONFIG = {
+    'beef': { csvHeader: 'beef', name: 'Beef', icon_available: 'beef_1.jpg', icon_unavailable: 'beef_0.jpg' },
+    'pork': { csvHeader: 'pork', name: 'Pork', icon_available: 'pork_1.jpg', icon_unavailable: 'pork_0.jpg' },
+    'lamb': { csvHeader: 'lamb', name: 'Lamb', icon_available: 'lamb_1.jpg', icon_unavailable: 'lamb_0.jpg' },
+    'chicken': { csvHeader: 'chicken', name: 'Chicken', icon_available: 'chicken_1.jpg', icon_unavailable: 'chicken_0.jpg' },
+    'turkey': { csvHeader: 'turkey', name: 'Turkey', icon_available: 'turkey_1.jpg', icon_unavailable: 'turkey_0.jpg' },
+    'duck': { csvHeader: 'duck', name: 'Duck', icon_available: 'duck_1.jpg', icon_unavailable: 'duck_0.jpg' },
+    'eggs': { csvHeader: 'eggs', name: 'Eggs', icon_available: 'eggs_1.jpg', icon_unavailable: 'eggs_0.jpg' },
+    'corn': { csvHeader: 'corn', name: 'Corn', icon_available: 'corn_1.jpg', icon_unavailable: 'corn_0.jpg' },
+    'carrots': { csvHeader: 'carrots', name: 'Carrots', icon_available: 'carrots_1.jpg', icon_unavailable: 'carrots_0.jpg' },
+    'garlic': { csvHeader: 'garlic', name: 'Garlic', icon_available: 'garlic_1.jpg', icon_unavailable: 'garlic_0.jpg' },
+    'onions': { csvHeader: 'onions', name: 'Onions', icon_available: 'onions_1.jpg', icon_unavailable: 'onions_0.jpg' },
+    'potatoes': { csvHeader: 'potatoes', name: 'Potatoes', icon_available: 'potatoes_1.jpg', icon_unavailable: 'potatoes_0.jpg' },
+    'lettus': { csvHeader: 'lettus', name: 'Lettus', icon_available: 'lettus_1.jpg', icon_unavailable: 'lettus_0.jpg' }, // Assuming 'lettus' is intentional
+    'spinach': { csvHeader: 'spinach', name: 'Spinach', icon_available: 'spinach_1.jpg', icon_unavailable: 'spinach_0.jpg' },
+    'squash': { csvHeader: 'squash', name: 'Squash', icon_available: 'squash_1.jpg', icon_unavailable: 'squash_0.jpg' },
+    'tomatoes': { csvHeader: 'tomatoes', name: 'Tomatoes', icon_available: 'tomatoes_1.jpg', icon_unavailable: 'tomatoes_0.jpg' },
+    'peppers': { csvHeader: 'peppers', name: 'Peppers', icon_available: 'peppers_1.jpg', icon_unavailable: 'peppers_0.jpg' },
+    'cucumbers': { csvHeader: 'cucumbers', name: 'Cucumbers', icon_available: 'cucumbers_1.jpg', icon_unavailable: 'cucumbers_0.jpg' },
+    'zucchini': { csvHeader: 'zucchini', name: 'Zucchini', icon_available: 'zucchini_1.jpg', icon_unavailable: 'zucchini_0.jpg' },
+    'strawberries': { csvHeader: 'strawberries', name: 'Strawberries', icon_available: 'strawberries_1.jpg', icon_unavailable: 'strawberries_0.jpg' },
+    'blueberries': { csvHeader: 'blueberries', name: 'Blueberries', icon_available: 'blueberries_1.jpg', icon_unavailable: 'blueberries_0.jpg' },
+};
+
+const FILTERABLE_PRODUCT_ATTRIBUTES = Object.keys(PRODUCT_ICONS_CONFIG);
+
+
+document.addEventListener('DOMContentLoaded', () => {
     window.detailsOverlayShopElement = document.getElementById('detailsOverlayShop');
     window.detailsOverlaySocialElement = document.getElementById('detailsOverlaySocial');
-    window.shopDetailNameElement = document.getElementById('shopDetailName'); 
+    window.shopDetailNameElement = document.getElementById('shopDetailName');
 
-    const getDirectionsBtnOverlay = document.getElementById('getShopDirectionsButton'); 
+    // Initialize filter UI elements
+    productFilterToggleElement = document.getElementById('productFilterToggle');
+    productFilterDropdownElement = document.getElementById('productFilterDropdown');
+    productFilterCheckboxesContainer = document.getElementById('productFilterCheckboxes');
+    resetProductFiltersButton = document.getElementById('resetProductFilters');
+    activeFilterCountElement = document.getElementById('activeFilterCount');
+
+    if (productFilterToggleElement && productFilterDropdownElement && productFilterCheckboxesContainer && resetProductFiltersButton && activeFilterCountElement) {
+        populateProductFilterDropdown(); // Populate dropdown with checkboxes
+
+        productFilterToggleElement.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent body click from closing it immediately
+            productFilterDropdownElement.classList.toggle('hidden');
+        });
+
+        resetProductFiltersButton.addEventListener('click', () => {
+            FILTERABLE_PRODUCT_ATTRIBUTES.forEach(attr => {
+                activeProductFilters[attr] = false;
+                const checkbox = productFilterCheckboxesContainer.querySelector(`input[name="${attr}"]`);
+                if (checkbox) checkbox.checked = false;
+            });
+            updateActiveFilterCountDisplay();
+            if (typeof handleSearch === 'function') { // handleSearch is in main.js
+                handleSearch(); // Trigger re-filtering
+            }
+            productFilterDropdownElement.classList.add('hidden'); // Close dropdown
+        });
+
+        // Close dropdown if clicking outside of it
+        document.body.addEventListener('click', (e) => {
+            if (productFilterDropdownElement && !productFilterDropdownElement.classList.contains('hidden')) {
+                if (!productFilterToggleElement.contains(e.target) && !productFilterDropdownElement.contains(e.target)) {
+                    productFilterDropdownElement.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+
+    const getDirectionsBtnOverlay = document.getElementById('getShopDirectionsButton');
     if (getDirectionsBtnOverlay) {
         getDirectionsBtnOverlay.addEventListener('click', () => {
             if (currentShopForDirections) {
@@ -15,7 +92,7 @@
         });
     }
 
-    const clearDirectionsBtn = document.getElementById('clearShopDirectionsButton'); 
+    const clearDirectionsBtn = document.getElementById('clearShopDirectionsButton');
     if (clearDirectionsBtn) {
         clearDirectionsBtn.addEventListener('click', () => {
             if (typeof clearDirections === 'function') {
@@ -54,7 +131,7 @@
                         panel.classList.remove('hidden');
                         if (targetPanelId === 'social-facebook-panel' && typeof FB !== 'undefined' && FB.XFBML) {
                              const fbContentContainer = document.getElementById('socialLinksContainer');
-                             if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) { 
+                             if(fbContentContainer && fbContentContainer.querySelector('.fb-page')) {
                                 setTimeout(() => {
                                     console.log("FB.XFBML.parse on tab click for:", fbContentContainer.dataset.currentPageId);
                                     FB.XFBML.parse(fbContentContainer);
@@ -68,7 +145,7 @@
                             setTimeout(() => {
                                 console.log("Executing window.instgrm.Embeds.process() for IG tab now.");
                                 window.instgrm.Embeds.process();
-                            }, 100); 
+                            }, 100);
                         }
                     } else {
                         panel.classList.add('hidden');
@@ -79,6 +156,80 @@
         });
     }
 });
+
+function populateProductFilterDropdown() {
+    if (!productFilterCheckboxesContainer || !FILTERABLE_PRODUCT_ATTRIBUTES) return;
+    productFilterCheckboxesContainer.innerHTML = ''; // Clear existing
+
+    FILTERABLE_PRODUCT_ATTRIBUTES.forEach(attrKey => {
+        const attributeConfig = PRODUCT_ICONS_CONFIG[attrKey];
+        const displayName = attributeConfig ? attributeConfig.name : (attrKey.charAt(0).toUpperCase() + attrKey.slice(1));
+        const iconFileName = attributeConfig ? attributeConfig.icon_available : null; // Get the available icon
+
+        activeProductFilters[attrKey] = activeProductFilters[attrKey] || false; // Initialize if not set
+
+        const label = document.createElement('label');
+        // Tailwind classes for styling label, can be adjusted
+        // Added 'flex items-center' to align checkbox, icon, and text
+        label.className = 'block hover:bg-gray-100 p-1 rounded transition-colors duration-150 flex items-center cursor-pointer';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = attrKey;
+        // Tailwind form styles, adjusted margin
+        checkbox.className = 'form-checkbox h-3 w-3 text-red-600 border-gray-300 rounded focus:ring-red-500 mr-2';
+        checkbox.checked = activeProductFilters[attrKey];
+
+        checkbox.addEventListener('change', (e) => {
+            activeProductFilters[attrKey] = e.target.checked;
+            updateActiveFilterCountDisplay();
+            if (typeof handleSearch === 'function') { // handleSearch is in main.js
+                handleSearch(); // Re-filter and update map/listings
+            }
+        });
+
+        label.appendChild(checkbox);
+
+        // --- NEW: Add Icon ---
+        if (iconFileName) {
+            const iconImg = document.createElement('img');
+            iconImg.src = `images/icons/${iconFileName}`;
+            iconImg.alt = `${displayName} icon`;
+            // Tailwind classes for icon styling
+            iconImg.className = 'w-4 h-4 object-contain mr-1.5'; // Adjust size and margin as needed
+            label.appendChild(iconImg);
+        }
+        // --- END NEW: Add Icon ---
+
+        label.appendChild(document.createTextNode(`${displayName}`)); // Removed leading space as icon/checkbox provides spacing
+        productFilterCheckboxesContainer.appendChild(label);
+    });
+    updateActiveFilterCountDisplay(); // Initial count update
+}
+
+
+// New function to update the display of how many filters are active
+function updateActiveFilterCountDisplay() {
+    if (!activeFilterCountElement || !productFilterToggleElement) return;
+
+    const count = Object.values(activeProductFilters).filter(isActive => isActive).length;
+
+    if (count > 0) {
+        activeFilterCountElement.textContent = `(${count})`;
+        activeFilterCountElement.classList.remove('hidden');
+        activeFilterCountElement.classList.add('visible');
+        productFilterToggleElement.classList.add('filters-active');
+    } else {
+        activeFilterCountElement.textContent = '';
+        activeFilterCountElement.classList.add('hidden');
+        activeFilterCountElement.classList.remove('visible');
+        productFilterToggleElement.classList.remove('filters-active');
+    }
+}
+
+// Expose activeProductFilters to main.js (or other modules) if needed
+window.activeProductFilters = activeProductFilters;
+
 
 function openOverlay(overlay) {
     if (!overlay) return;
@@ -151,28 +302,21 @@ function getStarsVisualHTML(ratingStringOrNumber, starSizeClass = 'w-5 h-5') {
     return starsHTML;
 }
 
-
-
-
-
-
-
-
 function generateFacebookPagePluginHTML(pageId, pageName) {
     if (!pageId) return '<!-- Error: Facebook Page ID missing. -->';
     const facebookPageLink = `https://www.facebook.com/${pageId}/`;
     const displayName = pageName || pageId;
     return `
-<div class="fb-page" 
-    data-href="${facebookPageLink}" 
-    data-tabs="timeline" 
-    data-width="100%" 
-    data-height="100%" 
-    data-use-container-width="true" 
-    data-small-header="true" 
-    data-adapt-container-width="true" 
-    data-hide-cover="true" 
-    data-show-facepile="false"> 
+<div class="fb-page"
+    data-href="${facebookPageLink}"
+    data-tabs="timeline"
+    data-width="100%"
+    data-height="100%"
+    data-use-container-width="true"
+    data-small-header="true"
+    data-adapt-container-width="true"
+    data-hide-cover="true"
+    data-show-facepile="false">
     <blockquote cite="${facebookPageLink}" class="fb-xfbml-parse-ignore"><a href="${facebookPageLink}">${displayName}</a></blockquote>
 </div>`;
 }
@@ -198,10 +342,10 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
         const promise = twttr.widgets.createTimeline(
             { sourceType: 'profile', screenName: cleanHandle },
             containerElement,
-            { 
-              theme: 'light', 
-              chrome: 'noheader nofooter noborders noscrollbar transparent', 
-              tweetLimit: 10 
+            {
+              theme: 'light',
+              chrome: 'noheader nofooter noborders noscrollbar transparent',
+              tweetLimit: 10
             }
         );
         if (!promise || typeof promise.then !== 'function') {
@@ -211,13 +355,13 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
             return;
         }
         promise.then(el => {
-            if (!el) { 
+            if (!el) {
                 containerElement.innerHTML = `<p class="text-sm text-red-500 p-4">Could not embed Twitter for @${cleanHandle}. Account might be private/suspended or handle incorrect.</p>`;
             } else {
                 const iframe = containerElement.querySelector('iframe');
                 if (iframe) {
-                    iframe.style.height = '100%'; 
-                    iframe.style.minHeight = '400px'; 
+                    iframe.style.height = '100%';
+                    iframe.style.minHeight = '400px';
                 }
             }
         }).catch(e => {
@@ -232,18 +376,18 @@ function displayTwitterTimeline(twitterHandle, containerElement) {
 
 function displayGooglePlacePhotos(placeDetails, containerElement) {
     if (!containerElement) return;
-    containerElement.innerHTML = ''; 
+    containerElement.innerHTML = '';
 
     if (placeDetails && placeDetails.photos && placeDetails.photos.length > 0) {
-        placeDetails.photos.slice(0, 9).forEach(photo => { 
+        placeDetails.photos.slice(0, 9).forEach(photo => {
             const imgContainer = document.createElement('div');
-            imgContainer.className = 'gallery-image-container google-photo-item'; 
+            imgContainer.className = 'gallery-image-container google-photo-item';
             const img = document.createElement('img');
-            img.src = photo.getUrl({ maxWidth: 400, maxHeight: 300 }); 
+            img.src = photo.getUrl({ maxWidth: 400, maxHeight: 300 });
             img.alt = `Photo of ${placeDetails.name || 'shop'}`;
-            img.className = 'gallery-image'; 
-            img.onerror = function() { 
-                this.parentElement.innerHTML = '<p class="text-xs text-gray-500 text-center p-2">Image unavailable</p>'; 
+            img.className = 'gallery-image';
+            img.onerror = function() {
+                this.parentElement.innerHTML = '<p class="text-xs text-gray-500 text-center p-2">Image unavailable</p>';
             };
             imgContainer.appendChild(img);
             containerElement.appendChild(imgContainer);
@@ -310,7 +454,7 @@ async function openClickedShopOverlays(shop) {
 
             const productIconsContainer = document.getElementById('shopProductIconsContainer');
             if (productIconsContainer) {
-                if (shop) { 
+                if (shop) {
                     productIconsContainer.innerHTML = generateProductIconsHTML(shop);
                 } else {
                     productIconsContainer.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Shop data error.</p>';
@@ -387,7 +531,7 @@ async function openClickedShopOverlays(shop) {
                         (place, status) => {
                             if (status === google.maps.places.PlacesServiceStatus.OK && place) {
                                 shop.placeDetails = { ...shop.placeDetails, ...place };
-                                
+
                                 // These containers are now in scope from their declaration/assignment above
                                 if (reviewsSocialContainer) displayShopReviews(shop.placeDetails, reviewsSocialContainer);
                                 if (googlePhotosContainer) displayGooglePlacePhotos(shop.placeDetails, googlePhotosContainer);
@@ -479,7 +623,7 @@ function displayOpeningHours(placeDetails, containerElement) {
 
     if (placeDetails && placeDetails.opening_hours && placeDetails.opening_hours.weekday_text) {
         let hoursHTML = '<ul class="opening-hours-list space-y-1 text-sm text-gray-700">';
-        
+
         // Optional: Display "Open now" status
         if (typeof placeDetails.opening_hours.isOpen === 'function') { // Check if isOpen method exists
             const isOpenNow = placeDetails.opening_hours.isOpen(); // This considers current time
@@ -520,20 +664,11 @@ function displayOpeningHours(placeDetails, containerElement) {
         }
         containerElement.innerHTML = `<p class="text-sm text-red-500 font-semibold text-center p-2">${statusMessage}</p>`;
     }
-    
+
     else {
         containerElement.innerHTML = '<p class="text-sm text-gray-500 text-center p-2">Hours information not available.</p>';
     }
 }
-
-
-
-
-
-
-
-
-
 
 function closeClickedShopOverlays() {
     let anOverlayWasOpen = false;
@@ -548,17 +683,17 @@ function closeClickedShopOverlays() {
         if (typeof infowindow !== 'undefined' && infowindow && typeof infowindow.close === 'function') {
             infowindow.close();
         }
-        document.body.style.overflow = ''; 
-        currentShopForDirections = null; 
-        
+        document.body.style.overflow = '';
+        currentShopForDirections = null;
+
         const fbContent = document.getElementById('socialLinksContainer');
         if (fbContent) { fbContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading Facebook feed...</p>'; fbContent.dataset.currentPageId = ''; }
         const twContent = document.getElementById('twitterTimelineContainer');
         if (twContent) { twContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading Twitter feed...</p>'; twContent.dataset.currentTwitterHandle = ''; }
         const igContent = document.getElementById('instagramFeedContainer');
-        if (igContent) { 
-            igContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Instagram content will load here.</p>'; 
-            igContent.dataset.currentInstaUser = ''; 
+        if (igContent) {
+            igContent.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Instagram content will load here.</p>';
+            igContent.dataset.currentInstaUser = '';
         }
         const reviewsSocialContainer = document.getElementById('socialOverlayReviewsContainer');
         if(reviewsSocialContainer) reviewsSocialContainer.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">Loading reviews...</p>';
@@ -603,24 +738,24 @@ function generateShopContentHTML(shop, context = 'card') {
     let finalImageHTML = '';
     if (context === 'card') {
         finalImageHTML = `<div class="aspect-w-16 aspect-h-9 sm:aspect-h-7"><img class="w-full h-full object-cover" loading="lazy" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.onerror=null; this.src='${fallbackImageUrlCard}';"></div>`;
-    } else if (context === 'infowindow' && shop.ImageOne && shop.ImageOne.trim() !== '') { 
+    } else if (context === 'infowindow' && shop.ImageOne && shop.ImageOne.trim() !== '') {
         // MODIFIED: Added mb-1 for spacing below image in infowindow, similar to card's implicit spacing
         finalImageHTML = `<img class="w-full h-auto object-cover rounded-t-sm mb-1" style="max-height: 150px;" src="${actualImageUrl}" alt="Image of ${shop.Name}" onerror="this.style.display='none';">`;
     }
 
-    let starsAndRatingHTML = getStarRatingHTML("N/A"); 
-    let ratingSource = shop.placeDetails; 
-    if (!ratingSource && shop.Rating && shop.Rating !== "N/A") { 
-        starsAndRatingHTML = getStarRatingHTML(shop.Rating); 
+    let starsAndRatingHTML = getStarRatingHTML("N/A");
+    let ratingSource = shop.placeDetails;
+    if (!ratingSource && shop.Rating && shop.Rating !== "N/A") {
+        starsAndRatingHTML = getStarRatingHTML(shop.Rating);
     } else if (ratingSource && typeof ratingSource.rating === 'number') {
-        starsAndRatingHTML = getStarRatingHTML(ratingSource.rating, ratingSource.user_ratings_total); 
+        starsAndRatingHTML = getStarRatingHTML(ratingSource.rating, ratingSource.user_ratings_total);
     }
     const ratingContainerId = `rating-for-${shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-')}-${context}`;
 
     // MODIFIED: Adjust classes for infowindow to be scaled versions of card
     const iconMarginClass = (context === 'infowindow') ? "mr-1" : "mr-2";
     const iconClasses = `w-3.5 h-3.5 ${iconMarginClass} text-gray-400 flex-shrink-0`;
-    
+
     const rowTextClasses = "text-sm text-gray-600 truncate"; // Kept same as card, font-size: 13px on wrapper helps
     const rowContainerClasses = "flex items-center";
 
@@ -659,7 +794,7 @@ function generateShopContentHTML(shop, context = 'card') {
                 <span class="${rowTextClasses} text-blue-600">${distanceString}</span>
             </div>`;
     }
-    
+
     if (shop.Phone) {
         detailRowsHTML += `
             <div class="${rowContainerClasses}" title="${shop.Phone}">
@@ -669,13 +804,13 @@ function generateShopContentHTML(shop, context = 'card') {
     }
 
     if (shop.Website && shop.Website.trim() !== '' && !shop.Website.includes('googleusercontent.com')) {
-        let displayWebsite = shop.Website; 
-        try { 
-            const urlObject = new URL(displayWebsite.startsWith('http') ? displayWebsite : `http://${displayWebsite}`); 
-            displayWebsite = urlObject.hostname.replace(/^www\./,''); 
-            const maxLength = context==='infowindow'?20:30; 
+        let displayWebsite = shop.Website;
+        try {
+            const urlObject = new URL(displayWebsite.startsWith('http') ? displayWebsite : `http://${displayWebsite}`);
+            displayWebsite = urlObject.hostname.replace(/^www\./,'');
+            const maxLength = context==='infowindow'?20:30;
             if(displayWebsite.length > maxLength) displayWebsite = displayWebsite.substring(0,maxLength-3)+"...";
-        } catch(e){ 
+        } catch(e){
             const maxLength=context==='infowindow'?20:30;
             if(displayWebsite.length > maxLength) displayWebsite = displayWebsite.substring(0,maxLength-3)+"...";
         }
@@ -685,15 +820,15 @@ function generateShopContentHTML(shop, context = 'card') {
                 <a href="${shop.Website.startsWith('http')?shop.Website:`http://${shop.Website}`}" target="_blank" rel="noopener noreferrer" onclick="${context === 'card' ? 'event.stopPropagation();' : ''}" class="${rowTextClasses} text-blue-600 hover:text-blue-800 hover:underline break-all"><span class="truncate">${displayWebsite}</span></a>
             </div>`;
     }
-    detailRowsHTML += '</div>'; 
+    detailRowsHTML += '</div>';
 
 
     let googleMapsLinkHTML = '';
-    // if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url) { 
+    // if (context === 'infowindow' && shop.placeDetails && shop.placeDetails.url) {
     //     googleMapsLinkHTML = `<div class="mt-3 pt-2 border-t border-gray-200"><a href="${shop.placeDetails.url}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center w-full px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"><svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M19.167 2.5a.833.833 0 00-1.08-.433L7.03 6.213a.833.833 0 00-.25.368l-2.5 8.333a.833.833 0 00.886 1.09l2.494-.754a.833.833 0 00.612-.135l8.582-6.26a.833.833 0 00.393-.78V2.5zM8.583 7.276l7.402-4.012v2.752l-7.402 4.011V7.276zm-1.416 4.97L3.75 13.58v-3.055l3.417-1.858v4.579zM10 18.333A8.333 8.333 0 1010 1.667a8.333 8.333 0 000 16.666z"/></svg>View on Google Maps</a></div>`;
     // }
 
-    const nameSizeClass = (context === 'card') ? "text-base sm:text-lg" : "text-md"; 
+    const nameSizeClass = (context === 'card') ? "text-base sm:text-lg" : "text-md";
     // MODIFIED: Overall padding and individual margins for infowindow
     const textContentPaddingClass = (context === 'card') ? "p-3 sm:p-4" : "p-2"; // p-2 for infowindow
     const nameMarginClass = "mb-1"; // Same for both, but font size is smaller in infowindow
@@ -705,7 +840,7 @@ function generateShopContentHTML(shop, context = 'card') {
             <h2 class="${nameSizeClass} font-semibold text-gray-800 leading-tight truncate ${nameMarginClass}" title="${shop.Name}">${shop.Name}</h2>
             <div id="${ratingContainerId}" class="shop-card-rating ${ratingMarginClass}">${starsAndRatingHTML}</div>
             ${detailRowsHTML}
-            <div class="mt-auto"> 
+            <div class="mt-auto">
                 ${googleMapsLinkHTML}
             </div>
         </div>`;
@@ -718,13 +853,13 @@ function generateShopContentHTML(shop, context = 'card') {
 
 function handleInfoWindowDirectionsClick(shopData) {
     if (typeof openClickedShopOverlays === 'function') {
-        openClickedShopOverlays(shopData); 
+        openClickedShopOverlays(shopData);
     }
     setTimeout(() => {
         if (typeof handleGetDirections === 'function') {
-            handleGetDirections(shopData); 
+            handleGetDirections(shopData);
         }
-    }, 150); 
+    }, 150);
 }
 
 function renderListings(shopsToRender, performSort = true, sortCenter = null) {
@@ -735,8 +870,8 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
     if (performSort && currentCenterForSort) {
         shopsForDisplay = sortShopsByDistanceGoogle(shopsForDisplay, currentCenterForSort);
     }
-    window.currentlyDisplayedShops = shopsForDisplay; 
-    listingsContainer.innerHTML = ''; 
+    window.currentlyDisplayedShops = shopsForDisplay;
+    listingsContainer.innerHTML = '';
 
     if (shopsForDisplay.length > 0) {
         if (noResultsDiv) noResultsDiv.classList.add('hidden');
@@ -747,17 +882,17 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
             const shopIdentifier = shop.GoogleProfileID || (shop.Name + (shop.Address || '')).replace(/[^a-zA-Z0-9]/g, '-');
             card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 ease-in-out cursor-pointer group w-full flex flex-col h-full';
             card.setAttribute('data-shop-id', shopIdentifier);
-            card.innerHTML = generateShopContentHTML(shop, 'card'); 
-            
+            card.innerHTML = generateShopContentHTML(shop, 'card');
+
             const ratingContainerIdForCard = `rating-for-${shopIdentifier}-card`;
             const ratingDivInCard = card.querySelector(`#${ratingContainerIdForCard}`);
 
             if (!shop.placeDetails && shop.GoogleProfileID && typeof placesService !== 'undefined' && typeof google !== 'undefined') {
-                if (!shop._isFetchingCardDetails) { 
-                    shop._isFetchingCardDetails = true; 
-                    placesService.getDetails({ placeId: shop.GoogleProfileID, fields: ['rating', 'user_ratings_total'] }, 
+                if (!shop._isFetchingCardDetails) {
+                    shop._isFetchingCardDetails = true;
+                    placesService.getDetails({ placeId: shop.GoogleProfileID, fields: ['rating', 'user_ratings_total'] },
                         (place, status) => {
-                            shop._isFetchingCardDetails = false; 
+                            shop._isFetchingCardDetails = false;
                             if (status === google.maps.places.PlacesServiceStatus.OK && place) {
                                 shop.placeDetails = { ...shop.placeDetails, rating: place.rating, user_ratings_total: place.user_ratings_total };
                                 if (ratingDivInCard) ratingDivInCard.innerHTML = getStarRatingHTML(place.rating, place.user_ratings_total);
@@ -765,15 +900,15 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
                         }
                     );
                 }
-            } else if (shop.placeDetails && ratingDivInCard) { 
+            } else if (shop.placeDetails && ratingDivInCard) {
                  ratingDivInCard.innerHTML = getStarRatingHTML(shop.placeDetails.rating, shop.placeDetails.user_ratings_total);
             }
 
 
             card.addEventListener('click', () => {
                 if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
-                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 100); 
-                
+                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 100);
+
                 document.querySelectorAll('#listingsContainer .bg-white.rounded-xl').forEach(el => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2'));
                 card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
             });
@@ -783,7 +918,8 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
         if (noResultsDiv) {
             const searchVal = (typeof searchInput !== 'undefined' && searchInput) ? searchInput.value : "";
             let noResultsMessage = 'No farm stands found.';
-            if (searchVal.trim() !== "") noResultsMessage += ` Try broadening your search.`;
+            if (searchVal.trim() !== "") noResultsMessage += ` Try broadening your search or adjusting filters.`;
+            else if (Object.values(window.activeProductFilters || {}).some(v => v)) noResultsMessage += ` Try adjusting your filters.`; // Added check for active filters
             else if (typeof GOOGLE_SHEET_DIRECT_URL !== 'undefined' && GOOGLE_SHEET_DIRECT_URL === URL_NOT_CONFIGURED_PLACEHOLDER) noResultsMessage = 'Data source not configured.';
             noResultsDiv.textContent = noResultsMessage;
             noResultsDiv.classList.remove('hidden');
@@ -799,14 +935,14 @@ function populateInstagramTab(shop, instagramFeedContainerElement) {
     }
     console.log("Populating Instagram tab for:", shop.Name, ". Embed code available:", !!shop.InstagramRecentPostEmbedCode, ". Username:", shop.InstagramUsername);
 
-    const username = shop.InstagramUsername; 
-    const embedCode = shop.InstagramRecentPostEmbedCode; 
+    const username = shop.InstagramUsername;
+    const embedCode = shop.InstagramRecentPostEmbedCode;
 
     if (username && username.trim() !== '' && embedCode && embedCode.trim() !== '') {
         const cleanUsername = username.replace('@', '').trim();
         console.log("Instagram - Using embed code for:", cleanUsername);
-        
-        instagramFeedContainerElement.innerHTML = embedCode; 
+
+        instagramFeedContainerElement.innerHTML = embedCode;
 
         const profileLink = document.createElement('a');
         profileLink.href = shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`;
@@ -816,19 +952,19 @@ function populateInstagramTab(shop, instagramFeedContainerElement) {
         profileLink.innerHTML = `<svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram`;
         instagramFeedContainerElement.appendChild(profileLink);
 
-    } else if (username && username.trim() !== '') { 
+    } else if (username && username.trim() !== '') {
          const cleanUsername = username.replace('@', '').trim();
          console.log("Instagram - Username found, but no embed code for:", cleanUsername);
          instagramFeedContainerElement.innerHTML = `<p class="text-sm text-gray-500 p-4">No recent post embed code found for @${cleanUsername}.</p>
             <a href="${shop.InstagramLink || `https://www.instagram.com/${cleanUsername}/`}" target="_blank" rel="noopener noreferrer" class="block text-center mt-2 px-4 py-2 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 hover:from-pink-600 hover:via-red-600 hover:to-yellow-600 text-white font-semibold rounded-lg shadow-md transition-all duration-150 ease-in-out text-sm">
-            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram</a>`; 
+            <svg class="inline-block w-5 h-5 mr-2 -mt-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.272.058 2.166.293 2.913.595a4.877 4.877 0 011.76 1.177c.642.641.997 1.378 1.177 2.125.302.747.537 1.64.595 2.912.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.058 1.272-.293 2.166-.595 2.913a4.877 4.877 0 01-1.177 1.76c-.641.642-1.378.997-2.125 1.177-.747.302-1.64.537-2.912.595-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.272-.058-2.166.293-2.913-.595a4.877 4.877 0 01-1.76-1.177c-.642-.641-.997-1.378-1.177 2.125-.302-.747-.537 1.64-.595-2.912-.058-1.266-.07-1.646-.07-4.85s.012-3.584.07-4.85c.058-1.272.293 2.166.595 2.913a4.877 4.877 0 011.177-1.76c.641-.642 1.378.997 2.125 1.177.747.302 1.64.537 2.912.595L7.15 2.233C8.416 2.175 8.796 2.163 12 2.163zm0 1.802c-3.075 0-3.444.012-4.642.068-1.18.053-1.847.28-2.377.48-.575.222-1.018.567-1.465 1.015-.447.447-.793.89-1.015 1.464-.2.53-.427 1.197-.48 2.378C2.024 8.556 2.012 8.925 2.012 12s.012 3.444.068 4.642c.053 1.18.28 1.847.48 2.377.222.575.567 1.018 1.015 1.465.447.447.89.793 1.464 1.015.53.2 1.197.427 2.378.48 1.198.056 1.567.068 4.642.068s3.444-.012 4.642-.068c1.18-.053 1.847.28 2.377-.48.575.222 1.018.567 1.465 1.015.447.447.793-.89 1.015 1.464.2-.53.427-1.197-.48-2.378.056-1.198.068-1.567.068-4.642s-.012-3.444-.068-4.642c-.053-1.18-.28-1.847-.48-2.377-.222-.575-.567-1.018-1.015-1.465-.447-.447-.793-.89-1.015-1.464-.53-.2-1.197-.427-2.378-.48C15.444 3.977 15.075 3.965 12 3.965zM12 7.198a4.802 4.802 0 100 9.604 4.802 4.802 0 000-9.604zm0 7.994a3.192 3.192 0 110-6.384 3.192 3.192 0 010 6.384zm6.385-7.852a1.145 1.145 0 100-2.29 1.145 1.145 0 000 2.29z"></path></svg>View @${cleanUsername} on Instagram</a>`;
     } else {
         console.log("Instagram - No username available. Setting no profile message.");
         instagramFeedContainerElement.innerHTML = '<p class="text-sm text-gray-500 p-4 text-center">No Instagram profile configured.</p>';
     }
 }
 
-function handleGetDirections(shop) { 
+function handleGetDirections(shop) {
     if (!shop) { alert("Shop data not available for directions."); return; }
     let destinationPayload = {};
     if (shop.lat && shop.lng) {
@@ -842,7 +978,7 @@ function handleGetDirections(shop) {
     }
 
     if (typeof calculateAndDisplayRoute === 'function') {
-        calculateAndDisplayRoute(destinationPayload); 
+        calculateAndDisplayRoute(destinationPayload);
     } else {
         console.error("calculateAndDisplayRoute function not found.");
         alert("Directions functionality unavailable.");
@@ -964,151 +1100,6 @@ function displayShopReviews(placeDetails, containerElement) {
     }
 }
 
-
-
-
-
-
-
-
-// At the top of uiLogic.js
-const PRODUCT_ICONS_CONFIG = {
-    'beef': {
-        csvHeader: 'beef',
-        name: 'Beef',
-        icon_available: 'beef_1.jpg',
-        icon_unavailable: 'beef_0.jpg'
-    },
-    'pork': {
-        csvHeader: 'pork',
-        name: 'Pork',
-        icon_available: 'pork_1.jpg',
-        icon_unavailable: 'pork_0.jpg'
-    },
-    'lamb': {
-        csvHeader: 'lamb',
-        name: 'Lamb',
-        icon_available: 'lamb_1.jpg',
-        icon_unavailable: 'lamb_0.jpg'
-    },
-    'chicken': {
-        csvHeader: 'chicken',
-        name: 'Chicken',
-        icon_available: 'chicken_1.jpg',
-        icon_unavailable: 'chicken_0.jpg'
-    },
-    'turkey': {
-        csvHeader: 'turkey',
-        name: 'Turkey',
-        icon_available: 'turkey_1.jpg',
-        icon_unavailable: 'turkey_0.jpg'
-    },
-    'duck': {
-        csvHeader: 'duck',
-        name: 'Duck',
-        icon_available: 'duck_1.jpg',
-        icon_unavailable: 'duck_0.jpg'
-    },
-    'eggs': {
-        csvHeader: 'eggs',
-        name: 'Eggs',
-        icon_available: 'eggs_1.jpg',
-        icon_unavailable: 'eggs_0.jpg'
-    },
-    'corn': {
-        csvHeader: 'corn',
-        name: 'Corn',
-        icon_available: 'corn_1.jpg',
-        icon_unavailable: 'corn_0.jpg'
-    },
-    'carrots': {
-        csvHeader: 'carrots',
-        name: 'Carrots',
-        icon_available: 'carrots_1.jpg',
-        icon_unavailable: 'carrots_0.jpg'
-    },
-    'garlic': {
-        csvHeader: 'garlic',
-        name: 'Garlic',
-        icon_available: 'garlic_1.jpg',
-        icon_unavailable: 'garlic_0.jpg'
-    },
-    'onions': {
-        csvHeader: 'onions',
-        name: 'Onions',
-        icon_available: 'onions_1.jpg',
-        icon_unavailable: 'onions_0.jpg'
-    },
-    'potatoes': {
-        csvHeader: 'potatoes',
-        name: 'Potatoes',
-        icon_available: 'potatoes_1.jpg',
-        icon_unavailable: 'potatoes_0.jpg'
-    },
-    'lettus': {
-        csvHeader: 'lettus',
-        name: 'Lettus',
-        icon_available: 'lettus_1.jpg',
-        icon_unavailable: 'lettus_0.jpg'
-    },
-    'spinach': {
-        csvHeader: 'spinach',
-        name: 'Spinach',
-        icon_available: 'spinach_1.jpg',
-        icon_unavailable: 'spinach_0.jpg'
-    },
-    'squash': {
-        csvHeader: 'squash',
-        name: 'Squash',
-        icon_available: 'squash_1.jpg',
-        icon_unavailable: 'squash_0.jpg'
-    },
-    'tomatoes': {
-        csvHeader: 'tomatoes',
-        name: 'Tomatoes',
-        icon_available: 'tomatoes_1.jpg',
-        icon_unavailable: 'tomatoes_0.jpg'
-    },
-    'peppers': {
-        csvHeader: 'peppers',
-        name: 'Peppers',
-        icon_available: 'peppers_1.jpg',
-        icon_unavailable: 'peppers_0.jpg'
-    },
-    'cucumbers': {
-        csvHeader: 'cucumbers',
-        name: 'Cucumbers',
-        icon_available: 'cucumbers_1.jpg',
-        icon_unavailable: 'cucumbers_0.jpg'
-    },
-    'zucchini': {
-        csvHeader: 'zucchini',
-        name: 'Zucchini',
-        icon_available: 'zucchini_1.jpg',
-        icon_unavailable: 'zucchini_0.jpg'
-    },
-    'strawberries': {
-        csvHeader: 'strawberries',
-        name: 'Strawberries',
-        icon_available: 'strawberries_1.jpg',
-        icon_unavailable: 'strawberries_0.jpg'
-    },
-    'blueberries': {
-        csvHeader: 'blueberries',
-        name: 'Blueberries',
-        icon_available: 'blueberries_1.jpg',
-        icon_unavailable: 'blueberries_0.jpg'
-    },
-}
-
-
-
-// In uiLogic.js
-
-// In uiLogic.js
-
-// In uiLogic.js
-
 function generateProductIconsHTML(shop) { // Changed argument to 'shop'
     if (!shop) { // Basic check for the shop object
         return '<p class="text-sm text-gray-500 text-center p-2 col-span-full">Shop data not available for products.</p>';
@@ -1120,7 +1111,7 @@ function generateProductIconsHTML(shop) { // Changed argument to 'shop'
     for (const internalKey in PRODUCT_ICONS_CONFIG) {
         const config = PRODUCT_ICONS_CONFIG[internalKey];
         // config.csvHeader is now the direct property name on the shop object (e.g., 'beef', 'pork')
-        const productPropertyKey = config.csvHeader; 
+        const productPropertyKey = config.csvHeader;
 
         let iconFileToUse = config.icon_unavailable;
         let itemClasses = "product-icon-item flex flex-col items-center text-center p-1 opacity-50";
@@ -1142,8 +1133,6 @@ function generateProductIconsHTML(shop) { // Changed argument to 'shop'
         `;
     }
 
-    // This condition is now less critical if we always show all icons (faded or active)
-    // but can be kept if you only want a message if PRODUCT_ICONS_CONFIG itself is empty.
     if (Object.keys(PRODUCT_ICONS_CONFIG).length === 0) {
         iconsHTML = '<p class="text-sm text-gray-500 text-center p-2 col-span-full">No product categories configured to display.</p>';
     } else if (displayedIconCount === 0 && Object.keys(PRODUCT_ICONS_CONFIG).length > 0) {
@@ -1154,7 +1143,5 @@ function generateProductIconsHTML(shop) { // Changed argument to 'shop'
     } else {
         iconsHTML += '</div>'; // Close shopProductIconsGrid
     }
-
-
     return iconsHTML;
 }

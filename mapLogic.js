@@ -210,9 +210,43 @@ google.maps.event.addListener(infowindow, 'domready', () => {
       // --- END OF MODIFIED LOGIC ---
       window.lastPlaceSelectedByAutocomplete = place;
 
-      if (place.geometry.viewport) {
-        map.fitBounds(getAdjustedBounds(place.geometry.viewport)); // Adjust viewport as well
+
+
+
+            // --- ADJUSTED ZOOM LOGIC ---
+      // --- CONSOLIDATED AND CORRECTED MAP VIEW LOGIC ---
+      map.setCenter(getAdjustedMapCenter(place.geometry.location)); // Always set the adjusted center first
+
+      const isVerySpecificPlace = place.types && (
+          place.types.includes("street_address") ||
+          place.types.includes("premise")
+          // Consider if you want 'establishment' or 'point_of_interest' to also use default zoom
+          // || place.types.includes("establishment")
+          // || place.types.includes("point_of_interest")
+      );
+
+      if (place.geometry.viewport && !isVerySpecificPlace) {
+        // If it has a viewport AND it's NOT a very specific address (e.g., city, state), fit to adjusted bounds.
+        // This will naturally set an appropriate zoom level for the viewport.
+        console.log("Autocomplete: Fitting to viewport for non-specific place.");
+        map.fitBounds(getAdjustedBounds(place.geometry.viewport));
       } else {
+        // For very specific addresses (street_address, premise) OR if no viewport,
+        // just use the centered map and set a predefined zoom level.
+        // This prevents over-zooming on street addresses.
+        console.log("Autocomplete: Setting default zoom for specific place or no viewport.");
+        map.setZoom(DEFAULT_MAP_ZOOM); // Use your desired default zoom (e.g., 10, 12, or 14)
+      }
+      // --- END CONSOLIDATED MAP VIEW LOGIC ---
+
+
+
+      // --- APPLY ADJUSTED CENTERING/BOUNDS ---
+      if (place.geometry.viewport) {
+        // Use getAdjustedBounds for viewport
+        map.fitBounds(getAdjustedBounds(place.geometry.viewport));
+      } else {
+        // Use getAdjustedMapCenter for a single point
         map.setCenter(getAdjustedMapCenter(place.geometry.location));
         const placeIsSpecific =
           place.types &&
@@ -220,8 +254,9 @@ google.maps.event.addListener(infowindow, 'domready', () => {
             place.types.includes("point_of_interest") ||
             place.types.includes("premise") ||
             place.types.includes("street_address"));
-        map.setZoom(placeIsSpecific ? 15 : 12);
+        map.setZoom(placeIsSpecific ? USER_LOCATION_MAP_ZOOM : DEFAULT_MAP_ZOOM); // Use defined zoom levels
       }
+      // --- END APPLY ADJUSTED CENTERING/BOUNDS ---
 
       if (typeof handleSearch === "function") {
         // console.log("Autocomplete: place_changed with valid place, calling handleSearch.");
@@ -551,22 +586,25 @@ function showInfoWindowForShop(shop) {
     }
 }
 
-// ... (rest of mapLogic.js) ...
+
+
+
+
+
+
 
 // js/mapLogic.js
 
-// ... (other global variables and functions remain the same) ...
-// Ensure markerClickedRecently is declared ONCE at the top of this file:
-// let markerClickedRecently = false;
+// ... (Global map variables, initAppMap, etc. ... )
 
 // ALTERNATIVE getAdjustedMapCenter
 function getAdjustedMapCenter(targetCenterInput) {
   if (!map || !map.getDiv() || !map.getBounds() || !map.getProjection()) {
-    // console.warn("AdjustMap: Map not fully ready (div, bounds, or projection missing).");
-    return targetCenterInput; // Return original if map components aren't ready
+    return targetCenterInput;
   }
 
   let targetLat, targetLng;
+  // ... (logic to get targetLat, targetLng from targetCenterInput - this part is fine)
   if (
     targetCenterInput &&
     typeof targetCenterInput.lat === "function" &&
@@ -582,23 +620,22 @@ function getAdjustedMapCenter(targetCenterInput) {
     targetLat = targetCenterInput.lat;
     targetLng = targetCenterInput.lng;
   } else {
-    // console.error("AdjustMap: Invalid targetCenterInput. Using current map center.", targetCenterInput);
     const currentCenter = map.getCenter();
-    // Fallback if even currentCenter is not available (highly unlikely if map is ready)
-    if (!currentCenter)
-      return { lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng };
+    if (!currentCenter) return { lat: DEFAULT_MAP_CENTER.lat, lng: DEFAULT_MAP_CENTER.lng };
     return { lat: currentCenter.lat(), lng: currentCenter.lng() };
   }
 
+
   const mapDiv = map.getDiv();
-  const mapWidthPx = mapDiv.offsetWidth; // Width of the map container in pixels
+  const mapWidthPx = mapDiv.offsetWidth;
   let panelLeftWidthPx = 0;
   let panelRightWidthPx = 0;
 
-  // Explicitly get global elements (assuming they are set on window object from other files)
-  const socialOverlay = window.detailsOverlaySocialElement;
-  const shopOverlay = window.detailsOverlayShopElement;
-  const listingsPanel = window.listingsPanelElement;
+  // --- CORRECTED ACCESS TO GLOBAL DOM ELEMENTS ---
+  const socialOverlay = window.detailsOverlaySocialElement; // Use window.
+  const shopOverlay = window.detailsOverlayShopElement;     // Use window.
+  const listingsPanel = window.listingsPanelElement;       // Use window.
+  // --- END CORRECTION ---
 
   if (
     socialOverlay &&
@@ -618,68 +655,30 @@ function getAdjustedMapCenter(targetCenterInput) {
     listingsPanel &&
     getComputedStyle(listingsPanel).display !== "none" &&
     listingsPanel.offsetWidth > 0 &&
-    window.innerWidth >= 768
+    window.innerWidth >= 768 // Only consider listingsPanel on wider screens
   ) {
     panelRightWidthPx = listingsPanel.offsetWidth;
   }
 
   if ((panelLeftWidthPx <= 0 && panelRightWidthPx <= 0) || mapWidthPx <= 0) {
-    // console.log("AdjustMap: No active panels occluding or map width is zero. No offset.");
     return { lat: targetLat, lng: targetLng };
   }
 
-  // Calculate the net horizontal shift in pixels needed for the map's content.
-  // If right panel is open, content needs to shift left (negative pixel shift for content).
-  // If left panel is open, content needs to shift right (positive pixel shift for content).
-  // The center of the *visible* map area is what we are targeting.
-  // This `netPixelShiftForCenter` is how many pixels the target LatLng needs to move on screen
-  // from the geometric center of the map div to be in the center of the visible area.
   const netPixelShiftForCenter = (panelLeftWidthPx - panelRightWidthPx) / 2;
-
-  // Get the map's current bounds and projection
   const bounds = map.getBounds();
   if (!bounds) {
-    // Should have been caught by the initial check, but good to be safe
-    // console.warn("AdjustMap: Map bounds became unavailable.");
     return { lat: targetLat, lng: targetLng };
   }
 
-  // Calculate degrees per pixel
-  // Horizontal distance in degrees covered by the map
   const lngSpanDegrees = bounds.toSpan().lng();
-  // Degrees per pixel = total degrees / total pixels
   const degreesPerPixelLng = lngSpanDegrees / mapWidthPx;
-
-  // Convert the pixel shift to a longitude degree shift
   const lngOffsetDegrees = netPixelShiftForCenter * degreesPerPixelLng;
-
-  const adjustedLng = targetLng - lngOffsetDegrees; // Subtract because a positive netPixelShiftForCenter means target is to the right of visible center
-
-  // console.log(`AdjustMap ----`);
-  // console.log(`  Target LatLng: ${targetLat.toFixed(5)}, ${targetLng.toFixed(5)}`);
-  // console.log(`  Map Width (px): ${mapWidthPx}`);
-  // console.log(`  Panel Left (px): ${panelLeftWidthPx}, Panel Right (px): ${panelRightWidthPx}`);
-  // console.log(`  Net Pixel Shift for Center Point: ${netPixelShiftForCenter.toFixed(2)}px`);
-  // console.log(`  Lng Span (deg): ${lngSpanDegrees.toFixed(5)}`);
-  // console.log(`  Degrees/Pixel Lng: ${degreesPerPixelLng.toExponential(3)}`);
-  // console.log(`  Lng Offset (deg): ${lngOffsetDegrees.toFixed(5)}`);
-  // console.log(`  Adjusted Lng: ${adjustedLng.toFixed(5)}`);
-  // console.log(`----`);
+  const adjustedLng = targetLng - lngOffsetDegrees;
 
   return { lat: targetLat, lng: adjustedLng };
 }
 
-// ... (rest of mapLogic.js, ensure initAppMap, showInfoWindowForShop, etc., call this getAdjustedMapCenter) ...
 
-// Make sure elements from other files are explicitly accessed via window if they are true globals
-// Example (in mapLogic.js where these elements are used, e.g. getAdjustedMapCenter):
-// const socialOverlay = window.detailsOverlaySocialElement;
-// const shopOverlay = window.detailsOverlayShopElement;
-// const listingsPanel = window.listingsPanelElement;
-// This ensures mapLogic.js is looking for them on the window object where uiLogic.js/main.js might have put them.
-// If they are not on window, you'd need to pass them or use a shared state manager.
-
-// Helper to adjust bounds, similar to getAdjustedMapCenter
 function getAdjustedBounds(originalBounds) {
   if (!map || !map.getDiv() || !originalBounds) {
     return originalBounds;
@@ -690,30 +689,33 @@ function getAdjustedBounds(originalBounds) {
   let panelLeftWidth = 0;
   let panelRightWidth = 0;
 
+  // --- CORRECTED ACCESS TO GLOBAL DOM ELEMENTS ---
+  const socialOverlay = window.detailsOverlaySocialElement; // Use window.
+  const shopOverlay = window.detailsOverlayShopElement;     // Use window.
+  const listingsPanel = window.listingsPanelElement;       // Use window.
+  // --- END CORRECTION ---
+
   if (
-    typeof detailsOverlaySocialElement !== "undefined" &&
-    detailsOverlaySocialElement &&
-    detailsOverlaySocialElement.classList.contains("is-open") &&
-    getComputedStyle(detailsOverlaySocialElement).display !== "none"
+    socialOverlay && // Check if element exists
+    socialOverlay.classList.contains("is-open") &&
+    getComputedStyle(socialOverlay).display !== "none"
   ) {
-    panelLeftWidth = detailsOverlaySocialElement.offsetWidth;
+    panelLeftWidth = socialOverlay.offsetWidth;
   }
 
   if (
-    typeof detailsOverlayShopElement !== "undefined" &&
-    detailsOverlayShopElement &&
-    detailsOverlayShopElement.classList.contains("is-open") &&
-    getComputedStyle(detailsOverlayShopElement).display !== "none"
+    shopOverlay && // Check if element exists
+    shopOverlay.classList.contains("is-open") &&
+    getComputedStyle(shopOverlay).display !== "none"
   ) {
-    panelRightWidth = detailsOverlayShopElement.offsetWidth;
+    panelRightWidth = shopOverlay.offsetWidth;
   } else if (
-    typeof listingsPanelElement !== "undefined" &&
-    listingsPanelElement &&
-    getComputedStyle(listingsPanelElement).display !== "none" &&
-    listingsPanelElement.offsetWidth > 0 &&
-    window.innerWidth >= 768
+    listingsPanel && // Check if element exists
+    getComputedStyle(listingsPanel).display !== "none" &&
+    listingsPanel.offsetWidth > 0 &&
+    window.innerWidth >= 768 // Only consider listingsPanel on wider screens
   ) {
-    panelRightWidth = listingsPanelElement.offsetWidth;
+    panelRightWidth = listingsPanel.offsetWidth;
   }
 
   if ((panelLeftWidth <= 0 && panelRightWidth <= 0) || mapWidth <= 0) {
@@ -721,7 +723,7 @@ function getAdjustedBounds(originalBounds) {
   }
 
   const mapProjection = map.getProjection();
-  const currentZoom = map.getZoom(); // Or calculate effective zoom for bounds
+  const currentZoom = map.getZoom();
 
   if (!mapProjection || typeof currentZoom === "undefined") {
     return originalBounds;
@@ -730,14 +732,22 @@ function getAdjustedBounds(originalBounds) {
   const sw = originalBounds.getSouthWest();
   const ne = originalBounds.getNorthEast();
 
+  // Check if sw or ne are valid before proceeding
+  if (!sw || !ne) {
+      console.warn("AdjustBounds: originalBounds produced invalid sw or ne.");
+      return originalBounds;
+  }
+
   const swPoint = mapProjection.fromLatLngToPoint(sw);
   const nePoint = mapProjection.fromLatLngToPoint(ne);
 
-  // Calculate how much the bounds need to shift in world coordinates
-  // If right panel is open, the visible area is shifted left. We need to expand the bounds to the right.
-  // If left panel is open, visible area shifted right. Expand bounds to the left.
-  const worldOffsetX =
-    (panelRightWidth - panelLeftWidth) / (2 * Math.pow(2, currentZoom));
+  // Check if points are valid
+  if (!swPoint || !nePoint) {
+      console.warn("AdjustBounds: Projection returned invalid points from sw/ne.");
+      return originalBounds;
+  }
+
+  const worldOffsetX = (panelRightWidth - panelLeftWidth) / (2 * Math.pow(2, currentZoom));
 
   const newSwPoint = new google.maps.Point(swPoint.x - worldOffsetX, swPoint.y);
   const newNePoint = new google.maps.Point(nePoint.x - worldOffsetX, nePoint.y);
@@ -746,8 +756,9 @@ function getAdjustedBounds(originalBounds) {
   const newNe = mapProjection.fromPointToLatLng(newNePoint);
 
   if (newSw && newNe) {
-    // console.log("AdjustBounds: Applied offset for panels.");
     return new google.maps.LatLngBounds(newSw, newNe);
   }
   return originalBounds;
 }
+
+// ... (rest of mapLogic.js)

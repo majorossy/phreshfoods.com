@@ -432,3 +432,74 @@ input[type="range"]::-ms-fill-upper { background: #cbd5e0; border-radius: 2px; }
     /* color: #4b5563; /* Tailwind text-gray-600 or similar */
     /* white-space: pre-line; /* If hours can have multiple lines */
 }
+
+
+
+
+
+
+
+
+
+
+/* Add to css/style.css */
+#productFilterDropdown label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    /* font-size: 0.875rem; /* text-sm */ /* Already set on parent */
+    color: #374151; /* gray-700 */
+    padding: 0.25rem; /* p-1 */
+    border-radius: 0.25rem; /* rounded */
+}
+#productFilterDropdown label:hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+#productFilterDropdown input[type="checkbox"] {
+    margin-right: 0.5rem; /* mr-2 */
+    cursor: pointer;
+    /* Tailwind's form-checkbox class can be used if you have Tailwind forms plugin */
+    /* Otherwise, default browser checkbox styling will apply */
+}
+
+#productFilterToggle.filters-active {
+    border-color: #c53030; /* red-600 (Tailwind) */
+    color: #c53030;
+    font-weight: 600; /* semibold */
+}
+
+#activeFilterCount.visible {
+    display: inline-block;
+    background-color: #c53030; /* red-600 */
+    color: white;
+    font-size: 0.65rem; /* Smaller font */
+    padding: 0.05rem 0.25rem; /* Adjusted padding */
+    border-radius: 0.5rem; /* rounded-full */
+    line-height: 1;
+    vertical-align: middle; /* Align with text */
+}
+
+/* Ensure custom scrollbar is applied if not already global */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+
+
+#productFilterDropdown label img {
+    /* Example: Add a min-width/height if needed, or a background for placeholders */
+    /* vertical-align: middle; /* Might be useful depending on exact font/icon alignment */
+}

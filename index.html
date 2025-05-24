@@ -32,14 +32,12 @@
             </h1>
           </div>
 
-          <div class="flex items-center w-full sm:w-auto sm:max-w-md flex-grow">
-            <input
-              type="text"
-              id="searchInput"
-              placeholder="enter starting location..."
-              class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 w-full text-sm h-10"
-            />
-          </div>
+ <!-- Inside your <header> in index.html -->
+<div class="flex items-center w-full sm:w-auto sm:max-w-xs flex-grow">
+    <input type="text" id="searchInput" placeholder="Zip, Town, or Address"
+           class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 w-full text-sm h-10"
+           value="Biddeford, Maine"/> <!-- <<<< ADD THIS VALUE ATTRIBUTE -->
+</div>
 
           <div
             class="flex flex-col sm:flex-row items-center w-full sm:w-auto gap-3 sm:gap-4"
@@ -67,6 +65,34 @@
               >30 mi</span
             >
           </div>
+
+
+
+                          <!-- NEW Product Filter Dropdown -->
+                <div class="relative">
+                    <button id="productFilterToggle"
+                            class="px-3 py-2 border border-gray-300 rounded-lg text-sm h-10 bg-white hover:bg-gray-50 flex items-center whitespace-nowrap">
+                        Filter Products <span id="activeFilterCount" class="ml-1 hidden"></span>
+                        <svg class="w-4 h-4 ml-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                  clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    <div id="productFilterDropdown"
+                         class="hidden absolute top-full right-0 sm:left-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-40 p-3 w-60">
+                        <div id="productFilterCheckboxes" class="space-y-1 max-h-60 overflow-y-auto custom-scrollbar text-xs">
+                            <!-- Checkboxes will be populated by JavaScript -->
+                        </div>
+                        <button id="resetProductFilters"
+                                class="mt-3 w-full px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Reset Filters
+                        </button>
+                    </div>
+                </div>
+                <!-- END NEW Product Filter Dropdown -->
+
+
         </div>
       </header>
 

@@ -5,24 +5,25 @@ let allFarmStands = [];
 let currentlyDisplayedShops = []; // Shops currently shown in the list (can be all or filtered)
 let markerClickedRecently = false; // For map click vs marker click logic
 let currentShopForDirections = null;
-let radiusSliderElement, radiusValueElement; // NEW: For slider
+// Radius slider elements are now initialized in DOMContentLoaded
+// let radiusSliderElement, radiusValueElement; // These will be initialized in DOMContentLoaded
 
 // --- DOM Element Variables (to be initialized on DOMContentLoaded) ---
 let listingsContainer,
-  searchInput,
+  searchInput, // This specific variable 'searchInput' will be initialized
   noResultsDiv,
   listingsPanelElement,
   detailsOverlayShopElement,
   closeDetailsOverlayShopButton,
   shopDetailNameElement,
-  shopDetailRatingStarsElement,
-  shopDetailAddressElement,
-  shopDetailDistanceElement,
-  shopDetailPhoneElement,
-  shopDetailWebsiteElement,
-  shopDetailMapLinkContainerElement,
+  // shopDetailRatingStarsElement, // Not used directly, handled in card
+  // shopDetailAddressElement, // Not used directly
+  // shopDetailDistanceElement, // Not used directly
+  // shopDetailPhoneElement, // Not used directly
+  // shopDetailWebsiteElement, // Not used directly
+  // shopDetailMapLinkContainerElement, // Not used directly
   detailsOverlaySocialElement,
-  closeDetailsOverlaySocialButton,
+  // closeDetailsOverlaySocialButton, // Already handled by general overlay close
   socialLinksContainerElement,
   twitterTimelineContainerElement;
 
@@ -52,56 +53,52 @@ async function populateAllShopsWithLatLng(shops) {
             ) {
               shop.lat = place.geometry.location.lat();
               shop.lng = place.geometry.location.lng();
-              // console.log(`Populated lat/lng for ${shop.Name} via PlaceID`);
             } else {
-              // console.warn(`Place Details failed for ${shop.Name} (ID: ${shop.GoogleProfileID}): ${status}. Trying address.`);
               if (shop.Address && shop.Address !== "N/A") {
                 window.geocoder.geocode(
-                  { address: shop.Address + ", Maine, USA" },
+                  { address: shop.Address + ", Maine, USA" }, // Added region biasing
                   (results, geoStatus) => {
                     if (geoStatus === "OK" && results[0]?.geometry) {
                       shop.lat = results[0].geometry.location.lat();
                       shop.lng = results[0].geometry.location.lng();
-                      // console.log(`Populated lat/lng for ${shop.Name} via Address (fallback).`);
                     } else {
                       console.warn(
                         `Geocode fallback also failed for ${shop.Name}: ${geoStatus}`
                       );
                     }
-                    resolve(); // Resolve after geocode attempt
+                    resolve();
                   }
                 );
-                return; // Important: return here because geocode is async, resolve is called within it
+                return;
               } else {
                 console.warn(
                   `Could not get geometry for ${shop.Name} (ID: ${shop.GoogleProfileID}) and no address for fallback.`
                 );
               }
             }
-            resolve(); // Resolve after Place Details attempt (or if no address fallback)
+            resolve();
           }
         );
       } else if (shop.Address && shop.Address !== "N/A") {
         window.geocoder.geocode(
-          { address: shop.Address + ", Maine, USA" },
+          { address: shop.Address + ", Maine, USA" }, // Added region biasing
           (results, geoStatus) => {
             if (geoStatus === "OK" && results[0]?.geometry) {
               shop.lat = results[0].geometry.location.lat();
               shop.lng = results[0].geometry.location.lng();
-              // console.log(`Populated lat/lng for ${shop.Name} via Address.`);
             } else {
               console.warn(
                 `Geocode failed for ${shop.Name} (Address: ${shop.Address}): ${geoStatus}`
               );
             }
-            resolve(); // Resolve after geocode attempt
+            resolve();
           }
         );
       } else {
         console.warn(
           `Cannot determine Lat/Lng for ${shop.Name}: No PlaceID or Address.`
         );
-        resolve(); // Resolve if no method to get lat/lng
+        resolve();
       }
     });
   });
@@ -130,197 +127,196 @@ async function processAndPlotShops() {
     return;
   }
 
-  // Populate lat/lng for all farm stands before any filtering or plotting
   await populateAllShopsWithLatLng(allFarmStands);
-
   currentlyDisplayedShops = [...allFarmStands];
-  // Initial call to handleSearch will display all shops, sorted by distance to map center
-  await handleSearch();
+  await handleSearch(); // Initial call
 }
 
 async function handleSearch() {
-  console.log("handleSearch triggered.");
-  let searchCenterLatLng = null;
-  let selectedPlaceName = searchInput.value;
+    console.log("handleSearch triggered.");
+    let searchCenterLatLng = null;
 
-  if (
-    window.lastPlaceSelectedByAutocomplete &&
-    window.lastPlaceSelectedByAutocomplete.geometry &&
-    window.lastPlaceSelectedByAutocomplete.geometry.location
-  ) {
-    searchCenterLatLng =
-      window.lastPlaceSelectedByAutocomplete.geometry.location;
-    selectedPlaceName =
-      window.lastPlaceSelectedByAutocomplete.name ||
-      window.lastPlaceSelectedByAutocomplete.formatted_address ||
-      selectedPlaceName;
-    // console.log("Using autocomplete selection for search center:", selectedPlaceName, searchCenterLatLng.toString());
-  } else {
-    // If no autocomplete, but search input has text, try to geocode it to get a center.
-    // This allows radius filter even without explicit autocomplete selection if user just types a city and hits enter/search.
-    if (searchInput.value.trim() !== "") {
-      console.log(
-        "No autocomplete selection, attempting to geocode search input for radius center:",
-        searchInput.value
-      );
-      try {
-        const geocodeResults = await new Promise((resolve, reject) => {
-          if (!window.geocoder) {
-            reject("Geocoder not available");
-            return;
-          }
-          window.geocoder.geocode(
-            { address: searchInput.value.trim() + ", Maine, USA" },
-            (results, status) => {
-              if (
-                status === google.maps.places.PlacesServiceStatus.OK &&
-                results &&
-                results[0] &&
-                results[0].geometry &&
-                results[0].geometry.location
-              ) {
-                resolve(results[0].geometry.location);
-              } else {
-                reject(status);
-              }
-            }
-          );
-        });
-        searchCenterLatLng = geocodeResults;
-        console.log("Geocoded search input to:", searchCenterLatLng.toString());
-        // Optionally pan map if geocoding was successful and not from autocomplete
-        if (map && !window.lastPlaceSelectedByAutocomplete) {
-          map.setCenter(getAdjustedMapCenter(searchCenterLatLng));
-          map.setZoom(10); // Adjust zoom as appropriate for a geocoded area
-        }
-      } catch (error) {
-        console.warn(
-          "Geocoding error for search input '" +
-            searchInput.value.trim() +
-            "':",
-          error
-        );
-        // searchCenterLatLng remains null, radius filter won't apply without a center
-      }
+    // Ensure searchInput is available by getting it directly from DOM
+    const currentSearchInput = document.getElementById('searchInput');
+    let selectedPlaceName = currentSearchInput ? currentSearchInput.value : "";
+
+    if (
+        window.lastPlaceSelectedByAutocomplete &&
+        window.lastPlaceSelectedByAutocomplete.geometry &&
+        window.lastPlaceSelectedByAutocomplete.geometry.location
+    ) {
+        searchCenterLatLng = window.lastPlaceSelectedByAutocomplete.geometry.location;
+        selectedPlaceName =
+        window.lastPlaceSelectedByAutocomplete.name ||
+        window.lastPlaceSelectedByAutocomplete.formatted_address ||
+        selectedPlaceName;
     } else {
-      // console.log("Search input is empty, and no autocomplete. No location-based filter.");
+        if (currentSearchInput && currentSearchInput.value.trim() !== "") {
+            console.log(
+                "No autocomplete selection, attempting to geocode search input for radius center:",
+                currentSearchInput.value
+            );
+            try {
+                const geocodeResults = await new Promise((resolve, reject) => {
+                if (!window.geocoder) {
+                    reject("Geocoder not available");
+                    return;
+                }
+                window.geocoder.geocode(
+                    { address: currentSearchInput.value.trim() + ", Maine, USA" }, // Region biasing
+                    (results, status) => {
+                    if (
+                        status === google.maps.places.PlacesServiceStatus.OK &&
+                        results &&
+                        results[0] &&
+                        results[0].geometry &&
+                        results[0].geometry.location
+                    ) {
+                        resolve(results[0].geometry.location);
+                    } else {
+                        reject(status);
+                    }
+                    }
+                );
+                });
+                searchCenterLatLng = geocodeResults;
+                console.log("Geocoded search input to:", searchCenterLatLng.toString());
+                if (map && !window.lastPlaceSelectedByAutocomplete) {
+                    map.setCenter(getAdjustedMapCenter(searchCenterLatLng));
+                    map.setZoom(10);
+                }else {
+                    map.setZoom(DEFAULT_MAP_ZOOM); // Use a default zoom for geocoded addresses
+                }
+            } catch (error) {
+                console.warn(
+                "Geocoding error for search input '" +
+                    currentSearchInput.value.trim() +
+                    "':",
+                error
+                );
+            }
+        }
     }
-  }
 
-  let shopsToDisplay;
-  const selectedRadiusMiles = radiusSliderElement
-    ? parseInt(radiusSliderElement.value)
-    : 30; // Get value from slider, default 30
+    let shopsToDisplay = [...allFarmStands];
 
-  if (searchCenterLatLng) {
-    // Only apply radius filter if we have a center
-    const radiusMeters = selectedRadiusMiles * 1609.344;
+    // --- NEW: Apply Product Attribute Filters ---
+    const currentActiveProductFilters = window.activeProductFilters || {}; // Access from window
+    const activeFilterKeys = Object.keys(currentActiveProductFilters).filter(key => currentActiveProductFilters[key]);
 
-    console.log(
-      `Filtering shops within ${selectedRadiusMiles} miles (${radiusMeters.toFixed(
-        0
-      )}m) of selected location.`
-    );
+    if (activeFilterKeys.length > 0) {
+        console.log("Applying product filters:", activeFilterKeys);
+        shopsToDisplay = shopsToDisplay.filter(shop => {
+            return activeFilterKeys.every(filterKey => {
+                return shop[filterKey] === true; // shop.beef, shop.pork etc.
+            });
+        });
+        console.log(`${shopsToDisplay.length} shops after product attribute filters.`);
+    }
+    // --- END NEW Product Attribute Filters ---
 
-    shopsToDisplay = allFarmStands.filter((shop) => {
-      // ... (distance filtering logic as before) ...
-      if (
-        shop.lat === undefined ||
-        shop.lng === undefined ||
-        shop.lat === null ||
-        shop.lng === null
-      )
-        return false;
-      try {
-        const shopLat = parseFloat(shop.lat);
-        const shopLng = parseFloat(shop.lng);
-        if (isNaN(shopLat) || isNaN(shopLng)) return false;
-        const shopLocation = new google.maps.LatLng(shopLat, shopLng);
-        const distanceInMeters =
-          google.maps.geometry.spherical.computeDistanceBetween(
-            searchCenterLatLng,
-            shopLocation
-          );
-        return distanceInMeters <= radiusMeters;
-      } catch (e) {
-        console.error("Error calculating distance for shop:", shop.Name, e);
-        return false;
-      }
-    });
-    // console.log(`${shopsToDisplay.length} shops found within radius.`);
-  } else {
-    console.log(
-      "No search center determined for radius filter. Displaying all available farm stands."
-    );
-    shopsToDisplay = [...allFarmStands];
-  }
+    // --- Existing Radius Filter (apply to the already product-filtered list) ---
+    const currentRadiusSliderElement = document.getElementById('radiusSlider'); // Get fresh DOM ref
+    const selectedRadiusMiles = currentRadiusSliderElement
+        ? parseInt(currentRadiusSliderElement.value)
+        : 30;
 
-  currentlyDisplayedShops = [...shopsToDisplay];
+    if (searchCenterLatLng) {
+        const radiusMeters = selectedRadiusMiles * 1609.344;
+        console.log(
+        `Filtering shops within ${selectedRadiusMiles} miles (${radiusMeters.toFixed(
+            0
+        )}m) of selected location.`
+        );
 
-  const sortCenter = searchCenterLatLng || (map ? map.getCenter() : null);
-  renderListings(shopsToDisplay, true, sortCenter); // renderListings should ideally use currentlyDisplayedShops
-  plotMarkers(shopsToDisplay);
+        shopsToDisplay = shopsToDisplay.filter((shop) => {
+            if (
+                shop.lat === undefined ||
+                shop.lng === undefined ||
+                shop.lat === null ||
+                shop.lng === null
+            )
+                return false;
+            try {
+                const shopLat = parseFloat(shop.lat);
+                const shopLng = parseFloat(shop.lng);
+                if (isNaN(shopLat) || isNaN(shopLng)) return false;
+                const shopLocation = new google.maps.LatLng(shopLat, shopLng);
+                const distanceInMeters =
+                google.maps.geometry.spherical.computeDistanceBetween(
+                    searchCenterLatLng,
+                    shopLocation
+                );
+                return distanceInMeters <= radiusMeters;
+            } catch (e) {
+                console.error("Error calculating distance for shop:", shop.Name, e);
+                return false;
+            }
+        });
+        console.log(`${shopsToDisplay.length} shops found after radius filter.`);
+    } else {
+        console.log(
+        "No search center determined for radius filter. Displaying product-filtered (or all) farm stands."
+        );
+    }
+    // --- END Existing Radius Filter ---
+
+    currentlyDisplayedShops = [...shopsToDisplay];
+
+    const sortCenter = searchCenterLatLng || (map ? map.getCenter() : null);
+    renderListings(shopsToDisplay, true, sortCenter);
+    plotMarkers(shopsToDisplay);
 }
+
 
 // --- Event Listeners & Initialization ---
 document.addEventListener("DOMContentLoaded", () => {
   // Initialize DOM element variables
   listingsContainer = document.getElementById("listingsContainer");
-  searchInput = document.getElementById("searchInput");
+  searchInput = document.getElementById("searchInput"); // Initialize the global 'searchInput'
   noResultsDiv = document.getElementById("noResults");
   listingsPanelElement = document.getElementById("listingsPanel");
+  window.listingsPanelElement = listingsPanelElement; // Explicitly make it a window property
   detailsOverlayShopElement = document.getElementById("detailsOverlayShop");
+  window.detailsOverlayShopElement = detailsOverlayShopElement; // Good practice, though uiLogic also does it
   closeDetailsOverlayShopButton = document.getElementById(
     "closeDetailsOverlayShopButton"
   );
   shopDetailNameElement = document.getElementById("shopDetailName");
-  // shopDetailRatingStarsElement = document.getElementById('shopDetailRatingStars'); // Not used directly, handled in card
-  // shopDetailAddressElement = document.getElementById('shopDetailAddress'); // Not used directly
-  // shopDetailDistanceElement = document.getElementById('shopDetailDistance'); // Not used directly
-  // shopDetailPhoneElement = document.getElementById('shopDetailPhone'); // Not used directly
-  // shopDetailWebsiteElement = document.getElementById('shopDetailWebsite'); // Not used directly
-  // shopDetailMapLinkContainerElement = document.getElementById('shopDetailMapLinkContainer'); // Not used directly
   detailsOverlaySocialElement = document.getElementById("detailsOverlaySocial");
-  // closeDetailsOverlaySocialButton = document.getElementById('closeDetailsOverlaySocialButton'); // Already handled by general overlay close
+  detailsOverlaySocialElement = document.getElementById("detailsOverlaySocial");
+  window.detailsOverlaySocialElement = detailsOverlaySocialElement; // Good practice
   socialLinksContainerElement = document.getElementById("socialLinksContainer");
   twitterTimelineContainerElement = document.getElementById(
     "twitterTimelineContainer"
   );
 
-  // NEW: Slider elements and event listener
-  radiusSliderElement = document.getElementById("radiusSlider");
-  radiusValueElement = document.getElementById("radiusValue");
+  const radiusSliderElement = document.getElementById("radiusSlider"); // Local scope for event listener setup
+  const radiusValueElement = document.getElementById("radiusValue"); // Local scope
 
   if (radiusSliderElement && radiusValueElement) {
-    // Initialize display
     radiusValueElement.textContent = `${radiusSliderElement.value} mi`;
-
-    // Update display on input and trigger search on change
     radiusSliderElement.addEventListener("input", () => {
       radiusValueElement.textContent = `${radiusSliderElement.value} mi`;
     });
     radiusSliderElement.addEventListener("change", () => {
-      // 'change' event fires when user releases mouse
-      handleSearch(); // Re-run search with new radius
+      handleSearch();
     });
   }
 
-  if (searchInput) {
+  if (searchInput) { // Use the initialized global 'searchInput'
     searchInput.addEventListener("input", () => {
       if (searchInput.value.trim() === "") {
         if (window.lastPlaceSelectedByAutocomplete) {
           window.lastPlaceSelectedByAutocomplete = null;
         }
-        // Don't call handleSearch on every input if using autocomplete,
-        // but do if user clears it to reset to all.
-        // handleSearch(); // Or maybe only if explicitly cleared.
+        // If cleared, re-run search to show all (or all based on product filters)
+        handleSearch();
       }
     });
-    // Handle Enter key on searchInput to trigger geocoding if no autocomplete selection made
     searchInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
-        e.preventDefault(); // Prevent form submission if it's in a form
-        // If autocomplete hasn't set a place, or if the current value isn't from autocomplete.
+        e.preventDefault();
         if (
           !window.lastPlaceSelectedByAutocomplete ||
           searchInput.value !==
@@ -330,10 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log(
             "Enter pressed on searchInput, no autocomplete selection. Triggering handleSearch for geocoding."
           );
-          window.lastPlaceSelectedByAutocomplete = null; // Ensure we try to geocode the typed text
+          window.lastPlaceSelectedByAutocomplete = null;
           handleSearch();
         }
-        // If autocomplete HAS made a selection, place_changed already called handleSearch.
       }
     });
   }
@@ -346,7 +341,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener("keydown", (event) => {
-    /* ... ESC key listener ... */
+    if (event.key === "Escape") {
+        const rightIsOpen = detailsOverlayShopElement && detailsOverlayShopElement.classList.contains('is-open');
+        const leftIsOpen = detailsOverlaySocialElement && detailsOverlaySocialElement.classList.contains('is-open');
+        if (rightIsOpen || leftIsOpen) {
+            if (typeof closeClickedShopOverlays === 'function') closeClickedShopOverlays();
+        }
+    }
   });
 
   console.log(
