@@ -213,50 +213,41 @@ google.maps.event.addListener(infowindow, 'domready', () => {
 
 
 
-            // --- ADJUSTED ZOOM LOGIC ---
+
+
+
+      
       // --- CONSOLIDATED AND CORRECTED MAP VIEW LOGIC ---
       map.setCenter(getAdjustedMapCenter(place.geometry.location)); // Always set the adjusted center first
 
       const isVerySpecificPlace = place.types && (
           place.types.includes("street_address") ||
           place.types.includes("premise")
-          // Consider if you want 'establishment' or 'point_of_interest' to also use default zoom
-          // || place.types.includes("establishment")
-          // || place.types.includes("point_of_interest")
+          // Add other types here if they should also use DEFAULT_MAP_ZOOM
+          // e.g., || place.types.includes("airport")
       );
 
       if (place.geometry.viewport && !isVerySpecificPlace) {
-        // If it has a viewport AND it's NOT a very specific address (e.g., city, state), fit to adjusted bounds.
-        // This will naturally set an appropriate zoom level for the viewport.
-        console.log("Autocomplete: Fitting to viewport for non-specific place.");
+        // If it has a viewport AND it's NOT a type that should get default zoom (e.g., city, state),
+        // fit to its viewport. This will set an appropriate zoom.
+        console.log("Autocomplete: Fitting to viewport for non-specific place like a city/region.");
         map.fitBounds(getAdjustedBounds(place.geometry.viewport));
       } else {
         // For very specific addresses (street_address, premise) OR if no viewport,
         // just use the centered map and set a predefined zoom level.
-        // This prevents over-zooming on street addresses.
-        console.log("Autocomplete: Setting default zoom for specific place or no viewport.");
-        map.setZoom(DEFAULT_MAP_ZOOM); // Use your desired default zoom (e.g., 10, 12, or 14)
+        console.log("Autocomplete: Setting DEFAULT_MAP_ZOOM for specific place or no viewport.");
+        map.setZoom(DEFAULT_MAP_ZOOM); // Use your desired default zoom (e.g., 10, 12, or 14 from config.js)
       }
       // --- END CONSOLIDATED MAP VIEW LOGIC ---
 
 
 
-      // --- APPLY ADJUSTED CENTERING/BOUNDS ---
-      if (place.geometry.viewport) {
-        // Use getAdjustedBounds for viewport
-        map.fitBounds(getAdjustedBounds(place.geometry.viewport));
-      } else {
-        // Use getAdjustedMapCenter for a single point
-        map.setCenter(getAdjustedMapCenter(place.geometry.location));
-        const placeIsSpecific =
-          place.types &&
-          (place.types.includes("establishment") ||
-            place.types.includes("point_of_interest") ||
-            place.types.includes("premise") ||
-            place.types.includes("street_address"));
-        map.setZoom(placeIsSpecific ? USER_LOCATION_MAP_ZOOM : DEFAULT_MAP_ZOOM); // Use defined zoom levels
-      }
-      // --- END APPLY ADJUSTED CENTERING/BOUNDS ---
+
+
+
+
+
+
 
       if (typeof handleSearch === "function") {
         // console.log("Autocomplete: place_changed with valid place, calling handleSearch.");

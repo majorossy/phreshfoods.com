@@ -157,27 +157,28 @@ async function handleSearch() {
                 currentSearchInput.value
             );
             try {
-                const geocodeResults = await new Promise((resolve, reject) => {
-                if (!window.geocoder) {
-                    reject("Geocoder not available");
-                    return;
-                }
-                window.geocoder.geocode(
-                    { address: currentSearchInput.value.trim() + ", Maine, USA" }, // Region biasing
-                    (results, status) => {
-                    if (
-                        status === google.maps.places.PlacesServiceStatus.OK &&
-                        results &&
-                        results[0] &&
-                        results[0].geometry &&
-                        results[0].geometry.location
-                    ) {
-                        resolve(results[0].geometry.location);
-                    } else {
-                        reject(status);
+                const geocodeData = await new Promise((resolve, reject) => { // Renamed to geocodeData for clarity
+                    if (!window.geocoder) {
+                        reject("Geocoder not available");
+                        return;
                     }
-                    }
-                );
+                    window.geocoder.geocode(
+                        { address: currentSearchInput.value.trim() + ", Maine, USA" },
+                        (results, status) => {
+                            // <<< --- PASTE THE SNIPPET HERE --- >>>
+                            if (status === google.maps.places.PlacesServiceStatus.OK &&
+                                results &&
+                                results[0]?.geometry?.location) {
+                                resolve({ // Resolve with an object
+                                    location: results[0].geometry.location,
+                                    viewport: results[0].geometry.viewport // Include viewport
+                                });
+                            } else {
+                                reject(status); // Handle the error case
+                            }
+                            // <<< --- END OF SNIPPET --- >>>
+                        }
+                    );
                 });
                 searchCenterLatLng = geocodeResults;
                 console.log("Geocoded search input to:", searchCenterLatLng.toString());
