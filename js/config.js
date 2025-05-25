@@ -14,12 +14,14 @@ const markerColor = "#ed411a"; // Default color for shop markers
 
 // --- Map Settings ---
 const DEFAULT_MAP_ZOOM = 10;     // Default zoom for general areas (cities, specific addresses after search)
-const USER_LOCATION_MAP_ZOOM = 14; // Zoom level when centering on user's location (if implemented) or more specific POIs
+const USER_LOCATION_MAP_ZOOM = 10; // Zoom level when centering on user's location (if implemented) or more specific POIs
 const DEFAULT_MAP_CENTER = { lat: 43.6926, lng: -70.2537 }; // Approx. center of Biddeford, Maine
 
 // NEW FLAG FOR CUSTOM MAP STYLE
 const USE_CUSTOM_MAP_STYLE = false; // Set to true to use maineLicensePlate, false for Google Maps default
 
+const LAST_SEARCHED_LOCATION_KEY = 'farmStandFinder_lastSearchedLocation';
+const LAST_SELECTED_RADIUS_KEY = 'farmStandFinder_lastSelectedRadius'; // For bonus: also store radius
 
 // Map Styles - (Keep your full maineLicensePlate style array here)
 const mapStyles = {

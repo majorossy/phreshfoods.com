@@ -174,7 +174,6 @@ main {
     flex-grow: 1;
     overflow-y: auto;
     padding: 1rem; 
-    padding-top: 3rem; 
 }
 #detailsOverlayShop #shopDetailName,
 #detailsOverlayShop #shopDetailsContent > h3 { 
@@ -502,4 +501,57 @@ input[type="range"]::-ms-fill-upper { background: #cbd5e0; border-radius: 2px; }
 #productFilterDropdown label img {
     /* Example: Add a min-width/height if needed, or a background for placeholders */
     /* vertical-align: middle; /* Might be useful depending on exact font/icon alignment */
+}
+
+
+
+
+
+/* In css/style.css (example if needed - Tailwind in JS might suffice) */
+.day-cell {
+    /* Tailwind: bg-white p-1.5 sm:p-2 text-center min-h-[50px] sm:min-h-[60px] flex flex-col justify-start items-center */
+    box-sizing: border-box; /* Good practice for grid/flex items */
+}
+
+.day-name {
+    /* Tailwind: font-semibold mb-0.5 sm:mb-1 uppercase text-[0.7rem] sm:text-xs */
+    /* text-transform: uppercase; /* Covered by Tailwind */
+}
+
+.day-hours {
+    /* Tailwind: leading-tight */
+    word-break: break-word; /* Helpful for long hour strings on small cells */
+}
+
+/* Today's highlight via JS using Tailwind classes should be sufficient.
+   If you need a dedicated CSS class:
+.day-cell.is-today-highlight {
+    background-color: #eff6ff; // Tailwind bg-blue-50
+    border: 2px solid #60a5fa; // Tailwind border-blue-400
+    position: relative;
+    z-index: 10;
+    margin: -1px; // To make border overlap correctly if grid has gap-px
+}
+*/
+
+
+
+
+/* css/style.css */
+
+/* ... your existing styles ... */
+
+/* Initial Search Modal Styling */
+#initialSearchModal.modal-open {
+    opacity: 1;
+    visibility: visible; /* Make sure it's explicitly visible */
+}
+#initialSearchModal.modal-open > div { /* Target the inner div for transform */
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* To ensure body scroll is prevented when modal is open */
+body.modal-active {
+    overflow: hidden;
 }

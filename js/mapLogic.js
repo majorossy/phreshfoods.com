@@ -17,28 +17,20 @@ const MAINE_BOUNDS_LITERAL = { // Specific to mapLogic, can stay here
 // This function is the callback for the Google Maps API script
 // It MUST be globally accessible, hence 'window.initAppMap' or just 'initAppMap' if not in a module
 function initAppMap() {
-    console.log("mapLogic.js: initAppMap called");
+    console.log("mapLogic.js: initAppMap callback fired.");
 
-    // Ensure AppState and its dom sub-object are ready
-    if (!window.AppState || !window.AppState.dom) {
-        console.error("mapLogic.js: AppState or AppState.dom is not initialized! Map cannot be set up.");
-        return;
-    }
-    const dom = AppState.dom; // Alias
-
-    if (!dom.mapElement) { // mapElement should be set by main.js's DOMContentLoaded
-        console.error("mapLogic.js: Map element (#map) not found in AppState.dom. Map cannot be initialized.");
-        // Optionally, try to get it again as a last resort, though it indicates an ordering issue
-        // dom.mapElement = document.getElementById("map");
-        // if (!dom.mapElement) return;
+    // Check if AppState.dom and specifically mapElement is ready.
+    // This can happen if main.js's DOMContentLoaded hasn't run yet.
+    if (!window.AppState || !window.AppState.dom || !AppState.dom.mapElement) {
+        console.warn("mapLogic.js: AppState.dom.mapElement not ready. Deferring map initialization slightly...");
+        setTimeout(initAppMap, 50); // Retry in 50ms
         return;
     }
 
-    // Determine which style to use based on the flag from config.js
+    console.log("mapLogic.js: AppState.dom.mapElement IS ready. Proceeding with map initialization.");
+    const dom = AppState.dom;
+
     const activeMapStyles = USE_CUSTOM_MAP_STYLE ? mapStyles.maineLicensePlate : null;
-    // Passing 'null' or 'undefined' to the styles option uses Google Maps default styling.
-
-    console.log(`mapLogic.js: Using custom map style: ${USE_CUSTOM_MAP_STYLE}`);
 
     map = new google.maps.Map(dom.mapElement, {
         center: DEFAULT_MAP_CENTER,       // From config.js
@@ -97,44 +89,64 @@ function initAppMap() {
             fields: ["name", "formatted_address", "geometry", "address_components", "place_id", "types"],
         });
 
+// js/mapLogic.js
+// Inside initAppMap function, within autocomplete.addListener('place_changed', ...):
+
         autocomplete.addListener("place_changed", () => {
             AppState.lastPlaceSelectedByAutocomplete = null;
             const place = autocomplete.getPlace();
 
-            if (!place?.geometry?.location) { // Simplified check
-                console.warn("Autocomplete: Place invalid or no geometry.", dom.searchInput.value);
-                if (place?.name) dom.searchInput.value = place.name;
-                else if (place?.formatted_address) dom.searchInput.value = place.formatted_address;
+            if (!place?.geometry?.location) {
+                console.warn("Autocomplete: Place invalid or no geometry.", AppState.dom.searchInput.value);
+                if (place?.name) AppState.dom.searchInput.value = place.name;
+                else if (place?.formatted_address) AppState.dom.searchInput.value = place.formatted_address;
                 if (typeof handleSearch === "function") handleSearch();
                 return;
             }
 
-            if (place.formatted_address) { // Format display address
-                let displayAddress = place.formatted_address;
+            // Format display address (your existing logic here)
+            let displayAddress = place.formatted_address || place.name || AppState.dom.searchInput.value;
+            if (place.formatted_address) {
                 const countryString = ", USA";
-                if (displayAddress.endsWith(countryString)) displayAddress = displayAddress.substring(0, displayAddress.length - countryString.length);
-                dom.searchInput.value = displayAddress.replace(/,\s*$/, "").trim();
-            } else { dom.searchInput.value = place.name || dom.searchInput.value; }
+                if (displayAddress.endsWith(countryString)) {
+                    displayAddress = displayAddress.substring(0, displayAddress.length - countryString.length);
+                }
+                displayAddress = displayAddress.replace(/,\s*$/, "").trim();
+            }
+            AppState.dom.searchInput.value = displayAddress;
+
 
             AppState.lastPlaceSelectedByAutocomplete = place;
+            const targetLocation = place.geometry.location;
 
-            // --- CORRECTED MAP VIEW LOGIC ---
-            map.setCenter(getAdjustedMapCenter(place.geometry.location));
+            console.log("--- Autocomplete place_changed ---");
+            console.log("Place Name:", place.name);
+            console.log("Place Types:", place.types);
 
-            const isVerySpecificPlace = place.types && (
-                place.types.includes("street_address") ||
-                place.types.includes("premise")
-                // Not including 'establishment' or 'point_of_interest' here means they might use fitBounds if viewport exists
-            );
+            map.setCenter(getAdjustedMapCenter(targetLocation));
+            console.log("mapLogic: Center set for", place.name);
 
-            if (place.geometry.viewport && !isVerySpecificPlace) {
-                console.log("mapLogic: Autocomplete fitting to viewport for:", place.name);
-                map.fitBounds(getAdjustedBounds(place.geometry.viewport));
-            } else {
-                console.log("mapLogic: Autocomplete setting DEFAULT_MAP_ZOOM for:", place.name);
-                map.setZoom(DEFAULT_MAP_ZOOM); // Use defined constant from config.js
-            }
-            // --- END CORRECTED LOGIC ---
+            // --- ALWAYS SET A PREDEFINED ZOOM ---
+            // Option A: Use one default zoom for all selections
+            console.log(`mapLogic: Setting zoom to DEFAULT_MAP_ZOOM (${DEFAULT_MAP_ZOOM}) for ${place.name}.`);
+            map.setZoom(DEFAULT_MAP_ZOOM);
+
+            // Option B: Differentiate slightly based on type, but still with setZoom
+            // const placeTypes = place.types || [];
+            // const isVerySpecific = placeTypes.includes("street_address") || placeTypes.includes("premise");
+            // if (isVerySpecific) {
+            //     console.log(`mapLogic: Setting zoom to SPECIFIC_ADDRESS_ZOOM (${SPECIFIC_ADDRESS_ZOOM}) for ${place.name}.`);
+            //     map.setZoom(SPECIFIC_ADDRESS_ZOOM); // (Make sure SPECIFIC_ADDRESS_ZOOM is defined in config.js)
+            // } else {
+            //     console.log(`mapLogic: Setting zoom to DEFAULT_MAP_ZOOM (${DEFAULT_MAP_ZOOM}) for ${place.name}.`);
+            //     map.setZoom(DEFAULT_MAP_ZOOM);
+            // }
+            // --- END ZOOM LOGIC ---
+
+
+            google.maps.event.addListenerOnce(map, 'idle', () => {
+                console.log("mapLogic: Zoom level AFTER programmatic zoom (idle):", map.getZoom());
+            });
 
             if (typeof handleSearch === "function") handleSearch(); // from main.js
         });
