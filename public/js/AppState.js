@@ -12,7 +12,7 @@ const AppState = {
     markerClickedRecently: false,      // Flag to manage map click vs. marker click interaction
 
     // --- Shared DOM Element References ---
-    // These will be populated in main.js's (or uiLogic.js's) DOMContentLoaded listener
+    // These will be populated in main.js's DOMContentLoaded listener
     dom: {
         // Main layout and core components
         mapElement: null,                        // The div#map for Google Maps
@@ -46,13 +46,18 @@ const AppState = {
         closeDetailsOverlaySocialButton: null,   // Close button for social overlay
         closeDetailsOverlayShopButton: null,     // Close button for shop overlay
 
-
         // Product Filter UI Elements
         productFilterToggleElement: null,        // Button to open/close product filter dropdown
         productFilterDropdownElement: null,      // The dropdown container itself
         productFilterCheckboxesContainer: null,  // Div where filter checkboxes are rendered
         resetProductFiltersButton: null,         // Button to reset product filters
         activeFilterCountElement: null,          // Span to show count of active product filters
+        
+        // Initial Search Modal elements (if not already covered or if needed by other modules via AppState)
+        // initialSearchModal: null, // Example: document.getElementById('initialSearchModal')
+        // modalSearchInput: null,   // Example: document.getElementById('modalSearchInput')
+        // modalSearchButton: null,  // Example: document.getElementById('modalSearchButton')
+        // modalSkipButton: null,    // Example: document.getElementById('modalSkipButton')
     }
     // --- You can add other shared states or configurations here as needed ---
 };

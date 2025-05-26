@@ -9,9 +9,9 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="/css/style.css" />
     <!-- Consider adding a favicon -->
-    <!-- <link rel="icon" href="images/favicon.ico" type="image/x-icon"> -->
+    <!-- <link rel="icon" href="/images/favicon.ico" type="image/x-icon"> -->
   </head>
   <body class="bg-white antialiased"> <!-- Changed bg to white as per your css/style.css -->
     <div id="fb-root"></div>
@@ -23,7 +23,7 @@
             <div class="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4">
                 <!-- Left Part: Logo/Title -->
                 <div class="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
-                    <img src="images/flag.png" alt="Maine Flag" class="h-8 sm:h-10 w-auto object-contain"/>
+                    <img src="/images/flag.png" alt="Maine Flag" class="h-8 sm:h-10 w-auto object-contain"/>
                     <h1 class="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap" style="color: #1b4a7b">
                         Farm Stand Finder
                     </h1>
@@ -176,20 +176,28 @@
 
 
     <!-- SCRIPTS - ORDER IS IMPORTANT! -->
-    <script src="js/config.js"></script>       <!-- Configurations, API keys (except Google Maps) -->
-    <script src="js/utils.js"></script>        <!-- Utility functions -->
-    <script src="js/AppState.js"></script>     <!-- Global application state object -->
-    <script src="js/apiService.js"></script>   <!-- Data fetching and parsing (CSV) -->
-    <script src="js/main.js"></script>         <!-- Main application orchestrator, DOMContentLoaded setup -->
-    <script src="js/uiLogic.js"></script>      <!-- UI generation, overlay logic, DOM interactions not in main -->
-    <script src="js/mapLogic.js"></script>     <!-- Google Maps specific logic, markers, directions -->
+    <script src="/js/config.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/AppState.js"></script>
+    <script src="/js/apiService.js"></script>
+    <script src="/js/main.js"></script>    
+    <script src="/js/sharedHtml.js"></script>      
+    <script src="/js/productFilter.js"></script>     
+    <script src="/js/shopDetailsRenderer.js"></script>
+    <script src="/js/socialRenderer.js"></script>     
+    <script src="/js/directionsUI.js"></script>     
+    <script src="/js/overlayManager.js"></script>    
+    <script src="/js/listingsRenderer.js"></script>  
+    <script src="/js/uiInit.js"></script>        
+    <script src="/js/main.js"></script>
+    <script src="/js/mapLogic.js"></script>
   
 
     <!-- External Libraries (Google Maps loads asynchronously via callback) -->
     <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&callback=initAppMap&libraries=places,geometry&v=weekly"></script>
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&callback=initAppMap&libraries=places,geometry&v=weekly&loading=async"></script>
     <!-- Twitter and Instagram Embeds -->
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    <script async src="//www.instagram.com/embed.js"></script> <!-- Recommended embed.js URL -->
+    <script async src="https://www.instagram.com/embed.js"></script>
   </body>
 </html>
