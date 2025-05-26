@@ -319,6 +319,13 @@ function clearDirections() {
 function plotMarkers(shopsToPlot) {
     mapDebugLog("plotMarkers: CALLED. shopsToPlot count:", shopsToPlot ? shopsToPlot.length : 'N/A', "Sample:", shopsToPlot ? JSON.stringify(shopsToPlot.slice(0,1)) : "N/A");
 
+    if (shopsToPlot && shopsToPlot.length > 0) {
+        const firstShop = shopsToPlot[0];
+        mapDebugLog("[MARKER_DEBUG] plotMarkers: Starting. First shop in shopsToPlot: " + firstShop.Name + ". Has marker property? " + firstShop.hasOwnProperty('marker') + ". Is marker null? " + (firstShop.marker === null) + ". Shop slug: " + firstShop.slug);
+    } else {
+        mapDebugLog("[MARKER_DEBUG] plotMarkers: Starting. shopsToPlot is empty or null.");
+    }
+
     mapDebugLog("plotMarkers: Clearing existing markers from AppState.allFarmStands.");
     let clearedCount = 0;
     (AppState.allFarmStands || []).forEach(s => { if (s.marker) { s.marker.setMap(null); s.marker = null; clearedCount++; } });
@@ -340,6 +347,7 @@ function plotMarkers(shopsToPlot) {
         }
     });
     mapDebugLog("plotMarkers: Finished processing all shops for plotting.");
+    mapDebugLog("[MARKER_DEBUG] plotMarkers: Finished processing all shops for plotting.");
 }
 
 function createMarkerForShop(shop) {
@@ -378,6 +386,7 @@ function createMarkerForShop(shop) {
             zIndex: 1
         });
         shop.marker = newMarker; // Assign to shop object
+        mapDebugLog("[MARKER_DEBUG] createMarkerForShop: Marker ASSIGNED to shop: " + shop.Name + ". Marker ZIndex:", newMarker.getZIndex ? newMarker.getZIndex() : 'N/A');
         mapDebugLog(`createMarkerForShop: SUCCESS - Marker CREATED and assigned for ${shop.Name} at ${lat}, ${lng}. Marker object:`, newMarker);
     } catch (error) {
         mapDebugError(`createMarkerForShop: ERROR creating google.maps.Marker for ${shop.Name}:`, error, "Shop Data:", shop);
@@ -498,6 +507,7 @@ async function showInfoWindowForShop(shop) {
 function getAdjustedMapCenter(targetCenterInput) {
     mapDebugLog("getAdjustedMapCenter: CALLED. targetCenterInput:", targetCenterInput.toString ? targetCenterInput.toString() : JSON.stringify(targetCenterInput));
     const dom = AppState.dom;
+    console.log("[CENTERING_DEBUG] getAdjustedMapCenter called. Map dimensions:", map.getDiv().offsetWidth, "x", map.getDiv().offsetHeight);
     if (!map?.getDiv || !map.getBounds() || !map.getProjection()) {
         mapDebugWarn("getAdjustedMapCenter: Map not ready or missing properties (getDiv/getBounds/getProjection). Returning targetCenterInput directly.", "map exists:", !!map);
         return targetCenterInput;
@@ -528,16 +538,36 @@ function getAdjustedMapCenter(targetCenterInput) {
     let panelLeftPx = 0;
     let panelRightPx = 0;
 
-    if (dom.detailsOverlaySocialElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlaySocialElement).display !== "none") {
-        panelLeftPx = dom.detailsOverlaySocialElement.offsetWidth;
-        mapDebugLog(`getAdjustedMapCenter: detailsOverlaySocialElement is OPEN. Width: ${panelLeftPx}px`);
+    // Left Panel (Social)
+    const socialPanel = dom.detailsOverlaySocialElement;
+    const socialIsOpen = socialPanel?.classList.contains("is-open");
+    const socialDisplay = socialPanel ? getComputedStyle(socialPanel).display : "null";
+    const socialOffsetWidth = socialPanel?.offsetWidth;
+    console.log("[CENTERING_DEBUG] Social Panel: isOpen:", socialIsOpen, "display:", socialDisplay, "offsetWidth:", socialOffsetWidth);
+    if (socialIsOpen && socialDisplay !== "none") {
+        panelLeftPx = socialOffsetWidth;
+        mapDebugLog(`getAdjustedMapCenter: detailsOverlaySocialElement is OPEN. Width: ${panelLeftPx}px`); // Keep original mapDebugLog
     }
-    if (dom.detailsOverlayShopElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlayShopElement).display !== "none") {
-        panelRightPx = dom.detailsOverlayShopElement.offsetWidth;
-        mapDebugLog(`getAdjustedMapCenter: detailsOverlayShopElement is OPEN. Width: ${panelRightPx}px`);
-    } else if (dom.listingsPanelElement && getComputedStyle(dom.listingsPanelElement).display !== "none" && dom.listingsPanelElement.offsetWidth > 0 && window.innerWidth >= 768) {
-        panelRightPx = dom.listingsPanelElement.offsetWidth;
-        mapDebugLog(`getAdjustedMapCenter: listingsPanelElement is VISIBLE (md+). Width: ${panelRightPx}px`);
+
+    // Right Panel (Shop Details)
+    const shopPanel = dom.detailsOverlayShopElement;
+    const shopIsOpen = shopPanel?.classList.contains("is-open");
+    const shopDisplay = shopPanel ? getComputedStyle(shopPanel).display : "null";
+    const shopOffsetWidth = shopPanel?.offsetWidth;
+    console.log("[CENTERING_DEBUG] Shop Panel: isOpen:", shopIsOpen, "display:", shopDisplay, "offsetWidth:", shopOffsetWidth);
+    if (shopIsOpen && shopDisplay !== "none") {
+        panelRightPx = shopOffsetWidth;
+        mapDebugLog(`getAdjustedMapCenter: detailsOverlayShopElement is OPEN. Width: ${panelRightPx}px`); // Keep original mapDebugLog
+    } else {
+        // Right Panel (Listings - fallback if shop panel not open)
+        const listingsPanel = dom.listingsPanelElement;
+        const listingsIsVisible = listingsPanel && getComputedStyle(listingsPanel).display !== "none" && listingsPanel.offsetWidth > 0 && window.innerWidth >= 768;
+        const listingsOffsetWidth = listingsPanel?.offsetWidth;
+        console.log("[CENTERING_DEBUG] Listings Panel (fallback): isVisible (desktop):", listingsIsVisible, "offsetWidth:", listingsOffsetWidth, "window.innerWidth:", window.innerWidth);
+        if (listingsIsVisible) {
+            panelRightPx = listingsOffsetWidth;
+            mapDebugLog(`getAdjustedMapCenter: listingsPanelElement is VISIBLE (md+). Width: ${panelRightPx}px`); // Keep original mapDebugLog
+        }
     }
 
     if ((panelLeftPx <= 0 && panelRightPx <= 0) || mapWidthPx <= 0) {
@@ -546,7 +576,8 @@ function getAdjustedMapCenter(targetCenterInput) {
     }
 
     const netPixelShift = (panelLeftPx - panelRightPx) / 2;
-    mapDebugLog(`getAdjustedMapCenter: netPixelShift: ${netPixelShift}px (Positive means visible map area shifted right)`);
+    mapDebugLog(`getAdjustedMapCenter: netPixelShift: ${netPixelShift}px (Positive means visible map area shifted right)`); // Keep original
+    console.log("[CENTERING_DEBUG] Calculated panelLeftPx:", panelLeftPx, "panelRightPx:", panelRightPx, "netPixelShift:", netPixelShift);
     const currentMapBounds = map.getBounds();
     if (!currentMapBounds) {
         mapDebugWarn("getAdjustedMapCenter: currentMapBounds is null! Cannot calculate lngSpan. Returning unadjusted target.", { lat: targetLat, lng: targetLng });
@@ -559,7 +590,8 @@ function getAdjustedMapCenter(targetCenterInput) {
     
     const adjustedLng = targetLng - (netPixelShift * degreesPerPixelLng);
     const finalAdjustedCenter = { lat: targetLat, lng: adjustedLng };
-    mapDebugLog("getAdjustedMapCenter: FINAL adjusted center:", finalAdjustedCenter);
+    mapDebugLog("getAdjustedMapCenter: FINAL adjusted center:", finalAdjustedCenter); // Keep original
+    console.log("[CENTERING_DEBUG] Final adjustedLng:", adjustedLng, "Original targetLng:", targetLng);
     return finalAdjustedCenter;
 }
 
