@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook Page Feed Demo</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f2f5;
+        }
+        .fb-container {
+            max-width: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Set your Facebook page name here -->
+    <script>
+        const facebookPageName = "FrithFarm"; // Replace with your Facebook page name
+    </script>
+
+    <div class="fb-container" style="width: 100%;">
+        <div id="fb-root"></div>
+        <script async defer crossorigin="anonymous" 
+                src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0"></script>
+        <div class="fb-page" 
+             data-href="https://www.facebook.com/" 
+             data-tabs="timeline" 
+             data-width="" 
+             data-height="" 
+             data-small-header="false" 
+             data-adapt-container-width="true" 
+             data-hide-cover="false" 
+             data-hide-cta="false"
+             data-show-facepile="true">
+            <blockquote cite="https://www.facebook.com/" class="fb-xfbml-parse-ignore">
+                <a href="https://www.facebook.com/"></a>
+            </blockquote>
+        </div>
+    </div>
+</body>
+</html>
