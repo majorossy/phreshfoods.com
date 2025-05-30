@@ -1,8 +1,7 @@
-﻿// public/js/mapLogic.js
-'use strict';
+﻿'use strict';
 
 // --- DEBUG FLAG ---
-const DEBUG_MAP_LOGIC = true; // Set to true to enable detailed logging in this file
+const DEBUG_MAP_LOGIC = false; // Set to true to enable detailed logging in this file
 
 // Helper for conditional logging
 function mapDebugLog(...args) {
