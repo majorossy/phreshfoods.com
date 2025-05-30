@@ -631,16 +631,16 @@ function getAdjustedMapCenter(targetCenterInput) {
 
   if (
     socialOverlay &&
-    socialOverlay.classList.contains("is-open") &&
-    getComputedStyle(socialOverlay).display !== "none"
+    getComputedStyle(socialOverlay).display !== "none" &&
+    socialOverlay.offsetWidth > 0
   ) {
     panelLeftWidthPx = socialOverlay.offsetWidth;
   }
 
   if (
     shopOverlay &&
-    shopOverlay.classList.contains("is-open") &&
-    getComputedStyle(shopOverlay).display !== "none"
+    getComputedStyle(shopOverlay).display !== "none" &&
+    shopOverlay.offsetWidth > 0
   ) {
     panelRightWidthPx = shopOverlay.offsetWidth;
   } else if (

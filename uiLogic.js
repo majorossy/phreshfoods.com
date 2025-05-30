@@ -907,7 +907,7 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
 
             card.addEventListener('click', () => {
                 if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
-                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 100);
+                setTimeout(() => { if (typeof showInfoWindowForShop === 'function') showInfoWindowForShop(shop); }, 300);
 
                 document.querySelectorAll('#listingsContainer .bg-white.rounded-xl').forEach(el => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2'));
                 card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
