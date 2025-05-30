@@ -534,6 +534,7 @@ function showInfoWindowForShop(shop) {
     if (map) {
         const adjustedCenter = getAdjustedMapCenter(positionForMap);
         map.panTo(adjustedCenter);
+        map.setZoom(DEFAULT_ZOOM);
     }
 
     if (!infowindow) {
