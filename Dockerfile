@@ -37,8 +37,8 @@ COPY --from=builder /usr/src/app/server.js ./server.js
 # We'll manage .env carefully - This comment applies to the next line
 COPY --from=builder /usr/src/app/.env ./.env
 
-# Expose the port the app runs on (from your .env or server.js default)
+# Expose the port the app runs on
 EXPOSE 3000
 
-# Define the command to run your application
-CMD ["node", "server.js"]
+# Run app with nodemon using npx
+CMD ["npx", "nodemon", "server.js"]

@@ -1,0 +1,13 @@
+services:
+  farm-finder-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: farm-finder-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/usr/src/app
+    command: npx nodemon server.js
+    environment:
+      - NODE_ENV=development

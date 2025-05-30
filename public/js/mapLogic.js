@@ -1,7 +1,7 @@
 ﻿'use strict';
 
 // --- DEBUG FLAG ---
-const DEBUG_MAP_LOGIC = false; // Set to true to enable detailed logging in this file
+const DEBUG_MAP_LOGIC = true; // Set to true to enable detailed logging in this file
 
 // Helper for conditional logging
 function mapDebugLog(...args) {
@@ -543,7 +543,7 @@ function getAdjustedMapCenter(targetCenterInput) {
     const socialDisplay = socialPanel ? getComputedStyle(socialPanel).display : "null";
     const socialOffsetWidth = socialPanel?.offsetWidth;
     console.log("[CENTERING_DEBUG] Social Panel: isOpen:", socialIsOpen, "display:", socialDisplay, "offsetWidth:", socialOffsetWidth);
-    if (socialIsOpen && socialDisplay !== "none") {
+    if (socialIsOpen && socialDisplay !== "none" ) {
         panelLeftPx = socialOffsetWidth;
         mapDebugLog(`getAdjustedMapCenter: detailsOverlaySocialElement is OPEN. Width: ${panelLeftPx}px`); // Keep original mapDebugLog
     }
