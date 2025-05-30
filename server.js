@@ -222,7 +222,7 @@ app.get('/api/farm-stands', async (req, res) => {
         res.json(farmStandsCache);
 
     } catch (error) {
-        console.error("Error fetching or processing farm stands:", error);c
+        console.error("Error fetching or processing farm stands:", error);
         res.status(500).json({ error: "Failed to load farm stand data." });
     }
 });
