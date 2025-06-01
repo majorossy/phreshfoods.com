@@ -1,69 +1,65 @@
 ﻿'use strict';
 
-// --- DEBUG FLAG ---
-const DEBUG_MAP_LOGIC = true; // Set to true to enable detailed logging in this file
+const DEBUG_MAP_LOGIC = true;
 
-// Helper for conditional logging
-function mapDebugLog(...args) {
-    if (DEBUG_MAP_LOGIC) {
-        console.log('[MapLogic-DEBUG]', ...args);
-    }
-}
-function mapDebugWarn(...args) {
-    if (DEBUG_MAP_LOGIC) {
-        console.warn('[MapLogic-WARN]', ...args);
-    }
-}
-function mapDebugError(...args) {
-    if (DEBUG_MAP_LOGIC) {
-        console.error('[MapLogic-ERROR]', ...args);
-    }
-}
-// --- END DEBUG FLAG & HELPERS ---
+function mapDebugLog(...args) { if (DEBUG_MAP_LOGIC) console.log('[MapLogic-DEBUG]', ...args); }
+function mapDebugWarn(...args) { if (DEBUG_MAP_LOGIC) console.warn('[MapLogic-WARN]', ...args); }
+function mapDebugError(...args) { if (DEBUG_MAP_LOGIC) console.error('[MapLogic-ERROR]', ...args); }
 
-
-// Google Maps API objects, defined globally within this module, initialized in initAppMap
-var map; // 'var' for broader function scope for callback from Google Maps API script
-var geocoder; // Google Maps Geocoder object
-var placesService; // Google Maps PlacesService object
+var map;
+var geocoder;
 var infowindow;
-var directionsRenderer; // This is used to RENDER directions on the map
-var autocomplete; // For Google Places Autocomplete
+var directionsRenderer;
 
 let MAINE_BOUNDS_LITERAL;
+// This top-level check for MAINE_BOUNDS_LITERAL will run when the script is parsed.
+// If config.js (using defer) hasn't run yet, this will use the fallback.
+// The value will be the one available when this script is first encountered by the browser.
 if (typeof window.MAINE_BOUNDS_LITERAL !== 'undefined') {
     MAINE_BOUNDS_LITERAL = window.MAINE_BOUNDS_LITERAL;
-    mapDebugLog("MAINE_BOUNDS_LITERAL loaded from global window object.");
+    mapDebugLog("mapLogic.js: MAINE_BOUNDS_LITERAL loaded from global window object at script parse time.");
 } else {
-    MAINE_BOUNDS_LITERAL = {
+    MAINE_BOUNDS_LITERAL = { // Fallback
         sw: { lat: 42.975426, lng: -71.089859 },
         ne: { lat: 47.459683, lng: -66.949829 },
     };
-    mapDebugWarn("MAINE_BOUNDS_LITERAL was not found globally (from config.js), using local default.");
+    mapDebugWarn("mapLogic.js: MAINE_BOUNDS_LITERAL was not found globally at script parse time, using local default.");
 }
 
 
-function initAppMap() {
-    mapDebugLog("initAppMap: Callback fired.");
-    if (!window.AppState || !window.AppState.dom || !AppState.dom.mapElement) {
-        mapDebugWarn("initAppMap: AppState.dom.mapElement not ready. Deferring map initialization slightly...");
-        setTimeout(initAppMap, 150); // Slightly increased delay
-        return;
+// --- State for coordinating initialization ---
+let mapApiLoadedAndCallbackFired = false;
+// AppState.domReadyAndPopulated will be set by main.js
+
+// This function contains the actual map setup logic
+async function performMapSetup() {
+    mapDebugLog("performMapSetup: Attempting actual map setup.");
+    if (!window.AppState || !AppState.domReadyAndPopulated || !AppState.dom.mapElement) {
+        mapDebugWarn("performMapSetup: Conditions not fully met or mapElement not ready. AppState.domReadyAndPopulated:", AppState.domReadyAndPopulated, "AppState.dom.mapElement:", AppState.dom.mapElement);
+        // If domReadyAndPopulated is true but mapElement is still null, there's an issue in main.js DOM population.
+        return; // Don't proceed if DOM elements aren't ready
     }
 
-    mapDebugLog("initAppMap: AppState.dom.mapElement IS ready.");
+    mapDebugLog("performMapSetup: AppState.dom.mapElement IS ready.");
     const dom = AppState.dom;
-    mapDebugLog("initAppMap: AppState.dom captured:", dom);
 
-    // Constants from config.js
-    const activeMapStyles = USE_CUSTOM_MAP_STYLE ? mapStyles.maineLicensePlate : null;
-    mapDebugLog("initAppMap: USE_CUSTOM_MAP_STYLE:", USE_CUSTOM_MAP_STYLE, "Active styles length (if custom):", activeMapStyles ? activeMapStyles.length : 'N/A (Google Default)');
-    mapDebugLog("initAppMap: DEFAULT_MAP_CENTER:", DEFAULT_MAP_CENTER, "DEFAULT_MAP_ZOOM:", DEFAULT_MAP_ZOOM);
+    // Re-check MAINE_BOUNDS_LITERAL here to get the latest value if config.js ran after initial parse
+    if (typeof window.MAINE_BOUNDS_LITERAL !== 'undefined') {
+        MAINE_BOUNDS_LITERAL = window.MAINE_BOUNDS_LITERAL;
+    } else {
+        mapDebugWarn("performMapSetup: MAINE_BOUNDS_LITERAL still not global. Autocomplete might use fallback bounds.");
+    }
+
+
+    const activeMapStyles = (typeof USE_CUSTOM_MAP_STYLE !== 'undefined' && USE_CUSTOM_MAP_STYLE && typeof mapStyles !== 'undefined') ? mapStyles.maineLicensePlate : null;
+    const defaultCenter = (typeof DEFAULT_MAP_CENTER !== 'undefined') ? DEFAULT_MAP_CENTER : { lat: 43.6926, lng: -70.2537 };
+    const defaultZoom = (typeof DEFAULT_MAP_ZOOM !== 'undefined') ? DEFAULT_MAP_ZOOM : 10;
+
 
     try {
         map = new google.maps.Map(dom.mapElement, {
-            center: DEFAULT_MAP_CENTER,
-            zoom: DEFAULT_MAP_ZOOM,
+            center: defaultCenter,
+            zoom: defaultZoom,
             mapTypeControl: false,
             styles: activeMapStyles,
             gestureHandling: "greedy",
@@ -72,159 +68,158 @@ function initAppMap() {
             fullscreenControl: true,
             rotateControl: false,
             scaleControl: true,
+            mapId: '6c1bbba6c5f48ca2beb388ad' // Your Map ID
         });
-        mapDebugLog("initAppMap: Google Map object CREATED successfully.");
+        mapDebugLog("performMapSetup: Google Map object CREATED successfully.");
     } catch (error) {
-        mapDebugError("initAppMap: CRITICAL ERROR creating Google Map object.", error);
-        // Optionally, display a user-friendly message on the page
+        mapDebugError("performMapSetup: CRITICAL ERROR creating Google Map object.", error);
         if(dom.mapElement) dom.mapElement.innerHTML = "<p style='color:red; text-align:center; padding:20px;'>Could not initialize the map. Please try refreshing the page.</p>";
         return; // Stop further execution if map fails
     }
 
-
     window.geocoder = new google.maps.Geocoder();
-    mapDebugLog("initAppMap: google.maps.Geocoder CREATED.");
-    placesService = new google.maps.places.PlacesService(map);
-    mapDebugLog("initAppMap: google.maps.places.PlacesService CREATED with map object.");
+    mapDebugLog("performMapSetup: google.maps.Geocoder CREATED.");
 
     infowindow = new google.maps.InfoWindow({
         pixelOffset: new google.maps.Size(0, -15),
         disableAutoPan: false
     });
-    mapDebugLog("initAppMap: google.maps.InfoWindow CREATED.");
+    mapDebugLog("performMapSetup: google.maps.InfoWindow CREATED.");
 
     google.maps.event.addListener(infowindow, 'domready', () => {
-        mapDebugLog("InfoWindow 'domready' event triggered.");
-        const iwContainer = infowindow.div;
-        if (!iwContainer) { mapDebugWarn("InfoWindow 'domready': iwContainer not found."); return; }
-        const tailAndCloseContainer = iwContainer.querySelector('.gm-style-iw-chr');
-        if (tailAndCloseContainer) { tailAndCloseContainer.style.display = 'none'; mapDebugLog("InfoWindow 'domready': Tail & Chrome container hidden.");}
-        const closeButton = iwContainer.querySelector('button.gm-ui-hover-effect');
-        if (closeButton) { closeButton.style.display = 'none'; mapDebugLog("InfoWindow 'domready': Close button hidden.");}
-        const contentWrapper = iwContainer.querySelector('.gm-style-iw-d');
-        if(contentWrapper) { contentWrapper.style.overflow = 'hidden'; mapDebugLog("InfoWindow 'domready': Content wrapper overflow set to hidden.");}
+        let iwOuterContainer = null;
+        const contentNode = infowindow.getContent();
+        if (contentNode && typeof contentNode !== 'string' && contentNode.parentElement) {
+            let currentElement = contentNode;
+            for (let i = 0; i < 5; i++) {
+                if (currentElement.classList && (currentElement.classList.contains('gm-style-iw') || currentElement.classList.contains('gm-style-iw-box'))) {
+                    iwOuterContainer = currentElement; break;
+                }
+                if (!currentElement.parentElement) break;
+                currentElement = currentElement.parentElement;
+            }
+        }
+        if (!iwOuterContainer) iwOuterContainer = document.querySelector('.gm-style-iw-box') || document.querySelector('.gm-style-iw');
+        const baseElement = iwOuterContainer || document;
+        const tailAndCloseContainer = baseElement.querySelector('.gm-style-iw-chr');
+        if (tailAndCloseContainer) tailAndCloseContainer.style.display = 'none';
+        const closeButton = baseElement.querySelector('button.gm-ui-hover-effect');
+        if (closeButton) closeButton.style.display = 'none';
+        const contentWrapper = baseElement.querySelector('.gm-style-iw-d');
+        if (contentWrapper) contentWrapper.style.overflow = 'hidden';
     });
 
     directionsRenderer = new google.maps.DirectionsRenderer({
         map: map,
         polylineOptions: { strokeColor: "#FF0000", strokeOpacity: 0.8, strokeWeight: 6 },
     });
-    mapDebugLog("initAppMap: google.maps.DirectionsRenderer CREATED.");
+    if (dom.directionsPanel) directionsRenderer.setPanel(dom.directionsPanel);
 
-    if (dom.directionsPanel) {
-        directionsRenderer.setPanel(dom.directionsPanel);
-        mapDebugLog("initAppMap: DirectionsRenderer panel set to AppState.dom.directionsPanel.");
-    } else {
-        mapDebugWarn("initAppMap: AppState.dom.directionsPanel not found. Directions text panel will not be populated.");
-    }
+    const mainSearchAutocompleteElement = dom.searchAutocompleteElement;
+    if (mainSearchAutocompleteElement) {
+        mapDebugLog("performMapSetup: Setting up 'gmp-placechange' listener for main search.");
+        if (typeof MAINE_BOUNDS_LITERAL !== 'undefined') {
+            const biasRect = `rectangle:${MAINE_BOUNDS_LITERAL.sw.lat},${MAINE_BOUNDS_LITERAL.sw.lng},${MAINE_BOUNDS_LITERAL.ne.lat},${MAINE_BOUNDS_LITERAL.ne.lng}`;
+            if (!mainSearchAutocompleteElement.getAttribute('location-bias')) mainSearchAutocompleteElement.locationBias = biasRect;
+            if (!mainSearchAutocompleteElement.getAttribute('location-restriction')) mainSearchAutocompleteElement.locationRestriction = biasRect;
+        }
+        if (!mainSearchAutocompleteElement.getAttribute('country')) mainSearchAutocompleteElement.country = "us";
+        if (!mainSearchAutocompleteElement.getAttribute('place-fields')) mainSearchAutocompleteElement.placeFields = "name,formatted_address,geometry,address_components,place_id,types";
 
-    if (dom.searchInput) {
-        mapDebugLog("initAppMap: AppState.dom.searchInput FOUND. Initializing Autocomplete.");
-        const autocompleteOptions = {
-            bounds: new google.maps.LatLngBounds(
-                new google.maps.LatLng(MAINE_BOUNDS_LITERAL.sw.lat, MAINE_BOUNDS_LITERAL.sw.lng),
-                new google.maps.LatLng(MAINE_BOUNDS_LITERAL.ne.lat, MAINE_BOUNDS_LITERAL.ne.lng)
-            ),
-            strictBounds: true,
-            componentRestrictions: { country: "us" },
-            fields: ["name", "formatted_address", "geometry", "address_components", "place_id", "types"],
-        };
-        mapDebugLog("initAppMap: Autocomplete options:", autocompleteOptions);
-        autocomplete = new google.maps.places.Autocomplete(dom.searchInput, autocompleteOptions);
-        mapDebugLog("initAppMap: google.maps.places.Autocomplete CREATED for searchInput.");
-
-        autocomplete.addListener("place_changed", () => {
-            mapDebugLog("Autocomplete 'place_changed' event triggered.");
-            AppState.lastPlaceSelectedByAutocomplete = null;
-            const place = autocomplete.getPlace();
-            mapDebugLog("Autocomplete 'place_changed': place object:", place);
-
+        mainSearchAutocompleteElement.addEventListener('gmp-placechange', () => {
+            mapDebugLog("Main Autocomplete 'gmp-placechange' event triggered.");
+            const place = mainSearchAutocompleteElement.place;
             if (!place?.geometry?.location) {
-                mapDebugWarn("Autocomplete 'place_changed': Place invalid or no geometry for input:", dom.searchInput.value);
-                if (typeof handleSearch === "function") {
-                    mapDebugLog("Autocomplete 'place_changed': Calling handleSearch() for typed text.");
-                    handleSearch();
-                } else { mapDebugWarn("Autocomplete 'place_changed': handleSearch function not found.");}
+                mapDebugWarn("Main Autocomplete 'gmp-placechange': Invalid place. Input:", mainSearchAutocompleteElement.value);
+                AppState.lastPlaceSelectedByAutocomplete = null;
+                if (typeof handleSearch === "function") handleSearch();
                 return;
             }
-
-            let displayAddress = place.formatted_address || place.name || dom.searchInput.value;
-            if (place.formatted_address) {
-                displayAddress = displayAddress.replace(/, USA$/, "").trim();
-            }
-            dom.searchInput.value = displayAddress;
             AppState.lastPlaceSelectedByAutocomplete = place;
-            mapDebugLog("Autocomplete 'place_changed': AppState.lastPlaceSelectedByAutocomplete SET:", AppState.lastPlaceSelectedByAutocomplete);
-            mapDebugLog("Autocomplete 'place_changed': dom.searchInput.value SET to:", displayAddress);
-
-            const targetLocation = place.geometry.location;
-            mapDebugLog("Autocomplete 'place_changed': Target location:", targetLocation.toString());
-            const adjustedCenter = getAdjustedMapCenter(targetLocation); // Ensure this is defined and callable
-            mapDebugLog("Autocomplete 'place_changed': Adjusted map center pre-pan:", adjustedCenter.toString ? adjustedCenter.toString() : JSON.stringify(adjustedCenter));
-            map.setCenter(adjustedCenter);
-            map.setZoom(DEFAULT_MAP_ZOOM);
-            mapDebugLog("Autocomplete 'place_changed': Map centered and zoomed. Current center:", map.getCenter().toString(), "Zoom:", map.getZoom());
-
-
-            if (typeof handleSearch === "function") {
-                 mapDebugLog("Autocomplete 'place_changed': Calling handleSearch().");
-                 handleSearch();
-            } else { mapDebugWarn("Autocomplete 'place_changed': handleSearch function not found.");}
+            const targetLocationLiteral = place.geometry.location;
+            const targetLocationLatLng = new google.maps.LatLng(targetLocationLiteral.lat, targetLocationLiteral.lng);
+            map.panTo(getAdjustedMapCenter(targetLocationLatLng));
+            if (place.geometry.viewport) {
+                 const viewport = new google.maps.LatLngBounds(place.geometry.viewport.southwest, place.geometry.viewport.northeast);
+                map.fitBounds(getAdjustedBounds(viewport));
+            } else {
+                map.setZoom(defaultZoom);
+            }
+            if (typeof handleSearch === "function") handleSearch();
         });
     } else {
-        mapDebugWarn("initAppMap: AppState.dom.searchInput NOT FOUND. Autocomplete will not be initialized.");
+        mapDebugWarn("performMapSetup: AppState.dom.searchAutocompleteElement NOT FOUND.");
     }
 
     map.addListener("click", (e) => {
-        mapDebugLog("Map 'click' event triggered. Event object:", e, "Place ID from event:", e.placeId);
-        if (e.placeId) { e.stop(); mapDebugLog("Map 'click': Click was on a map POI (placeId present), event stopped.");}
-        if (AppState.markerClickedRecently) { mapDebugLog("Map 'click': AppState.markerClickedRecently is true, returning early."); return;}
-        if (infowindow) { infowindow.close(); mapDebugLog("Map 'click': InfoWindow closed."); }
-
+        if (e.target instanceof google.maps.marker.AdvancedMarkerElement) return;
+        if (e.placeId) e.stop();
+        if (AppState.markerClickedRecently) return;
+        if (infowindow) infowindow.close();
         if (AppState.dom.detailsOverlayShopElement?.classList.contains("is-open") ||
             AppState.dom.detailsOverlaySocialElement?.classList.contains("is-open")) {
-            mapDebugLog("Map 'click': Overlays are open.");
-            if (typeof closeClickedShopOverlaysAndNavigateHome === "function") {
-                mapDebugLog("Map 'click': Calling closeClickedShopOverlaysAndNavigateHome().");
-                closeClickedShopOverlaysAndNavigateHome();
-            } else { mapDebugWarn("Map 'click': closeClickedShopOverlaysAndNavigateHome function not found."); }
-        } else {
-            mapDebugLog("Map 'click': No overlays open or AppState elements missing.");
+            if (typeof closeClickedShopOverlaysAndNavigateHome === "function") closeClickedShopOverlaysAndNavigateHome();
         }
     });
 
     map.addListener("idle", () => {
         const currentMapCenter = map.getCenter();
-        mapDebugLog("Map 'idle' event triggered. Current map center:", currentMapCenter ? currentMapCenter.toString() : 'N/A');
-        if (currentMapCenter && AppState.currentlyDisplayedShops && AppState.currentlyDisplayedShops.length > 0 && typeof renderListings === "function") {
+        if (currentMapCenter && AppState.currentlyDisplayedShops?.length > 0 && typeof renderListings === "function") {
             if (!AppState.lastPlaceSelectedByAutocomplete?.geometry) {
-                mapDebugLog("Map 'idle': Not an autocomplete search result. Calling renderListings() to re-sort by new map center.");
                 renderListings(AppState.currentlyDisplayedShops, true, currentMapCenter);
-            } else {
-                 mapDebugLog("Map 'idle': Is an autocomplete search result, not re-sorting listings by map center.");
             }
-        } else {
-             mapDebugLog("Map 'idle': Conditions not met for re-sorting listings.",
-                "currentMapCenter defined:", !!currentMapCenter,
-                "currentlyDisplayedShops defined & populated:", !!AppState.currentlyDisplayedShops && AppState.currentlyDisplayedShops.length > 0,
-                "renderListings defined:", typeof renderListings === 'function');
         }
     });
 
-    const initialAdjustedCenter = getAdjustedMapCenter(DEFAULT_MAP_CENTER);
-    mapDebugLog("initAppMap: Initial adjusted map center for map.setCenter:", initialAdjustedCenter.toString ? initialAdjustedCenter.toString() : JSON.stringify(initialAdjustedCenter));
-    map.setCenter(initialAdjustedCenter);
-    mapDebugLog("initAppMap: Initial map center set.");
+    map.panTo(getAdjustedMapCenter(defaultCenter));
 
     if (typeof processAndPlotShops === "function") {
-        mapDebugLog("initAppMap: Calling processAndPlotShops() from main.js.");
-        processAndPlotShops();
+        mapDebugLog("performMapSetup: Calling processAndPlotShops().");
+        processAndPlotShops(); // This should be async if it awaits, but performMapSetup itself is called without await from initAppMap
     } else {
-        mapDebugError("initAppMap: CRITICAL - processAndPlotShops function NOT FOUND (expected in main.js). Data will not load.");
+        mapDebugError("performMapSetup: CRITICAL - processAndPlotShops function NOT FOUND.");
     }
-    mapDebugLog("initAppMap: Initialization sequence COMPLETE.");
+    mapDebugLog("performMapSetup: Map setup sequence COMPLETE.");
 }
 
+// Function called by Google Maps API callback=initAppMap
+async function initAppMap() {
+    mapDebugLog("initAppMap (API Callback): Google Maps API script loaded and callback fired.");
+    mapApiLoadedAndCallbackFired = true;
+
+    // Ensure AdvancedMarkerElement library is available
+    if (typeof google.maps.marker?.AdvancedMarkerElement === 'undefined') {
+        try {
+            await google.maps.importLibrary("marker");
+            mapDebugLog("initAppMap (API Callback): Dynamically imported 'marker' library for AdvancedMarkerElement.");
+        } catch (e) {
+            mapDebugError("initAppMap (API Callback): FAILED to import 'marker' library.", e);
+            // Consider how to handle this error - map might not function fully
+        }
+    }
+    attemptMapInitialization();
+}
+
+// This function is the gatekeeper for actual map setup.
+// It can be called by initAppMap (API callback) or by main.js (DOMContentLoaded).
+// It only proceeds if all conditions are met.
+function attemptMapInitialization() {
+    mapDebugLog("attemptMapInitialization called. API Loaded:", mapApiLoadedAndCallbackFired, "DOM Ready:", AppState.domReadyAndPopulated);
+    if (mapApiLoadedAndCallbackFired && AppState.domReadyAndPopulated) {
+        if (map) { // Check if map is already initialized (to prevent double init)
+            mapDebugLog("attemptMapInitialization: Map already initialized. Skipping.");
+            return;
+        }
+        mapDebugLog("attemptMapInitialization: All conditions met. Proceeding to performMapSetup.");
+        performMapSetup(); // This is where the actual map setup happens
+    } else {
+        mapDebugLog("attemptMapInitialization: Conditions not yet met. Will wait for other trigger.");
+    }
+}
+
+
+// --- Remaining functions (calculateAndDisplayRoute, plotMarkers, etc.) ---
+// (No changes made to these in this iteration, assuming they are correct from previous versions)
 async function calculateAndDisplayRoute(destinationShopData) {
     mapDebugLog("calculateAndDisplayRoute: CALLED. DestinationShopData:", destinationShopData);
     const dom = AppState.dom;
@@ -232,436 +227,189 @@ async function calculateAndDisplayRoute(destinationShopData) {
     if (!directionsRenderer) { mapDebugError("calculateAndDisplayRoute: Directions Renderer not initialized."); alert("Directions service is unavailable."); return; }
     if (!destinationShopData) { mapDebugError("calculateAndDisplayRoute: No destination data provided."); alert("Destination needed for directions."); return; }
 
-    mapDebugLog("calculateAndDisplayRoute: Clearing previous route from directionsRenderer.");
     directionsRenderer.setDirections({ routes: [] });
-    if (dom.directionsPanel) { dom.directionsPanel.innerHTML = ""; mapDebugLog("calculateAndDisplayRoute: Cleared AppState.dom.directionsPanel.");}
+    if (dom.directionsPanel) { dom.directionsPanel.innerHTML = ""; }
 
     let origin;
     if (AppState.lastPlaceSelectedByAutocomplete?.geometry?.location) {
         const loc = AppState.lastPlaceSelectedByAutocomplete.geometry.location;
-        origin = `${loc.lat()},${loc.lng()}`;
-        mapDebugLog("calculateAndDisplayRoute: Origin derived from AppState.lastPlaceSelectedByAutocomplete:", origin);
-    } else if (dom.searchInput?.value.trim()) {
-        origin = dom.searchInput.value.trim();
-        mapDebugLog("calculateAndDisplayRoute: Origin derived from AppState.dom.searchInput value:", origin);
+        if (typeof loc.lat === 'number' && typeof loc.lng === 'number') { // LatLngLiteral
+             origin = `${loc.lat},${loc.lng}`;
+        } else if (typeof loc.lat === 'function' && typeof loc.lng === 'function'){ // LatLng object
+             origin = `${loc.lat()},${loc.lng()}`;
+        }
+        mapDebugLog("calculateAndDisplayRoute: Origin from Autocomplete:", origin);
+    } else if (dom.searchAutocompleteElement?.value.trim()) {
+        origin = dom.searchAutocompleteElement.value.trim();
+        mapDebugLog("calculateAndDisplayRoute: Origin from search input:", origin);
     } else {
-        mapDebugLog("calculateAndDisplayRoute: No autocomplete or search input. Prompting for origin.");
         const fallbackOrigin = prompt("Please enter your starting address for directions:", `${DEFAULT_MAP_CENTER.lat},${DEFAULT_MAP_CENTER.lng}`);
-        if (!fallbackOrigin) { alert("Starting location is needed for directions."); mapDebugWarn("calculateAndDisplayRoute: User did not provide fallback origin."); return; }
+        if (!fallbackOrigin) { alert("Starting location needed."); return; }
         origin = fallbackOrigin;
-        mapDebugLog("calculateAndDisplayRoute: Origin from prompt:", origin);
     }
 
     let destinationApiArg;
     if (destinationShopData.lat && destinationShopData.lng) {
         destinationApiArg = `${parseFloat(destinationShopData.lat)},${parseFloat(destinationShopData.lng)}`;
-        mapDebugLog("calculateAndDisplayRoute: Destination API Arg (lat/lng):", destinationApiArg);
     } else if (destinationShopData.GoogleProfileID) {
         destinationApiArg = `place_id:${destinationShopData.GoogleProfileID}`;
-        mapDebugLog("calculateAndDisplayRoute: Destination API Arg (Place ID):", destinationApiArg);
     } else if (destinationShopData.Address && destinationShopData.Address !== 'N/A') {
         destinationApiArg = destinationShopData.Address;
-        mapDebugLog("calculateAndDisplayRoute: Destination API Arg (Address):", destinationApiArg);
     } else {
-        const shopName = destinationShopData.Name || "the selected shop";
-        alert(`Cannot get directions to "${escapeHTML(shopName)}" due to missing location information.`);
-        mapDebugWarn("calculateAndDisplayRoute: Not enough info for destination:", shopName, destinationShopData);
+        alert(`Cannot get directions to "${typeof escapeHTML === 'function' ? escapeHTML(destinationShopData.Name || "shop") : (destinationShopData.Name || "shop")}" due to missing location.`);
         return;
     }
-    mapDebugLog(`calculateAndDisplayRoute: Attempting to get directions from "${origin}" to "${destinationApiArg}"`);
 
     try {
         const directionsResult = await getDirectionsClient(origin, destinationApiArg);
-        mapDebugLog("calculateAndDisplayRoute: getDirectionsClient response:", directionsResult);
         if (directionsResult && directionsResult.status === google.maps.DirectionsStatus.OK) {
-            mapDebugLog("calculateAndDisplayRoute: Directions request OK. Setting directions on renderer.");
             directionsRenderer.setDirections(directionsResult);
-            if(dom.getShopDirectionsButton) { dom.getShopDirectionsButton.classList.add('hidden'); mapDebugLog("calculateAndDisplayRoute: Hid getShopDirectionsButton."); }
-            if(dom.clearShopDirectionsButton) { dom.clearShopDirectionsButton.classList.remove('hidden'); mapDebugLog("calculateAndDisplayRoute: Showed clearShopDirectionsButton.");}
-
+            if(dom.getShopDirectionsButton) dom.getShopDirectionsButton.classList.add('hidden');
+            if(dom.clearShopDirectionsButton) dom.clearShopDirectionsButton.classList.remove('hidden');
             if (directionsResult.routes?.[0]?.legs?.[0]?.start_location && map) {
                  const startLoc = directionsResult.routes[0].legs[0].start_location;
-                 const startLocLatLng = new google.maps.LatLng(startLoc.lat, startLoc.lng);
-                 mapDebugLog("calculateAndDisplayRoute: Start location of route:", startLocLatLng.toString());
-                 const adjustedStartCenter = getAdjustedMapCenter(startLocLatLng);
-                 mapDebugLog("calculateAndDisplayRoute: Adjusted center for map panTo:", adjustedStartCenter.toString ? adjustedStartCenter.toString() : JSON.stringify(adjustedStartCenter));
-                 map.panTo(adjustedStartCenter);
-                 mapDebugLog("calculateAndDisplayRoute: Map panned to start of route. Current map center:", map.getCenter().toString());
+                 map.panTo(getAdjustedMapCenter(new google.maps.LatLng(startLoc.lat, startLoc.lng)));
             }
         } else {
-            const statusMsg = directionsResult ? directionsResult.status : "Unknown error from server.";
-            window.alert("Directions request failed: " + statusMsg);
-            mapDebugError("calculateAndDisplayRoute: Directions request failed. Status:", statusMsg, "Full result:", directionsResult);
+            window.alert("Directions request failed: " + (directionsResult ? directionsResult.status : "Unknown error."));
         }
     } catch (error) {
         window.alert("Error calculating directions: " + error.message);
-        mapDebugError("calculateAndDisplayRoute: Exception during API call or processing.", error);
     }
 }
 
 function clearDirections() {
     mapDebugLog("clearDirections: CALLED.");
     const dom = AppState.dom;
-    if (directionsRenderer) {
-        directionsRenderer.setDirections({ routes: [] });
-        mapDebugLog("clearDirections: Cleared routes from directionsRenderer.");
-    }
-    if (dom.directionsPanel) {
-        dom.directionsPanel.innerHTML = "";
-        mapDebugLog("clearDirections: Cleared AppState.dom.directionsPanel HTML.");
-    }
-    if(dom.getShopDirectionsButton) { dom.getShopDirectionsButton.classList.remove('hidden'); mapDebugLog("clearDirections: Showed getShopDirectionsButton."); }
-    if(dom.clearShopDirectionsButton) { dom.clearShopDirectionsButton.classList.add('hidden'); mapDebugLog("clearDirections: Hid clearShopDirectionsButton."); }
-    mapDebugLog("clearDirections: Process COMPLETE.");
+    if (directionsRenderer) directionsRenderer.setDirections({ routes: [] });
+    if (dom.directionsPanel) dom.directionsPanel.innerHTML = "";
+    if(dom.getShopDirectionsButton) dom.getShopDirectionsButton.classList.remove('hidden');
+    if(dom.clearShopDirectionsButton) dom.clearShopDirectionsButton.classList.add('hidden');
 }
 
 function plotMarkers(shopsToPlot) {
-    mapDebugLog("plotMarkers: CALLED. shopsToPlot count:", shopsToPlot ? shopsToPlot.length : 'N/A', "Sample:", shopsToPlot ? JSON.stringify(shopsToPlot.slice(0,1)) : "N/A");
-
-    if (shopsToPlot && shopsToPlot.length > 0) {
-        const firstShop = shopsToPlot[0];
-        mapDebugLog("[MARKER_DEBUG] plotMarkers: Starting. First shop in shopsToPlot: " + firstShop.Name + ". Has marker property? " + firstShop.hasOwnProperty('marker') + ". Is marker null? " + (firstShop.marker === null) + ". Shop slug: " + firstShop.slug);
-    } else {
-        mapDebugLog("[MARKER_DEBUG] plotMarkers: Starting. shopsToPlot is empty or null.");
-    }
-
-    mapDebugLog("plotMarkers: Clearing existing markers from AppState.allFarmStands.");
+    mapDebugLog("plotMarkers: CALLED. shopsToPlot count:", shopsToPlot?.length ?? 'N/A');
     let clearedCount = 0;
-    (AppState.allFarmStands || []).forEach(s => { if (s.marker) { s.marker.setMap(null); s.marker = null; clearedCount++; } });
-    mapDebugLog("plotMarkers: Number of old markers cleared:", clearedCount);
-
-
-    if (!shopsToPlot || shopsToPlot.length === 0) {
-        mapDebugLog("plotMarkers: No shops to plot or shopsToPlot is null/empty. Exiting.");
-        return;
-    }
-
-    shopsToPlot.forEach((shop, index) => {
-        mapDebugLog(`plotMarkers: Processing shop [${index}] for marker: ${shop.Name}`);
-        if (shop.lat != null && shop.lng != null) {
-            mapDebugLog(`plotMarkers: Shop ${shop.Name} (Lat: ${shop.lat}, Lng: ${shop.lng}) has coords. Calling createMarkerForShop.`);
-            createMarkerForShop(shop);
-        } else {
-            mapDebugWarn(`plotMarkers: SKIPPING marker creation for ${shop.Name} due to missing lat/lng. Shop data:`, shop);
-        }
+    (AppState.allFarmStands || []).forEach(s => {
+        if (s.marker) { s.marker.map = null; s.marker = null; clearedCount++; }
     });
-    mapDebugLog("plotMarkers: Finished processing all shops for plotting.");
-    mapDebugLog("[MARKER_DEBUG] plotMarkers: Finished processing all shops for plotting.");
+    mapDebugLog("plotMarkers: Old markers cleared:", clearedCount);
+
+    if (!shopsToPlot || shopsToPlot.length === 0) { mapDebugLog("plotMarkers: No shops to plot."); return; }
+    shopsToPlot.forEach((shop) => {
+        if (shop.lat != null && shop.lng != null) createMarkerForShop(shop);
+        else mapDebugWarn(`plotMarkers: SKIPPING marker for ${shop.Name} due to missing lat/lng.`);
+    });
 }
 
-function createMarkerForShop(shop) {
-    mapDebugLog(`createMarkerForShop: CALLED for shop: ${shop.Name}. Shop data (coords only): Lat=${shop.lat}, Lng=${shop.lng}`);
-
+async function createMarkerForShop(shop) {
+    mapDebugLog(`createMarkerForShop: CALLED for shop: ${shop.Name}.`);
     const lat = parseFloat(shop.lat);
     const lng = parseFloat(shop.lng);
-
-    if (isNaN(lat) || isNaN(lng)) {
-        mapDebugWarn(`createMarkerForShop: Invalid parsed lat/lng for ${shop.Name}. Parsed Lat: ${lat}, Lng: ${lng}. SKIPPING marker creation.`);
-        return;
+    if (isNaN(lat) || isNaN(lng)) { mapDebugWarn(`createMarkerForShop: Invalid lat/lng for ${shop.Name}.`); return; }
+    if (!map) { mapDebugError("createMarkerForShop: 'map' object NOT defined."); return; }
+    if (!google.maps.marker?.AdvancedMarkerElement) {
+        try { await google.maps.importLibrary("marker"); } catch (e) { mapDebugError("createMarkerForShop: FAILED to import 'marker' library.", e); return; }
     }
-
-    if (typeof map === 'undefined' || !map) {
-        mapDebugError("createMarkerForShop: CRITICAL - Google Maps 'map' object is NOT defined. Cannot create marker.");
-        return;
-    }
-    mapDebugLog("createMarkerForShop: 'map' object IS defined.");
-
-    const iconConfig = {
-        path: google.maps.SymbolPath.CIRCLE,
-        fillColor: markerColor, // Ensure markerColor is defined (from config.js)
-        fillOpacity: 0.9,
-        strokeColor: "#ffffff",
-        strokeWeight: 1.5,
-        scale: 8,
-    };
-    mapDebugLog(`createMarkerForShop: Icon config for ${shop.Name}:`, JSON.stringify(iconConfig), "Using markerColor:", markerColor);
+    const markerElement = document.createElement('div');
+    markerElement.style.width = '16px'; markerElement.style.height = '16px';
+    markerElement.style.borderRadius = '50%';
+    markerElement.style.backgroundColor = typeof markerColor !== 'undefined' ? markerColor : '#FF0000'; // Use config or fallback
+    markerElement.style.border = '1.5px solid #ffffff'; markerElement.style.opacity = '0.9';
 
     try {
-        const newMarker = new google.maps.Marker({
-            position: { lat, lng },
-            map: map,
-            title: shop.Name,
-            icon: iconConfig,
-            zIndex: 1
+        const newMarker = new google.maps.marker.AdvancedMarkerElement({
+            position: { lat, lng }, map: map, title: shop.Name, content: markerElement, zIndex: 1
         });
-        shop.marker = newMarker; // Assign to shop object
-        mapDebugLog("[MARKER_DEBUG] createMarkerForShop: Marker ASSIGNED to shop: " + shop.Name + ". Marker ZIndex:", newMarker.getZIndex ? newMarker.getZIndex() : 'N/A');
-        mapDebugLog(`createMarkerForShop: SUCCESS - Marker CREATED and assigned for ${shop.Name} at ${lat}, ${lng}. Marker object:`, newMarker);
-    } catch (error) {
-        mapDebugError(`createMarkerForShop: ERROR creating google.maps.Marker for ${shop.Name}:`, error, "Shop Data:", shop);
-        return; // Don't try to add listener if marker creation failed
-    }
+        shop.marker = newMarker;
+    } catch (error) { mapDebugError(`createMarkerForShop: ERROR creating AdvancedMarkerElement for ${shop.Name}:`, error); return; }
 
-    if (!shop.marker) { // Double check, though previous catch should handle it
-        mapDebugError(`createMarkerForShop: Marker object still null after creation attempt for ${shop.Name}. Aborting listener attachment.`);
-        return;
-    }
-    
-    mapDebugLog(`createMarkerForShop: Adding 'click' listener to marker for ${shop.Name}.`);
-    shop.marker.addListener("click", () => {
-        mapDebugLog(`Marker CLICKED for shop: ${shop.Name}. Shop slug: ${shop.slug}`);
+    if (!shop.marker) { mapDebugError(`createMarkerForShop: Marker object still null for ${shop.Name}.`); return; }
+
+    // Corrected event listener for AdvancedMarkerElement
+    shop.marker.addListener("gmp-click", (event) => {
+        mapDebugLog(`AdvancedMarkerElement 'gmp-click' for shop: ${shop.Name}.`, "Event:", event);
         AppState.markerClickedRecently = true;
-        mapDebugLog("Marker click: AppState.markerClickedRecently set to true.");
-        if (shop.marker) {
-            shop.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1);
-            mapDebugLog(`Marker click: Z-index set for ${shop.Name}'s marker.`);
-        }
-
-        mapDebugLog(`Marker click: Checking navigateToStoreBySlug. Slug: '${shop.slug}', Function typeof: ${typeof navigateToStoreBySlug}`);
+        if (shop.marker) shop.marker.zIndex = 1000;
         if (shop.slug && typeof navigateToStoreBySlug === 'function') {
-            mapDebugLog(`Marker click: Calling navigateToStoreBySlug for ${shop.Name} with slug ${shop.slug}.`);
             navigateToStoreBySlug(shop);
         } else {
-            mapDebugWarn(`Marker click: Fallback for ${shop.Name}. Shop slug: '${shop.slug}', navigateToStoreBySlug defined: ${typeof navigateToStoreBySlug === 'function'}. Opening overlays directly.`);
-            if (typeof openClickedShopOverlays === 'function') {
-                mapDebugLog(`Marker click (fallback): Calling openClickedShopOverlays for ${shop.Name}.`);
-                openClickedShopOverlays(shop);
-            } else {
-                 mapDebugWarn(`Marker click (fallback): openClickedShopOverlays function NOT defined.`);
-            }
-            setTimeout(() => {
-                mapDebugLog(`Marker click (fallback): Calling showInfoWindowForShop for ${shop.Name} after delay.`);
-                showInfoWindowForShop(shop);
-            }, 100);
+            mapDebugWarn(`Marker click fallback for ${shop.Name}.`);
+            if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
+            setTimeout(() => showInfoWindowForShop(shop), 100); // showInfoWindowForShop needs to be async if it awaits
         }
-        mapDebugLog(`Marker click: Handler for ${shop.Name} finished initial calls.`);
-        setTimeout(() => { AppState.markerClickedRecently = false; mapDebugLog("Marker click: AppState.markerClickedRecently reset to false after 300ms."); }, 300);
+        setTimeout(() => { AppState.markerClickedRecently = false; }, 300);
     });
-    mapDebugLog(`createMarkerForShop: 'click' listener ADDED for ${shop.Name}.`);
+    mapDebugLog(`createMarkerForShop: 'gmp-click' listener ADDED for ${shop.Name}.`);
 }
 
 async function showInfoWindowForShop(shop) {
-    mapDebugLog(`showInfoWindowForShop: CALLED for shop: ${shop ? shop.Name : 'NULL shop'}. Shop object sample (ID, name, marker status):`, shop ? {id: shop.slug || shop.GoogleProfileID, name:shop.Name, hasMarker: !!shop.marker } : "N/A");
-    if (!shop) { mapDebugError("showInfoWindowForShop: No shop provided. Exiting."); return; }
-
-    const position = shop.marker?.getPosition() ||
-                     (shop.lat != null && shop.lng != null ? { lat: parseFloat(shop.lat), lng: parseFloat(shop.lng) } : null);
-    mapDebugLog(`showInfoWindowForShop: Determined position for ${shop.Name}:`, position ? (position.lat + ',' + position.lng) : 'NULL');
-
-
-    if (!position) {
-        mapDebugWarn(`showInfoWindowForShop: No valid position derived for ${shop.Name}. Cannot open InfoWindow.`);
-        if (infowindow) { infowindow.close(); mapDebugLog("showInfoWindowForShop: Closed existing infowindow (no position case).");}
-        return;
-    }
-
-    if (!map) { mapDebugError("showInfoWindowForShop: Google Maps 'map' object is UNDEFINED! Cannot open InfoWindow."); return; }
-    if (!infowindow) { mapDebugError("showInfoWindowForShop: Google Maps 'infowindow' object is UNDEFINED! Cannot open InfoWindow."); return; }
-    mapDebugLog("showInfoWindowForShop: 'map' and 'infowindow' objects seem OK.");
-
-    mapDebugLog(`showInfoWindowForShop: Current map center BEFORE InfoWindow opening (might be panned by displayStorePageBySlug): ${map.getCenter().toString()}`);
-    // Optional: If direct infowindow opening needs its own pan (can conflict if called from navigateToStoreBySlug which also pans)
-    // mapDebugLog(`showInfoWindowForShop: About to pan map to adjusted center of: ${position.lat()},${position.lng()}`);
-    // const adjustedInfowWindowCenter = getAdjustedMapCenter(position);
-    // map.panTo(adjustedInfowWindowCenter);
-    // mapDebugLog(`showInfoWindowForShop: Map panned to ${adjustedInfowWindowCenter.toString ? adjustedInfowWindowCenter.toString() : JSON.stringify(adjustedInfowWindowCenter)}. Current center: ${map.getCenter().toString()}`);
-    
+    mapDebugLog(`showInfoWindowForShop: CALLED for shop: ${shop ? shop.Name : 'NULL shop'}.`);
+    if (!shop) { mapDebugError("showInfoWindowForShop: No shop."); return; }
+    const position = shop.marker?.position || (shop.lat != null && shop.lng != null ? { lat: parseFloat(shop.lat), lng: parseFloat(shop.lng) } : null);
+    if (!position) { if (infowindow) infowindow.close(); return; }
+    if (!map || !infowindow) { mapDebugError("showInfoWindowForShop: Map or Infowindow undefined."); return; }
     infowindow.close();
-    mapDebugLog(`showInfoWindowForShop: Closed any existing infowindow for ${shop.Name}.`);
+    (AppState.allFarmStands || []).forEach(s => { if (s.marker && s !== shop && typeof s.marker.zIndex === 'number') s.marker.zIndex = 1; });
+    if (shop.marker && typeof shop.marker.zIndex === 'number') shop.marker.zIndex = 1000;
 
-    (AppState.allFarmStands || []).forEach(s => { if (s.marker && s !== shop) s.marker.setZIndex(1); });
-    if (shop.marker) { shop.marker.setZIndex(google.maps.Marker.MAX_ZINDEX + 1); mapDebugLog(`showInfoWindowForShop: Set zIndex for ${shop.Name}'s marker.`); }
-    else { mapDebugWarn(`showInfoWindowForShop: Shop ${shop.Name} has NO marker object. Cannot set zIndex.`); }
+    let needsMoreDetails = false;
+    const fieldsToFetchForInfoWindow = [];
+    if (!shop.placeDetails?.reviews) { fieldsToFetchForInfoWindow.push('reviews'); needsMoreDetails = true; }
+    if (!shop.placeDetails?.url) { fieldsToFetchForInfoWindow.push('url'); needsMoreDetails = true; }
 
-    mapDebugLog(`showInfoWindowForShop: GoogleProfileID for ${shop.Name}: ${shop.GoogleProfileID}. Current placeDetails:`, shop.placeDetails);
-    if (shop.GoogleProfileID && (!shop.placeDetails || shop.placeDetails.rating === undefined || !shop.placeDetails.formatted_address)) { // Fetch if rating or address missing
-        mapDebugLog(`showInfoWindowForShop: Fetching G-Place Details for ${shop.Name} (ID: ${shop.GoogleProfileID}) via backend.`);
-        const fieldsToFetch = 'name,rating,user_ratings_total,formatted_address,website,url'; // url for "view all reviews" link
-        const placeDetails = await getPlaceDetailsClient(shop.GoogleProfileID, fieldsToFetch);
-        mapDebugLog(`showInfoWindowForShop: G-Place Details fetched for ${shop.Name}:`, placeDetails);
-        if (placeDetails) {
-            shop.placeDetails = { ...(shop.placeDetails || {}), ...placeDetails };
-            mapDebugLog(`showInfoWindowForShop: shop.placeDetails for ${shop.Name} UPDATED:`, shop.placeDetails);
-        } else {
-            mapDebugWarn(`showInfoWindowForShop: G-Place Details fetch FAILED or returned null for ${shop.Name}.`);
-        }
-    } else {
-        mapDebugLog(`showInfoWindowForShop: Using existing G-Place Details for ${shop.Name} or no GoogleProfileID.`);
+    if (shop.GoogleProfileID && needsMoreDetails && fieldsToFetchForInfoWindow.length > 0) {
+        const newDetails = await getPlaceDetailsClient(shop.GoogleProfileID, fieldsToFetchForInfoWindow.join(','));
+        if (newDetails) shop.placeDetails = { ...(shop.placeDetails || {}), ...newDetails };
     }
 
     if (typeof generateShopContentHTML === 'function') {
-        mapDebugLog(`showInfoWindowForShop: Attempting to call generateShopContentHTML for ${shop.Name} (context: 'infowindow').`);
-        let content = '';
-        try {
-            content = generateShopContentHTML(shop, 'infowindow');
-            mapDebugLog(`showInfoWindowForShop: generateShopContentHTML returned for ${shop.Name} (first 100 chars):`, content ? content.substring(0,100) : "EMPTY_CONTENT_RETURNED");
-        } catch (e) {
-            mapDebugError(`showInfoWindowForShop: ERROR during generateShopContentHTML call for ${shop.Name}:`, e);
-            content = `<div style="padding:10px; color:red;">Error generating shop details for InfoWindow (see console).</div>`;
-        }
-
-        if (content && content.trim() !== "") {
-            mapDebugLog(`showInfoWindowForShop: Setting content and calling infowindow.open() for ${shop.Name}. Anchor is shop.marker:`, shop.marker);
+        let content = generateShopContentHTML(shop, 'infowindow');
+        if (content?.trim()) {
             infowindow.setContent(content);
             infowindow.open({ anchor: shop.marker, map: map, shouldFocus: false });
-            mapDebugLog(`showInfoWindowForShop: infowindow.open() CALLED for ${shop.Name}.`);
-        } else {
-            mapDebugWarn(`showInfoWindowForShop: generateShopContentHTML returned empty/whitespace content for ${shop.Name}. InfoWindow NOT opened.`);
-        }
-    } else {
-        mapDebugError("showInfoWindowForShop: generateShopContentHTML function NOT FOUND (expected in sharedHtml.js). Cannot populate InfoWindow.");
-    }
+        } else { mapDebugWarn(`showInfoWindowForShop: Empty content for ${shop.Name}.`); }
+    } else { mapDebugError("showInfoWindowForShop: generateShopContentHTML not found."); }
 }
 
 function getAdjustedMapCenter(targetCenterInput) {
-    mapDebugLog("getAdjustedMapCenter: CALLED. targetCenterInput:", targetCenterInput.toString ? targetCenterInput.toString() : JSON.stringify(targetCenterInput));
+    mapDebugLog("getAdjustedMapCenter: CALLED.");
     const dom = AppState.dom;
-    console.log("[CENTERING_DEBUG] getAdjustedMapCenter called. Map dimensions:", map.getDiv().offsetWidth, "x", map.getDiv().offsetHeight);
-    if (!map?.getDiv || !map.getBounds() || !map.getProjection()) {
-        mapDebugWarn("getAdjustedMapCenter: Map not ready or missing properties (getDiv/getBounds/getProjection). Returning targetCenterInput directly.", "map exists:", !!map);
-        return targetCenterInput;
-    }
-
+    if (!map?.getDiv || !map.getBounds() || !map.getProjection()) return targetCenterInput;
     let targetLat, targetLng;
-    if (targetCenterInput?.lat && typeof targetCenterInput.lat === 'function') { // Google LatLng object
-        targetLat = targetCenterInput.lat();
-        targetLng = targetCenterInput.lng();
-    } else if (targetCenterInput?.lat && typeof targetCenterInput.lat === 'number') { // Plain {lat, lng} object
-        targetLat = targetCenterInput.lat;
-        targetLng = targetCenterInput.lng;
-    } else {
-        mapDebugWarn("getAdjustedMapCenter: targetCenterInput is not a recognized LatLng format. Falling back to current map center or default.");
-        const currentMapCenter = map.getCenter();
-        if (!currentMapCenter) {
-             mapDebugLog("getAdjustedMapCenter: Fallback - currentMapCenter is null, returning DEFAULT_MAP_CENTER.");
-             return DEFAULT_MAP_CENTER;
-        }
-        mapDebugLog("getAdjustedMapCenter: Fallback - returning currentMapCenter.", { lat: currentMapCenter.lat(), lng: currentMapCenter.lng() });
-        return { lat: currentMapCenter.lat(), lng: currentMapCenter.lng() };
-    }
-    mapDebugLog(`getAdjustedMapCenter: Resolved targetLat: ${targetLat}, targetLng: ${targetLng}`);
-
-    const mapDiv = map.getDiv();
-    const mapWidthPx = mapDiv.offsetWidth;
-    mapDebugLog(`getAdjustedMapCenter: mapDiv.offsetWidth: ${mapWidthPx}px`);
-    let panelLeftPx = 0;
-    let panelRightPx = 0;
-
-    // Left Panel (Social)
-    const socialPanel = dom.detailsOverlaySocialElement;
-    const socialIsOpen = socialPanel?.classList.contains("is-open");
-    const socialDisplay = socialPanel ? getComputedStyle(socialPanel).display : "null";
-    const socialOffsetWidth = socialPanel?.offsetWidth;
-    console.log("[CENTERING_DEBUG] Social Panel: isOpen:", socialIsOpen, "display:", socialDisplay, "offsetWidth:", socialOffsetWidth);
-    if (socialIsOpen && socialDisplay !== "none" ) {
-        panelLeftPx = socialOffsetWidth;
-        mapDebugLog(`getAdjustedMapCenter: detailsOverlaySocialElement is OPEN. Width: ${panelLeftPx}px`); // Keep original mapDebugLog
-    }
-
-    // Right Panel (Shop Details)
+    if (targetCenterInput?.lat && typeof targetCenterInput.lat === 'function') { targetLat = targetCenterInput.lat(); targetLng = targetCenterInput.lng(); }
+    else if (targetCenterInput?.lat && typeof targetCenterInput.lat === 'number') { targetLat = targetCenterInput.lat; targetLng = targetCenterInput.lng; }
+    else { const mc = map.getCenter(); return mc ? { lat: mc.lat(), lng: mc.lng() } : (typeof DEFAULT_MAP_CENTER !== 'undefined' ? DEFAULT_MAP_CENTER : { lat: 0, lng: 0}); }
+    const mapWidthPx = map.getDiv().offsetWidth; let panelLeftPx = 0; let panelRightPx = 0;
+    const socialPanel = dom.detailsOverlaySocialElement; if (socialPanel?.offsetParent && socialPanel.offsetWidth > 0) panelLeftPx = socialPanel.offsetWidth;
     const shopPanel = dom.detailsOverlayShopElement;
-    const shopIsOpen = shopPanel?.classList.contains("is-open");
-    const shopDisplay = shopPanel ? getComputedStyle(shopPanel).display : "null";
-    const shopOffsetWidth = shopPanel?.offsetWidth;
-    console.log("[CENTERING_DEBUG] Shop Panel: isOpen:", shopIsOpen, "display:", shopDisplay, "offsetWidth:", shopOffsetWidth);
-    if (shopIsOpen && shopDisplay !== "none") {
-        panelRightPx = shopOffsetWidth;
-        mapDebugLog(`getAdjustedMapCenter: detailsOverlayShopElement is OPEN. Width: ${panelRightPx}px`); // Keep original mapDebugLog
-    } else {
-        // Right Panel (Listings - fallback if shop panel not open)
-        const listingsPanel = dom.listingsPanelElement;
-        const listingsIsVisible = listingsPanel && getComputedStyle(listingsPanel).display !== "none" && listingsPanel.offsetWidth > 0 && window.innerWidth >= 768;
-        const listingsOffsetWidth = listingsPanel?.offsetWidth;
-        console.log("[CENTERING_DEBUG] Listings Panel (fallback): isVisible (desktop):", listingsIsVisible, "offsetWidth:", listingsOffsetWidth, "window.innerWidth:", window.innerWidth);
-        if (listingsIsVisible) {
-            panelRightPx = listingsOffsetWidth;
-            mapDebugLog(`getAdjustedMapCenter: listingsPanelElement is VISIBLE (md+). Width: ${panelRightPx}px`); // Keep original mapDebugLog
-        }
-    }
-
-    if ((panelLeftPx <= 0 && panelRightPx <= 0) || mapWidthPx <= 0) {
-        mapDebugLog("getAdjustedMapCenter: No panels open or mapWidth is 0. No adjustment needed. Returning original target.", { lat: targetLat, lng: targetLng });
-        return { lat: targetLat, lng: targetLng };
-    }
-
+    if (shopPanel?.offsetParent && shopPanel.offsetWidth > 0) panelRightPx = shopPanel.offsetWidth;
+    else { const lp = dom.listingsPanelElement; if (lp && getComputedStyle(lp).display !== "none" && lp.offsetWidth > 0 && window.innerWidth >= 768) panelRightPx = lp.offsetWidth; }
+    if ((panelLeftPx <= 0 && panelRightPx <= 0) || mapWidthPx <= 0) return { lat: targetLat, lng: targetLng };
     const netPixelShift = (panelLeftPx - panelRightPx) / 2;
-    mapDebugLog(`getAdjustedMapCenter: netPixelShift: ${netPixelShift}px (Positive means visible map area shifted right)`); // Keep original
-    console.log("[CENTERING_DEBUG] Calculated panelLeftPx:", panelLeftPx, "panelRightPx:", panelRightPx, "netPixelShift:", netPixelShift);
-    const currentMapBounds = map.getBounds();
-    if (!currentMapBounds) {
-        mapDebugWarn("getAdjustedMapCenter: currentMapBounds is null! Cannot calculate lngSpan. Returning unadjusted target.", { lat: targetLat, lng: targetLng });
-        return { lat: targetLat, lng: targetLng };
-    }
-
-    const lngSpan = currentMapBounds.toSpan().lng();
-    const degreesPerPixelLng = lngSpan / mapWidthPx;
-    mapDebugLog(`getAdjustedMapCenter: lngSpan: ${lngSpan}, degreesPerPixelLng: ${degreesPerPixelLng}`);
-    
+    const currentMapBounds = map.getBounds(); if (!currentMapBounds) return { lat: targetLat, lng: targetLng };
+    const lngSpan = currentMapBounds.toSpan().lng(); const degreesPerPixelLng = lngSpan / mapWidthPx;
     const adjustedLng = targetLng - (netPixelShift * degreesPerPixelLng);
-    const finalAdjustedCenter = { lat: targetLat, lng: adjustedLng };
-    mapDebugLog("getAdjustedMapCenter: FINAL adjusted center:", finalAdjustedCenter); // Keep original
-    console.log("[CENTERING_DEBUG] Final adjustedLng:", adjustedLng, "Original targetLng:", targetLng);
-    return finalAdjustedCenter;
+    return { lat: targetLat, lng: adjustedLng };
 }
 
 function getAdjustedBounds(originalBounds) {
-    mapDebugLog("getAdjustedBounds: CALLED. originalBounds:", originalBounds ? originalBounds.toString() : 'N/A');
+    mapDebugLog("getAdjustedBounds: CALLED.");
     const dom = AppState.dom;
-    if (!map?.getDiv || !originalBounds || !map.getProjection || typeof map.getZoom !== 'function') {
-        mapDebugWarn("getAdjustedBounds: Map not ready or missing properties/originalBounds. Returning originalBounds directly.", "map defined:", !!map, "originalBounds defined:", !!originalBounds);
-        return originalBounds;
-    }
-
-    const mapDiv = map.getDiv();
-    const mapWidth = mapDiv.offsetWidth;
-    mapDebugLog(`getAdjustedBounds: mapDiv.offsetWidth: ${mapWidth}px`);
-    let panelLeftOffset = 0;
-    let panelRightOffset = 0;
-
-    if (dom.detailsOverlaySocialElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlaySocialElement).display !== "none") {
-        panelLeftOffset = dom.detailsOverlaySocialElement.offsetWidth;
-        mapDebugLog(`getAdjustedBounds: detailsOverlaySocialElement is OPEN. Width: ${panelLeftOffset}px`);
-    }
-    if (dom.detailsOverlayShopElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlayShopElement).display !== "none") {
-        panelRightOffset = dom.detailsOverlayShopElement.offsetWidth;
-        mapDebugLog(`getAdjustedBounds: detailsOverlayShopElement is OPEN. Width: ${panelRightOffset}px`);
-    } else if (dom.listingsPanelElement && getComputedStyle(dom.listingsPanelElement).display !== "none" && dom.listingsPanelElement.offsetWidth > 0 && window.innerWidth >= 768) { // md breakpoint
-        panelRightOffset = dom.listingsPanelElement.offsetWidth;
-        mapDebugLog(`getAdjustedBounds: listingsPanelElement is VISIBLE (md+). Width: ${panelRightOffset}px`);
-    }
-
-    if ((panelLeftOffset <= 0 && panelRightOffset <= 0) || mapWidth <= 0) {
-        mapDebugLog("getAdjustedBounds: No panels affecting bounds or mapWidth is 0. No adjustment needed. Returning originalBounds.");
-        return originalBounds;
-    }
-
-    const projection = map.getProjection();
-    const zoom = map.getZoom();
-    if (!projection || typeof zoom === "undefined") {
-        mapDebugWarn("getAdjustedBounds: Map projection or zoom undefined. Returning originalBounds.");
-        return originalBounds;
-    }
-    mapDebugLog(`getAdjustedBounds: map.zoom: ${zoom}`);
-
-
-    const sw = originalBounds.getSouthWest();
-    const ne = originalBounds.getNorthEast();
-    if (!sw || !ne) { mapDebugWarn("getAdjustedBounds: Invalid SW/NE from originalBounds. Returning originalBounds."); return originalBounds; }
-    mapDebugLog(`getAdjustedBounds: Original SW: ${sw.toString()}, NE: ${ne.toString()}`);
-
-    const swPoint = projection.fromLatLngToPoint(sw);
-    const nePoint = projection.fromLatLngToPoint(ne);
-    if (!swPoint || !nePoint) { mapDebugWarn("getAdjustedBounds: Invalid points from projection (swPoint or nePoint null). Returning originalBounds."); return originalBounds; }
-    mapDebugLog(`getAdjustedBounds: Original SW Point (world coords): {x: ${swPoint.x}, y: ${swPoint.y}}, NE Point: {x: ${nePoint.x}, y: ${nePoint.y}}`);
-
-    const worldUnitsPerPixel = Math.pow(2, -zoom);
-    const pixelShiftForBounds = (panelRightOffset - panelLeftOffset) / 2;
+    if (!map?.getDiv || !originalBounds || !map.getProjection || typeof map.getZoom !== 'function') return originalBounds;
+    const mapWidth = map.getDiv().offsetWidth; let panelLeftOffset = 0; let panelRightOffset = 0;
+    if (dom.detailsOverlaySocialElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlaySocialElement).display !== "none") panelLeftOffset = dom.detailsOverlaySocialElement.offsetWidth;
+    if (dom.detailsOverlayShopElement?.classList.contains("is-open") && getComputedStyle(dom.detailsOverlayShopElement).display !== "none") panelRightOffset = dom.detailsOverlayShopElement.offsetWidth;
+    else if (dom.listingsPanelElement && getComputedStyle(dom.listingsPanelElement).display !== "none" && dom.listingsPanelElement.offsetWidth > 0 && window.innerWidth >= 768) panelRightOffset = dom.listingsPanelElement.offsetWidth;
+    if ((panelLeftOffset <= 0 && panelRightOffset <= 0) || mapWidth <= 0) return originalBounds;
+    const projection = map.getProjection(); const zoom = map.getZoom(); if (!projection || typeof zoom === "undefined") return originalBounds;
+    const sw = originalBounds.getSouthWest(); const ne = originalBounds.getNorthEast(); if (!sw || !ne) return originalBounds;
+    const swPoint = projection.fromLatLngToPoint(sw); const nePoint = projection.fromLatLngToPoint(ne); if (!swPoint || !nePoint) return originalBounds;
+    const worldUnitsPerPixel = Math.pow(2, -zoom); const pixelShiftForBounds = (panelRightOffset - panelLeftOffset) / 2;
     const worldOffsetX = pixelShiftForBounds * worldUnitsPerPixel;
-    mapDebugLog(`getAdjustedBounds: worldUnitsPerPixel: ${worldUnitsPerPixel}, pixelShiftForBounds: ${pixelShiftForBounds}px, worldOffsetX: ${worldOffsetX} (world units)`);
-
-
     const newSwPoint = new google.maps.Point(swPoint.x + worldOffsetX, swPoint.y);
     const newNePoint = new google.maps.Point(nePoint.x + worldOffsetX, nePoint.y);
-    mapDebugLog(`getAdjustedBounds: New SW Point (world coords): {x: ${newSwPoint.x}, y: ${newSwPoint.y}}, New NE Point: {x: ${newNePoint.x}, y: ${newNePoint.y}}`);
-
-    const newSw = projection.fromPointToLatLng(newSwPoint);
-    const newNe = projection.fromPointToLatLng(newNePoint);
-
-    if (newSw && newNe) {
-        const finalAdjustedBounds = new google.maps.LatLngBounds(newSw, newNe);
-        mapDebugLog("getAdjustedBounds: FINAL adjusted bounds:", finalAdjustedBounds.toString());
-        return finalAdjustedBounds;
-    }
-    mapDebugWarn("getAdjustedBounds: Failed to create new LatLngBounds from adjusted points (newSw or newNe null). Returning originalBounds.");
+    const newSw = projection.fromPointToLatLng(newSwPoint); const newNe = projection.fromPointToLatLng(newNePoint);
+    if (newSw && newNe) return new google.maps.LatLngBounds(newSw, newNe);
     return originalBounds;
 }

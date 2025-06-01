@@ -1,5 +1,16 @@
 ﻿// public/js/apiService.js
 'use strict';
+const DEBUG_API = false;
+
+function apiDebugLog(...args) {
+    if (DEBUG_API) console.log('[api-DEBUG]', ...args);
+}
+function apiDebugWarn(...args) {
+    if (DEBUG_API) console.warn('[api-WARN]', ...args);
+}
+function apiDebugError(...args) {
+    if (DEBUG_API) console.error('[api-ERROR]', ...args);
+}
 
 /**
  * Fetches and processes farm stand data from the server backend.

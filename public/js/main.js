@@ -1,23 +1,24 @@
 ﻿'use strict';
 
-const DEBUG_MAIN_JS = false; // <-- !! ADDED DEBUG FLAG !!
+const DEBUG_MAIN_JS = true;
+
 
 document.addEventListener("DOMContentLoaded", () => {
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] DOMContentLoaded event fired.");
 
     if (!window.AppState) {
-        // CRITICAL: This error should always log, regardless of DEBUG_MAIN_JS
         console.error("CRITICAL: AppState not found on window. Aborting main.js initialization.");
         return;
     }
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] AppState found on window.", AppState);
     const dom = AppState.dom;
 
-    // Populate AppState.dom (ensure all IDs match your HTML)
+    // Populate AppState.dom
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Populating AppState.dom...");
     dom.mapElement = document.getElementById("map");
     dom.listingsContainer = document.getElementById("listingsContainer");
-    dom.searchInput = document.getElementById("searchInput");
+    dom.searchAutocompleteElement = document.getElementById("searchAutocompleteElement");
+    dom.modalSearchAutocompleteElement = document.getElementById('modalSearchAutocompleteElement');
     dom.noResultsDiv = document.getElementById("noResults");
     dom.listingsPanelElement = document.getElementById("listingsPanel");
     dom.radiusSliderElement = document.getElementById("radiusSlider");
@@ -45,591 +46,377 @@ document.addEventListener("DOMContentLoaded", () => {
     dom.resetProductFiltersButton = document.getElementById('resetProductFilters');
     dom.activeFilterCountElement = document.getElementById('activeFilterCount');
 
+    
+
     if (DEBUG_MAIN_JS) {
         console.log("[main.js_DEBUG] AppState.dom populated. Verifying elements:");
         for (const key in dom) {
             if (Object.prototype.hasOwnProperty.call(dom, key)) {
-                console.log(`[main.js_DEBUG] dom.${key}: ${dom[key] ? 'Found' : 'NOT FOUND'}`);
+                console.log(`[main.js_DEBUG] dom.${key}: ${dom[key] ? 'Found ('+ (dom[key].id || 'N/A') +')' : 'NOT FOUND'}`);
             }
         }
-    }    
+    }
+    AppState.domReadyAndPopulated = true;
+    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] AppState.domReadyAndPopulated set to true.");
 
-    // --- Retrieve from localStorage ---
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Retrieving data from localStorage...");
+
+    // --- Check for Location Cookie AND Retrieve from localStorage ---
+    let showInitialModal = true;
     let initialSearchTerm = "Biddeford, Maine"; // Default
+    const savedLocationFromCookie = getCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
+
+    if (savedLocationFromCookie) {
+        try {
+            const locationData = JSON.parse(savedLocationFromCookie);
+            // Validate cookie structure
+            if (locationData && locationData.term && locationData.place && locationData.place.geometry) {
+                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Found valid location cookie:", locationData);
+                initialSearchTerm = locationData.term;
+                AppState.lastPlaceSelectedByAutocomplete = locationData.place; // Pre-populate AppState
+                showInitialModal = false;
+            } else {
+                if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Location cookie found but data is invalid or incomplete. Erasing.", locationData);
+                eraseCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
+            }
+        } catch (e) {
+            if (DEBUG_MAIN_JS) console.error("[main.js_DEBUG] Error parsing location cookie:", e);
+            eraseCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
+        }
+    } else {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] No location cookie found.");
+        // If no cookie, check localStorage as a fallback for the term only
+        try {
+            const savedLocationDataString = localStorage.getItem(LAST_SEARCHED_LOCATION_KEY);
+            if (savedLocationDataString) {
+                const savedLocationData = JSON.parse(savedLocationDataString);
+                if (savedLocationData && savedLocationData.term) {
+                    initialSearchTerm = savedLocationData.term;
+                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Using localStorage for initialSearchTerm (no cookie):", initialSearchTerm);
+                    // Since localStorage doesn't store the full 'place' object,
+                    // AppState.lastPlaceSelectedByAutocomplete remains null for now.
+                    // Modal will still be shown (showInitialModal remains true).
+                }
+            }
+        } catch (e) {
+            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Error retrieving from localStorage (after cookie check)", e);
+        }
+    }
+
     let retrievedRadius = null;
     try {
-        const savedLocationDataString = localStorage.getItem(LAST_SEARCHED_LOCATION_KEY);
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] localStorage - savedLocationDataString:", savedLocationDataString);
-        if (savedLocationDataString) {
-            const savedLocationData = JSON.parse(savedLocationDataString);
-            if (savedLocationData && savedLocationData.term) {
-                initialSearchTerm = savedLocationData.term;
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] localStorage - initialSearchTerm set to:", initialSearchTerm);
-            }
-        }
         const savedRadius = localStorage.getItem(LAST_SELECTED_RADIUS_KEY);
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] localStorage - savedRadius:", savedRadius);
-        if (savedRadius) {
-            retrievedRadius = parseInt(savedRadius, 10);
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] localStorage - retrievedRadius (parsed):", retrievedRadius);
-        }
+        if (savedRadius) retrievedRadius = parseInt(savedRadius, 10);
     } catch (e) {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Error retrieving from localStorage", e);
-        else console.warn("main.js: Error retrieving from localStorage", e);
+         if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Error retrieving radius from localStorage", e);
     }
+    // --- END Cookie / LocalStorage Check ---
 
-    if (dom.searchInput) {
-        dom.searchInput.value = initialSearchTerm;
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Set dom.searchInput.value to:", initialSearchTerm);
+    if (dom.searchAutocompleteElement) {
+        dom.searchAutocompleteElement.value = initialSearchTerm;
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Set dom.searchAutocompleteElement.value to:", initialSearchTerm);
     }
-
 
     if (dom.radiusSliderElement && retrievedRadius !== null && !isNaN(retrievedRadius)) {
         dom.radiusSliderElement.value = retrievedRadius;
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Set dom.radiusSliderElement.value from localStorage:", retrievedRadius);
         if (dom.radiusValueElement) dom.radiusValueElement.textContent = `${retrievedRadius} mi`;
     } else if (dom.radiusSliderElement && dom.radiusValueElement) {
-        dom.radiusValueElement.textContent = `${dom.radiusSliderElement.value} mi`;
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Set dom.radiusValueElement text content from slider default:", dom.radiusSliderElement.value);
+        if (dom.radiusValueElement) dom.radiusValueElement.textContent = `${dom.radiusSliderElement.value} mi`;
     }
 
+
     // --- Initial Search Modal Logic ---
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Initializing Search Modal logic...");
     const initialSearchModal = document.getElementById('initialSearchModal');
-    const modalSearchInput = document.getElementById('modalSearchInput');
+    const modalSearchAutocomplete = dom.modalSearchAutocompleteElement;
     const modalSearchButton = document.getElementById('modalSearchButton');
     const modalSkipButton = document.getElementById('modalSkipButton');
 
-    function openInitialSearchModal() {
+    function openInitialSearchModal() { /* ... (same as your version) ... */
         if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] openInitialSearchModal called.");
-        if (!initialSearchModal) {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] initialSearchModal element not found in openInitialSearchModal.");
-            return;
-        }
+        if (!initialSearchModal) { if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] initialSearchModal element not found."); return; }
         document.body.classList.add('modal-active');
         initialSearchModal.style.display = 'flex';
-        requestAnimationFrame(() => {
-            initialSearchModal.classList.add('modal-open');
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Initial search modal opened and class 'modal-open' added.");
-        });
+        requestAnimationFrame(() => { initialSearchModal.classList.add('modal-open'); });
     }
 
-    function closeInitialSearchModal() {
+    function closeInitialSearchModal() { /* ... (same as your version) ... */
         if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] closeInitialSearchModal called.");
-        if (!initialSearchModal) {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] initialSearchModal element not found in closeInitialSearchModal.");
-            return;
-        }
+        if (!initialSearchModal) return;
         initialSearchModal.classList.remove('modal-open');
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Initial search modal class 'modal-open' removed.");
         setTimeout(() => {
             if (!initialSearchModal.classList.contains('modal-open')) {
                 initialSearchModal.style.display = 'none';
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Initial search modal display set to 'none'.");
-                // Only remove modal-active if no other overlays are open
                 const shopOverlayOpen = AppState.dom.detailsOverlayShopElement?.classList.contains('is-open');
                 const socialOverlayOpen = AppState.dom.detailsOverlaySocialElement?.classList.contains('is-open');
-                if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] Checking other overlays: shopOverlayOpen=${shopOverlayOpen}, socialOverlayOpen=${socialOverlayOpen}`);
-                if (!shopOverlayOpen && !socialOverlayOpen) {
-                    document.body.classList.remove('modal-active');
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Removed 'modal-active' from body.");
-                }
+                if (!shopOverlayOpen && !socialOverlayOpen) document.body.classList.remove('modal-active');
             }
         }, 300);
     }
 
-    function submitModalSearch() {
+// In main.js
+
+// ... (other code) ...
+
+    function submitModalSearch() { // MODIFIED Function
         if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] submitModalSearch called.");
-        if (!modalSearchInput || !dom.searchInput) {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] modalSearchInput or dom.searchInput not found in submitModalSearch.");
+        if (!modalSearchAutocomplete || !dom.searchAutocompleteElement) {
+            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] modalSearchAutocompleteElement or dom.searchAutocompleteElement not found in submitModalSearch. Modal element:", modalSearchAutocomplete, "Main element:", dom.searchAutocompleteElement);
             return;
         }
-        const searchTerm = modalSearchInput.value.trim();
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal search term:", searchTerm);
+        
+        if (DEBUG_MAIN_JS) {
+            console.log("[main.js_DEBUG] In submitModalSearch, modalSearchAutocomplete is:", modalSearchAutocomplete);
+            console.log("[main.js_DEBUG] Raw value of modalSearchAutocomplete.value IS:", modalSearchAutocomplete.value);
+            console.log("[main.js_DEBUG] window.modalAutocompletePlace (before logic) IS:", window.modalAutocompletePlace);
+        }
+
+        let searchTerm = "";
+        let placeToUseForSearch = window.modalAutocompletePlace || null; // Prioritize explicitly selected place
+
+        if (placeToUseForSearch && placeToUseForSearch.geometry) {
+            // If a place was selected from autocomplete dropdown
+            searchTerm = placeToUseForSearch.formatted_address || placeToUseForSearch.name || "";
+            // Clean up "USA" if present, similar to handleSearch
+            searchTerm = searchTerm.replace(/, USA$/, "").trim();
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal: Using selected place. Derived searchTerm:", searchTerm, "Place:", placeToUseForSearch);
+        } else {
+            // If no place selected from dropdown (e.g., user just typed and hit enter), use the raw input value
+            const rawValue = modalSearchAutocomplete.value;
+            searchTerm = (typeof rawValue === 'string') ? rawValue.trim() : "";
+            // In this case, placeToUseForSearch remains null or whatever it was (likely null if no gmp-placechange)
+            // AppState.lastPlaceSelectedByAutocomplete will be set to this null value,
+            // and handleSearch will perform geocoding based on the searchTerm.
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal: No specific place selected from dropdown, using input value. searchTerm:", searchTerm);
+        }
+        
+        searchTerm = searchTerm.trim(); // Ensure it's trimmed
+
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal search term (final before check): '"+ searchTerm + "'");
+
         if (searchTerm) {
-            dom.searchInput.value = searchTerm;
-            AppState.lastPlaceSelectedByAutocomplete = window.modalAutocompletePlace || null;
+            dom.searchAutocompleteElement.value = searchTerm;
+            AppState.lastPlaceSelectedByAutocomplete = placeToUseForSearch; // This will be the rich place object if selected, or null if only text typed
+            
             if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] AppState.lastPlaceSelectedByAutocomplete set from modal:", AppState.lastPlaceSelectedByAutocomplete);
-            window.modalAutocompletePlace = null; // Clear temp global
+            
+            window.modalAutocompletePlace = null; // Clear for next modal use
             closeInitialSearchModal();
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling handleSearch from submitModalSearch.");
-            handleSearch(); // This will trigger data loading and map centering
+            handleSearch();
         } else {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal search term is empty. Focusing input and adding error border.");
-            modalSearchInput.focus();
-            modalSearchInput.classList.add('border-red-500');
-            setTimeout(() => modalSearchInput.classList.remove('border-red-500'), 2000);
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal search term is effectively empty. Focusing input.");
+            modalSearchAutocomplete.focus();
+            // Try to style the internal input of the web component
+            const internalInput = modalSearchAutocomplete.shadowRoot?.querySelector('input');
+            if (internalInput) {
+                internalInput.classList.add('border-red-500');
+                setTimeout(() => internalInput.classList.remove('border-red-500'), 2000);
+            } else {
+                 // Fallback if shadowRoot or internal input isn't found/accessible
+                modalSearchAutocomplete.style.border = "1px solid red"; // This might not be as visually effective
+                setTimeout(() => modalSearchAutocomplete.style.border = "", 2000);
+            }
         }
     }
 
-    if (initialSearchModal && modalSearchInput && modalSearchButton && modalSkipButton) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] All initial search modal elements found. Opening modal and setting up Autocomplete.");
+// ... (rest of main.js) ...
+
+    if (showInitialModal && initialSearchModal && modalSearchAutocomplete && modalSearchButton && modalSkipButton) {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] `showInitialModal` is true. Initializing and opening modal.");
         openInitialSearchModal();
-        // MAINE_BOUNDS_LITERAL is from mapLogic.js (or config.js if moved)
-        if (window.google?.maps?.places && typeof MAINE_BOUNDS_LITERAL !== 'undefined') {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Setting up Google Places Autocomplete for modalSearchInput.");
-            const modalAutocomplete = new google.maps.places.Autocomplete(modalSearchInput, {
-                bounds: new google.maps.LatLngBounds(MAINE_BOUNDS_LITERAL.sw, MAINE_BOUNDS_LITERAL.ne),
-                strictBounds: true, componentRestrictions: { country: "us" },
-                fields: ["name", "formatted_address", "geometry", "address_components", "place_id", "types"],
-            });
-            modalAutocomplete.addListener('place_changed', () => {
-                window.modalAutocompletePlace = modalAutocomplete.getPlace();
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal Autocomplete 'place_changed'. Place:", window.modalAutocompletePlace);
-                if (window.modalAutocompletePlace?.formatted_address) {
-                    modalSearchInput.value = window.modalAutocompletePlace.formatted_address.replace(/, USA$/, "").trim();
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Updated modalSearchInput value from autocomplete:", modalSearchInput.value);
-                }
-            });
-        } else {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Google Maps API or MAINE_BOUNDS_LITERAL not available for modal Autocomplete.");
-        }
-        modalSearchButton.addEventListener('click', () => {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal search button clicked.");
-            submitModalSearch();
-        });
-        modalSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Enter key pressed in modal search input.");
-                submitModalSearch();
-            }
-        });
-        modalSkipButton.addEventListener('click', () => {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal skip button clicked.");
-            closeInitialSearchModal();
-            if (dom.searchInput.value.trim() === "" && typeof DEFAULT_MAP_CENTER !== 'undefined') {
-                dom.searchInput.value = "Biddeford, Maine";
-                AppState.lastPlaceSelectedByAutocomplete = null;
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Skipped modal search, search input was empty. Set to default 'Biddeford, Maine'.");
-            }
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling handleSearch after skipping modal.");
-            handleSearch(); // Perform search with default or current input
-        });
-    } else {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] One or more initial search modal elements not found. Modal logic skipped.");
-    }
 
-    // Radius Slider Listener
-    if (dom.radiusSliderElement) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Adding 'input' and 'change' listeners to radiusSliderElement.");
-        dom.radiusSliderElement.addEventListener("input", () => {
-            if (dom.radiusValueElement) dom.radiusValueElement.textContent = `${dom.radiusSliderElement.value} mi`;
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Radius slider 'input' event. Value:", dom.radiusSliderElement.value);
-        });
-        dom.radiusSliderElement.addEventListener("change", () => {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Radius slider 'change' event. Value:", dom.radiusSliderElement.value, "Calling handleSearch.");
+        if (window.google?.maps?.places) {
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Setting up PlaceAutocompleteElement for modal.");
+            if (typeof MAINE_BOUNDS_LITERAL !== 'undefined') {
+                const biasRect = `rectangle:${MAINE_BOUNDS_LITERAL.sw.lat},${MAINE_BOUNDS_LITERAL.sw.lng},${MAINE_BOUNDS_LITERAL.ne.lat},${MAINE_BOUNDS_LITERAL.ne.lng}`;
+                if (!modalSearchAutocomplete.getAttribute('location-bias')) modalSearchAutocomplete.locationBias = biasRect;
+                if (!modalSearchAutocomplete.getAttribute('location-restriction')) modalSearchAutocomplete.locationRestriction = biasRect;
+            }
+            if (!modalSearchAutocomplete.getAttribute('country')) modalSearchAutocomplete.country = "us";
+            if (!modalSearchAutocomplete.getAttribute('place-fields')) modalSearchAutocomplete.placeFields = "name,formatted_address,geometry,address_components,place_id,types";
+
+            modalSearchAutocomplete.addEventListener('gmp-placechange', () => {
+                window.modalAutocompletePlace = modalSearchAutocomplete.place;
+                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Modal Autocomplete 'gmp-placechange'. Place:", window.modalAutocompletePlace);
+            });
+        } else { /* ... warning ... */ }
+        modalSearchButton.addEventListener('click', submitModalSearch);
+        modalSearchAutocomplete.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); submitModalSearch(); }});
+        modalSkipButton.addEventListener('click', () => {
+            closeInitialSearchModal();
+            if (dom.searchAutocompleteElement.value.trim() === "" && typeof DEFAULT_MAP_CENTER !== 'undefined') {
+                dom.searchAutocompleteElement.value = "Biddeford, Maine";
+                AppState.lastPlaceSelectedByAutocomplete = null;
+            }
             handleSearch();
         });
+    } else if (!showInitialModal) {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] `showInitialModal` is false (due to cookie). Modal skipped.");
+        // `AppState.lastPlaceSelectedByAutocomplete` should be populated from cookie
+        // `initialSearchTerm` is also set from cookie.
+        // Map init and `processAndPlotShops` -> `handleSearch` will proceed using this.
+    } else {
+        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Initial search modal elements not found OR modal explicitly not shown but no cookie. Modal logic skipped.");
     }
 
-    // Search Input Listeners
-    if (dom.searchInput) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Adding 'input' and 'keypress' listeners to searchInput.");
-        dom.searchInput.addEventListener("input", () => {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Main searchInput 'input' event. Value:", dom.searchInput.value);
-            if (dom.searchInput.value.trim() === "") {
-                AppState.lastPlaceSelectedByAutocomplete = null;
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Main searchInput cleared. lastPlaceSelectedByAutocomplete nulled. Calling handleSearch.");
-                handleSearch();
-            }
-        });
-        dom.searchInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                e.preventDefault();
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Main searchInput 'Enter' keypress event.");
-                const currentPlace = AppState.lastPlaceSelectedByAutocomplete;
-                const currentInput = dom.searchInput.value;
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] currentPlace:", currentPlace, "currentInput:", currentInput);
-                if (!currentPlace || (currentInput !== (currentPlace.formatted_address || currentPlace.name))) {
-                    AppState.lastPlaceSelectedByAutocomplete = null;
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] No currentPlace or input mismatch. lastPlaceSelectedByAutocomplete nulled. Calling handleSearch.");
-                    handleSearch();
-                } else {
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Current place matches input, Enter keypress likely handled by autocomplete or already searched. No explicit handleSearch call here.");
-                }
-            }
-        });
+    // --- Attempt map initialization ---
+    // Called once DOMContentLoaded has set AppState.domReadyAndPopulated = true.
+    // It's safe to call this even if the API callback also calls it, due to checks in attemptMapInitialization.
+    if (typeof attemptMapInitialization === "function") {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling attemptMapInitialization() from end of DOMContentLoaded.");
+        attemptMapInitialization();
+    } else {
+        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] attemptMapInitialization function not found at end of DOMContentLoaded.");
     }
 
-    // Escape Key Listener for Overlays
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] 'Escape' key pressed.");
-            if (typeof closeClickedShopOverlaysAndNavigateHome === 'function') { // from uiLogic.js
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling closeClickedShopOverlaysAndNavigateHome (from uiLogic.js).");
-                closeClickedShopOverlaysAndNavigateHome();
-            } else {
-                if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] closeClickedShopOverlaysAndNavigateHome function not found.");
-            }
-        }
-    });
 
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] DOMContentLoaded setup complete. Waiting for map init.");    
-    // processAndPlotShops() is called from initAppMap in mapLogic.js after map API is ready
+    if (dom.radiusSliderElement) { /* ... (radius slider listeners - same as your version) ... */ }
+    const mainSearchAutocomplete = dom.searchAutocompleteElement;
+    if (mainSearchAutocomplete) { /* ... (main search autocomplete listeners - same as your version) ... */ }
+    document.addEventListener("keydown", (event) => { /* ... (escape key - same as your version) ... */ });
+
+    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] DOMContentLoaded setup complete.");
 });
 
-// Called by initAppMap (mapLogic.js) after Google Maps API is ready
-async function processAndPlotShops() {
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] processAndPlotShops called.");
-    const dom = AppState.dom;
-    if (dom.listingsContainer) {
-        dom.listingsContainer.innerHTML = '<p class="text-center text-gray-700 p-4 col-span-full">Loading farm stands...</p>';
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Set listingsContainer to 'Loading...'.");
-    }
-
-    try {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling fetchAndProcessFarmStands (from apiService.js).");
-        AppState.allFarmStands = await fetchAndProcessFarmStands(); // from apiService.js
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] fetchAndProcessFarmStands completed. Number of stands fetched: " + (AppState.allFarmStands ? AppState.allFarmStands.length : 'null or undefined'));
-        // Original debug log
-        if (DEBUG_MAIN_JS) console.log("[PROCESS_SHOPS_DEBUG] fetchAndProcessFarmStands completed. Number of stands fetched: " + (AppState.allFarmStands ? AppState.allFarmStands.length : 'null or undefined'));
-        if (AppState.allFarmStands && AppState.allFarmStands.length > 0) {
-            if (DEBUG_MAIN_JS) console.log("[PROCESS_SHOPS_DEBUG] First fetched stand name: " + AppState.allFarmStands[0].Name, AppState.allFarmStands[0]);
-        }
-    } catch (error) {
-        if (DEBUG_MAIN_JS) console.error("[main.js_DEBUG] Critical error fetching farm stands in processAndPlotShops.", error);
-        else console.error("main.js: Critical error fetching farm stands in processAndPlotShops.", error);
-        if (dom.noResultsDiv) {
-            dom.noResultsDiv.textContent = `Failed to load farm stand data: ${error.message}. Please try refreshing.`;
-            dom.noResultsDiv.classList.remove('hidden');
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Displayed fetch error in noResultsDiv.");
-            if (dom.listingsContainer) dom.listingsContainer.classList.add('hidden');
-        }
-        AppState.allFarmStands = [];
-    }
-
-    if (AppState.allFarmStands.length === 0 && !dom.noResultsDiv?.classList.contains('hidden')) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] No farm stands loaded, and error message already shown.");
-    } else if (AppState.allFarmStands.length === 0) {
-        if (dom.noResultsDiv) {
-             dom.noResultsDiv.textContent = "No farm stand data available at this time.";
-             dom.noResultsDiv.classList.remove('hidden');
-             if(dom.listingsContainer) dom.listingsContainer.classList.add('hidden');
-             if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] No farm stands loaded, displayed 'No farm stand data available' message.");
-        }
-    } else {
-         if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] ${AppState.allFarmStands.length} Farm stands received. Slugs and coords from server.`);        
-    }
-    
-    AppState.currentlyDisplayedShops = [...AppState.allFarmStands];
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] AppState.currentlyDisplayedShops initialized with allFarmStands. Count:", AppState.currentlyDisplayedShops.length);
-    // Original debug log
-    if (DEBUG_MAIN_JS) console.log("[PROCESS_SHOPS_DEBUG] About to call handleSearch(). AppState.currentlyDisplayedShops count: " + (AppState.currentlyDisplayedShops ? AppState.currentlyDisplayedShops.length : 'null or undefined'));
-
-    await handleSearch(); // Initial search based on default/localStorage values
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Initial handleSearch() call completed from processAndPlotShops.");
-    // Original debug log
-    if (DEBUG_MAIN_JS) console.log("[PROCESS_SHOPS_DEBUG] handleSearch() call completed.");
-
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Calling handleRouteChange from processAndPlotShops for initial URL processing.");
-    handleRouteChange();  // Handle initial URL for potential deep links AFTER data is loaded
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] processAndPlotShops finished.");
-}
+async function processAndPlotShops() { /* ... (same as your version, no changes needed for cookie logic here) ... */ }
 
 async function handleSearch() {
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] --- handleSearch triggered ---");
     const dom = AppState.dom;
-
-    if (DEBUG_MAIN_JS) {
-        console.log("[main.js_DEBUG] handleSearch: Initial AppState.allFarmStands (sample of 1):", AppState.allFarmStands.length > 0 ? JSON.parse(JSON.stringify(AppState.allFarmStands.slice(0, 1))) : "Empty");
-        console.log("[main.js_DEBUG] handleSearch: Current activeProductFilters:", JSON.parse(JSON.stringify(AppState.activeProductFilters || {})));
-        const radiusMilesFromDOM = dom.radiusSliderElement ? parseInt(dom.radiusSliderElement.value) : 30;
-        console.log("[main.js_DEBUG] handleSearch: Current radius (miles from DOM):", radiusMilesFromDOM);
-    }
-
     let searchCenterLatLng = null;
-    let searchedTermForStorage = dom.searchInput ? dom.searchInput.value : "";
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: searchedTermForStorage (from input):", searchedTermForStorage);
+    let searchedTermForStorage = dom.searchAutocompleteElement ? dom.searchAutocompleteElement.value : "";
+    let placeForCookie = null; // To store the full place object for the cookie
 
-    // Determine searchCenterLatLng (from autocomplete or geocoding input)
+    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: initial AppState.lastPlaceSelectedByAutocomplete:", AppState.lastPlaceSelectedByAutocomplete);
+
     if (AppState.lastPlaceSelectedByAutocomplete?.geometry?.location) {
-        searchCenterLatLng = AppState.lastPlaceSelectedByAutocomplete.geometry.location; // This is a Google LatLng object
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Using lastPlaceSelectedByAutocomplete. LatLng:", searchCenterLatLng.toString());
-        const viewport = AppState.lastPlaceSelectedByAutocomplete.geometry.viewport;
-        if (typeof map !== 'undefined' && map && viewport && typeof getAdjustedBounds === 'function') {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Fitting map to autocomplete viewport.");
+        const place = AppState.lastPlaceSelectedByAutocomplete; // This is the rich object
+        const loc = place.geometry.location; // LatLngLiteral
+        searchCenterLatLng = new google.maps.LatLng(loc.lat, loc.lng);
+
+        // Use the most reliable term from the place object for storage and display
+        let termFromPlace = place.formatted_address ? place.formatted_address.replace(/, USA$/, "").trim() : (place.name || "");
+        if (termFromPlace) {
+            searchedTermForStorage = termFromPlace;
+            if (dom.searchAutocompleteElement && dom.searchAutocompleteElement.value !== searchedTermForStorage) {
+                dom.searchAutocompleteElement.value = searchedTermForStorage;
+            }
+        } // else searchedTermForStorage remains the input field's value
+
+        placeForCookie = place; // The rich place object
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Using place from AppState.lastPlaceSelectedByAutocomplete for cookie and search term.");
+
+        const viewportData = place.geometry.viewport;
+        if (viewportData && map && typeof getAdjustedBounds === 'function') {
+            const viewport = new google.maps.LatLngBounds(viewportData.southwest, viewportData.northeast);
             map.fitBounds(getAdjustedBounds(viewport));
-        } else if (typeof map !== 'undefined' && map && typeof getAdjustedMapCenter === 'function') {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Setting map center from autocomplete location.");
-            map.setCenter(getAdjustedMapCenter(searchCenterLatLng));
+        } else if (map && typeof getAdjustedMapCenter === 'function') {
+            map.panTo(getAdjustedMapCenter(searchCenterLatLng));
         }
-    } else if (dom.searchInput?.value.trim()) {
-        const searchTerm = dom.searchInput.value.trim();
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: No autocomplete place. Attempting geocode for term:", searchTerm);
-        const geocodedData = await geocodeAddressClient(searchTerm); // from apiService.js
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: geocodeAddressClient result:", geocodedData);
+    } else if (dom.searchAutocompleteElement?.value.trim()) {
+        const searchTerm = dom.searchAutocompleteElement.value.trim();
+        searchedTermForStorage = searchTerm; // Initial term
+        const geocodedData = await geocodeAddressClient(searchTerm);
         if (geocodedData?.lat && geocodedData?.lng) {
             searchCenterLatLng = new google.maps.LatLng(geocodedData.lat, geocodedData.lng);
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Geocoded successfully. LatLng:", searchCenterLatLng.toString());
-            if (geocodedData.viewport && typeof map !== 'undefined' && map && typeof getAdjustedBounds === 'function') {
+            // Create a pseudo 'place' object for the cookie and AppState
+            placeForCookie = {
+                name: geocodedData.name || searchTerm, // Use name from geocode if available
+                formatted_address: geocodedData.formatted_address || searchTerm,
+                geometry: {
+                    location: { lat: geocodedData.lat, lng: geocodedData.lng },
+                    viewport: geocodedData.viewport // LatLngBoundsLiteral
+                },
+                place_id: geocodedData.place_id, // Store if available
+                types: geocodedData.types || [] // Store if available
+            };
+            // Update searchedTermForStorage if geocoding gave a better address
+            if (geocodedData.formatted_address) {
+                searchedTermForStorage = geocodedData.formatted_address.replace(/, USA$/, "").trim();
+                if (dom.searchAutocompleteElement) dom.searchAutocompleteElement.value = searchedTermForStorage; // Update input
+            }
+            AppState.lastPlaceSelectedByAutocomplete = placeForCookie; // Update AppState
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Using geocoded data. AppState updated. Place for cookie:", placeForCookie);
+
+
+            if (geocodedData.viewport && map && typeof getAdjustedBounds === 'function') {
                 const bounds = new google.maps.LatLngBounds(
                     new google.maps.LatLng(geocodedData.viewport.southwest.lat, geocodedData.viewport.southwest.lng),
                     new google.maps.LatLng(geocodedData.viewport.northeast.lat, geocodedData.viewport.northeast.lng)
                 );
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Fitting map to geocoded viewport.");
                 map.fitBounds(getAdjustedBounds(bounds));
-            } else if (typeof map !== 'undefined' && map && typeof getAdjustedMapCenter === 'function') {
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Setting map center from geocoded location and default zoom.");
-                map.setCenter(getAdjustedMapCenter(searchCenterLatLng));
+            } else if (map && typeof getAdjustedMapCenter === 'function') {
+                map.panTo(getAdjustedMapCenter(searchCenterLatLng));
                 if (typeof DEFAULT_MAP_ZOOM !== 'undefined') map.setZoom(DEFAULT_MAP_ZOOM);
             }
         } else {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] handleSearch: Geocoding failed for term:", searchTerm);
-            else console.warn("main.js: Geocoding failed for term:", searchTerm);
-            if (dom.noResultsDiv) {
-                dom.noResultsDiv.innerHTML = `<p>Could not find location: "${typeof escapeHTML === 'function' ? escapeHTML(searchTerm) : searchTerm}".</p><p class="text-xs mt-1">Displaying stands based on current filters only.</p>`;
-                dom.noResultsDiv.classList.remove('hidden');
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Displayed geocoding failure in noResultsDiv.");
-            }
+            if (dom.noResultsDiv) { /* ... geocoding failed UI ... */ }
+            // Important: If geocoding fails, clear lastPlaceSelectedByAutocomplete and placeForCookie
+            // to avoid saving an invalid/old location to the cookie.
+            AppState.lastPlaceSelectedByAutocomplete = null;
+            placeForCookie = null;
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Geocoding failed, nulled out placeForCookie.");
         }
+    } else {
+        // No search term and no pre-selected place (e.g., initial load with empty cookie/localStorage and user skipped modal)
+        AppState.lastPlaceSelectedByAutocomplete = null;
+        placeForCookie = null; // Ensure no cookie is set for an empty/default search
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: No search term or pre-selected place. placeForCookie is null.");
     }
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: searchCenterLatLng for filtering:", searchCenterLatLng ? `${searchCenterLatLng.lat()},${searchCenterLatLng.lng()}` : 'None');
 
-    // Save search to localStorage
-    if (searchedTermForStorage.trim() && searchCenterLatLng) { // Only save if a valid location was found
+
+    // --- Set Cookie and localStorage ---
+    if (searchedTermForStorage.trim() && searchCenterLatLng && placeForCookie && placeForCookie.geometry) {
+        // Ensure placeForCookie is a valid place object with geometry before saving
+        const locationDataForCookie = {
+            term: searchedTermForStorage,
+            place: placeForCookie // Store the Autocomplete place object or the constructed one
+        };
         try {
+            setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify(locationDataForCookie), COOKIE_EXPIRY_DAYS);
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Location cookie SET with term:", searchedTermForStorage, "and place:", placeForCookie);
+
+            // Save to localStorage (for radius, and term as fallback if cookies disabled/cleared)
             localStorage.setItem(LAST_SEARCHED_LOCATION_KEY, JSON.stringify({ term: searchedTermForStorage }));
             if (dom.radiusSliderElement) localStorage.setItem(LAST_SELECTED_RADIUS_KEY, dom.radiusSliderElement.value);
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Saved search term and radius to localStorage. Term:", searchedTermForStorage, "Radius:", dom.radiusSliderElement ? dom.radiusSliderElement.value : "N/A");
+
         } catch (e) {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Error saving to localStorage in handleSearch", e);
-            else console.warn("main.js: Error saving to localStorage", e);
+            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Error saving to cookie/localStorage", e);
+            else console.warn("main.js: Error saving to cookie/localStorage", e);
         }
+    } else {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Conditions not met for setting location cookie. Term:", searchedTermForStorage, "HasLatLng:", !!searchCenterLatLng, "HasPlaceForCookie:", !!placeForCookie?.geometry);
     }
+    // --- END Set Cookie and localStorage ---
 
-    // --- Filtering Logic ---
+    // ... (rest of handleSearch: filtering logic, renderListings, plotMarkers - same as your version) ...
     let shopsToDisplay = [...AppState.allFarmStands];
-    if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] handleSearch: Starting with ${shopsToDisplay.length} shops before filtering.`);
-
-    // 1. Product Attribute Filters
     const activeFilterKeys = Object.keys(AppState.activeProductFilters || {}).filter(key => AppState.activeProductFilters[key]);
     if (activeFilterKeys.length > 0) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Applying product filters for keys:", activeFilterKeys);
         shopsToDisplay = shopsToDisplay.filter(shop =>
-            activeFilterKeys.every(filterKey => shop[filterKey] === true) // Assumes product props are boolean
+            activeFilterKeys.every(filterKey => shop[filterKey] === true)
         );
-        if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] handleSearch: Shops after product filters: ${shopsToDisplay.length}`);
-    } else {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: No active product filters.");
     }
-
-    // 2. Radius Filter
     const radiusMiles = dom.radiusSliderElement ? parseInt(dom.radiusSliderElement.value) : 30;
-    if (searchCenterLatLng) { // Only apply if a search center exists
+    if (searchCenterLatLng) {
         const radiusMeters = radiusMiles * 1609.344;
-        if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] handleSearch: Applying radius filter: ${radiusMiles} miles (${radiusMeters.toFixed(0)}m) around ${searchCenterLatLng.toString()}`);
         shopsToDisplay = shopsToDisplay.filter(shop => {
-            if (shop.lat == null || shop.lng == null) {
-                 if (DEBUG_MAIN_JS) console.warn(`[main.js_DEBUG] Shop '${shop.Name}' missing lat/lng, excluded from radius filter.`);
-                return false;
-            }
+            if (shop.lat == null || shop.lng == null) return false;
             try {
                 const shopLocation = new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng));
-                const distance = google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLocation);
-                return distance <= radiusMeters;
-            } catch (e) {
-                if (DEBUG_MAIN_JS) console.error("[main.js_DEBUG] Error in distance calculation for shop:", shop.Name, e);
-                else console.error("Error in distance calculation for shop:", shop.Name, e);
-                return false;
-            }
+                return google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLocation) <= radiusMeters;
+            } catch (e) { console.error("Distance calc error:", shop.Name, e); return false; }
         });
-        if (DEBUG_MAIN_JS) console.log(`[main.js_DEBUG] handleSearch: Shops after radius filter: ${shopsToDisplay.length}`);
-    } else {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: No search center, skipping radius filter.");
     }
-
     AppState.currentlyDisplayedShops = [...shopsToDisplay];
-    if (DEBUG_MAIN_JS) {
-        console.log("[main.js_DEBUG] handleSearch: AppState.currentlyDisplayedShops updated. Count:", AppState.currentlyDisplayedShops.length);
-        // Original debug logs
-        console.log("[main.js - handleSearch] Number of shops TO PLOT:", AppState.currentlyDisplayedShops.length);
-        if (AppState.currentlyDisplayedShops.length > 0) {
-            const firstShopToPlot = AppState.currentlyDisplayedShops[0];
-            console.log("[main.js - handleSearch] First shop TO PLOT (Name, Lat, Lng):",
-                firstShopToPlot.Name,
-                firstShopToPlot.lat,
-                firstShopToPlot.lng
-            );
-            const hasCoords = AppState.currentlyDisplayedShops.some(s => s.lat != null && s.lng != null);
-            console.log("[main.js - handleSearch] Does ANY shop have lat/lng for plotting?", hasCoords);
-        }
-    }
-
-    const sortAndRenderCenter = searchCenterLatLng || (typeof map !== 'undefined' && map ? map.getCenter() : null);
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: sortAndRenderCenter:", sortAndRenderCenter ? sortAndRenderCenter.toString() : 'null');
-
-    if (typeof renderListings === 'function') {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Calling renderListings (from uiLogic.js).");
-        renderListings(AppState.currentlyDisplayedShops, true, sortAndRenderCenter);
-    } else {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] handleSearch: renderListings function not found.");
-    }
-    if (typeof plotMarkers === 'function') {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleSearch: Calling plotMarkers (from mapLogic.js).");
-        plotMarkers(AppState.currentlyDisplayedShops);
-    } else {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] handleSearch: plotMarkers function not found.");
-    }
-
+    const sortAndRenderCenter = searchCenterLatLng || (map ? map.getCenter() : null);
+    if (typeof renderListings === 'function') renderListings(AppState.currentlyDisplayedShops, true, sortAndRenderCenter);
+    if (typeof plotMarkers === 'function') plotMarkers(AppState.currentlyDisplayedShops);
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] --- handleSearch finished ---");
-    // Original log
-    if (DEBUG_MAIN_JS) console.log("[HANDLESEARCH_CALL_CHECK] handleSearch function was entered.");
 }
 
-// escapeHTML is now in utils.js, ensure utils.js is loaded before main.js
-
-// --- Client-Side Router Logic ---
-function handleRouteChange() {
-    const path = window.location.pathname;
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Route changed to:", path);
-
-    if (typeof closeClickedShopOverlays === 'function') { // from uiLogic.js
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Calling closeClickedShopOverlays (from uiLogic.js).");
-        closeClickedShopOverlays(); // This version just closes UI
-    } else {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] handleRouteChange: closeClickedShopOverlays function not found.");
-    }
-    
-    if(AppState.dom.listingsPanelElement) {
-        AppState.dom.listingsPanelElement.classList.remove('hidden');
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Ensured listingsPanelElement is visible.");
-    }
-    if(AppState.dom.noResultsDiv) {
-        AppState.dom.noResultsDiv.classList.add('hidden'); // Hide "no results" initially
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Ensured noResultsDiv is hidden.");
-    }
-
-
-    if (path.startsWith('/farm/')) {
-        const storeSlug = path.substring('/farm/'.length);
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Path is /farm/, slug extracted:", storeSlug);
-        if (storeSlug && storeSlug !== "/") { // Ensure slug is not empty or just "/"
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Attempting to display store page for slug:", storeSlug);
-            displayStorePageBySlug(storeSlug);
-        } else {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Path is /farm/ with no valid slug. Displaying main page content.");
-            if (typeof renderListings === 'function') {
-                 const center = (typeof map !== 'undefined' && map ? map.getCenter() : (typeof DEFAULT_MAP_CENTER !== 'undefined' ? DEFAULT_MAP_CENTER : null));
-                 if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Calling renderListings for allFarmStands. Center:", center ? (center.toString ? center.toString() : center) : 'null');
-                 renderListings(AppState.allFarmStands, true, center);
-            } else {
-                if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] handleRouteChange: renderListings function not found for /farm/ fallback.");
-            }
-        }
-    } else if (path === '/' || path.toLowerCase() === '/index.html') {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Displaying main listings page (root or index.html).");
-        if(AppState.dom.listingsContainer && AppState.currentlyDisplayedShops.length > 0) {
-            AppState.dom.listingsContainer.classList.remove('hidden');
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Ensured listingsContainer is visible for main page.");
-        } else if (DEBUG_MAIN_JS) {
-            console.log("[main.js_DEBUG] handleRouteChange: listingsContainer not shown on main page - either element missing or no shops displayed. Container:", AppState.dom.listingsContainer, "Shop count:", AppState.currentlyDisplayedShops.length);
-        }
-    } else {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange: Path not specifically handled:", path);
-    }
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] handleRouteChange finished.");
-}
-
-async function displayStorePageBySlug(storeSlug) {
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug called with slug:", storeSlug);
-
-    if (AppState.allFarmStands.length === 0) {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: Farm stands not loaded yet. This might be an issue if directly landing on a slug URL before data is ready.");
-        if (AppState.dom.noResultsDiv) {
-            AppState.dom.noResultsDiv.textContent = "Loading farm stand data, please wait...";
-            AppState.dom.noResultsDiv.classList.remove('hidden');
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Displayed 'Loading farm stand data...' message.");
-        }
-        // It might be beneficial to wait for data here or trigger a load if not already in progress.
-        // For now, just returning.
-        return;
-    }
-
-    const shop = AppState.allFarmStands.find(s => s.slug === storeSlug);
-
-    if (shop) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Found shop for slug:", storeSlug, "Shop Object:", JSON.parse(JSON.stringify(shop))); // Deep copy for logging
-        
-        if (typeof openClickedShopOverlays === 'function') { // from uiLogic.js
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Calling openClickedShopOverlays (from uiLogic.js) for shop:", shop.Name);
-            openClickedShopOverlays(shop);
-            
-            const shopLatLng = shop.lat && shop.lng ? new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng)) : null;
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Shop LatLng for map:", shopLatLng ? shopLatLng.toString() : 'null');
-
-            if (shopLatLng && typeof map !== 'undefined' && map !== null && typeof getAdjustedMapCenter === 'function') {
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Valid shopLatLng, map, and getAdjustedMapCenter. Panning/Zooming.");
-                
-                const adjustedCenter = getAdjustedMapCenter(shopLatLng); // from mapLogic.js
-                if (adjustedCenter) {
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Adjusted center for map:", adjustedCenter.toString ? adjustedCenter.toString() : JSON.stringify(adjustedCenter));
-                    map.panTo(adjustedCenter);
-                    map.setZoom(15); // Zoom in on the specific store
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Pan/Zoom complete. Current map center:", map.getCenter().toString(), "Zoom:", map.getZoom());
-                } else {
-                    if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: getAdjustedMapCenter returned invalid. Original shopLatLng:", shopLatLng.toString());
-                }
-
-                if (shop.marker && typeof showInfoWindowForShop === 'function') { // showInfoWindowForShop from mapLogic.js
-                    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Shop has a marker. Calling showInfoWindowForShop for:", shop.Name);
-                    setTimeout(() => {
-                        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: (setTimeout) Calling showInfoWindowForShop for:", shop.Name);
-                        showInfoWindowForShop(shop);
-                    }, 200);
-                } else {
-                    if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: Cannot show InfoWindow. Shop marker:", shop.marker, "showInfoWindowForShop defined?", typeof showInfoWindowForShop === 'function');
-                }
-            } else {
-                if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: Cannot pan/zoom. Conditions not met. shopLatLng:", shopLatLng, "Is map defined & not null?", (typeof map !== 'undefined' && map !== null), "Is getAdjustedMapCenter defined?", typeof getAdjustedMapCenter === 'function');
-            }
-        } else {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: openClickedShopOverlays function not found.");
-        }
-    } else {
-        if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] displayStorePageBySlug: Store not found for slug:", storeSlug);
-        if (AppState.dom.noResultsDiv) {
-            AppState.dom.noResultsDiv.textContent = `Farm stand "${typeof escapeHTML === 'function' ? escapeHTML(storeSlug.replace(/-/g, ' ')) : storeSlug.replace(/-/g, ' ')}" not found.`; // escapeHTML from utils.js
-            AppState.dom.noResultsDiv.classList.remove('hidden');
-            if(AppState.dom.listingsContainer) AppState.dom.listingsContainer.classList.add('hidden');
-            if(AppState.dom.listingsPanelElement) AppState.dom.listingsPanelElement.classList.remove('hidden');
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Displayed 'Farm stand not found' message.");
-        }
-    }
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug finished for slug:", storeSlug);
-}
-
-function navigateToStoreBySlug(shop) { // Called when a shop card is clicked
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug called with shop:", shop ? shop.Name : "undefined/null shop");
-
-    if (!shop || !shop.slug) {
-        if (DEBUG_MAIN_JS) console.error("[main.js_DEBUG] navigateToStoreBySlug: Shop or shop.slug is missing.", shop);
-        else console.error("navigateToStoreBySlug: Shop or shop.slug is missing.", shop);
-        // Fallback: just open overlays without changing URL if slug is missing
-        if (typeof openClickedShopOverlays === 'function') {
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug: Fallback - calling openClickedShopOverlays due to missing slug/shop.");
-            openClickedShopOverlays(shop);
-        } else {
-            if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] navigateToStoreBySlug: openClickedShopOverlays function not found for fallback.");
-        }
-        return;
-    }
-    const newPath = `/farm/${shop.slug}`;
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug: New path generated:", newPath);
-
-    if (window.location.pathname !== newPath) {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug: Current path differs. Pushing state and calling handleRouteChange.");
-        window.history.pushState({ storeSlug: shop.slug }, `Farm Stand: ${shop.Name}`, newPath);
-        handleRouteChange(); // This will call displayStorePageBySlug
-    } else {
-        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug: Already on the correct path. Ensuring overlays are open by calling displayStorePageBySlug.");
-        displayStorePageBySlug(shop.slug); // Ensure overlays are open if already on the page
-    }
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] navigateToStoreBySlug finished for shop:", shop.Name);
-}
-
-// Listen for browser back/forward navigation
-window.addEventListener('popstate', (event) => {
-    if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] 'popstate' event fired. Event state:", event.state, "Calling handleRouteChange.");
-    handleRouteChange();
-});
+// --- Client-Side Router Logic (no changes for cookie logic itself) ---
+function handleRouteChange() { /* ... (same as your version) ... */ }
+async function displayStorePageBySlug(storeSlug) { /* ... (same as your version) ... */ }
+async function _openShopDetailsAndMapFeatures(shop) { /* ... (same as your version) ... */ }
+function navigateToStoreBySlug(shop) { /* ... (same as your version) ... */ }
+window.addEventListener('popstate', (event) => { /* ... (same as your version) ... */ });
+window.handleInfoWindowDirectionsClickById = function(shopIdentifier) { /* ... (same as your version) ... */ };

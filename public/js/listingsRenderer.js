@@ -1,14 +1,8 @@
 // public/js/listingsRenderer.js
 'use strict';
 
-/**
- * Renders the list of farm stand cards in the listings panel.
- * @param {Array<Object>} shopsToRender - Array of shop objects.
- * @param {boolean} [performSort=true] - Whether to sort by distance.
- * @param {Object} [sortCenter=null] - Google LatLng object for sorting center.
- */
 function renderListings(shopsToRender, performSort = true, sortCenter = null) {
-    const { listingsContainer, noResultsDiv, searchInput } = AppState.dom;
+    const { listingsContainer, noResultsDiv, searchAutocompleteElement } = AppState.dom; // Use searchAutocompleteElement
     if (!listingsContainer) { console.error("Listings container not found."); return; }
 
     let shopsForDisplay = [...(shopsToRender || [])];
@@ -17,8 +11,8 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
     if (performSort && currentMapCenter && typeof sortShopsByDistanceGoogle === 'function') {
         shopsForDisplay = sortShopsByDistanceGoogle(shopsForDisplay, currentMapCenter);
     }
-    AppState.currentlyDisplayedShops = shopsForDisplay;
-    listingsContainer.innerHTML = '';
+    AppState.currentlyDisplayedShops = shopsForDisplay; // Update AppState
+    listingsContainer.innerHTML = ''; // Clear previous listings
 
     if (shopsForDisplay.length > 0) {
         if (noResultsDiv) noResultsDiv.classList.add('hidden');
@@ -26,46 +20,40 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
 
         shopsForDisplay.forEach(shop => {
             const card = document.createElement('div');
-            const shopId = shop.slug || shop.GoogleProfileID || (shop.Name ? shop.Name.replace(/\W/g, '-') : 'id') + Math.random().toString(16).slice(2);
+            // Use slug or a combination for a unique ID, ensuring it's valid for HTML attributes
+            const shopIdSuffix = shop.slug || shop.GoogleProfileID || shop.Name?.replace(/\W/g, '') || Math.random().toString(16).slice(2);
+            const cardId = `shop-card-${shopIdSuffix}`;
+            card.id = cardId;
             card.className = 'bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer group w-full flex flex-col h-full';
-            card.setAttribute('data-shop-id', shopId);
-            card.innerHTML = generateShopContentHTML(shop, 'card'); // from sharedHtml.js
+            card.setAttribute('data-shop-slug', shop.slug || ''); // Store slug for navigation
 
-            const ratingContainerId = `rating-for-${shopId}-card`;
-            const ratingDivInCard = card.querySelector(`#${ratingContainerId}`);
+            // generateShopContentHTML will now use shop.placeDetails if populated by the background job
+            card.innerHTML = generateShopContentHTML(shop, 'card');
 
-            // Fetch Google rating if needed
-            if (!shop.placeDetails?.rating && shop.GoogleProfileID && typeof getPlaceDetailsClient === 'function' && !shop._isFetchingCardDetails) {
-                shop._isFetchingCardDetails = true;
-                getPlaceDetailsClient(shop.GoogleProfileID, 'rating,user_ratings_total')
-                    .then(place => {
-                        shop._isFetchingCardDetails = false;
-                        if (place) {
-                            shop.placeDetails = { ...(shop.placeDetails || {}), rating: place.rating, user_ratings_total: place.user_ratings_total };
-                            if (ratingDivInCard && typeof getStarRatingHTML === 'function') ratingDivInCard.innerHTML = getStarRatingHTML(place.rating, place.user_ratings_total);
-                        }
-                    }).catch(err => { shop._isFetchingCardDetails = false; });
-            } else if (shop.placeDetails?.rating && ratingDivInCard && typeof getStarRatingHTML === 'function') {
-                ratingDivInCard.innerHTML = getStarRatingHTML(shop.placeDetails.rating, shop.placeDetails.user_ratings_total);
-            }
+            // The block for fetching individual card ratings is no longer needed here,
+            // as generateShopContentHTML should handle displaying ratings from shop.placeDetails.
+            // Any further details (like full reviews, photos, live opening hours)
+            // will be fetched when the user clicks to open overlays/InfoWindow.
 
             card.addEventListener('click', () => {
-                if (typeof navigateToStoreBySlug === 'function') { // from main.js
+                if (typeof navigateToStoreBySlug === 'function') {
                     navigateToStoreBySlug(shop);
                 } else {
                     console.warn("navigateToStoreBySlug not defined. Opening overlays directly.");
                     if (typeof openClickedShopOverlays === 'function') openClickedShopOverlays(shop);
                 }
+                // Highlight logic
                 document.querySelectorAll('#listingsContainer .bg-white.rounded-xl').forEach(el => el.classList.remove('ring-2', 'ring-blue-500', 'ring-offset-2'));
                 card.classList.add('ring-2', 'ring-blue-500', 'ring-offset-2');
             });
             listingsContainer.appendChild(card);
         });
     } else {
+        // No results logic
         if (noResultsDiv) {
-            const searchVal = searchInput ? searchInput.value : "";
+            const searchVal = searchAutocompleteElement ? searchAutocompleteElement.value : ""; // Use new element
             let msg = 'No farm stands found.';
-            if (searchVal.trim() !== "") msg += ` Matching "${escapeHTML(searchVal)}".`;
+            if (searchVal.trim() !== "") msg += ` Matching "${typeof escapeHTML === 'function' ? escapeHTML(searchVal) : searchVal}".`;
             else if (Object.values(AppState.activeProductFilters || {}).some(v => v)) msg += ` With current filters.`;
             noResultsDiv.textContent = msg;
             noResultsDiv.classList.remove('hidden');
@@ -74,12 +62,6 @@ function renderListings(shopsToRender, performSort = true, sortCenter = null) {
     }
 }
 
-/**
- * Sorts shops by distance from a given center using Google Maps geometry.
- * @param {Array<Object>} shops - Array of shop objects.
- * @param {Object} mapCenter - Google LatLng object.
- * @returns {Array<Object>} Sorted array of shop objects with 'distance' property.
- */
 function sortShopsByDistanceGoogle(shops, mapCenter) {
     if (!google?.maps?.geometry?.spherical || !mapCenter || !shops) return shops;
     return shops.map(shop => {

@@ -183,3 +183,73 @@ function escapeHTML(str) {
     }
     return escapedStr;
 }
+
+
+
+
+
+
+// utils.js (or at the top of main.js if not already in utils.js)
+
+/**
+ * Sets a cookie.
+ * @param {string} name - The name of the cookie.
+ * @param {string} value - The value of the cookie.
+ * @param {number} [days] - Optional number of days until the cookie expires.
+ */
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "")  + expires + "; path=/; SameSite=Lax"; // Added SameSite
+    if (typeof DEBUG_UTILS_JS !== 'undefined' && DEBUG_UTILS_JS) {
+        console.log(`[utils.js_DEBUG] Cookie set: ${name}=${value}, expires in ${days} days`);
+    } else if (typeof DEBUG_MAIN_JS !== 'undefined' && DEBUG_MAIN_JS) { // Fallback if in main.js
+        console.log(`[main.js_DEBUG] Cookie set: ${name}=${value}, expires in ${days} days`);
+    }
+}
+
+/**
+ * Gets a cookie by name.
+ * @param {string} name - The name of the cookie.
+ * @returns {string|null} The cookie value or null if not found.
+ */
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) {
+            const value = c.substring(nameEQ.length, c.length);
+            if (typeof DEBUG_UTILS_JS !== 'undefined' && DEBUG_UTILS_JS) {
+                console.log(`[utils.js_DEBUG] Cookie get: ${name}=${value}`);
+            } else if (typeof DEBUG_MAIN_JS !== 'undefined' && DEBUG_MAIN_JS) {
+                 console.log(`[main.js_DEBUG] Cookie get: ${name}=${value}`);
+            }
+            return value;
+        }
+    }
+    if (typeof DEBUG_UTILS_JS !== 'undefined' && DEBUG_UTILS_JS) {
+        console.log(`[utils.js_DEBUG] Cookie get: ${name} not found`);
+    } else if (typeof DEBUG_MAIN_JS !== 'undefined' && DEBUG_MAIN_JS) {
+        console.log(`[main.js_DEBUG] Cookie get: ${name} not found`);
+    }
+    return null;
+}
+
+/**
+ * Erases a cookie by name.
+ * @param {string} name - The name of the cookie to erase.
+ */
+function eraseCookie(name) {
+    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    if (typeof DEBUG_UTILS_JS !== 'undefined' && DEBUG_UTILS_JS) {
+        console.log(`[utils.js_DEBUG] Cookie erased: ${name}`);
+    } else if (typeof DEBUG_MAIN_JS !== 'undefined' && DEBUG_MAIN_JS) {
+        console.log(`[main.js_DEBUG] Cookie erased: ${name}`);
+    }
+}

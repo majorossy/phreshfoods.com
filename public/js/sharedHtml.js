@@ -1,26 +1,32 @@
 // public/js/sharedHtml.js
 'use strict';
 
-/**
- * Generates HTML for star ratings.
- * @param {string|number} ratingStringOrNumber - The rating value.
- * @param {number} [reviewCount] - Optional number of reviews.
- * @returns {string} HTML string for star ratings.
- */
-function getStarRatingHTML(ratingStringOrNumber, reviewCount) {
-    const rating = parseFloat(ratingStringOrNumber);
-    if (ratingStringOrNumber === "N/A" || isNaN(rating) || rating < 0 || rating > 5) {
+function getStarRatingHTML(ratingValue, reviewCount) {
+    // ratingValue can now be a number directly from shop.placeDetails.rating
+    const rating = parseFloat(ratingValue);
+
+    if (isNaN(rating) || rating < 0 || rating > 5) {
+        // Check if ratingValue was "N/A" or empty, or if parsing failed
+        if (ratingValue === "N/A" || ratingValue === "" || ratingValue === null || ratingValue === undefined) {
+            return `<div class="flex items-center text-sm text-gray-500">No rating available</div>`;
+        }
+        // If it was something else unparseable, still show no rating
         return `<div class="flex items-center text-sm text-gray-500">No rating available</div>`;
     }
-    const numRating = parseFloat(rating.toFixed(1));
-    const displayRatingValue = numRating.toFixed(1);
-    const roundedForStarDisplay = Math.round(numRating * 2) / 2;
+
+    const displayRatingValue = rating.toFixed(1);
+    const roundedForStarDisplay = Math.round(rating * 2) / 2; // For half stars visual
 
     const starSVGPath = "M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z";
     let starsHTML = `<span class="inline-flex items-center">`;
     for (let i = 1; i <= 5; i++) {
-        let starClass = 'text-gray-300';
-        if (i <= roundedForStarDisplay) starClass = 'text-yellow-400';
+        let starClass = 'text-gray-300'; // Default empty star
+        if (i <= roundedForStarDisplay) { // Full star
+            starClass = 'text-yellow-400';
+        } else if (i - 0.5 === roundedForStarDisplay) { // Half star (not explicitly handled by this SVG, but logic is there)
+             // For actual half stars, you'd need a more complex SVG or two SVGs (one half, one full)
+            starClass = 'text-yellow-400'; // Treat as full for now, or use half-star SVG
+        }
         starsHTML += `<svg class="w-4 h-4 fill-current ${starClass}" viewBox="0 0 20 20"><path d="${starSVGPath}"/></svg>`;
     }
     starsHTML += `</span>`;
@@ -36,17 +42,13 @@ function getStarRatingHTML(ratingStringOrNumber, reviewCount) {
             </div>`;
 }
 
-/**
- * Generates HTML for visual star ratings (just stars).
- * @param {string|number} ratingStringOrNumber - The rating value.
- * @param {string} [starSizeClass='w-5 h-5'] - Tailwind classes for star size.
- * @returns {string} HTML string for stars.
- */
+
 function getStarsVisualHTML(ratingStringOrNumber, starSizeClass = 'w-5 h-5') {
     const rating = parseFloat(ratingStringOrNumber);
     if (ratingStringOrNumber === "N/A" || isNaN(rating) || rating < 0 || rating > 5) {
         return '<span class="text-sm text-gray-500">No rating</span>';
     }
+    // For purely visual, Math.round might be fine, or use the half-star logic if you have half-star SVGs
     const roundedForStarDisplay = Math.round(rating);
     const starSVGPath = "M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z";
     let starsHTML = `<span class="inline-flex items-center">`;
@@ -57,12 +59,6 @@ function getStarsVisualHTML(ratingStringOrNumber, starSizeClass = 'w-5 h-5') {
     return starsHTML;
 }
 
-/**
- * Generates HTML for a shop card or info window.
- * @param {Object} shop - The shop data object.
- * @param {string} [context='card'] - 'card' or 'infowindow'.
- * @returns {string} HTML string for the shop content.
- */
 function generateShopContentHTML(shop, context = 'card') {
     if (!shop) return '<p class="text-center p-4">Shop data unavailable.</p>';
     if (typeof escapeHTML !== 'function') {
@@ -70,7 +66,14 @@ function generateShopContentHTML(shop, context = 'card') {
         return '<p class="text-red-500">Error rendering shop (E02).</p>';
     }
 
-    const placeholderText = encodeURIComponent(shop.Name?.split(' ').slice(0, 2).join(' ') || 'Farm Stand');
+    // Prioritize data from shop.placeDetails if available, otherwise fall back to top-level shop properties (from sheet)
+    const displayName = shop.placeDetails?.name || shop.Name || 'Farm Stand';
+    const displayAddress = shop.placeDetails?.formatted_address || shop.Address || 'N/A';
+    const displayRating = shop.placeDetails?.rating !== undefined ? shop.placeDetails.rating : (shop.Rating !== "N/A" ? parseFloat(shop.Rating) : "N/A");
+    const displayReviewCount = shop.placeDetails?.user_ratings_total;
+    const displayWebsite = shop.placeDetails?.website || shop.Website;
+
+    const placeholderText = encodeURIComponent(displayName.split(' ').slice(0, 2).join(' ') || 'Farm Stand');
     const fallbackImageUrlCard = `https://placehold.co/400x250/E8DCC3/4A3B2C?text=${placeholderText}&font=inter`;
     const fallbackImageUrlBubble = `https://placehold.co/280x150/E8DCC3/4A3B2C?text=${placeholderText}&font=inter`;
 
@@ -81,25 +84,20 @@ function generateShopContentHTML(shop, context = 'card') {
     let finalImageHTML = '';
     if (context === 'card') {
         finalImageHTML = `<div class="aspect-w-16 aspect-h-9 sm:aspect-h-7 bg-gray-200">
-                            <img class="w-full h-full object-cover" loading="lazy" src="${actualImageUrl}" alt="Image of ${escapeHTML(shop.Name)}"
+                            <img class="w-full h-full object-cover" loading="lazy" src="${actualImageUrl}" alt="Image of ${escapeHTML(displayName)}"
                                  onerror="this.onerror=null; this.src='${fallbackImageUrlCard}';">
                           </div>`;
     } else if (context === 'infowindow') {
         if (shop.ImageOne && shop.ImageOne.trim()) {
             finalImageHTML = `<img class="w-full h-auto object-cover rounded-t-sm mb-1" style="max-height: 130px;"
-                                   src="${actualImageUrl}" alt="Image of ${escapeHTML(shop.Name)}"
+                                   src="${actualImageUrl}" alt="Image of ${escapeHTML(displayName)}"
                                    onerror="this.style.display='none';">`;
         }
     }
 
-    const ratingSource = shop.placeDetails;
-    const shopRating = (ratingSource && typeof ratingSource.rating === 'number')
-        ? ratingSource.rating
-        : (shop.Rating !== "N/A" ? shop.Rating : "N/A");
-    const shopReviewCount = ratingSource?.user_ratings_total;
-    let starsAndRatingHTML = getStarRatingHTML(shopRating, shopReviewCount);
+    let starsAndRatingHTML = getStarRatingHTML(displayRating, displayReviewCount);
 
-    const uniqueIdPart = shop.slug || shop.GoogleProfileID || (shop.Name ? shop.Name.replace(/[^a-zA-Z0-9]/g, '') : 'unknown') + Math.random().toString(16).slice(2);
+    const uniqueIdPart = shop.slug || shop.GoogleProfileID || (displayName.replace(/[^a-zA-Z0-9]/g, '') || 'unknown') + Math.random().toString(16).slice(2);
     const ratingContainerId = `rating-for-${uniqueIdPart}-${context}`;
 
     const iconMarginClass = (context === 'infowindow') ? "mr-1" : "mr-1.5";
@@ -109,8 +107,8 @@ function generateShopContentHTML(shop, context = 'card') {
     const detailRowsOuterDivClasses = (context === 'infowindow') ? "space-y-0.5 mt-1" : "space-y-1 mt-1.5";
 
     let detailRowsHTML = `<div class="${detailRowsOuterDivClasses}">`;
-    if (shop.Address && shop.Address !== 'N/A') {
-        detailRowsHTML += `<div class="${rowContainerClasses}" title="${escapeHTML(shop.Address)}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg><span class="${rowTextClasses}">${escapeHTML(shop.Address)}</span></div>`;
+    if (displayAddress && displayAddress !== 'N/A') {
+        detailRowsHTML += `<div class="${rowContainerClasses}" title="${escapeHTML(displayAddress)}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg><span class="${rowTextClasses}">${escapeHTML(displayAddress)}</span></div>`;
     }
 
     let distanceString = '';
@@ -121,23 +119,21 @@ function generateShopContentHTML(shop, context = 'card') {
         detailRowsHTML += `<div class="${rowContainerClasses}" title="${distanceString}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg><span class="${rowTextClasses} text-blue-600 font-medium">${distanceString}</span></div>`;
     }
 
-    if (shop.Phone) {
+    if (shop.Phone) { // Phone is usually from sheet, not reliably from Places Basic Details
         detailRowsHTML += `<div class="${rowContainerClasses}" title="${escapeHTML(shop.Phone)}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path></svg><a href="tel:${shop.Phone}" onclick="event.stopPropagation();" class="${rowTextClasses} text-blue-600 hover:text-blue-800 hover:underline"><span class="truncate">${escapeHTML(shop.Phone)}</span></a></div>`;
     }
-    if (shop.Website && shop.Website.trim() && !shop.Website.includes('googleusercontent.com')) {
-        let displayWebsite = shop.Website; try { const urlObject = new URL(displayWebsite.startsWith('http') ? displayWebsite : `http://${displayWebsite}`); displayWebsite = urlObject.hostname.replace(/^www\./,''); const maxLen = context === 'infowindow' ? 22 : 30; if(displayWebsite.length > maxLen) displayWebsite = displayWebsite.substring(0,maxLen-3)+"...";} catch(e){ const maxLen = context === 'infowindow' ? 22 : 30; if(displayWebsite.length > maxLen) displayWebsite = displayWebsite.substring(0,maxLen-3)+"...";}
-        detailRowsHTML += `<div class="${rowContainerClasses}" title="${escapeHTML(shop.Website)}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-4-4a2 2 0 012.828-2.828l3 3a2 2 0 010 2.828l-2.086 2.086a.5.5 0 01-.707-.707L11.172 8.172l1.414-1.414-3-3a.5.5 0 01.707-.707l3 3zm4.707-1.414a3 3 0 00-4.242 0l-3 3a3 3 0 000 4.242l4 4a3 3 0 004.242 0l3-3a3 3 0 000-4.242l-3-3z" clip-rule="evenodd"></path></svg><a href="${shop.Website.startsWith('http')?shop.Website:`http://${shop.Website}`}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="${rowTextClasses} text-blue-600 hover:text-blue-800 hover:underline"><span class="truncate">${escapeHTML(displayWebsite)}</span></a></div>`;
+    if (displayWebsite && displayWebsite.trim() && !displayWebsite.includes('googleusercontent.com')) {
+        let cleanDisplayWebsite = displayWebsite; try { const urlObject = new URL(displayWebsite.startsWith('http') ? displayWebsite : `http://${displayWebsite}`); cleanDisplayWebsite = urlObject.hostname.replace(/^www\./,''); const maxLen = context === 'infowindow' ? 22 : 30; if(cleanDisplayWebsite.length > maxLen) cleanDisplayWebsite = cleanDisplayWebsite.substring(0,maxLen-3)+"...";} catch(e){ const maxLen = context === 'infowindow' ? 22 : 30; if(cleanDisplayWebsite.length > maxLen) cleanDisplayWebsite = cleanDisplayWebsite.substring(0,maxLen-3)+"...";}
+        detailRowsHTML += `<div class="${rowContainerClasses}" title="${escapeHTML(displayWebsite)}"><svg class="${iconClasses}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0l-4-4a2 2 0 012.828-2.828l3 3a2 2 0 010 2.828l-2.086 2.086a.5.5 0 01-.707-.707L11.172 8.172l1.414-1.414-3-3a.5.5 0 01.707-.707l3 3zm4.707-1.414a3 3 0 00-4.242 0l-3 3a3 3 0 000 4.242l4 4a3 3 0 004.242 0l3-3a3 3 0 000-4.242l-3-3z" clip-rule="evenodd"></path></svg><a href="${displayWebsite.startsWith('http')?displayWebsite:`http://${displayWebsite}`}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();" class="${rowTextClasses} text-blue-600 hover:text-blue-800 hover:underline"><span class="truncate">${escapeHTML(cleanDisplayWebsite)}</span></a></div>`;
     }
     detailRowsHTML += '</div>';
 
     let directionsButtonHTML = '';
     if (context === 'infowindow') {
-        const shopIdentifier = shop.slug || shop.GoogleProfileID || (shop.Name ? shop.Name.replace(/[^a-zA-Z0-9-]/g, '') : 'unknown') + Math.random().toString(16).slice(2);
+        const shopIdentifier = shop.slug || shop.GoogleProfileID || uniqueIdPart; // Use a consistent identifier
         if (shopIdentifier) {
             const safeIdentifier = String(shopIdentifier).replace(/'/g, "\\'");
             directionsButtonHTML = `<button onclick="handleInfoWindowDirectionsClickById('${safeIdentifier}')" class="infowindow-directions-button mt-2 w-full text-xs bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded-sm transition-colors">Directions</button>`;
-        } else {
-             directionsButtonHTML = '';
         }
     }
 
@@ -148,7 +144,7 @@ function generateShopContentHTML(shop, context = 'card') {
 
     const textAndContactContent = `
         <div class="${textContentPaddingClass} flex-grow flex flex-col">
-            <h2 class="${nameSizeClass} font-semibold text-gray-800 leading-tight truncate ${nameMarginClass}" title="${escapeHTML(shop.Name)}">${escapeHTML(shop.Name)}</h2>
+            <h2 class="${nameSizeClass} font-semibold text-gray-800 leading-tight truncate ${nameMarginClass}" title="${escapeHTML(displayName)}">${escapeHTML(displayName)}</h2>
             <div id="${ratingContainerId}" class="shop-card-rating ${ratingMarginClass}">${starsAndRatingHTML}</div>
             ${detailRowsHTML}
             ${directionsButtonHTML}
