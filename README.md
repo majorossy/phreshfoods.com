@@ -10,3 +10,13 @@ docker build -t maine-farm-finder-app .
 
 # 4. Run the new image (interactively to see logs)
 docker run -p 3000:3000 --name farm-finder-container maine-farm-finder-app
+
+
+
+node processSheetData.js
+
+
+
+http://localhost:3000/api/cache/flush-and-refresh 
+
+

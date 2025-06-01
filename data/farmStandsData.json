@@ -1,0 +1,2071 @@
+[
+  {
+    "Name": "Bradbury Mountain Berry Farm",
+    "Address": "429 Elmwood Rd, Pownal, ME 04069, USA",
+    "City": "N/A",
+    "Zip": "04069",
+    "Rating": "4.7",
+    "Phone": "+1 207-303-7339",
+    "Website": "https://www.facebook.com/BradburyMountainFarm",
+    "GoogleProfileID": "ChIJ3WfiSf18skwRXIea28UiQg8",
+    "slug": "bradbury-mountain-berry-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "BradburyMountainFarm",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "bradburymountainberryfarm_outside.jpg",
+    "ImageTwo": "bradburymountainberryfarm_inside1.jpg",
+    "ImageThree": "bradburymountainberryfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.8908497,
+    "lng": -70.18091919999999,
+    "placeDetails": {
+      "name": "Bradbury Mountain Berry Farm",
+      "formatted_address": "429 Elmwood Rd, Pownal, ME 04069, USA",
+      "rating": 4.7,
+      "user_ratings_total": 40,
+      "website": "https://www.facebook.com/BradburyMountainFarm",
+      "business_status": "OPERATIONAL"
+    }
+  },
+  {
+    "Name": "Chase Farms",
+    "Address": "1488 N Berwick Rd, Wells, ME 04090, USA",
+    "City": "N/A",
+    "Zip": "04090",
+    "Rating": "4.6",
+    "Phone": "+1 207-646-7888",
+    "Website": "http://www.chasefarmswells.com/",
+    "GoogleProfileID": "ChIJdXqAWB6n4okRsKCdG1NRCMk",
+    "slug": "chase-farms",
+    "TwitterHandle": "",
+    "FacebookPageID": "ChaseFarmsWellsMe",
+    "InstagramUsername": "chasefarmswells",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "https://www.instagram.com/chasefarmswells",
+    "ImageOne": "chasefarm_outside.jpg",
+    "ImageTwo": "chasefarm_inside1.jpg",
+    "ImageThree": "chasefarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.3072509,
+    "lng": -70.67868039999999,
+    "placeDetails": {
+      "name": "Chase Farms",
+      "formatted_address": "1488 N Berwick Rd, Wells, ME 04090, USA",
+      "rating": 4.6,
+      "user_ratings_total": 192,
+      "website": "http://www.chasefarmswells.com/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1700"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1700"
+            },
+            "open": {
+              "day": 1,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1700"
+            },
+            "open": {
+              "day": 2,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1700"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1700"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1700"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1700"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 9:00 AM – 5:00 PM",
+          "Tuesday: 9:00 AM – 5:00 PM",
+          "Wednesday: 9:00 AM – 5:00 PM",
+          "Thursday: 9:00 AM – 5:00 PM",
+          "Friday: 9:00 AM – 5:00 PM",
+          "Saturday: 9:00 AM – 5:00 PM",
+          "Sunday: 9:00 AM – 5:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Farmer's Daughters Farm Stand",
+    "Address": "East Waterboro, ME 04030, USA",
+    "City": "N/A",
+    "Zip": "04030",
+    "Rating": "4.7",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJ38mRVK7AskwRJiCNQx8lK2U",
+    "slug": "farmers-daughters-farm-stand",
+    "TwitterHandle": "",
+    "FacebookPageID": "Anderson-Farms-Farmers-Daughters-Farm-Stand-100064618695038",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "farmersdaughtersfarm_outside.jpg",
+    "ImageTwo": "farmersdaughtersfarm_inside1.jpg",
+    "ImageThree": "farmersdaughtersfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.5708961,
+    "lng": -70.67724439999999,
+    "placeDetails": {
+      "name": "Farmer's Daughters Farm Stand",
+      "formatted_address": "East Waterboro, ME 04030, USA",
+      "rating": 4.7,
+      "user_ratings_total": 33,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "1100"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "1100"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 11:00 AM – 6:00 PM",
+          "Tuesday: 11:00 AM – 6:00 PM",
+          "Wednesday: 11:00 AM – 6:00 PM",
+          "Thursday: 11:00 AM – 6:00 PM",
+          "Friday: 11:00 AM – 6:00 PM",
+          "Saturday: 11:00 AM – 6:00 PM",
+          "Sunday: 11:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Five Acre Farm Stand",
+    "Address": "1 Bryant Ln, Kennebunkport, ME 04046, USA",
+    "City": "N/A",
+    "Zip": "04046",
+    "Rating": "4.9",
+    "Phone": "+1 207-286-9848",
+    "Website": "",
+    "GoogleProfileID": "ChIJxxOuhPGoskwRQHg7bP4jazk",
+    "slug": "five-acre-farm-stand",
+    "TwitterHandle": "",
+    "FacebookPageID": "fiveacrefarmmaine",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "fiveacrefarm_outside.jpg",
+    "ImageTwo": "fiveacrefarm_inside1.jpg",
+    "ImageThree": "fiveacrefarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.41772840000001,
+    "lng": -70.40927119999999,
+    "placeDetails": {
+      "name": "Five Acre Farm Stand",
+      "formatted_address": "1 Bryant Ln, Kennebunkport, ME 04046, USA",
+      "rating": 4.9,
+      "user_ratings_total": 55,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 9:00 AM – 6:00 PM",
+          "Tuesday: 9:00 AM – 6:00 PM",
+          "Wednesday: 9:00 AM – 6:00 PM",
+          "Thursday: 9:00 AM – 6:00 PM",
+          "Friday: 9:00 AM – 6:00 PM",
+          "Saturday: 9:00 AM – 6:00 PM",
+          "Sunday: 9:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Frith Farm",
+    "Address": "61 Ash Swamp Rd, Scarborough, ME 04074, USA",
+    "City": "N/A",
+    "Zip": "04074",
+    "Rating": "4.9",
+    "Phone": "",
+    "Website": "http://www.frithfarm.net/",
+    "GoogleProfileID": "ChIJXzZrzriiskwRJNXq0qmhN2I",
+    "slug": "frith-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "FrithFarm",
+    "InstagramUsername": "frithfarm",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "https://www.instagram.com/frithfarm/",
+    "ImageOne": "frithfarm_outside.jpg",
+    "ImageTwo": "frithfarm_inside1.jpg",
+    "ImageThree": "frithfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.5775418,
+    "lng": -70.4255233,
+    "placeDetails": {
+      "name": "Frith Farm",
+      "formatted_address": "61 Ash Swamp Rd, Scarborough, ME 04074, USA",
+      "rating": 4.9,
+      "user_ratings_total": 64,
+      "website": "http://www.frithfarm.net/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1900"
+            },
+            "open": {
+              "day": 0,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1900"
+            },
+            "open": {
+              "day": 1,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1900"
+            },
+            "open": {
+              "day": 2,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1900"
+            },
+            "open": {
+              "day": 3,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1900"
+            },
+            "open": {
+              "day": 4,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1900"
+            },
+            "open": {
+              "day": 5,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1900"
+            },
+            "open": {
+              "day": 6,
+              "time": "0700"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 7:00 AM – 7:00 PM",
+          "Tuesday: 7:00 AM – 7:00 PM",
+          "Wednesday: 7:00 AM – 7:00 PM",
+          "Thursday: 7:00 AM – 7:00 PM",
+          "Friday: 7:00 AM – 7:00 PM",
+          "Saturday: 7:00 AM – 7:00 PM",
+          "Sunday: 7:00 AM – 7:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Gile's Family Farm",
+    "Address": "139 Waterboro Rd, Alfred, ME 04002, USA",
+    "City": "N/A",
+    "Zip": "04002",
+    "Rating": "4.7",
+    "Phone": "+1 207-324-2944",
+    "Website": "https://www.facebook.com/gilesfamilyfarm/",
+    "GoogleProfileID": "ChIJEyAiuvy3skwRV2ps1IM62Z8",
+    "slug": "giles-family-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "gilesfamilyfarm/",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "gilesfamilyfarm_outside.jpg",
+    "ImageTwo": "gilesfamilyfarm_inside1.jpg",
+    "ImageThree": "gilesfamilyfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": false,
+    "chicken": false,
+    "turkey": true,
+    "duck": false,
+    "eggs": false,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": true,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": true,
+    "cucumbers": false,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": false,
+    "lat": 43.4868266,
+    "lng": -70.718718,
+    "placeDetails": {
+      "name": "Gile's Family Farm",
+      "formatted_address": "139 Waterboro Rd, Alfred, ME 04002, USA",
+      "rating": 4.7,
+      "user_ratings_total": 188,
+      "website": "https://www.facebook.com/gilesfamilyfarm/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": false,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1600"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1700"
+            },
+            "open": {
+              "day": 1,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1700"
+            },
+            "open": {
+              "day": 2,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1700"
+            },
+            "open": {
+              "day": 3,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1700"
+            },
+            "open": {
+              "day": 4,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1700"
+            },
+            "open": {
+              "day": 5,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1600"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 8:00 AM – 5:00 PM",
+          "Tuesday: 8:00 AM – 5:00 PM",
+          "Wednesday: 8:00 AM – 5:00 PM",
+          "Thursday: 8:00 AM – 5:00 PM",
+          "Friday: 8:00 AM – 5:00 PM",
+          "Saturday: 9:00 AM – 4:00 PM",
+          "Sunday: 9:00 AM – 4:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Girard Farm",
+    "Address": "385 Main St, Waterboro, ME 04087, USA",
+    "City": "N/A",
+    "Zip": "04087",
+    "Rating": "4.9",
+    "Phone": "+1 207-332-4814",
+    "Website": "http://www.girardfarm.com/",
+    "GoogleProfileID": "ChIJS24UKym6skwRamWKtemXlAQ",
+    "slug": "girard-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "girardfarm_outside.jpg",
+    "ImageTwo": "girardfarm_inside1.jpg",
+    "ImageThree": "girardfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.5656196,
+    "lng": -70.692078,
+    "placeDetails": {
+      "name": "Girard Farm",
+      "formatted_address": "385 Main St, Waterboro, ME 04087, USA",
+      "rating": 4.9,
+      "user_ratings_total": 21,
+      "website": "http://www.girardfarm.com/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": false,
+        "periods": [
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "1200"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "1200"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "1200"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "1200"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1300"
+            },
+            "open": {
+              "day": 6,
+              "time": "0800"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: Closed",
+          "Tuesday: 12:00 – 6:00 PM",
+          "Wednesday: 12:00 – 6:00 PM",
+          "Thursday: 12:00 – 6:00 PM",
+          "Friday: 12:00 – 6:00 PM",
+          "Saturday: 8:00 AM – 1:00 PM",
+          "Sunday: Closed"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Green Spark Farm",
+    "Address": "316 Fowler Rd, Cape Elizabeth, ME 04107, USA",
+    "City": "N/A",
+    "Zip": "04107",
+    "Rating": "5",
+    "Phone": "+1 207-799-4784",
+    "Website": "https://greensparkfarm.com/",
+    "GoogleProfileID": "ChIJvbqZ3OifskwRvd8o1loZdm8",
+    "slug": "green-spark-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "Greensparkfarm",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "greensparkfarm_outside.jpg",
+    "ImageTwo": "greensparkfarm_inside1.jpg",
+    "ImageThree": "greensparkfarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": true,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.57753639999999,
+    "lng": -70.24637249999999,
+    "placeDetails": {
+      "name": "Green Spark Farm",
+      "formatted_address": "316 Fowler Rd, Cape Elizabeth, ME 04107, USA",
+      "rating": 5,
+      "user_ratings_total": 10,
+      "website": "https://greensparkfarm.com/",
+      "business_status": "OPERATIONAL"
+    }
+  },
+  {
+    "Name": "Ives Berry Farm",
+    "Address": "133 Flag Pond Rd, Saco, ME 04072, USA",
+    "City": "N/A",
+    "Zip": "04072",
+    "Rating": "5",
+    "Phone": "+1 603-455-5098",
+    "Website": "",
+    "GoogleProfileID": "ChIJ7bvnOyCjskwRin4OFrcYbJI",
+    "slug": "ives-berry-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "100064767608374",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "ivesberryfarm_outside.jpg",
+    "ImageTwo": "ivesberryfarm_inside1.jpg",
+    "ImageThree": "ivesberryfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.5547619,
+    "lng": -70.420734,
+    "placeDetails": {
+      "name": "Ives Berry Farm",
+      "formatted_address": "133 Flag Pond Rd, Saco, ME 04072, USA",
+      "rating": 5,
+      "user_ratings_total": 7,
+      "business_status": "OPERATIONAL"
+    }
+  },
+  {
+    "Name": "King's Farm",
+    "Address": "44 County Rd, Gorham, ME 04038, USA",
+    "City": "N/A",
+    "Zip": "04038",
+    "Rating": "3.8",
+    "Phone": "+1 207-839-5844",
+    "Website": "",
+    "GoogleProfileID": "ChIJxcrpXWWXskwRb1M_0Tbs7SU",
+    "slug": "kings-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "KingsFarmMarket",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "kingsfarm_outside.jpg",
+    "ImageTwo": "kingsfarm_inside1.jpg",
+    "ImageThree": "kingsfarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.6405944,
+    "lng": -70.4152532,
+    "placeDetails": {
+      "name": "King's Farm",
+      "formatted_address": "44 County Rd, Gorham, ME 04038, USA",
+      "rating": 3.8,
+      "user_ratings_total": 72,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 9:00 AM – 6:00 PM",
+          "Tuesday: 9:00 AM – 6:00 PM",
+          "Wednesday: 9:00 AM – 6:00 PM",
+          "Thursday: 9:00 AM – 6:00 PM",
+          "Friday: 9:00 AM – 6:00 PM",
+          "Saturday: 9:00 AM – 6:00 PM",
+          "Sunday: 9:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Lavigne Strawberry Farm",
+    "Address": "158 Whichers Mill Rd, Sanford, ME 04073, USA",
+    "City": "N/A",
+    "Zip": "04073",
+    "Rating": "4.7",
+    "Phone": "+1 207-324-5497",
+    "Website": "https://www.facebook.com/lavignesstrawberryfarm/",
+    "GoogleProfileID": "ChIJBwu6V_izskwRK0QEnlSIANg",
+    "slug": "lavigne-strawberry-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "lavignesstrawberryfarm",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "lavignestrawberryfarm_outside.jpg",
+    "ImageTwo": "lavignestrawberryfarm_inside1.jpg",
+    "ImageThree": "lavignestrawberryfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.4095017,
+    "lng": -70.6692006,
+    "placeDetails": {
+      "name": "Lavigne Strawberry Farm",
+      "formatted_address": "158 Whichers Mill Rd, Sanford, ME 04073, USA",
+      "rating": 4.7,
+      "user_ratings_total": 67,
+      "website": "https://www.facebook.com/lavignesstrawberryfarm/",
+      "business_status": "OPERATIONAL"
+    }
+  },
+  {
+    "Name": "Leary Farm",
+    "Address": "269 Flag Pond Rd, 1006 Portland Rd, Saco, ME 04072, USA",
+    "City": "N/A",
+    "Zip": "04072",
+    "Rating": "4.8",
+    "Phone": "+1 207-807-2839",
+    "Website": "",
+    "GoogleProfileID": "ChIJBSN_QyejskwR3gMcCoeSrAo",
+    "slug": "leary-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "learyfarmsaco",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "learyfarm_outside.jpg",
+    "ImageTwo": "learyfarm_inside1.jpg",
+    "ImageThree": "learyfarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.55935149999999,
+    "lng": -70.4407841,
+    "placeDetails": {
+      "name": "Leary Farm",
+      "formatted_address": "269 Flag Pond Rd, 1006 Portland Rd, Saco, ME 04072, USA",
+      "rating": 4.8,
+      "user_ratings_total": 38,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "1000"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 10:00 AM – 6:00 PM",
+          "Tuesday: 10:00 AM – 6:00 PM",
+          "Wednesday: 10:00 AM – 6:00 PM",
+          "Thursday: 10:00 AM – 6:00 PM",
+          "Friday: 10:00 AM – 6:00 PM",
+          "Saturday: 10:00 AM – 6:00 PM",
+          "Sunday: 10:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Libby & Son U Picks",
+    "Address": "86 Sawyer Mountain Rd, Limerick, ME 04048, USA",
+    "City": "N/A",
+    "Zip": "04048",
+    "Rating": "4.4",
+    "Phone": "+1 207-793-4749",
+    "Website": "http://www.libbysonupicks.com/",
+    "GoogleProfileID": "ChIJLS1MGq7oskwRubfMUZV8fs0",
+    "slug": "libby-and-son-u-picks",
+    "TwitterHandle": "libbyupicks",
+    "FacebookPageID": "libbyupicks",
+    "InstagramUsername": "libbyupicks",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "https://www.instagram.com/libbyupicks/",
+    "ImageOne": "libbysonfarm_outside.jpg",
+    "ImageTwo": "testimage1.jpg",
+    "ImageThree": "testimage1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.72394999999999,
+    "lng": -70.76173059999999,
+    "placeDetails": {
+      "name": "Libby & Son U Picks",
+      "formatted_address": "86 Sawyer Mountain Rd, Limerick, ME 04048, USA",
+      "rating": 4.4,
+      "user_ratings_total": 429,
+      "website": "http://www.libbysonupicks.com/",
+      "business_status": "OPERATIONAL"
+    }
+  },
+  {
+    "Name": "Orchard Ridge Farm",
+    "Address": "236 Sebago Lake Rd, Gorham, ME 04038, USA",
+    "City": "N/A",
+    "Zip": "04038",
+    "Rating": "4.6",
+    "Phone": "+1 207-712-1433",
+    "Website": "http://www.orchardridge.farm/",
+    "GoogleProfileID": "ChIJxQk0ZnSSskwRXpVTIj305KY",
+    "slug": "orchard-ridge-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "OrchardRidgeFarm",
+    "InstagramUsername": "orchardridgemaine",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "https://www.instagram.com/orchardridgemaine/",
+    "ImageOne": "orchardridgefarm_outside.jpg",
+    "ImageTwo": "orchardridgefarm_inside1.jpg",
+    "ImageThree": "orchardridgefarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.74998679999999,
+    "lng": -70.4631656,
+    "placeDetails": {
+      "name": "Orchard Ridge Farm",
+      "formatted_address": "236 Sebago Lake Rd, Gorham, ME 04038, USA",
+      "rating": 4.6,
+      "user_ratings_total": 242,
+      "website": "http://www.orchardridge.farm/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "0800"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1900"
+            },
+            "open": {
+              "day": 6,
+              "time": "0800"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 8:00 AM – 6:00 PM",
+          "Tuesday: Closed",
+          "Wednesday: 8:00 AM – 6:00 PM",
+          "Thursday: 8:00 AM – 6:00 PM",
+          "Friday: 8:00 AM – 6:00 PM",
+          "Saturday: 8:00 AM – 7:00 PM",
+          "Sunday: 8:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Randall Orchard Farm Stand",
+    "Address": "1 Randall Rd, Standish, ME 04084, USA",
+    "City": "N/A",
+    "Zip": "04084",
+    "Rating": "4.9",
+    "Phone": "+1 207-642-3500",
+    "Website": "https://www.randallorchards.com/technology",
+    "GoogleProfileID": "ChIJeSHz4Q-TskwRjXbA-3NjHxw",
+    "slug": "randall-orchard-farm-stand",
+    "TwitterHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "randallorchardfarm_outside.jpg",
+    "ImageTwo": "randallorchardfarm_inside1.jpg",
+    "ImageThree": "randallorchardfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.7287597,
+    "lng": -70.5381578,
+    "placeDetails": {
+      "name": "Randall Orchard Farm Stand",
+      "formatted_address": "1 Randall Rd, Standish, ME 04084, USA",
+      "rating": 4.9,
+      "user_ratings_total": 10,
+      "website": "https://www.randallorchards.com/technology",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": false,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1600"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1600"
+            },
+            "open": {
+              "day": 1,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1600"
+            },
+            "open": {
+              "day": 2,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1600"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1600"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1600"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1600"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 9:00 AM – 4:00 PM",
+          "Tuesday: 9:00 AM – 4:00 PM",
+          "Wednesday: 9:00 AM – 4:00 PM",
+          "Thursday: 9:00 AM – 4:00 PM",
+          "Friday: 9:00 AM – 4:00 PM",
+          "Saturday: 9:00 AM – 4:00 PM",
+          "Sunday: 9:00 AM – 4:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Saco River Farms",
+    "Address": "29 Weeman Rd, Steep Falls, ME 04085, USA",
+    "City": "N/A",
+    "Zip": "04085",
+    "Rating": "4.8",
+    "Phone": "+1 207-642-9090",
+    "Website": "http://sacoriverfarms.com/",
+    "GoogleProfileID": "ChIJub80TpHtskwRZrsN15UDYVk",
+    "slug": "saco-river-farms",
+    "TwitterHandle": "",
+    "FacebookPageID": "SacoRiverFarms",
+    "InstagramUsername": "sacoriverfarms",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "https://www.instagram.com/sacoriverfarms/",
+    "ImageOne": "sacoriver_outside.jpg",
+    "ImageTwo": "sacoriver_inside1.jpg",
+    "ImageThree": "sacoriver_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.7372039,
+    "lng": -70.64489139999999,
+    "placeDetails": {
+      "name": "Saco River Farms",
+      "formatted_address": "29 Weeman Rd, Steep Falls, ME 04085, USA",
+      "rating": 4.8,
+      "user_ratings_total": 19,
+      "website": "http://sacoriverfarms.com/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: Closed",
+          "Tuesday: Closed",
+          "Wednesday: 9:00 AM – 6:00 PM",
+          "Thursday: 9:00 AM – 6:00 PM",
+          "Friday: 9:00 AM – 6:00 PM",
+          "Saturday: 9:00 AM – 6:00 PM",
+          "Sunday: 9:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Shady Brook Farm",
+    "Address": "10 W Loop Rd, Biddeford, ME 04005, USA",
+    "City": "N/A",
+    "Zip": "04005",
+    "Rating": "4.9",
+    "Phone": "+1 207-282-2119",
+    "Website": "",
+    "GoogleProfileID": "ChIJ_wyigOulskwRLfTMDY8ApSc",
+    "slug": "shady-brook-farm",
+    "TwitterHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "shadybrookfarm_outside.jpg",
+    "ImageTwo": "shadybrookfarm_inside1.jpg",
+    "ImageThree": "shadybrookfarm_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.4652598,
+    "lng": -70.44361359999999,
+    "placeDetails": {
+      "name": "Shady Brook Farm",
+      "formatted_address": "10 W Loop Rd, Biddeford, ME 04005, USA",
+      "rating": 4.9,
+      "user_ratings_total": 16,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "1200"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "1000"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "1000"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 10:00 AM – 6:00 PM",
+          "Tuesday: 10:00 AM – 6:00 PM",
+          "Wednesday: 12:00 – 6:00 PM",
+          "Thursday: 10:00 AM – 6:00 PM",
+          "Friday: 10:00 AM – 6:00 PM",
+          "Saturday: 10:00 AM – 6:00 PM",
+          "Sunday: 10:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Spillers' Farm Store",
+    "Address": "1054 Branch Rd, Wells, ME 04090, USA",
+    "City": "N/A",
+    "Zip": "04090",
+    "Rating": "4.8",
+    "Phone": "+1 207-985-3383",
+    "Website": "http://www.spillersfarmstore.com/",
+    "GoogleProfileID": "ChIJo9tsfoeyskwRFvUa4cuH0_M",
+    "slug": "spillers-farm-store",
+    "TwitterHandle": "",
+    "FacebookPageID": "SpillersFarmStore",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "spillersfarm_outside.jpg",
+    "ImageTwo": "spillersfarm_inside1.jpg",
+    "ImageThree": "spillersfarm_inside1.jpg",
+    "beef": false,
+    "pork": false,
+    "lamb": false,
+    "chicken": false,
+    "turkey": false,
+    "duck": false,
+    "eggs": false,
+    "corn": false,
+    "carrots": false,
+    "garlic": false,
+    "onions": false,
+    "potatoes": false,
+    "lettus": false,
+    "spinach": false,
+    "squash": false,
+    "tomatoes": false,
+    "peppers": false,
+    "cucumbers": false,
+    "zucchini": false,
+    "strawberries": false,
+    "blueberries": false,
+    "lat": 43.364804,
+    "lng": -70.606973,
+    "placeDetails": {
+      "name": "Spillers' Farm Store",
+      "formatted_address": "1054 Branch Rd, Wells, ME 04090, USA",
+      "rating": 4.8,
+      "user_ratings_total": 91,
+      "website": "http://www.spillersfarmstore.com/",
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": true,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1800"
+            },
+            "open": {
+              "day": 0,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1800"
+            },
+            "open": {
+              "day": 1,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1800"
+            },
+            "open": {
+              "day": 2,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1800"
+            },
+            "open": {
+              "day": 3,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1800"
+            },
+            "open": {
+              "day": 4,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1800"
+            },
+            "open": {
+              "day": 5,
+              "time": "0700"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1800"
+            },
+            "open": {
+              "day": 6,
+              "time": "0700"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 7:00 AM – 6:00 PM",
+          "Tuesday: 7:00 AM – 6:00 PM",
+          "Wednesday: 7:00 AM – 6:00 PM",
+          "Thursday: 7:00 AM – 6:00 PM",
+          "Friday: 7:00 AM – 6:00 PM",
+          "Saturday: 7:00 AM – 6:00 PM",
+          "Sunday: 7:00 AM – 6:00 PM"
+        ]
+      }
+    }
+  },
+  {
+    "Name": "Uncle's Farm Stand",
+    "Address": "897 Hollis Rd, Hollis, ME 04042, USA",
+    "City": "N/A",
+    "Zip": "04042",
+    "Rating": "4.8",
+    "Phone": "+1 207-247-3618",
+    "Website": "",
+    "GoogleProfileID": "ChIJgUq6snK_skwRUVsFGM_FOQE",
+    "slug": "uncles-farm-stand",
+    "TwitterHandle": "",
+    "FacebookPageID": "Uncles-Farm-Stand-100064667826149",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "unclesfar_outside.jpg",
+    "ImageTwo": "unclesfar_inside1.jpg",
+    "ImageThree": "unclesfar_inside1.jpg",
+    "beef": true,
+    "pork": true,
+    "lamb": true,
+    "chicken": true,
+    "turkey": true,
+    "duck": true,
+    "eggs": true,
+    "corn": true,
+    "carrots": true,
+    "garlic": true,
+    "onions": true,
+    "potatoes": true,
+    "lettus": true,
+    "spinach": true,
+    "squash": true,
+    "tomatoes": true,
+    "peppers": true,
+    "cucumbers": true,
+    "zucchini": true,
+    "strawberries": true,
+    "blueberries": true,
+    "lat": 43.58403839999999,
+    "lng": -70.63089,
+    "placeDetails": {
+      "name": "Uncle's Farm Stand",
+      "formatted_address": "897 Hollis Rd, Hollis, ME 04042, USA",
+      "rating": 4.8,
+      "user_ratings_total": 25,
+      "business_status": "OPERATIONAL",
+      "opening_hours": {
+        "open_now": false,
+        "periods": [
+          {
+            "close": {
+              "day": 0,
+              "time": "1600"
+            },
+            "open": {
+              "day": 0,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 1,
+              "time": "1600"
+            },
+            "open": {
+              "day": 1,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 2,
+              "time": "1600"
+            },
+            "open": {
+              "day": 2,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 3,
+              "time": "1600"
+            },
+            "open": {
+              "day": 3,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 4,
+              "time": "1600"
+            },
+            "open": {
+              "day": 4,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 5,
+              "time": "1600"
+            },
+            "open": {
+              "day": 5,
+              "time": "0900"
+            }
+          },
+          {
+            "close": {
+              "day": 6,
+              "time": "1600"
+            },
+            "open": {
+              "day": 6,
+              "time": "0900"
+            }
+          }
+        ],
+        "weekday_text": [
+          "Monday: 9:00 AM – 4:00 PM",
+          "Tuesday: 9:00 AM – 4:00 PM",
+          "Wednesday: 9:00 AM – 4:00 PM",
+          "Thursday: 9:00 AM – 4:00 PM",
+          "Friday: 9:00 AM – 4:00 PM",
+          "Saturday: 9:00 AM – 4:00 PM",
+          "Sunday: 9:00 AM – 4:00 PM"
+        ]
+      }
+    }
+  }
+]
