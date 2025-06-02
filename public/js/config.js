@@ -15,6 +15,8 @@ const USE_CUSTOM_MAP_STYLE = false; // Set to true to use maineLicensePlate, fal
 const LAST_SEARCHED_LOCATION_KEY = 'farmStandFinder_lastSearchedLocation';
 const LAST_SELECTED_RADIUS_KEY = 'farmStandFinder_lastSelectedRadius';
 
+const MAP_ID = '6c1bbba6c5f48ca2beb388ad'
+
 const LAST_SEARCHED_LOCATION_COOKIE_NAME = 'farmStandFinder_lastLocation';
 const COOKIE_EXPIRY_DAYS = 30; // Cookie will last for 30 days
 

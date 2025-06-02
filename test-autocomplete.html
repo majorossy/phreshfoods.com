@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classic Places Autocomplete Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #autocompleteInput { width: 100%; max-width: 400px; padding: 8px; margin-bottom: 15px; border: 1px solid #ccc; }
+        pre { background-color: #f0f0f0; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; word-break: break-all; }
+        #map { height: 300px; width: 100%; max-width: 400px; border: 1px solid #ccc; margin-bottom: 15px; background-color: #e0e0e0; text-align: center; padding-top: 20px; }
+    </style>
+
+    <!-- Google Maps JavaScript API - Make sure 'places' library is included -->
+    <!-- initMap is the callback -->
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&loading=async&libraries=places,maps&callback=initMap">
+        
+    </script>
+</head>
+<body>
+
+    <h1>Classic `google.maps.places.Autocomplete` Test</h1>
+    <p>Type a place into the standard input field below. Suggestions should appear.</p>
+
+    <input type="text" id="autocompleteInput" placeholder="Enter a place" />
+
+    <div id="map">Map will be here (optional)</div>
+
+    <h2>Selected Place:</h2>
+    <pre id="place-details">No place selected yet.</pre>
+
+    <script>
+        let map;
+        let autocomplete;
+        const placeDetailsElement = document.getElementById('place-details'); // Get reference early
+
+        function initMap() {
+            console.log("initMap CALLED - Google Maps API ready.");
+
+            // Optional: Minimal map
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 40.748817, lng: -73.985428 }, // Default center (e.g., NYC)
+                zoom: 12,
+                mapTypeControl: false,
+                streetViewControl: false
+            });
+             document.getElementById("map").textContent = "Map Initialized (Optional)";
+
+
+            const inputElement = document.getElementById('autocompleteInput');
+            if (!inputElement) {
+                console.error("Input element 'autocompleteInput' not found!");
+                return;
+            }
+
+            autocomplete = new google.maps.places.Autocomplete(inputElement, {
+                fields: ["name", "formatted_address", "geometry", "place_id", "address_components", "types"],
+                // componentRestrictions: { country: "us" } // Uncomment to restrict to US
+            });
+
+            autocomplete.addListener('place_changed', () => {
+                console.log("--- 'place_changed' event fired ---");
+                placeDetailsElement.textContent = "Processing selection..."; // User feedback
+
+                const place = autocomplete.getPlace();
+
+                if (place && place.geometry && place.geometry.location) {
+                    console.log("Place selected:", JSON.parse(JSON.stringify(place)));
+                    placeDetailsElement.textContent = JSON.stringify(place, null, 2);
+
+                    // Optional: Center map on selected place
+                    if (map) {
+                        map.setCenter(place.geometry.location);
+                        map.setZoom(15);
+                        new google.maps.Marker({
+                            position: place.geometry.location,
+                            map: map,
+                            title: place.name
+                        });
+                         document.getElementById("map").textContent = `Map centered on: ${place.name}`;
+                    }
+
+                } else {
+                    console.warn("'place_changed' event fired, but getPlace() did not return a valid PlaceResult or geometry.");
+                    console.warn("Place from getPlace():", place);
+                    let message = "No specific place selected from Google's suggestions.";
+                    if (inputElement.value) {
+                         message += "\nCurrent input text: " + inputElement.value;
+                    }
+                    placeDetailsElement.textContent = message;
+                }
+            });
+            console.log("google.maps.places.Autocomplete initialized and listener attached to input.");
+            if(placeDetailsElement) placeDetailsElement.textContent = "Autocomplete ready. Please type a place name.";
+        }
+    </script>
+
+</body>
+</html>

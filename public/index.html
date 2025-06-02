@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Maine Farm Stand Finder</title>
@@ -10,37 +10,20 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/css/style.css" />
-    <!-- Consider adding a favicon -->
-    <!-- <link rel="icon" href="/images/favicon.ico" type="image/x-icon"> -->
 
-    <!-- SCRIPTS - ORDER IS IMPORTANT! -->
-    <script src="/js/config.js"></script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/AppState.js"></script>
-    <script src="/js/apiService.js"></script>
-    <script src="/js/main.js"></script>    
-    <script src="/js/sharedHtml.js"></script>      
-    <script src="/js/productFilter.js"></script>     
-    <script src="/js/shopDetailsRenderer.js"></script>
-    <script src="/js/socialRenderer.js"></script>     
-    <script src="/js/directionsUI.js"></script>     
-    <script src="/js/overlayManager.js"></script>    
-    <script src="/js/listingsRenderer.js"></script>  
-    <script src="/js/uiInit.js"></script>        
-    <script src="/js/mapLogic.js"></script>
-  
-
-    <!-- External Libraries (Google Maps loads asynchronously via callback) -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker&callback=initAppMap"
-      loading="async"
-      defer>  <!-- You can still keep defer as a fallback/best practice -->
-    </script>  
-    <!-- Twitter and Instagram Embeds -->
+    <!--
+        Google Maps API script. 'async' means it loads without blocking HTML.
+        'callback=initAppMap' means initAppMap (defined in mapLogic.js) will be called once the API is ready.
+        mapLogic.js (and its dependencies like config, AppState) *must* be loaded and initAppMap must be global
+        before this callback can successfully execute.
+    -->
+    <script async
+          src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker,maps,geocoding&callback=initAppMap"></script>
+    <!-- Twitter and Instagram Embeds (async is good for these) -->
     <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
     <script async src="https://www.instagram.com/embed.js"></script>
 
-  </head>
+</head>
   <body class="bg-white antialiased"> <!-- Changed bg to white as per your css/style.css -->
     <div id="fb-root"></div>
 
@@ -59,18 +42,13 @@
                 <!-- Right Part: Controls (Search, Radius, Filters) -->
                 <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 w-full sm:w-auto">
                     <!-- Search Input -->
-                    <div class="w-full sm:w-auto sm:min-w-[200px] sm:max-w-xs"> <!-- Adjusted width constraints -->
-                         <gmp-place-autocomplete
-                            id="searchAutocompleteElement"
-                            placeholder="Search for a town or address..."
-                            country="us"
-                            location-bias="rectangle:42.975426,-71.089859,47.459683,-66.949829"
-                            location-restriction="rectangle:42.975426,-71.089859,47.459683,-66.949829"
-                            place-fields="name,formatted_address,geometry,address_components,place_id,types"
-                            style="width: 100%; /* Add your desired styling */"
-                            aria-label="Search for a location in Maine">
-                        </gmp-place-autocomplete>
-                    </div>
+                    <gmp-place-autocomplete
+                        id="searchAutocompleteElement"
+                        placeholder="Enter town, city, or address"
+                        class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        place-fields="name,formatted_address,geometry,address_components,place_id,types"
+                        country="us">
+                    </gmp-place-autocomplete>
                     <!-- Radius Slider -->
                     <div class="flex items-center gap-1 sm:gap-2">
                         <label for="radiusSlider" class="text-xs sm:text-sm font-medium whitespace-nowrap" style="color: #3c4043">Radius:</label>
@@ -180,40 +158,49 @@
     <div id="initialSearchModal" class="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-[100] transition-opacity duration-300 ease-in-out">
         <div class="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-11/12 max-w-md transform transition-all duration-300 ease-in-out scale-95 opacity-0">
             <h2 class="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center">Find Farm Stands Near You</h2>
-            <p class="text-sm text-gray-600 mb-6 text-center">
-                Enter your address, town, or zip code to get started.
-            </p>
-            <div class="mb-4">
-                <gmp-place-autocomplete
-                    id="modalSearchAutocompleteElement"
-                    placeholder="Enter a town or address..."
-                    country="us"
-                    location-bias="rectangle:42.975426,-71.089859,47.459683,-66.949829"
-                    location-restriction="rectangle:42.975426,-71.089859,47.459683,-66.949829"
-                    place-fields="name,formatted_address,geometry,address_components,place_id,types"
-                    style="width: 100%; /* Add your desired styling */"
-                    aria-label="Search for a location in Maine (modal)">
-                </gmp-place-autocomplete>
+            <gmp-place-autocomplete
+                id="modalSearchAutocompleteElement"
+                placeholder="Enter your town, city, or zip code"
+                class="w-full p-3 border border-gray-300 rounded-md mb-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+                place-fields="name,formatted_address,geometry,address_components,place_id,types"
+                country="us">
+            </gmp-place-autocomplete>
+            <div class="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
+                <button id="modalSkipButton" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md transition-colors">Skip & See All</button>
+                <button id="modalSearchButton" class="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Search</button>
             </div>
-            <button id="modalSearchButton"
-                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors text-base">
-                Search
-            </button>
-            <!-- Optional: "Use My Location" button inside the modal -->
-            <!--
-            <button id="modalUseMyLocationButton" class="w-full mt-3 text-sm text-blue-600 hover:text-blue-800 focus:outline-none">
-                Or Use My Current Location
-            </button>
-            -->
-             <button id="modalSkipButton" class="w-full mt-4 text-xs text-gray-500 hover:text-gray-700 focus:outline-none underline">
-                Skip and browse all
-            </button>
         </div>
     </div>
 
-    <!-- Facebook SDK -->
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script>
-    <!-- Replace YOUR_FACEBOOK_APP_ID and YOUR_NONCE_HERE if using advanced FB SDK features, otherwise basic SDK is fine. -->
-  </body>
+
+
+        <!-- END Initial Search Modal -->
+<!-- AT THE END OF <body> -->
+<script src="/js/config.js" defer></script>
+<script src="/js/AppState.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/apiService.js" defer></script>
+ 
+<!-- Rendering helpers / UI Components -->
+<script src="/js/sharedHtml.js" defer></script>
+<script src="/js/shopDetailsRenderer.js" defer></script>
+<script src="/js/socialRenderer.js" defer></script>
+<script src="/js/listingsRenderer.js" defer></script>
+<script src="/js/productFilter.js" defer></script> <!-- Defines populate/setup functions for filters -->
+
+<!-- Core Logic Modules -->
+<script src="/js/mapLogic.js" defer></script>      <!-- Defines initAppMap, attemptMapInitialization, etc. -->
+<script src="/js/modalLogic.js" defer></script>    <!-- Defines initializeModalLogic -->
+<script src="/js/overlayManager.js" defer></script>
+<script src="/js/directionsUI.js" defer></script>
+<script src="/js/router.js" defer></script> <!-- If you have router.js, put it here or before main.js -->
+
+<!-- Initialization Scripts -->
+<script src="/js/main.js" defer></script>       <!-- Populates AppState.dom, calls initializeModalLogic, handleRouteChange -->
+                                                <!-- MUST come after modalLogic.js and router.js -->
+<script src="/js/uiInit.js" defer></script>     <!-- Sets up UI event listeners AFTER AppState.dom is populated by main.js and after main.js might call things -->
+                                                <!-- Or main.js should call an init function from uiInit.js after it populates AppState.dom -->
+
+<!-- Facebook SDK -->
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script></body>
 </html>
