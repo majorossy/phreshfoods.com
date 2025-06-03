@@ -38,58 +38,80 @@ function setupModalAutocompleteEventListeners() {
 
 const modalPlaceChangeListener = (event) => { // LISTENING TO 'gmp-select' NOW
     modalLog("--- MODAL GMP-SELECT EVENT (from modalLogic.js) ---");
-    modalLog("  Full event object:", event); 
-    
+    modalLog("  Full event object:", event);
+
     let selectedPlaceObject = null;
+    const targetElement = event.target; // Store event.target
 
-    // Scenario 1: The event object itself has a 'place' property (as your log suggests)
+    // Priority 1: Synchronous access to event.target.place (as per documentation)
+    if (targetElement && targetElement.place && typeof targetElement.place === 'object' && targetElement.place.geometry) {
+        modalLog("  SUCCESS: Found Place object on 'event.target.place' (synchronously):", targetElement.place);
+        selectedPlaceObject = targetElement.place;
+        window.modalAutocompletePlace = selectedPlaceObject;
+        modalLog("  window.modalAutocompletePlace SET (synchronously from target.place) TO:", window.modalAutocompletePlace);
+        modalLog("--------------------------------------------------------------------------");
+        return; // Exit early if successful
+    }
+
+    // Log current state if synchronous access failed
+    modalLog("  Synchronous access to event.target.place failed or place invalid.");
+    if (targetElement) {
+        modalLog("  event.target.place (synchronous check):", targetElement.place);
+        modalLog("  event.target.value (synchronous check):", targetElement.value);
+    }
+
+    // Priority 2: Asynchronous access to event.target.place via setTimeout
+    // This handles cases where the 'place' property might be populated slightly after the event.
+    if (targetElement) {
+        modalLog("  Attempting asynchronous retrieval of event.target.place via setTimeout.");
+        setTimeout(() => {
+            modalLog("  (setTimeout) Checking event.target.place again.");
+            if (targetElement.place && typeof targetElement.place === 'object' && targetElement.place.geometry) {
+                modalLog("  (setTimeout) SUCCESS: Found Place object on 'event.target.place':", targetElement.place);
+                selectedPlaceObject = targetElement.place;
+                window.modalAutocompletePlace = selectedPlaceObject;
+                modalLog("  (setTimeout) window.modalAutocompletePlace NOW SET TO:", window.modalAutocompletePlace);
+            } else {
+                modalWarn("  (setTimeout) Still could not find a valid Place object on event.target.place.");
+                modalLog("  (setTimeout) event.target.place (after timeout):", targetElement.place);
+                modalLog("  (setTimeout) event.target.value (after timeout):", targetElement.value);
+
+                // Fallback to other event properties if event.target.place is definitively not working
+                if (event.place && typeof event.place === 'object' && event.place.geometry) {
+                    modalLog("  (setTimeout) FALLBACK: Using 'event.place':", event.place);
+                    selectedPlaceObject = event.place;
+                } else if (event.detail && typeof event.detail.place === 'object' && event.detail.place.geometry) {
+                    modalLog("  (setTimeout) FALLBACK: Using 'event.detail.place':", event.detail.place);
+                    selectedPlaceObject = event.detail.place;
+                } else if (event.detail && typeof event.detail === 'object' && event.detail.geometry) {
+                    modalLog("  (setTimeout) FALLBACK: Using 'event.detail' (as place):", event.detail);
+                    selectedPlaceObject = event.detail;
+                }
+                window.modalAutocompletePlace = selectedPlaceObject;
+                modalLog("  (setTimeout) window.modalAutocompletePlace (after fallbacks) NOW SET TO:", window.modalAutocompletePlace);
+            }
+            modalLog("--------------------------------------------------------------------------");
+        }, 50); // 50ms delay
+        return; // Exit: setTimeout will handle the rest
+    }
+
+    // Fallback Scenarios (if event.target was not available for setTimeout)
+    modalWarn("  event.target not available for setTimeout. Attempting direct fallbacks.");
     if (event.place && typeof event.place === 'object' && event.place.geometry) {
-        modalLog("  SUCCESS: Found Place object directly on 'event.place':", event.place);
+        modalLog("  FALLBACK (no target): Using 'event.place':", event.place);
         selectedPlaceObject = event.place;
-    } 
-    // Scenario 2: Data is in event.detail.place (common for custom events)
-    else if (event.detail && typeof event.detail.place === 'object' && event.detail.place.geometry) {
-        modalLog("  Found Place object in 'event.detail.place':", event.detail.place);
+    } else if (event.detail && typeof event.detail.place === 'object' && event.detail.place.geometry) {
+        modalLog("  FALLBACK (no target): Using 'event.detail.place':", event.detail.place);
         selectedPlaceObject = event.detail.place;
-    }
-    // Scenario 3: Data is event.detail itself (less common for this structure)
-    else if (event.detail && typeof event.detail === 'object' && event.detail.geometry) {
-        modalLog("  'event.detail' itself appears to be the Place object:", event.detail);
+    } else if (event.detail && typeof event.detail === 'object' && event.detail.geometry) {
+        modalLog("  FALLBACK (no target): Using 'event.detail' (as place):", event.detail);
         selectedPlaceObject = event.detail;
-    }
-    // Scenario 4: Data is on event.target.place (original expectation)
-    else if (event.target && event.target.place && typeof event.target.place === 'object' && event.target.place.geometry) {
-        modalLog("  Found Place object on 'event.target.place':", event.target.place);
-        selectedPlaceObject = event.target.place;
     } else {
-        modalWarn("  Could not find a valid Place object on event, event.detail, or event.target.place synchronously.");
-    }
-
-    // Log the component's own value property, though it might still be undefined
-    if (event.target) {
-        modalLog("  event.target.value (synchronous):", event.target.value);
+        modalWarn("  FALLBACK (no target): Could not find a valid Place object on event or event.detail.");
     }
 
     window.modalAutocompletePlace = selectedPlaceObject;
-    modalLog("  window.modalAutocompletePlace NOW SET TO:", window.modalAutocompletePlace);
-
-    // We don't need the setTimeout if event.place gives us the data directly.
-    // If event.place is consistently the source, the setTimeout logic becomes a fallback.
-
-    // Optional: If event.place works, we can try to see if event.target.place gets updated shortly after
-    if (selectedPlaceObject && event.target) {
-        setTimeout(() => {
-            modalLog("  (setTimeout) Checking event.target properties again:");
-            modalLog("    event.target.place (after timeout):", event.target.place);
-            modalLog("    event.target.value (after timeout):", event.target.value);
-            // If window.modalAutocompletePlace wasn't set by event.place, maybe it's set now on event.target.place
-            if (!window.modalAutocompletePlace && event.target.place && event.target.place.geometry) {
-                modalLog("    (setTimeout) Updating window.modalAutocompletePlace from event.target.place");
-                window.modalAutocompletePlace = event.target.place;
-            }
-        }, 0);
-    }
-    
+    modalLog("  window.modalAutocompletePlace (after no-target fallbacks) NOW SET TO:", window.modalAutocompletePlace);
     modalLog("--------------------------------------------------------------------------");
 };
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Modern Google Address Autocomplete</title>
+    <script async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places&loading=async&callback=initAutocomplete&v=weekly">
+    </script>
+  </head>
+  <body>
+    <h2>Enter an Address:</h2>
+
+    <!-- Native Google Web Component -->
+    <gmp-place-autocomplete
+      id="autocomplete"
+      placeholder="Enter an address"
+      country="us"
+      style="width: 100%; max-width: 400px;">
+    </gmp-place-autocomplete>
+
+    <div id="output" style="margin-top: 20px;"></div>
+
+    <script>
+      function initAutocomplete() {
+        const el = document.getElementById('autocomplete');
+
+        // Wait for the element to be defined before attaching the listener
+        if (customElements.get('gmp-place-autocomplete')) {
+          bindPlaceListener(el);
+        } else {
+          customElements.whenDefined('gmp-place-autocomplete').then(() => {
+            bindPlaceListener(el);
+          });
+        }
+      }
+
+      function bindPlaceListener(el) {
+        el.addEventListener('gmp-placeautocomplete:place_changed', (event) => {
+          const place = event.detail;
+          const components = {};
+
+          if (!place?.address?.addressComponents) {
+            document.getElementById('output').innerText = 'No address data.';
+            return;
+          }
+
+          for (const comp of place.address.addressComponents) {
+            components[comp.componentType] = comp.longText;
+          }
+
+          const outputHtml = `
+            <strong>Formatted Address:</strong> ${place.formattedAddress}<br><br>
+            <strong>Street:</strong> ${components['route'] || ''}<br>
+            <strong>Number:</strong> ${components['street_number'] || ''}<br>
+            <strong>City:</strong> ${components['locality'] || ''}<br>
+            <strong>State:</strong> ${components['administrative_area_level_1'] || ''}<br>
+            <strong>ZIP:</strong> ${components['postal_code'] || ''}<br>
+            <strong>Country:</strong> ${components['country'] || ''}
+          `;
+
+          document.getElementById('output').innerHTML = outputHtml;
+        });
+      }
+    </script>
+  </body>
+</html>
