@@ -20,23 +20,6 @@ COPY . .
 # This includes your public folder, server.js, etc.
 # .dockerignore will be respected here.
 
-# ---- Production Image ----
-# For the final image, we can use a slimmer base if needed,
-# but for development, staying with the same Node version is simpler.
-FROM node:18-alpine
-
-WORKDIR /usr/src/app
-
-# Copy dependencies from the builder stage
-COPY --from=builder /usr/src/app/node_modules ./node_modules
-
-# Copy application code (excluding node_modules already copied)
-COPY --from=builder /usr/src/app/public ./public
-COPY --from=builder /usr/src/app/server.js ./server.js
-
-# We'll manage .env carefully - This comment applies to the next line
-COPY --from=builder /usr/src/app/.env ./.env
-
 # Expose the port the app runs on
 EXPOSE 3000
 
