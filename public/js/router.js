@@ -88,14 +88,19 @@ async function _openShopDetailsAndMapFeatures(shop) {
     if (typeof openClickedShopOverlays === 'function') {
         openClickedShopOverlays(shop); 
     }
-    if (window.map && shop.lat != null && shop.lng != null) {
-        const shopLocation = new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng));
-        if(typeof getAdjustedMapCenter === "function") map.panTo(getAdjustedMapCenter(shopLocation)); else map.panTo(shopLocation);
-        map.setZoom(USER_LOCATION_MAP_ZOOM || 17); // Use config
+     if (window.map && shop.lat != null && shop.lng != null) {
+         const shopLocation = new google.maps.LatLng(parseFloat(shop.lat), parseFloat(shop.lng));
+         if(typeof getAdjustedMapCenter === "function") map.panTo(getAdjustedMapCenter(shopLocation)); else map.panTo(shopLocation);        
+        // Adjust zoom only if currently more zoomed out than the target
+        const currentZoom = map.getZoom();
+        const targetZoom = USER_LOCATION_MAP_ZOOM || 11; // from config.js
+        if (currentZoom < targetZoom) {
+            map.setZoom(targetZoom);
+        }       
         if (typeof showInfoWindowForShop === 'function') {
-            setTimeout(() => showInfoWindowForShop(shop), 100);
-        }
-    }
+             setTimeout(() => showInfoWindowForShop(shop), 100);
+         }
+     }
     const cardId = `shop-card-${shop.slug || shop.GoogleProfileID || shop.Name?.replace(/\W/g, '') || 'unknown'}`;
     const cardElement = document.getElementById(cardId);
     if (cardElement) { /* ... highlight card ... */ 

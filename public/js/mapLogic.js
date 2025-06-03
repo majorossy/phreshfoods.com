@@ -15,58 +15,72 @@ var directionsRenderer;
 let mapApiLoadedAndCallbackFired = false;
 let performMapSetupPromise = null; // To make performMapSetup awaitable if called multiple times
 
+// mapLogic.js
+
+// ... (DEBUG_MAP_LOGIC and mapDebugLog/Warn/Error functions remain the same) ...
+// ... (var map, infowindow, directionsRenderer, etc. remain the same) ...
+
 async function performMapSetup() {
     mapDebugLog("performMapSetup: Attempting actual map setup.");
     if (!window.AppState || !AppState.domReadyAndPopulated || !AppState.dom.mapElement) {
         mapDebugWarn("performMapSetup: Pre-conditions not met (AppState, DOM not ready).");
-        return Promise.reject("PerformMapSetup pre-conditions not met."); // Return a rejected promise
+        return Promise.reject("PerformMapSetup pre-conditions not met.");
     }
     if (map) { // Already initialized
         mapDebugLog("performMapSetup: Map already exists. Resolving.");
-        return Promise.resolve(); // Already done
+        return Promise.resolve();
     }
 
     const dom = AppState.dom;
 
-    // Use MAINE_BOUNDS_LITERAL directly from config.js (ensure config.js loaded first)
-    const boundsForSetup = (typeof MAINE_BOUNDS_LITERAL !== 'undefined') ? MAINE_BOUNDS_LITERAL : 
-        { sw: { lat: 42.975426, lng: -71.089859 }, ne: { lat: 47.459683, lng: -66.949829 } };
-    if (typeof MAINE_BOUNDS_LITERAL === 'undefined') {
-        mapDebugWarn("performMapSetup: MAINE_BOUNDS_LITERAL (from config.js) not found. Using fallback.");
+    // --- Bounds for Map Restriction (expects N, S, E, W structure) ---
+    let boundsForMapRestriction;
+    if (typeof MAINE_BOUNDS_LITERAL !== 'undefined' && MAINE_BOUNDS_LITERAL.north !== undefined) {
+        boundsForMapRestriction = MAINE_BOUNDS_LITERAL; // Use directly from config.js
+        mapDebugLog("performMapSetup: Using MAINE_BOUNDS_LITERAL for map restriction:", boundsForMapRestriction);
+    } else {
+        mapDebugWarn("performMapSetup: MAINE_BOUNDS_LITERAL (from config.js) not found or invalid. Using fallback for map restriction.");
+        boundsForMapRestriction = { // Fallback with correct N, S, E, W structure
+            north: 47.459683,
+            south: 42.975426,
+            west: -71.089859,
+            east: -66.949829
+        };
     }
-    
+
     const activeMapStyles = (typeof USE_CUSTOM_MAP_STYLE !== 'undefined' && USE_CUSTOM_MAP_STYLE && typeof mapStyles !== 'undefined') ? mapStyles.maineLicensePlate : null;
-    
+
     // Determine center: if AppState.lastPlaceSelectedByAutocomplete exists (from cookie or slug), use it. Else, default.
     let initialMapCenter;
     let initialMapZoom;
 
     if (AppState.lastPlaceSelectedByAutocomplete?.geometry?.location) {
         initialMapCenter = AppState.lastPlaceSelectedByAutocomplete.geometry.location; // This is a LatLngLiteral
-        initialMapZoom = USER_LOCATION_MAP_ZOOM || 17; // Zoom in if specific location
-        mapDebugLog("performMapSetup: Using location from AppState.lastPlaceSelectedByAutocomplete for initial center.");
+        // Ensure USER_LOCATION_MAP_ZOOM is defined in config.js, otherwise fallback
+        initialMapZoom = (typeof USER_LOCATION_MAP_ZOOM !== 'undefined') ? USER_LOCATION_MAP_ZOOM : 11;
+        mapDebugLog("performMapSetup: Using location from AppState.lastPlaceSelectedByAutocomplete for initial center:", initialMapCenter, "Zoom:", initialMapZoom);
     } else {
-        initialMapCenter = DEFAULT_MAP_CENTER || { lat: 43.6926, lng: -70.2537 };
-        initialMapZoom = DEFAULT_MAP_ZOOM || 10; // More zoomed out for default
-        mapDebugLog("performMapSetup: Using DEFAULT_MAP_CENTER for initial center.");
+        // Ensure DEFAULT_MAP_CENTER and DEFAULT_MAP_ZOOM are defined in config.js
+        initialMapCenter = (typeof DEFAULT_MAP_CENTER !== 'undefined') ? DEFAULT_MAP_CENTER : { lat: 43.6926, lng: -70.2537 };
+        initialMapZoom = (typeof DEFAULT_MAP_ZOOM !== 'undefined') ? DEFAULT_MAP_ZOOM : 10;
+        mapDebugLog("performMapSetup: Using DEFAULT_MAP_CENTER for initial center:", initialMapCenter, "Zoom:", initialMapZoom);
     }
-
 
     try {
         map = new google.maps.Map(dom.mapElement, {
-            center: initialMapCenter, // Use determined initial center
-            zoom: initialMapZoom,     // Use determined initial zoom
+            center: initialMapCenter,
+            zoom: initialMapZoom,
             mapTypeControl: false, styles: activeMapStyles,
             gestureHandling: "greedy", zoomControl: true, streetViewControl: false, fullscreenControl: true,
             rotateControl: false, scaleControl: true,
-            restriction: { latLngBounds: boundsForSetup, strictBounds: false },
+            restriction: { latLngBounds: boundsForMapRestriction, strictBounds: false }, // Use the N,S,E,W structured bounds
             mapId: typeof MAP_ID !== 'undefined' ? MAP_ID : undefined
         });
         mapDebugLog("performMapSetup: Google Map object CREATED successfully.");
     } catch (error) {
         mapDebugError("performMapSetup: CRITICAL ERROR creating Google Map object.", error);
-        if(dom.mapElement) dom.mapElement.innerHTML = "<p style='color:red; text-align:center;'>Map init error.</p>";
-        return Promise.reject(error); // Propagate error
+        if(dom.mapElement) dom.mapElement.innerHTML = "<p style='color:red; text-align:center;'>Map init error. Please refresh.</p>";
+        return Promise.reject(error);
     }
 
     window.geocoder = new google.maps.Geocoder();
@@ -75,39 +89,66 @@ async function performMapSetup() {
     directionsRenderer = new google.maps.DirectionsRenderer({ map: map, polylineOptions: { strokeColor: "#FF0000" }});
     if (dom.directionsPanel) directionsRenderer.setPanel(dom.directionsPanel);
 
+    // --- Autocomplete Bias (constructs string from N, S, E, W bounds) ---
     const mainSearchAutocompleteElement = dom.searchAutocompleteElement;
     if (mainSearchAutocompleteElement) {
-        if (boundsForSetup) {
-            const biasRect = `rectangle:${boundsForSetup.sw.lat},${boundsForSetup.sw.lng},${boundsForSetup.ne.lat},${boundsForSetup.ne.lng}`;
-            if (!mainSearchAutocompleteElement.getAttribute('location-bias')) mainSearchAutocompleteElement.locationBias = biasRect;
-            if (!mainSearchAutocompleteElement.getAttribute('location-restriction')) mainSearchAutocompleteElement.locationRestriction = biasRect;
-        }
-        // ... (other attributes for mainSearchAutocompleteElement)
+        // Construct the bias string using the N,S,E,W properties of boundsForMapRestriction
+        // The format is: rectangle:south,west,north,east
+        const biasRectString = `rectangle:${boundsForMapRestriction.south},${boundsForMapRestriction.west},${boundsForMapRestriction.north},${boundsForMapRestriction.east}`;
+        mapDebugLog("performMapSetup: Setting autocomplete bias/restriction string:", biasRectString);
+
+        if (!mainSearchAutocompleteElement.getAttribute('location-bias')) mainSearchAutocompleteElement.locationBias = biasRectString;
+        if (!mainSearchAutocompleteElement.getAttribute('location-restriction')) mainSearchAutocompleteElement.locationRestriction = biasRectString;
+        
         mainSearchAutocompleteElement.addEventListener('gmp-select', () => {
-            const place = mainSearchAutocompleteElement.place; 
-            if (!place?.geometry?.location) { AppState.lastPlaceSelectedByAutocomplete = null; if (typeof handleSearch === "function") handleSearch(); return; }
+            const place = mainSearchAutocompleteElement.place;
+            if (!place?.geometry?.location) {
+                AppState.lastPlaceSelectedByAutocomplete = null;
+                if (typeof handleSearch === "function") handleSearch();
+                return;
+            }
             AppState.lastPlaceSelectedByAutocomplete = place;
             if (typeof handleSearch === "function") handleSearch();
         });
     }
-    map.addListener("click", (e) => { /* ... as before ... */ });
-    map.addListener("idle", () => { /* ... as before ... */ });
-    
-    // processAndPlotShops will be called by handleSearch or other triggers now,
-    // especially after map is confirmed ready and a location context is set.
-    // If map was loaded due to cookie or slug, handleSearch will be called soon by main.js or router.
-    // If map was loaded due to modal, modalLogic.js calls handleSearch.
-    // If initial map load for "all" (modal skip with no search), handleSearch will be called.
+
+    // --- Map Click Listener for Closing Overlays ---
+    map.addListener("click", (event) => {
+        console.log('[MapLogic-DEBUG] MAP CLICKED! Raw event:', event);
+        mapDebugLog("Map click listener in performMapSetup FIRED.");
+        const dom = AppState.dom;
+        if (!dom) {
+            mapDebugError("Map click: AppState.dom is not available!");
+            return;
+        }
+        const socialOverlayIsOpen = dom.detailsOverlaySocialElement?.classList.contains('is-open');
+        const shopOverlayIsOpen = dom.detailsOverlayShopElement?.classList.contains('is-open');
+        mapDebugLog(`Map click: socialOverlayIsOpen = ${socialOverlayIsOpen}, shopOverlayIsOpen = ${shopOverlayIsOpen}`);
+
+        if (socialOverlayIsOpen || shopOverlayIsOpen) {
+            mapDebugLog("Map click: An overlay IS open. Attempting to call closeClickedShopOverlaysAndNavigateHome.");
+            if (typeof closeClickedShopOverlaysAndNavigateHome === "function") {
+                closeClickedShopOverlaysAndNavigateHome();
+            } else {
+                mapDebugError("Map click: closeClickedShopOverlaysAndNavigateHome function NOT FOUND!");
+            }
+        }
+    });
+
+    map.addListener("idle", () => {
+        // mapDebugLog("Map IDLE event fired!"); // Keep for debugging if needed
+    });
+
     if (typeof processAndPlotShops === "function") {
-        // Instead of calling directly, let the standard flow (handleSearch after location context) manage it.
-        // processAndPlotShops(); // This might be redundant if handleSearch is called by the initiator
         mapDebugLog("performMapSetup: Map setup done. processAndPlotShops will be triggered by search/routing logic.");
     } else {
         mapDebugError("performMapSetup: CRITICAL - processAndPlotShops function NOT FOUND.");
     }
     mapDebugLog("performMapSetup: Map setup sequence COMPLETE.");
-    return Promise.resolve(); // Successfully set up
+    return Promise.resolve();
 }
+
+// ... (initAppMap, attemptMapInitialization, and other map functions like calculateAndDisplayRoute, plotMarkers, etc. follow here) ...
 
 async function initAppMap() {
     mapDebugLog("initAppMap (API Callback): Google Maps API script loaded and callback fired.");
@@ -122,21 +163,26 @@ async function initAppMap() {
         mapDebugLog("[initAppMap] All Google Maps libraries imported successfully.");
 
         mapApiLoadedAndCallbackFired = true; 
-        if (window.AppState) AppState.mapsApiReady = true;
-
-        // Call attemptMapInitialization. If called by other flows (e.g. modal submission),
-        // this ensures the API ready flag is set for it.
-        // attemptMapInitialization itself checks if map is already being/been set up.
-        attemptMapInitialization(); 
-
-        // Modal autocomplete listeners are primarily handled by modalLogic.js now,
-        // which checks AppState.mapsApiReady.
-        // However, if modalLogic.js's initializeModalLogic ran *before* API was ready,
-        // this provides a second chance to set up the listeners.
-        if (window.AppState && AppState.domReadyAndPopulated && typeof setupModalAutocompleteEventListeners === "function") {
-            mapDebugLog("[initAppMap] API Ready: Checking if modal listeners need setup.");
-            setupModalAutocompleteEventListeners(); // From modalLogic.js
+         if (window.AppState) AppState.mapsApiReady = true;
+ 
+        // API is ready. Now, check if the DOM is also ready.
+        // If main.js has already run and set domReadyAndPopulated, we can try to init the map.
+        // Otherwise, main.js or other logic will call attemptMapInitialization() later when DOM is ready.
+        if (window.AppState?.domReadyAndPopulated) {
+            mapDebugLog("[initAppMap] API ready AND DOM was already ready. Calling attemptMapInitialization.");
+            attemptMapInitialization();
+        } else {
+            mapDebugLog("[initAppMap] API ready. DOM NOT YET ready. Map initialization will be triggered later (e.g., by main.js or modal logic).");
         }
+ 
+         // Modal autocomplete listeners are primarily handled by modalLogic.js now,
+         // which checks AppState.mapsApiReady.
+         // However, if modalLogic.js's initializeModalLogic ran *before* API was ready,
+         // this provides a second chance to set up the listeners.
+        if (window.AppState?.domReadyAndPopulated && typeof setupModalAutocompleteEventListeners === "function") {
+             mapDebugLog("[initAppMap] API Ready: Checking if modal listeners need setup (can happen if DOM also ready).");
+             setupModalAutocompleteEventListeners(); // From modalLogic.js
+         }
     } catch (error) { /* ... error handling ... */ }
 }
 
@@ -158,11 +204,15 @@ function attemptMapInitialization() {
         }
         mapDebugLog("attemptMapInitialization: All conditions met. Proceeding to performMapSetup.");
         performMapSetupPromise = performMapSetup(); // Store the promise
-        return performMapSetupPromise;
-    } else {
-        mapDebugLog("attemptMapInitialization: Conditions not yet met. Map setup deferred.");
-        return Promise.reject("Map initialization pre-conditions not met."); // Or resolve if it's okay to not have map yet
-    }
+         return performMapSetupPromise;
+     } else {
+         mapDebugLog("attemptMapInitialization: Conditions not yet met. Map setup deferred.");
+        // It's important that this returns a promise that can be awaited by callers,
+        // but doesn't necessarily mean an error if map isn't created *yet*.
+        // The callers (like handleSearch) will decide if not having a map is an error for them.
+        // For now, rejecting makes sense as the function's intent is to *attempt* init.
+        return Promise.reject("Map/DOM pre-conditions for performMapSetup not met by attemptMapInitialization.");
+     }
 }
 
 // --- Other map functions (calculateAndDisplayRoute, etc.) ---

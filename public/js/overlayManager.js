@@ -17,6 +17,7 @@ function overlayDebugError(...args) {
  * @param {HTMLElement} overlayElement - The overlay DOM element.
  */
 function openOverlay(overlayElement) {
+    console.log('[OverlayManager-DEBUG] openOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); 
     overlayDebugLog('openOverlay() called');
     if (!overlayElement) return;
     overlayElement.classList.remove('hidden');
@@ -29,16 +30,26 @@ function openOverlay(overlayElement) {
  * @param {HTMLElement} overlayElement - The overlay DOM element.
  */
 function closeOverlay(overlayElement) {
-    overlayDebugLog('closeOverlay() called');
+    console.log('[OverlayManager-DEBUG] closeOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); // ADD LOG
+    overlayDebugLog('closeOverlay() called for element ID:', overlayElement?.id); // Your existing log
     if (!overlayElement) return;
     overlayElement.classList.remove('is-open');
-    overlayElement.classList.add('hidden'); // Use 'hidden' to ensure display:none
+    // Ensure it's hidden. Using 'hidden' class is good as it often sets display:none.
+    // If 'hidden' doesn't reliably set display:none, you might need:
+    // overlayElement.style.display = 'none';
+    // However, your CSS probably handles .hidden correctly.
+    overlayElement.classList.add('hidden');
 
-    // Check if any modal/overlay is still open
-    if (!AppState.dom.detailsOverlayShopElement?.classList.contains('is-open') &&
-        !AppState.dom.detailsOverlaySocialElement?.classList.contains('is-open') &&
-        !document.getElementById('initialSearchModal')?.classList.contains('modal-open')) {
+
+    // Check if any modal/overlay is still open before removing modal-active
+    const dom = AppState.dom;
+    if (dom.initialSearchModal?.classList.contains('modal-open') || // Check initial modal state
+        dom.detailsOverlayShopElement?.classList.contains('is-open') ||
+        dom.detailsOverlaySocialElement?.classList.contains('is-open')) {
+        overlayDebugLog("Body class 'modal-active' NOT removed by closeOverlay because other overlays/modal are still open."); // ADD LOG
+    } else {
         document.body.classList.remove('modal-active');
+        overlayDebugLog("Body class 'modal-active' REMOVED by closeOverlay."); // ADD LOG
     }
 }
 

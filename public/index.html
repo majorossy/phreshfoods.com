@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Maine Farm Stand Finder</title>
+    <title>Maine Farm Stand Finder</title>    
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <script src="/js/config.js"></script>
+    <script src="/js/AppState.js"></script>
+    <script src="/js/mapLogic.js"></script>      <!-- Defines initAppMap, attemptMapInitialization, etc. -->
+
+
     <link rel="stylesheet" href="/css/style.css" />
 
     <!--
@@ -176,8 +181,6 @@
 
         <!-- END Initial Search Modal -->
 <!-- AT THE END OF <body> -->
-<script src="/js/config.js" defer></script>
-<script src="/js/AppState.js" defer></script>
 <script src="/js/utils.js" defer></script>
 <script src="/js/apiService.js" defer></script>
  
@@ -189,7 +192,6 @@
 <script src="/js/productFilter.js" defer></script> <!-- Defines populate/setup functions for filters -->
 
 <!-- Core Logic Modules -->
-<script src="/js/mapLogic.js" defer></script>      <!-- Defines initAppMap, attemptMapInitialization, etc. -->
 <script src="/js/modalLogic.js" defer></script>    <!-- Defines initializeModalLogic -->
 <script src="/js/overlayManager.js" defer></script>
 <script src="/js/directionsUI.js" defer></script>

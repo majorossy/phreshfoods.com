@@ -22,16 +22,19 @@ function setupModalAutocompleteEventListeners() {
     }
     const modalSearchAutocomplete = AppState.dom.modalSearchAutocompleteElement;
 
-    modalLog("setupModalAutocompleteEventListeners: Setting up 'gmp-select' listener. Element:", modalSearchAutocomplete);
-    
-    if (typeof MAINE_BOUNDS_LITERAL !== 'undefined' && MAINE_BOUNDS_LITERAL) {
-        const biasRect = `rectangle:${MAINE_BOUNDS_LITERAL.sw.lat},${MAINE_BOUNDS_LITERAL.sw.lng},${MAINE_BOUNDS_LITERAL.ne.lat},${MAINE_BOUNDS_LITERAL.ne.lng}`;
-        if (!modalSearchAutocomplete.getAttribute('location-bias')) modalSearchAutocomplete.locationBias = biasRect;
-        if (!modalSearchAutocomplete.getAttribute('location-restriction')) modalSearchAutocomplete.locationRestriction = biasRect;
-    } else { /* ... warn ... */ }
-    if (!modalSearchAutocomplete.getAttribute('country')) modalSearchAutocomplete.country = "us";
-    if (!modalSearchAutocomplete.getAttribute('place-fields')) modalSearchAutocomplete.placeFields = "name,formatted_address,geometry,address_components,place_id,types";
-
+     modalLog("setupModalAutocompleteEventListeners: Setting up 'gmp-select' listener. Element:", modalSearchAutocomplete);
+     
+    // Use the N, S, E, W structure from MAINE_BOUNDS_LITERAL (config.js)
+    if (typeof MAINE_BOUNDS_LITERAL !== 'undefined' && MAINE_BOUNDS_LITERAL.north !== undefined) {
+        // Format for gmp-place-autocomplete bias/restriction string: rectangle:south,west,north,east
+        const biasRect = `rectangle:${MAINE_BOUNDS_LITERAL.south},${MAINE_BOUNDS_LITERAL.west},${MAINE_BOUNDS_LITERAL.north},${MAINE_BOUNDS_LITERAL.east}`;
+        modalLog("setupModalAutocompleteEventListeners: Setting modal autocomplete bias/restriction string:", biasRect);
+         if (!modalSearchAutocomplete.getAttribute('location-bias')) modalSearchAutocomplete.locationBias = biasRect;
+         if (!modalSearchAutocomplete.getAttribute('location-restriction')) modalSearchAutocomplete.locationRestriction = biasRect;
+    } else { modalWarn("setupModalAutocompleteEventListeners: MAINE_BOUNDS_LITERAL not found or invalid for modal autocomplete bias."); }
+     if (!modalSearchAutocomplete.getAttribute('country')) modalSearchAutocomplete.country = "us";
+     if (!modalSearchAutocomplete.getAttribute('place-fields')) modalSearchAutocomplete.placeFields = "name,formatted_address,geometry,address_components,place_id,types";
+ 
 // In modalLogic.js, inside setupModalAutocompleteEventListeners
 // In modalLogic.js, inside setupModalAutocompleteEventListeners
 // In modalLogic.js, inside setupModalAutocompleteEventListeners
@@ -127,29 +130,62 @@ const modalPlaceChangeListener = (event) => { // LISTENING TO 'gmp-select' NOW
 }
 
 function openInitialSearchModal() {
+    console.log('[ModalLogic-DEBUG] openInitialSearchModal CALLED. Timestamp:', Date.now()); // Ensure this is logged
     modalLog("openInitialSearchModal called.");
-    // Use AppState.dom if populated, otherwise fallback (though it should be populated by main.js first)
     const initialSearchModal = AppState.dom?.initialSearchModal || document.getElementById('initialSearchModal');
-    if (!initialSearchModal) { 
-        modalWarn("openInitialSearchModal: initialSearchModal element not found."); 
-        return; 
+    if (!initialSearchModal) {
+        modalWarn("openInitialSearchModal: initialSearchModal element NOT FOUND. Returning.");
+        return;
     }
+    console.log('[ModalLogic-DEBUG] openInitialSearchModal: ADDING "modal-active" to body. Current body classes:', document.body.className, 'Timestamp:', Date.now());
     document.body.classList.add('modal-active');
     initialSearchModal.style.display = 'flex';
     requestAnimationFrame(() => { initialSearchModal.classList.add('modal-open'); });
 }
 
 function closeInitialSearchModal() {
+    console.log('[ModalLogic-DEBUG] closeInitialSearchModal CALLED. Timestamp:', Date.now()); // Ensure this is logged
     modalLog("closeInitialSearchModal called.");
     const initialSearchModal = AppState.dom?.initialSearchModal || document.getElementById('initialSearchModal');
-    if (!initialSearchModal) return;
+    if (!initialSearchModal) {
+        modalWarn("closeInitialSearchModal: initialSearchModal element NOT FOUND. Returning.");
+        return;
+    }
+
+    const wasOpen = initialSearchModal.classList.contains('modal-open');
+    console.log(`[ModalLogic-DEBUG] closeInitialSearchModal: Modal 'modal-open' class was present: ${wasOpen}. Current body classes: ${document.body.className}`);
 
     initialSearchModal.classList.remove('modal-open');
+
     setTimeout(() => {
-        if (!initialSearchModal.classList.contains('modal-open')) {
+        console.log('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): Checking conditions to remove "modal-active". Timestamp:', Date.now());
+        if (!initialSearchModal.classList.contains('modal-open')) { // Check if it's *still* not open (e.g. not rapidly re-opened)
             initialSearchModal.style.display = 'none';
             const dom = window.AppState?.dom;
-            if (dom) { /* ... check other overlays ... */ } else { document.body.classList.remove('modal-active'); }
+            let removedClass = false;
+            if (dom) {
+                const shopOverlayIsOpen = dom.detailsOverlayShopElement?.classList.contains('is-open');
+                const socialOverlayIsOpen = dom.detailsOverlaySocialElement?.classList.contains('is-open');
+                console.log(`[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): shopOverlayIsOpen=${shopOverlayIsOpen}, socialOverlayIsOpen=${socialOverlayIsOpen}`);
+
+                if (!shopOverlayIsOpen && !socialOverlayIsOpen) {
+                    document.body.classList.remove('modal-active');
+                    removedClass = true;
+                    console.log('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): REMOVED "modal-active" from body. New body classes:', document.body.className, 'Timestamp:', Date.now());
+                } else {
+                    console.log('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): "modal-active" NOT removed because other overlays are open. Body classes:', document.body.className, 'Timestamp:', Date.now());
+                }
+            } else {
+                document.body.classList.remove('modal-active');
+                removedClass = true;
+                console.log('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): REMOVED "modal-active" from body (dom fallback). New body classes:', document.body.className, 'Timestamp:', Date.now());
+            }
+            if (!removedClass && document.body.classList.contains('modal-active')) {
+                 console.warn('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): "modal-active" was EXPECTED to be removed or not present, but it IS STILL ON BODY. Body classes:', document.body.className);
+            }
+
+        } else {
+            console.log('[ModalLogic-DEBUG] closeInitialSearchModal (setTimeout): "modal-open" class was re-added or still present, not hiding modal or touching body class. Body classes:', document.body.className);
         }
     }, 300);
 }
@@ -236,22 +272,39 @@ function submitModalSearch() {
 }   
 
 function initializeModalLogic(showModalFlag) {
+    console.log(`[ModalLogic-DEBUG] initializeModalLogic CALLED with showModalFlag: ${showModalFlag}. Timestamp:`, Date.now());
     modalLog("initializeModalLogic called. showModalFlag:", showModalFlag);
     const dom = AppState.dom;
 
-    // Use elements from AppState.dom now
-    const initialSearchModal = dom.initialSearchModal; 
-    const modalSearchAutocompleteElem = dom.modalSearchAutocompleteElement; 
+    const initialSearchModal = dom.initialSearchModal;
+    const modalSearchAutocompleteElem = dom.modalSearchAutocompleteElement;
     const modalSearchButton = dom.modalSearchButton;
     const modalSkipButton = dom.modalSkipButton;
 
     if (!initialSearchModal || !modalSearchAutocompleteElem || !modalSearchButton || !modalSkipButton) {
         modalWarn("initializeModalLogic: One or more core modal DOM elements (from AppState.dom) missing.");
-        return; 
+        return;
     }
     
     if (showModalFlag) {
+        console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is true, calling openInitialSearchModal. Timestamp:', Date.now());
         openInitialSearchModal();
+    } else {
+        // If the modal is not supposed to be shown, ensure it's hidden.
+        console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false, EXPLICITLY HIDING initialSearchModal. Timestamp:', Date.now());
+        if (initialSearchModal) {
+            initialSearchModal.style.display = 'none';
+            initialSearchModal.classList.remove('modal-open'); // Remove transition class
+        }
+        // And ensure modal-active is NOT on the body if no other overlays are active
+        // This check is crucial if 'modal-active' was somehow left behind
+        if (AppState.dom &&
+            !AppState.dom.detailsOverlayShopElement?.classList.contains('is-open') &&
+            !AppState.dom.detailsOverlaySocialElement?.classList.contains('is-open') &&
+            document.body.classList.contains('modal-active')) { // Only remove if it's there
+            console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false and no other overlays open, REMOVING "modal-active" from body.');
+            document.body.classList.remove('modal-active');
+        }
     }
 
     modalSearchButton.addEventListener('click', submitModalSearch);
@@ -259,36 +312,44 @@ function initializeModalLogic(showModalFlag) {
         if (e.key === 'Enter') { e.preventDefault(); submitModalSearch(); }
     });
     modalSkipButton.addEventListener('click', () => {
-        closeInitialSearchModal();
-        if (dom.searchAutocompleteElement && dom.searchAutocompleteElement.value.trim() === "" && typeof DEFAULT_MAP_CENTER !== 'undefined') {
-            dom.searchAutocompleteElement.value = "Biddeford, Maine"; 
-            AppState.lastPlaceSelectedByAutocomplete = null; // No specific place from skip
-            // Set a default cookie if desired, or let handleSearch do it with the default term
-            const defaultPlaceForCookie = {
-                name: "Biddeford, Maine",
-                formatted_address: "Biddeford, ME, USA", // Example
-                geometry: { location: DEFAULT_MAP_CENTER }
-            };
-            const defaultCookieData = { term: "Biddeford, Maine", place: defaultPlaceForCookie };
-            setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify(defaultCookieData), COOKIE_EXPIRY_DAYS);
-            modalLog("Cookie set to default (Biddeford) on modal skip.");
-        }
-        // Trigger map initialization THEN search
-        if (typeof attemptMapInitialization === "function") {
-            modalLog("Modal skipped, attempting map initialization THEN search...");
-            attemptMapInitialization().then(() => {
-                if (typeof handleSearch === "function") { 
-                    handleSearch();
-                } else { modalError("modalSkipButton: handleSearch function not found AFTER map init attempt!");}
-            }).catch(err => {
-                modalError("Error during map initialization from modal skip:", err);
-                if (typeof handleSearch === "function") handleSearch();
-            });
+         closeInitialSearchModal();
+        // ALWAYS set to Portland, Maine on skip
+        if (dom.searchAutocompleteElement) { // Ensure element exists
+            dom.searchAutocompleteElement.value = "Portland, Maine";
+            AppState.lastPlaceSelectedByAutocomplete = null; // Let handleSearch geocode "Portland, Maine"
+
+            if (typeof DEFAULT_PORTLAND_CENTER !== 'undefined') { // Check if constant is available
+                const portlandPlaceForCookie = {
+                    name: "Portland, Maine",
+                    formatted_address: "Portland, ME, USA", // General formatted address
+                    geometry: { location: DEFAULT_PORTLAND_CENTER } // Use Portland's coordinates
+                };
+                const portlandCookieData = { term: "Portland, Maine", place: portlandPlaceForCookie };
+                setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify(portlandCookieData), COOKIE_EXPIRY_DAYS);
+                modalLog("Cookie set to default (Portland, Maine) on modal skip.");
+            } else {
+                modalWarn("DEFAULT_PORTLAND_CENTER not defined. Cookie for Portland not fully set on skip.");
+            }
         } else {
-             modalError("modalSkipButton: attemptMapInitialization function not found!");
-            if (typeof handleSearch === "function") handleSearch();
-        }
-    });
+            modalWarn("Main search autocomplete element not found on modal skip. Cannot set Portland default.");
+         }
+
+         // Trigger map initialization THEN search
+         if (typeof attemptMapInitialization === "function") {
+            modalLog("Modal skipped, attempting map initialization THEN search (for Portland, Maine)...");
+             attemptMapInitialization().then(() => {
+                 if (typeof handleSearch === "function") { 
+                     handleSearch();
+                 } else { modalError("modalSkipButton: handleSearch function not found AFTER map init attempt!");}
+             }).catch(err => {
+                 modalError("Error during map initialization from modal skip:", err);
+                 if (typeof handleSearch === "function") handleSearch();
+             });
+         } else {
+            modalError("modalSkipButton: attemptMapInitialization function not found!");
+             if (typeof handleSearch === "function") handleSearch();
+         }
+     });
 
     if (AppState.mapsApiReady) {
         modalLog("initializeModalLogic: Maps API was ALREADY ready. Calling setupModalAutocompleteEventListeners().");

@@ -1,7 +1,7 @@
 ﻿// public/js/main.js
 'use strict';
 
-const DEBUG_MAIN_JS = true;
+const DEBUG_MAIN_JS = false;
 
 document.addEventListener("DOMContentLoaded", () => {
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] DOMContentLoaded event fired.");
@@ -348,4 +348,33 @@ async function handleSearch() {
     if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] --- handleSearch finished ---");
 }
 
-// == Functions to be moved to router.js ==
+
+
+
+
+
+
+
+
+
+// In main.js or uiInit.js, after DOM is ready
+document.addEventListener('click', function(event) {
+    const dom = AppState.dom;
+    if (!dom.mapElement || !dom.detailsOverlayShopElement || !dom.detailsOverlaySocialElement) return;
+
+    const clickedOnMap = dom.mapElement.contains(event.target);
+    const clickedInShopOverlay = dom.detailsOverlayShopElement.contains(event.target);
+    const clickedInSocialOverlay = dom.detailsOverlaySocialElement.contains(event.target);
+    // Also check if clicked on buttons that open overlays, etc.
+
+    const socialOverlayIsOpen = dom.detailsOverlaySocialElement.classList.contains('is-open');
+    const shopOverlayIsOpen = dom.detailsOverlayShopElement.classList.contains('is-open');
+
+    if (clickedOnMap && (socialOverlayIsOpen || shopOverlayIsOpen)) {
+        if (!clickedInShopOverlay && !clickedInSocialOverlay) { // Ensure not clicking inside an already open overlay
+            if (typeof closeClickedShopOverlaysAndNavigateHome === "function") {
+                closeClickedShopOverlaysAndNavigateHome();
+            }
+        }
+    }
+});
