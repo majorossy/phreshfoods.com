@@ -1,13 +1,22 @@
 services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./htpasswd:/etc/nginx/.htpasswd:ro
+    depends_on:
+      - farm-finder-dev
+
   farm-finder-dev:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: farm-finder-dev
-    ports:
-      - "3000:3000"
-    volumes:
-      - .:/usr/src/app
+    expose:
+      - "3000"
     command: npx nodemon server.js
     environment:
       - NODE_ENV=development
