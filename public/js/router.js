@@ -44,34 +44,62 @@ async function displayStorePageBySlug(storeSlug) {
         if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Shop found for slug:", shop.Name);
 
         // Set location context from this shop
-        if (shop.lat != null && shop.lng != null) {
-            const shopLocationForCookie = {
+
+// router.js -> displayStorePageBySlug
+// ... (inside the `if (shop)` block) ...
+
+    // Set location context from this shop
+    if (shop.lat != null && shop.lng != null) { // Initial check for non-null values
+        const parsedLat = parseFloat(shop.lat);
+        const parsedLng = parseFloat(shop.lng);
+
+        // Check if parsing resulted in valid numbers
+        if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+            const shopLocationForContext = { // Renamed for clarity (used for AppState and Cookie)
                 name: shop.Name,
                 formatted_address: shop.Address, // Use shop's address
                 geometry: {
-                    location: { lat: parseFloat(shop.lat), lng: parseFloat(shop.lng) },
-                    // viewport: shop.placeDetails?.geometry?.viewport // Could use this if available from placeDetails
+                    location: { lat: parsedLat, lng: parsedLng }, // Use the parsed, valid numbers
+                    // You could potentially add viewport here if shop.placeDetails exists and has it
+                    // viewport: shop.placeDetails?.geometry?.viewport
                 },
-                // place_id: shop.GoogleProfileID // Could add if needed
+                // You could add place_id if available and needed
+                // place_id: shop.GoogleProfileID
             };
-            AppState.lastPlaceSelectedByAutocomplete = shopLocationForCookie;
-            setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify({ term: shop.Name, place: shopLocationForCookie }), COOKIE_EXPIRY_DAYS);
-            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] Cookie set for farm stand:", shop.Name);
 
-            // If map isn't loaded yet, initialize it now, centered on this shop
+            AppState.lastPlaceSelectedByAutocomplete = shopLocationForContext;
+            // Also update the cookie with this valid location context
+            setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify({ term: shop.Name, place: shopLocationForContext }), COOKIE_EXPIRY_DAYS);
+
+            if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Valid location context set for AppState and cookie for shop:", shop.Name, "Location:", shopLocationForContext.geometry.location);
+        } else {
+            // If lat/lng were not valid numbers after parsing
+            if (DEBUG_MAIN_JS) console.warn(`[main.js_DEBUG] displayStorePageBySlug: Invalid or non-numeric lat/lng for shop '${shop.Name}'. Original lat: '${shop.lat}', lng: '${shop.lng}'. Location context NOT set.`);
+            // Optionally, you could clear AppState.lastPlaceSelectedByAutocomplete here if you want to ensure
+            // that a subsequent handleSearch doesn't try to use potentially stale (but valid) data from a previous action.
+            // AppState.lastPlaceSelectedByAutocomplete = null; // Uncomment if this behavior is desired
+        }
+    } else {
+        // If shop.lat or shop.lng were initially null/undefined
+        if (DEBUG_MAIN_JS) console.warn(`[main.js_DEBUG] displayStorePageBySlug: Null or undefined lat/lng for shop '${shop.Name}'. Location context NOT set.`);
+    }
+
+    // If map isn't loaded yet, initialize it now.
+    // The map will use AppState.lastPlaceSelectedByAutocomplete if it was validly set above,
+    // or its own defaults / DEFAULT_MAP_CENTER if AppState.lastPlaceSelectedByAutocomplete is null or invalid.
+    if (!window.map) {
+        if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Map not loaded. Attempting initialization.");
+        if (typeof attemptMapInitialization === "function") {
+            await attemptMapInitialization(); // This will use AppState.lastPlaceSelectedByAutocomplete if set
             if (!window.map) {
-                if (DEBUG_MAIN_JS) console.log("[main.js_DEBUG] displayStorePageBySlug: Map not loaded. Attempting initialization for farm stand.");
-                if (typeof attemptMapInitialization === "function") {
-                    await attemptMapInitialization(); // Ensure this can be awaited if performMapSetup is async
-                    if (!window.map) {
-                        console.error("[main.js_DEBUG] displayStorePageBySlug: Failed to initialize map.");
-                        // Proceed to open overlays anyway, but map features won't work
-                    }
-                }
+                console.error("[main.js_DEBUG] displayStorePageBySlug: Failed to initialize map.");
             }
         }
-        // This function also handles map panning/zooming and infowindow
-        _openShopDetailsAndMapFeatures(shop);
+    }
+    // This function also handles map panning/zooming and infowindow
+    _openShopDetailsAndMapFeatures(shop);
+// ... (rest of the `if (shop)` block and the `else` for shop not found) ...
+        
     } else {
         if (DEBUG_MAIN_JS) console.warn("[main.js_DEBUG] Shop not found for slug:", storeSlug, ". Navigating to home.");
         if (typeof closeClickedShopOverlays === "function") closeClickedShopOverlays();

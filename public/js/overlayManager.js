@@ -1,6 +1,6 @@
 // public/js/overlayManager.js
 'use strict';
-const DEBUG_OVERLAY = true;
+const DEBUG_OVERLAY = false;
 
 function overlayDebugLog(...args) {
     if (DEBUG_OVERLAY) console.log('[overlay-DEBUG]', ...args);
@@ -17,7 +17,7 @@ function overlayDebugError(...args) {
  * @param {HTMLElement} overlayElement - The overlay DOM element.
  */
 function openOverlay(overlayElement) {
-    console.log('[OverlayManager-DEBUG] openOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); 
+    overlayDebugLog('[OverlayManager-DEBUG] openOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); 
     overlayDebugLog('openOverlay() called');
     if (!overlayElement) return;
     overlayElement.classList.remove('hidden');
@@ -30,7 +30,7 @@ function openOverlay(overlayElement) {
  * @param {HTMLElement} overlayElement - The overlay DOM element.
  */
 function closeOverlay(overlayElement) {
-    console.log('[OverlayManager-DEBUG] closeOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); // ADD LOG
+    overlayDebugLog('[OverlayManager-DEBUG] closeOverlay called for element ID:', overlayElement?.id, 'Timestamp:', Date.now()); // ADD LOG
     overlayDebugLog('closeOverlay() called for element ID:', overlayElement?.id); // Your existing log
     if (!overlayElement) return;
     overlayElement.classList.remove('is-open');

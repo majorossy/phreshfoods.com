@@ -1,7 +1,7 @@
 // public/js/modalLogic.js
 'use strict';
 
-const DEBUG_MODAL_LOGIC = true;
+const DEBUG_MODAL_LOGIC = false;
 
 function modalLog(...args) { if (DEBUG_MODAL_LOGIC) console.log('[ModalLogic]', ...args); }
 function modalWarn(...args) { if (DEBUG_MODAL_LOGIC) console.warn('[ModalLogic]', ...args); }
@@ -287,11 +287,11 @@ function initializeModalLogic(showModalFlag) {
     }
     
     if (showModalFlag) {
-        console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is true, calling openInitialSearchModal. Timestamp:', Date.now());
+        modalLog('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is true, calling openInitialSearchModal. Timestamp:', Date.now());
         openInitialSearchModal();
     } else {
         // If the modal is not supposed to be shown, ensure it's hidden.
-        console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false, EXPLICITLY HIDING initialSearchModal. Timestamp:', Date.now());
+        modalLog('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false, EXPLICITLY HIDING initialSearchModal. Timestamp:', Date.now());
         if (initialSearchModal) {
             initialSearchModal.style.display = 'none';
             initialSearchModal.classList.remove('modal-open'); // Remove transition class
@@ -302,7 +302,7 @@ function initializeModalLogic(showModalFlag) {
             !AppState.dom.detailsOverlayShopElement?.classList.contains('is-open') &&
             !AppState.dom.detailsOverlaySocialElement?.classList.contains('is-open') &&
             document.body.classList.contains('modal-active')) { // Only remove if it's there
-            console.log('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false and no other overlays open, REMOVING "modal-active" from body.');
+            modalLog('[ModalLogic-DEBUG] initializeModalLogic: showModalFlag is false and no other overlays open, REMOVING "modal-active" from body.');
             document.body.classList.remove('modal-active');
         }
     }

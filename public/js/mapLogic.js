@@ -310,24 +310,85 @@ async function showInfoWindowForShop(shop) { /* ... Full function ... */
         }
     }
 }
-function getAdjustedMapCenter(targetCenterInput) { /* ... Full function ... */ 
+// mapLogic.js
+function getAdjustedMapCenter(targetCenterInput) {
     const dom = AppState.dom;
-    if (!map?.getDiv || !map.getBounds() || !map.getProjection()) return targetCenterInput; 
+    if (!map?.getDiv() || !map.getBounds() || !map.getProjection()) {
+        mapDebugLog("getAdjustedMapCenter: Pre-conditions not met (map, bounds, or projection missing). Returning original target.");
+        return targetCenterInput; // Return the original if map isn't fully ready
+    }
+
     let targetLat, targetLng;
-    if (targetCenterInput && typeof targetCenterInput.lat === 'function') { targetLat = targetCenterInput.lat(); targetLng = targetCenterInput.lng(); }
-    else if (targetCenterInput && typeof targetCenterInput.lat === 'number') { targetLat = targetCenterInput.lat; targetLng = targetCenterInput.lng; }
-    else { const mc = map.getCenter(); return mc ? { lat: mc.lat(), lng: mc.lng() } : (DEFAULT_MAP_CENTER || { lat: 0, lng: 0}); }
-    const mapWidthPx = map.getDiv().offsetWidth; let panelLeftPx = 0; let panelRightPx = 0;
-    const socialPanel = dom.detailsOverlaySocialElement; 
-    if (socialPanel?.classList.contains('is-open') && socialPanel.offsetParent) panelLeftPx = socialPanel.offsetWidth;
+    // ... (your existing LatLng/Literal parsing for targetCenterInput) ...
+    if (targetCenterInput && typeof targetCenterInput.lat === 'function') {
+        targetLat = targetCenterInput.lat(); targetLng = targetCenterInput.lng();
+    } else if (targetCenterInput && typeof targetCenterInput.lat === 'number') {
+        targetLat = targetCenterInput.lat; targetLng = targetCenterInput.lng;
+    } else {
+        const mc = map.getCenter();
+        mapDebugLog("getAdjustedMapCenter: Invalid targetCenterInput. Using map center or default.");
+        return mc ? { lat: mc.lat(), lng: mc.lng() } : ((typeof DEFAULT_MAP_CENTER !== 'undefined') ? DEFAULT_MAP_CENTER : { lat: 0, lng: 0 });
+    }
+    mapDebugLog(`[AdjustCenter] INPUT: targetLat=${targetLat}, targetLng=${targetLng}`);
+
+
+    const mapDiv = map.getDiv();
+    const mapWidthPx = mapDiv.offsetWidth;
+    let panelLeftPx = 0;
+    let panelRightPx = 0;
+
+    const socialPanel = dom.detailsOverlaySocialElement;
+    if (socialPanel?.classList.contains('is-open') && getComputedStyle(socialPanel).display !== 'none') {
+        panelLeftPx = socialPanel.offsetWidth;
+    }
+
     const shopPanel = dom.detailsOverlayShopElement;
-    if (shopPanel?.classList.contains('is-open') && shopPanel.offsetParent) panelRightPx = shopPanel.offsetWidth;
-    else { const listingsPanel = dom.listingsPanelElement; if (listingsPanel && getComputedStyle(listingsPanel).display !== "none" && window.innerWidth >= 768) panelRightPx = listingsPanel.offsetWidth; }
-    if ((panelLeftPx <= 0 && panelRightPx <= 0) || mapWidthPx <= 0) return { lat: targetLat, lng: targetLng };
-    const netPixelShift = (panelLeftPx - panelRightPx) / 2; 
-    const currentMapBounds = map.getBounds(); if (!currentMapBounds) return { lat: targetLat, lng: targetLng };
-    const lngSpan = currentMapBounds.toSpan().lng(); const degreesPerPixelLng = lngSpan / mapWidthPx;
-    const adjustedLng = targetLng - (netPixelShift * degreesPerPixelLng); 
+    if (shopPanel?.classList.contains('is-open') && getComputedStyle(shopPanel).display !== 'none') {
+        panelRightPx = shopPanel.offsetWidth;
+    } else {
+        const listingsPanel = dom.listingsPanelElement;
+        if (listingsPanel && getComputedStyle(listingsPanel).display !== "none" && window.innerWidth >= 768) {
+            panelRightPx = listingsPanel.offsetWidth;
+        }
+    }
+    mapDebugLog(`[AdjustCenter] PANELS: mapWidthPx=${mapWidthPx}, panelLeftPx=${panelLeftPx}, panelRightPx=${panelRightPx}`);
+
+
+    if ((panelLeftPx === 0 && panelRightPx === 0) || mapWidthPx === 0) { // Use === 0 for clarity
+        mapDebugLog("[AdjustCenter] No panel offsets or zero map width. Returning original target.");
+        return { lat: targetLat, lng: targetLng };
+    }
+
+    const netPixelShift = (panelLeftPx - panelRightPx) / 2;
+    mapDebugLog(`[AdjustCenter] CALC: netPixelShift=${netPixelShift}`);
+
+    const currentMapBounds = map.getBounds();
+    if (!currentMapBounds) {
+        mapDebugLog("[AdjustCenter] map.getBounds() is null. Returning original target.");
+        return { lat: targetLat, lng: targetLng };
+    }
+    const lngSpan = currentMapBounds.toSpan().lng();
+    const degreesPerPixelLngFromSpan = mapWidthPx > 0 ? (lngSpan / mapWidthPx) : 0;
+    mapDebugLog(`[AdjustCenter] CALC: lngSpan=${lngSpan}, degreesPerPixelLngFromSpan=${degreesPerPixelLngFromSpan}`);
+
+    // Original formula was: targetLng - (netPixelShift * degreesPerPixelLng)
+    // If netPixelShift is positive (left panel wider), we want to shift map center to the RIGHT (increase longitude)
+    // If netPixelShift is negative (right panel wider), we want to shift map center to the LEFT (decrease longitude)
+    // So, if formula is targetLng + X, and netPixelShift is positive, X needs to be positive.
+    // If netPixelShift is negative, X needs to be negative.
+    // Thus, X should be proportional to netPixelShift.
+    // The map's center needs to shift *opposite* to how the content shifts the viewport's center.
+    // If left panel is 200px, viewport center is 100px right. Map center must shift 100px right. (targetLng + offset)
+    // netPixelShift = (200 - 0) / 2 = 100.  So, offset = 100 * deg/px.  targetLng + (100 * deg/px)
+    // If right panel is 200px, viewport center is 100px left. Map center must shift 100px left. (targetLng - offset)
+    // netPixelShift = (0 - 200) / 2 = -100. So, offset = -100 * deg/px. targetLng + (-100 * deg/px)
+    // The formula adjustedLng = targetLng + (netPixelShift * degreesPerPixelLngFromSpan) seems correct.
+
+    const longitudeShiftDegrees = netPixelShift * degreesPerPixelLngFromSpan;
+    const adjustedLng = targetLng + longitudeShiftDegrees;
+    mapDebugLog(`[AdjustCenter] CALC: longitudeShiftDegrees=${longitudeShiftDegrees}, adjustedLng=${adjustedLng}`);
+    mapDebugLog(`[AdjustCenter] OUTPUT: lat=${targetLat}, lng=${adjustedLng}`);
+
     return { lat: targetLat, lng: adjustedLng };
 }
 function getAdjustedBounds(originalBounds) { /* ... Full function ... */ 

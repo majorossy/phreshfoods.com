@@ -48,13 +48,23 @@ async function fetchAndProcessFarmStands() {
         }
 
 
+        // apiService.js or wherever shops are processed
+        // Example processing for each shop:
+        shops.lat = parseFloat(shop.lat_from_sheet);
+        shops.lng = parseFloat(shop.lng_from_sheet);
+        if (isNaN(shops.lat) || isNaN(shops.lng)) {
+            console.warn(`Invalid coordinates for shop ${shops.Name}: lat=${shops.lat_from_sheet}, lng=${shops.lng_from_sheet}. Setting to null.`);
+            shops.lat = null;
+            shops.lng = null;
+        }
+
         // Data is already parsed, geocoded, and includes slugs from the server.
         // Client-side specific initializations:
         return shops.map(shop => ({
             ...shop,
             // Ensure these client-side specific properties are initialized if not sent by server
             // (though server should send all necessary data fields, these are for client state)
-            placeDetails: shop.placeDetails || null, // For caching Google Place Details fetched on client
+            placeDetails: shops.placeDetails || null, // For caching Google Place Details fetched on client
             marker: null,                            // Google Maps marker object, created by mapLogic.js
             _isFetchingCardDetails: false,           // Internal flag for UI logic
         }));
