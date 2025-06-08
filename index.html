@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <!-- For responsiveness on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Replace with your actual favicon files if you have them -->
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" /> <!-- Default Vite icon, change this -->
+    <!-- Example for other favicons:
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    -->
+
+    <title>PhreshPhoods - Maine Farm Stand Finder</title> <!-- Updated Title -->
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!--
+      Google Maps API Script:
+      - `async` allows the script to load without blocking HTML parsing.
+      - `YOUR_ACTUAL_GOOGLE_API_KEY_FRONTEND` MUST be replaced with your valid API key.
+      - `libraries` loads specific Google Maps libraries you need.
+      - `callback=initAppMapGlobal` calls the global function once the API is loaded.
+        This function (defined below or in a tiny inline script) will signal to your React app.
+    -->
+    <script>
+      function initAppMapGlobal() {
+        // This global function is called by the Google Maps API script when it's ready.
+        // It sets a flag and dispatches an event that your React AppContext can listen for.
+        window.googleMapsApiLoaded = true;
+        window.dispatchEvent(new CustomEvent('google-maps-api-loaded'));
+        console.log("Google Maps API script loaded and callback 'initAppMapGlobal' executed.");
+      }
+    </script>
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker,maps,geocoding&callback=initAppMapGlobal"></script>
+    <!--
+        IMPORTANT: Replace YOUR_ACTUAL_GOOGLE_API_KEY_FRONTEND with your real Google Maps API key.
+        Ensure this key is properly restricted in your Google Cloud Console for security.
+    -->
+
+    <!-- Social Media SDKs - These can also be loaded dynamically within React components if preferred -->
+    <!-- Twitter Widgets -->
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+    <!-- Instagram Embeds -->
+    <script async src="https://www.instagram.com/embed.js"></script>
+    <!-- Facebook SDK -->
+    <!--
+        IMPORTANT: Replace YOUR_FACEBOOK_APP_ID and YOUR_NONCE_HERE
+        You need a Facebook App ID if you want to use advanced features of the SDK or if required by their terms.
+        The nonce is for Content Security Policy (CSP) if you use one.
+    -->
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script>
+
+</head>
+<body class="bg-white antialiased">
+    <!-- This is the root div where your React application will be mounted. -->
+    <div id="root">
+        <!-- Fallback content if JavaScript is disabled or React fails to load -->
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: 'Inter', sans-serif; text-align: center; padding: 20px;">
+            <h1>Loading PhreshPhoods Farm Stand Finder...</h1>
+            <p>If you see this message for an extended period, please ensure JavaScript is enabled in your browser.</p>
+            <!-- You could add a simple loading spinner here if desired -->
+            <style>
+                @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+                .simple-loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
+            </style>
+            <div class="simple-loader"></div>
+        </div>
+    </noscript> <!-- The "noscript" tag itself is for when JS is off -->
+    <!-- Note: The content *inside* #root before React loads is what the user sees briefly. The noscript tag is for total JS disablement. -->
+
+
+    <!--
+      Vite will automatically inject the link to your compiled CSS
+      and the script tag for your compiled JavaScript bundle here during development and build.
+      You DO NOT need to add <link> or <script> tags for your application code manually.
+    -->
+    <script type="module" src="/src/main.tsx"></script>
+</body>
+</html>

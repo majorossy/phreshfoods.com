@@ -1,0 +1,601 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none; 
+    height: 100vh; 
+    margin: 0; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; 
+    overflow: hidden; 
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #c9bcae;
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #a0aec0; 
+    border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #718096; 
+}
+
+main {
+    flex-grow: 1; 
+    overflow: hidden; 
+    position: relative; 
+    display: flex; 
+}
+
+#mapPanel {
+    height: 100%; 
+    width: 100%; 
+    position: absolute; 
+    top: 0;
+    left: 0;
+}
+#map {
+    height: 100%;
+    width: 100%;
+}
+
+#listingsPanel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10; 
+    width: 42%; 
+    overflow-y: auto; 
+    background: transparent;
+    flex-shrink: 0; 
+}
+@media (max-width: 767px) { 
+    #listingsPanel {
+        width: 100%; 
+    }
+}
+
+
+/* --- Overlay Styling --- */
+.detail-pop-overlay {
+    position: absolute;
+    inset: 0; 
+    background-color: rgba(249, 250, 251, 0.97); 
+    backdrop-filter: blur(4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s, transform 0.3s ease-in-out;
+    z-index: 50;
+    display: flex; 
+    flex-direction: column; 
+}
+
+@media (min-width: 768px) { 
+    .detail-pop-overlay {
+        top: 0; 
+        bottom: 0; 
+        width: 30%; 
+        inset-inline-start: auto; 
+        inset-inline-end: auto;  
+    }
+}
+
+.detail-pop-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+    z-index: 50; 
+}
+
+#detailsOverlayShop { 
+    right: 0; 
+    transform: translateX(100%);
+}
+#detailsOverlayShop.is-open { transform: translateX(0%); }
+@media (min-width: 768px) { #detailsOverlayShop { width: 42%; left: auto; } }
+
+#detailsOverlaySocial { 
+    left: 0; 
+    transform: translateX(-100%);
+}
+#detailsOverlaySocial.is-open { transform: translateX(0%); }
+@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; right: auto; } }
+
+.overlay-close-button {
+    position: absolute; 
+    top: 0.75rem; 
+    right: 0.75rem; 
+    color: #4B5563; 
+    z-index: 60; 
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem; 
+}
+.overlay-close-button:hover { color: #1F2937; }
+@media (min-width: 640px) { .overlay-close-button { top: 1rem; right: 1rem; } }
+
+
+/* --- Overlay Content Structure for Full Height Tabs (Social Overlay) --- */
+#detailsOverlaySocial > div:nth-child(2) { 
+    padding: 1rem 1rem 0 1rem; 
+    flex-shrink: 0; 
+}
+#detailsOverlaySocial > div:nth-child(3) {
+    flex-grow: 1; 
+    overflow: hidden; 
+    padding: 0 1rem 1rem 1rem; 
+    display: flex; 
+    flex-direction: column; 
+}
+
+.social-tab-content:not(.hidden) {
+    display: flex; 
+    flex-direction: column; 
+    height: 100%; 
+}
+
+#social-reviews-panel > h3, 
+#social-photos-panel > h3,
+#social-facebook-panel > h3, /* If Facebook panel has a title */
+#social-instagram-panel > h3, /* If Instagram panel has a title */
+#social-twitter-panel > h3 { /* If Twitter panel has a title */
+    flex-shrink: 0; 
+    /* Tailwind mb-2 is likely applied in HTML for spacing */
+}
+
+#socialOverlayReviewsContainer, 
+#socialOverlayGooglePhotosContainer,
+#socialLinksContainer, 
+#instagramFeedContainer, 
+#twitterTimelineContainer {
+    flex-grow: 1; 
+    overflow-y: auto; 
+    /* Ensure child elements can also expand if needed */
+    display: flex; /* Helps if the direct child (e.g. fb-page) needs to fill height */
+    flex-direction: column; /* Stack children inside this scrollable area */
+}
+
+/* --- Shop Details Overlay Content Structure --- */
+#detailsOverlayShop > #shopDetailsContent { 
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem; 
+}
+#detailsOverlayShop #shopDetailName,
+#detailsOverlayShop #shopDetailsContent > h3 { 
+    flex-shrink: 0; 
+}
+#detailsOverlayShop #shopImageGallery, 
+#detailsOverlayShop #directionsControlSection { 
+    flex-shrink: 0; 
+}
+
+/* --- Social Overlay Tab Button Styling --- */
+.social-tab-button {
+    border-color: transparent; color: #6b7280; 
+    transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+}
+.social-tab-button:hover { color: #374151; border-color: #d1d5db; }
+.social-tab-button.active-social-tab { color: #2563eb; border-color: #2563eb; font-weight: 600; }
+
+/* --- Social Media Embed Specific Styling --- */
+/* Facebook Page Plugin Specific Styling for Full Height */
+#socialLinksContainer .fb-page,
+#socialLinksContainer .fb-page span, /* Target the span FB wraps its iframe in */
+#socialLinksContainer .fb-page iframe {
+    width: 100% !important;
+    height: 100% !important; /* Crucial for full height */
+    max-width: 100%;
+    min-height: 300px; /* Fallback minimum height */
+    display: block !important; /* Or flex if needed for internal alignment */
+    flex-grow: 1 !important; /* If parent is flex */
+}
+/* Ensure the parent of .fb-page (which is #socialLinksContainer) is also flex column and allows growth */
+#socialLinksContainer {
+    border: 1px solid #e5e7eb; /* Keep border if desired */
+    border-radius: 0.375rem; /* Tailwind rounded-lg */
+    overflow: hidden; /* To contain the iframe */
+    /* flex-grow: 1; -- Already set */
+    /* display: flex; -- Already set */
+    /* flex-direction: column; -- Already set */
+}
+
+
+#twitterTimelineContainer iframe {
+    width: 100% !important;
+    max-width: 100%;
+    min-height: 400px; 
+    height: 100%; /* Attempt full height for Twitter */
+    border-radius: 0; 
+    border: none !important; 
+}
+.instagram-embed-wrapper iframe,
+.instagram-embed-wrapper .instagram-media {
+    margin-left: auto !important; margin-right: auto !important;
+    max-width: 100% !important; 
+    width: calc(100% - 1rem) !important; 
+    min-width: 280px !important; 
+    box-shadow: none !important; 
+    border-radius: 0.375rem; 
+}
+
+.gm-style-iw-c button.gm-ui-hover-effect { display: none !important; }
+
+/* --- Gallery Styling (Shop & Social) --- */
+#shopImageGallery,
+#socialOverlayGooglePhotosContainer { 
+    display: grid;
+    /* MODIFIED: Increased minimum width for larger image containers */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+    gap: 0.5rem; 
+    padding-bottom: 0.5rem; 
+    
+    width: 100%; 
+    box-sizing: border-box; 
+}
+#shopImageGallery .gallery-image-container,
+#socialOverlayGooglePhotosContainer .gallery-image-container {
+    box-sizing: border-box; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; background-color: #f3f4f6; 
+    border-radius: 0.375rem; overflow: hidden; aspect-ratio: 3 / 2;
+}
+#shopImageGallery .gallery-image,
+#socialOverlayGooglePhotosContainer .gallery-image {
+    width: 100%; height: 100%; object-fit: cover; display: block; 
+}
+#shopImageGallery .gallery-image-container .text-xs,
+#socialOverlayGooglePhotosContainer .gallery-image-container .text-xs {
+    padding: 0.5rem; width: 100%; text-align: center;
+}
+#shopImageGallery > .col-span-full,
+#socialOverlayGooglePhotosContainer > .col-span-full {
+    grid-column: 1 / -1; text-align: center;
+}
+
+.line-clamp-3 {
+  overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3;
+}
+.hover\:line-clamp-none:hover { -webkit-line-clamp: unset; }
+
+#directionsControlSection button { }
+#directionsPanel {
+    background-color: #f9fafb; padding: 0.5rem; border-radius: 0.25rem; 
+    border: 1px solid #e5e7eb; margin-top: 0.5rem;
+}
+#directionsPanel .adp-summary { font-weight: bold; margin-bottom: 0.5rem; }
+#directionsPanel .adp-step { padding: 0.25rem 0; }
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none; width: 16px; height: 16px;
+  background: #c53030; cursor: pointer; border-radius: 50%; margin-top: -6px; 
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px; height: 16px; background: #c53030; cursor: pointer;
+  border-radius: 50%; border: none;
+}
+input[type="range"]::-ms-thumb {
+  width: 16px; height: 16px; background: #c53030; cursor: pointer;
+  border-radius: 50%; border: 0;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px; cursor: pointer; background: #cbd5e0; border-radius: 2px;
+}
+input[type="range"]::-moz-range-track {
+  height: 4px; cursor: pointer; background: #cbd5e0; border-radius: 2px;
+}
+input[type="range"]::-ms-track {
+  height: 4px; cursor: pointer; background: transparent;
+  border-color: transparent; color: transparent;
+}
+input[type="range"]::-ms-fill-lower { background: #cbd5e0; border-radius: 2px; }
+input[type="range"]::-ms-fill-upper { background: #cbd5e0; border-radius: 2px; }
+
+
+
+
+
+/* --- Customizations for InfoWindow Padding Removal --- */
+.gm-style-iw-c {
+    padding: 0 !important; /* Override Google's default padding for the main bubble */
+    max-width: none !important; /* Allow our content to dictate width */
+    min-width: 0 !important; /* Allow our content to dictate min-width */
+    box-shadow: none !important; /* Optional: remove Google's default shadow if you want a flatter look */
+    background-color: transparent !important; /* Optional: if you want only your content's background */
+}
+
+.gm-style-iw-d {
+    overflow: hidden !important; /* Prevent scrollbars if content fits snugly */
+    padding: 0 !important; /* Ensure no padding on the direct content container from Google */
+}
+
+/* Optional: If you made the .gm-style-iw-c background transparent, 
+   you might want to ensure your custom content wrapper has a background.
+   It already has max-width: 280px set inline. */
+.infowindow-content-wrapper {
+    background-color: white; /* Or your desired bubble background */
+    /* padding: 0 !important; /* This should be handled by Tailwind p-0 in uiLogic.js, but can be a fallback */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); /* Example: Add a custom shadow if Google's is removed */
+    border-radius: 4px; /* Example: Add border-radius if needed */
+}
+
+/* Hides the small arrow/tail of the InfoWindow if desired for a completely boxy look */
+/* .gm-style-iw-t {
+    display: none !important;
+} */
+
+/* Ensure images within the no-padding infowindow don't cause overflow if they have borders/margins not reset */
+.infowindow-content-wrapper img {
+    display: block; /* Helps manage spacing */
+    max-width: 100%; /* Ensure image is responsive within the new tight bounds */
+}
+
+
+
+
+/* style.css */
+
+/* Product Icons Section in Shop Details Overlay */
+.product-icons-section {
+    /* border-top: 1px solid #e5e7eb; /* Optional separator */
+    /* padding-top: 1rem; /* Optional space above the title */
+}
+
+#shopProductIconsGrid {
+    /* Tailwind classes handle grid: grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 p-1 */
+    /* You can adjust 'gap' and 'p' (padding) here if needed */
+}
+
+.product-icon-item {
+    /* Tailwind handles most: flex flex-col items-center text-center p-1 rounded-md hover:bg-gray-100 */
+    /* min-height: 80px; /* Example: if you want to ensure a minimum height for each item */
+}
+
+.product-icon-item img {
+    /* Tailwind handles: w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1 */
+    /* max-width: 100%; /* Ensure image doesn't overflow its container */
+}
+
+.product-icon-item span {
+    /* Tailwind handles: text-xs font-medium text-gray-700 */
+    /* word-break: break-word; /* If names are long */
+}
+
+/* style.css */
+
+.product-icon-item {
+    /* Tailwind handles most: flex flex-col items-center text-center p-1 */
+    /* Default transition for hover effects if any */
+    transition: background-color 0.15s ease-in-out, opacity 0.15s ease-in-out;
+}
+
+.product-icon-item.is-unavailable { /* Example if you want a dedicated class */
+    opacity: 0.4;
+    /* filter: grayscale(100%); */ /* Uncomment for grayscale effect */
+}
+
+.product-icon-item.is-available:hover {
+    background-color: #f3f4f6; /* Tailwind bg-gray-100 */
+}
+
+.product-icon-item img {
+    /* Tailwind: w-12 h-12 sm:w-14 sm:h-14 object-contain mb-1 */
+}
+
+.product-icon-item span {
+    /* Tailwind: text-xs font-medium text-gray-700 */
+}
+
+
+
+
+/* style.css - (add if needed, Tailwind might be sufficient) */
+
+.opening-hours-section {
+    /* Tailwind classes py-3, mb-4, border-t, border-b handle spacing and borders */
+}
+
+#shopOpeningHoursContainer {
+    /* Tailwind px-1 handles horizontal padding */
+}
+
+.opening-hours-list {
+    /* Tailwind space-y-1 handles vertical spacing between list items */
+}
+
+.opening-hours-list li {
+    /* Tailwind flex justify-between handles layout of day vs hours */
+    /* font-size might be inherited or set by text-sm on parent */
+}
+
+.opening-hours-list li span:first-child {
+    /* Day name */
+    /* color: #374151; /* Tailwind text-gray-700 */
+}
+
+.opening-hours-list li span:last-child {
+    /* Hours text */
+    /* color: #4b5563; /* Tailwind text-gray-600 or similar */
+    /* white-space: pre-line; /* If hours can have multiple lines */
+}
+
+
+
+
+
+
+
+
+
+
+/* Add to css/style.css */
+#productFilterDropdown label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    /* font-size: 0.875rem; /* text-sm */ /* Already set on parent */
+    color: #374151; /* gray-700 */
+    padding: 0.25rem; /* p-1 */
+    border-radius: 0.25rem; /* rounded */
+}
+#productFilterDropdown label:hover {
+    background-color: #f3f4f6; /* gray-100 */
+}
+
+#productFilterDropdown input[type="checkbox"] {
+    margin-right: 0.5rem; /* mr-2 */
+    cursor: pointer;
+    /* Tailwind's form-checkbox class can be used if you have Tailwind forms plugin */
+    /* Otherwise, default browser checkbox styling will apply */
+}
+
+#productFilterToggle.filters-active {
+    border-color: #c53030; /* red-600 (Tailwind) */
+    color: #c53030;
+    font-weight: 600; /* semibold */
+}
+
+#activeFilterCount.visible {
+    display: inline-block;
+    background-color: #c53030; /* red-600 */
+    color: white;
+    font-size: 0.65rem; /* Smaller font */
+    padding: 0.05rem 0.25rem; /* Adjusted padding */
+    border-radius: 0.5rem; /* rounded-full */
+    line-height: 1;
+    vertical-align: middle; /* Align with text */
+}
+
+/* Ensure custom scrollbar is applied if not already global */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #c5c5c5;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+
+
+#productFilterDropdown label img {
+    /* Example: Add a min-width/height if needed, or a background for placeholders */
+    /* vertical-align: middle; /* Might be useful depending on exact font/icon alignment */
+}
+
+
+
+
+
+/* In css/style.css (example if needed - Tailwind in JS might suffice) */
+.day-cell {
+    /* Tailwind: bg-white p-1.5 sm:p-2 text-center min-h-[50px] sm:min-h-[60px] flex flex-col justify-start items-center */
+    box-sizing: border-box; /* Good practice for grid/flex items */
+}
+
+.day-name {
+    /* Tailwind: font-semibold mb-0.5 sm:mb-1 uppercase text-[0.7rem] sm:text-xs */
+    /* text-transform: uppercase; /* Covered by Tailwind */
+}
+
+.day-hours {
+    /* Tailwind: leading-tight */
+    word-break: break-word; /* Helpful for long hour strings on small cells */
+}
+
+/* Today's highlight via JS using Tailwind classes should be sufficient.
+   If you need a dedicated CSS class:
+.day-cell.is-today-highlight {
+    background-color: #eff6ff; // Tailwind bg-blue-50
+    border: 2px solid #60a5fa; // Tailwind border-blue-400
+    position: relative;
+    z-index: 10;
+    margin: -1px; // To make border overlap correctly if grid has gap-px
+}
+*/
+
+
+
+
+/* css/style.css */
+
+/* ... your existing styles ... */
+
+/* Initial Search Modal Styling */
+#initialSearchModal.modal-open {
+    opacity: 1;
+    visibility: visible; /* Make sure it's explicitly visible */
+}
+#initialSearchModal.modal-open > div { /* Target the inner div for transform */
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* To ensure body scroll is prevented when modal is open */
+body.modal-active {
+    overflow: hidden;
+}
+
+
+/* src/index.css */
+
+/* ... your @tailwind directives and other styles ... */
+
+/* Customizations for Google Maps InfoWindow Bubble */
+.gm-style-iw-c { /* The main bubble container */
+    padding: 0 !important; /* Remove Google's default padding */
+    max-width: none !important; /* Let our content define max-width (up to InfoWindow's own limit) */
+    min-width: 0 !important;
+    box-shadow: 0 2px 7px 1px rgba(0,0,0,0.15) !important; /* Subtle shadow */
+    border-radius: 0.375rem !important; /* md rounded corners */
+    background-color: #fff !important; /* Ensure our background takes over */
+}
+
+.gm-style-iw-d { /* The direct child scrollable content div inside .gm-style-iw-c */
+    overflow: hidden !important; /* Prevent scrollbars if our content fits */
+    padding: 0 !important; /* No padding here if InfoWindowContent handles it */
+}
+
+/* Optional: Style for the explicit wrapper of our React content */
+.infowindow-content-wrapper {
+  /* You might not need much here if InfoWindowContent handles all internal styling */
+  /* If you set .gm-style-iw-c background to transparent, you'd set it here. */
+}
+
+/* Hide the default Google Maps InfoWindow tail/arrow */
+.gm-style-iw-t::after {
+    display: none !important;
+}
+/* You might also need to target .gm-style .gm-style-iw-tc if the above isn't enough */
+
+/* Optional: Remove the default close button if your InfoWindowContent has its own,
+   or if you want to rely solely on map clicks or other UI to close.
+   Generally, keeping Google's 'x' is good for accessibility.
+.gm-style .gm-style-iw-c button[title="Close"] {
+    display: none !important;
+}
+*/
