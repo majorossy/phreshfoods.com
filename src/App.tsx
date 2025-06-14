@@ -1,24 +1,21 @@
 // src/App.tsx
 import React, { useContext, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppContext } from './contexts/AppContext.tsx'; // Ensure this path is correct
+import { AppContext } from './contexts/AppContext.tsx';
+import { Shop } from './types'; // Assuming your Shop type is here
 
 import Header from './components/Header/Header.tsx';
 import MapComponent from './components/Map/MapComponent.tsx';
 import ListingsPanel from './components/Listings/ListingsPanel.tsx';
-import ProductFilters from './components/Filters/ProductFilters.tsx';
 import ShopDetailsOverlay from './components/Overlays/ShopDetailsOverlay.tsx';
 import SocialOverlay from './components/Overlays/SocialOverlay.tsx';
 import InitialSearchModal from './components/Overlays/InitialSearchModal.tsx';
-
-// import { PRODUCT_ICONS_CONFIG } from './config/appConfig'; // Keep if used in App.tsx directly
 
 function App() {
   const appContext = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Destructure only what's needed from context if AppContext can be undefined initially
   const {
     allFarmStands,
     setCurrentlyDisplayedShops,
@@ -30,82 +27,173 @@ function App() {
     openShopOverlays,
     closeShopOverlays,
     isInitialModalOpen,
-    setIsInitialModalOpen, // Assuming you'll add this to context
+    setIsInitialModalOpen,
     currentRadius,
-    mapsApiReady, // Added from context
-  } = appContext || {}; // Provide a fallback if context can be undefined
+    mapsApiReady,
+  } = appContext || {};
 
-  // Unified Search/Filter Logic (simplified for now)
+  // Unified Search/Filter Logic
   useEffect(() => {
-    if (!allFarmStands || !setCurrentlyDisplayedShops) return; // Allow empty allFarmStands initially
-    if (allFarmStands.length === 0) { // If no stands fetched yet, display nothing
+    console.log("-------------------- FILTERING EFFECT START --------------------");
+
+    if (!setCurrentlyDisplayedShops) {
+      console.log("[App.tsx] Effect: setCurrentlyDisplayedShops is not available. Skipping filter.");
+      console.log("-------------------- FILTERING EFFECT END (skipped) --------------------");
+      return;
+    }
+    if (!allFarmStands) {
+      console.log("[App.tsx] Effect: allFarmStands is not yet available. Setting displayed to empty.");
       setCurrentlyDisplayedShops([]);
+      console.log("-------------------- FILTERING EFFECT END (no stands data) --------------------");
       return;
     }
 
+    console.log(
+      "[App.tsx] Effect: Initial state for this run -> AllFarmStands:", allFarmStands.length,
+      "ActiveProducts:", JSON.stringify(activeProductFilters),
+      "Location:", lastPlaceSelectedByAutocomplete?.formatted_address,
+      "Radius:", currentRadius
+    );
 
-     console.log("[App.tsx] Filtering effect. AllFarmStands:", allFarmStands.length, "ActiveFilters:", activeProductFilters);
-
-     let filteredStands = [...allFarmStands];
-
-     // 1. Apply Product Filters
-    const activeFilterKeys = Object.keys(activeProductFilters).filter(key => activeProductFilters[key]);
-    if (activeFilterKeys.length > 0) {
-      filteredStands = filteredStands.filter(shop => {
-        // Check if the shop has ALL selected products
-        // This assumes shop.products is an object like { beef: true, corn: false }
-        // or shop.productsAvailable from your sheet data might be structured differently.
-        // Adjust this logic to match your Shop data structure for products.
-        if (!shop.products) return false; // Or shop.productsAvailable
-
-        return activeFilterKeys.every(filterKey => {
-          // Example: if shop.products is { beef: true, ... }
-          // and filterKey is 'beef', then shop.products['beef'] should be true.
-          // Adjust to your data: e.g., shop.products[filterKey] === true
-          // or if shop.products is an array of strings: shop.products.includes(filterKey)
-          return !!shop.products[filterKey]; // Ensure this matches how products are stored
-        });
-      });
-      console.log("[App.tsx] After product filters:", filteredStands.length);
+    if (allFarmStands.length === 0) {
+      console.log("[App.tsx] Effect: No farm stands loaded in allFarmStands array. Setting displayed to empty.");
+      setCurrentlyDisplayedShops([]);
+      console.log("-------------------- FILTERING EFFECT END (allFarmStands empty) --------------------");
+      return;
     }
 
+    // --- DEBUGGING THE FIRST SHOP TO VERIFY PRODUCT PROPERTY NAMES AND VALUES ---
+    const firstShopForDebug = allFarmStands[0];
+    if (firstShopForDebug) {
+        console.log("********************************************************************************");
+        console.log("[App.tsx] DEBUGGING SHOP PRODUCTS (Direct Properties):");
+        console.log("  First Shop Name:", firstShopForDebug.Name || "N/A");
+        // Log a few known product keys to see their values for the first shop
+        console.log("  First shop 'corn' value:", firstShopForDebug.corn);
+        console.log("  First shop 'beef' value:", firstShopForDebug.beef);
+        // console.log("  Full first shop object for inspection:", JSON.stringify(firstShopForDebug)); // Uncomment if needed
+        console.log("********************************************************************************");
+    }
+    // --- END DEBUGGING ---
 
-    console.log("[App.tsx] Running search/filter effect. AllFarmStands count:", allFarmStands.length);
-    // Basic: display all stands for now. You'll add filtering later.
-    setCurrentlyDisplayedShops(allFarmStands);
+    let filteredStands = [...allFarmStands];
 
-  }, [allFarmStands, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius, setCurrentlyDisplayedShops]);
+    // 1. Apply Product Filters
+    const currentActiveProductFilters = activeProductFilters || {};
+    const activeFilterKeys = Object.keys(currentActiveProductFilters).filter(key => currentActiveProductFilters[key]);
+    
+    if (activeFilterKeys.length > 0) {
+      console.log("[App.tsx] Effect: Active product filter keys:", activeFilterKeys);
+      filteredStands = filteredStands.filter((shop: Shop) => { // Added type Shop here
+        return activeFilterKeys.every(filterKey => {
+          // Accessing direct boolean properties on the shop object.
+          // The filterKey (e.g., "corn") must exactly match the property name in your JSON.
+          // (shop as any)[filterKey] is used to bypass strict TypeScript key checking if Shop type isn't exhaustive for products.
+          // A better approach is to ensure your Shop type includes all possible product keys as optional booleans.
+          const productIsAvailable = !!(shop as any)[filterKey];
+          // Or, if your Shop type is correctly defined with all product keys:
+          // const productIsAvailable = !!shop[filterKey as keyof Shop];
 
+
+          // --- DETAILED DEBUG LOG FOR A SPECIFIC FILTER ---
+          // if (filterKey === 'corn') { // Replace 'corn' with any filter you are actively testing
+          //    console.log(`    [Product Check] Shop: ${shop.Name}, Filter: ${filterKey}, Shop's Value for '${filterKey}': ${shop[filterKey as keyof Shop]}, Evaluated: ${productIsAvailable}`);
+          // }
+          // --- END DETAILED DEBUG LOG ---
+          return productIsAvailable;
+        });
+      });
+      console.log("[App.tsx] Effect: After product filters, count:", filteredStands.length);
+    } else {
+      // console.log("[App.tsx] Effect: No active product filters.");
+    }
+
+    // 2. Apply Location/Radius Filter
+    if (mapsApiReady && window.google?.maps?.geometry?.spherical && lastPlaceSelectedByAutocomplete?.geometry?.location && currentRadius > 0) {
+      const placeLocation = lastPlaceSelectedByAutocomplete.geometry.location;
+      let searchCenterLat: number | undefined;
+      let searchCenterLng: number | undefined;
+
+      if (placeLocation && typeof placeLocation.lat === 'function' && typeof placeLocation.lng === 'function') {
+        // It's a google.maps.LatLng object
+        searchCenterLat = placeLocation.lat();
+        searchCenterLng = placeLocation.lng();
+      } else if (placeLocation && typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
+        // It's a LatLngLiteral (plain object)
+        searchCenterLat = placeLocation.lat;
+        searchCenterLng = placeLocation.lng;
+      } else {
+        console.warn("[App.tsx] Effect: lastPlaceSelectedByAutocomplete.geometry.location is in an unexpected format or undefined.", placeLocation);
+      }
+
+      if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
+        console.log("[App.tsx] Effect: Applying location filter. Center:", lastPlaceSelectedByAutocomplete.formatted_address, "Radius:", currentRadius, "mi");
+        const searchCenter = { lat: searchCenterLat, lng: searchCenterLng };
+        const radiusInMeters = currentRadius * 1609.34;
+
+        filteredStands = filteredStands.filter(shop => {
+          if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return false;
+          const shopLocation = { lat: shop.lat, lng: shop.lng };
+          try {
+            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
+              new window.google.maps.LatLng(searchCenter),
+              new window.google.maps.LatLng(shopLocation)
+            );
+            return distance <= radiusInMeters;
+          } catch (e) {
+            console.error("[App.tsx] Effect: Error computing distance:", e);
+            return false;
+          }
+        });
+        console.log("[App.tsx] Effect: After location filter, count:", filteredStands.length);
+      }
+    } else if (lastPlaceSelectedByAutocomplete?.geometry?.location && currentRadius > 0) {
+      // console.warn("[App.tsx] Effect: Location filter conditions not fully met. mapsApiReady:", mapsApiReady, "Geometry Lib Loaded:", !!window.google?.maps?.geometry?.spherical);
+    }
+
+    console.log("[App.tsx] Effect: END Filtering. Final displayedShops count:", filteredStands.length);
+    setCurrentlyDisplayedShops(filteredStands);
+    console.log("-------------------- FILTERING EFFECT END --------------------");
+
+  }, [
+      allFarmStands,
+      activeProductFilters,
+      lastPlaceSelectedByAutocomplete,
+      currentRadius,
+      setCurrentlyDisplayedShops,
+      mapsApiReady
+    ]
+  );
 
   // Handle direct navigation to /farm/:slug or overlay closure
   useEffect(() => {
-    if (!allFarmStands || allFarmStands.length === 0 || !openShopOverlays || !closeShopOverlays || !selectedShop) {
-      // Don't run if context functions or necessary data isn't ready
-      // or if selectedShop logic is not what we are testing now
+    if (!allFarmStands || !openShopOverlays || !closeShopOverlays) {
+      return;
     }
-
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
-    if (slugMatch && slugMatch[1] && allFarmStands && allFarmStands.length > 0) {
+    if (slugMatch && slugMatch[1] && allFarmStands.length > 0) {
       const slug = slugMatch[1];
       const shopFromSlug = allFarmStands.find(s => s.slug === slug);
-      if (shopFromSlug && (!selectedShop || selectedShop.slug !== slug)) {
-        openShopOverlays?.(shopFromSlug); // Use optional chaining
-      } else if (!shopFromSlug) {
+      if (shopFromSlug) {
+        if (!selectedShop || selectedShop.slug !== slug) {
+          openShopOverlays(shopFromSlug);
+        }
+      } else {
+        console.warn(`[App.tsx] Nav: Farm stand with slug '${slug}' not found. Redirecting to home.`);
         navigate('/', { replace: true });
-        closeShopOverlays?.();
+        closeShopOverlays();
       }
     } else if (location.pathname === '/' && (isShopOverlayOpen || isSocialOverlayOpen)) {
-      closeShopOverlays?.();
+      closeShopOverlays();
     }
   }, [location.pathname, allFarmStands, selectedShop, openShopOverlays, closeShopOverlays, navigate, isShopOverlayOpen, isSocialOverlayOpen]);
-
 
   // Keyboard listener for Escape key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (isInitialModalOpen && setIsInitialModalOpen) {
-           setIsInitialModalOpen(false); // Example: just close it
+           setIsInitialModalOpen(false);
         } else if ((isShopOverlayOpen || isSocialOverlayOpen) && closeShopOverlays) {
           closeShopOverlays();
           navigate('/');
@@ -117,46 +205,41 @@ function App() {
   }, [isInitialModalOpen, setIsInitialModalOpen, isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate]);
 
   if (!appContext) {
-    return <div>Loading application context...</div>; // Or some other loading indicator
+    return <div className="flex items-center justify-center h-screen text-xl">Loading application context...</div>;
   }
 
-
-return (
-  <div id="app-container" className="h-screen flex flex-col">
-    <Header />
-    <main className="flex-grow relative overflow-hidden"> {/* Ensure main can contain absolutely positioned children properly */}
-      {/* Map Component - This should fill the main area */}
-      <div className="w-full h-full"> {/* Wrapper for the map to ensure it takes full space */}
-        {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200">Loading Map API...</div>}
-      </div>
-
-      {/* Listings Panel - This will overlay the map */}
-      <ListingsPanel />
-
-      {/* Other Overlays - These will also overlay the map and potentially ListingsPanel */}
-      {isShopOverlayOpen && selectedShop && (
-        <ShopDetailsOverlay
-          shop={selectedShop}
-          onClose={() => {
-            closeShopOverlays?.();
-            navigate('/');
-          }}
-        />
-      )}
-      {isSocialOverlayOpen && selectedShop && (
-        <SocialOverlay
-          shop={selectedShop}
-          onClose={() => { closeShopOverlays?.(); navigate('/'); }}
-        />
-      )}
-    </main>
-    {isInitialModalOpen && <InitialSearchModal />}
-    <Routes>
-        <Route path="/" element={<></>} />
-        <Route path="/farm/:slug" element={<></>} />
-    </Routes>
-  </div>
-);
+  return (
+    <div id="app-container" className="h-screen flex flex-col">
+      <Header />
+      <main className="flex-grow relative overflow-hidden">
+        <div className="w-full h-full">
+          {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
+        </div>
+        <ListingsPanel />
+        
+        {isShopOverlayOpen && selectedShop && (
+          <ShopDetailsOverlay
+            shop={selectedShop}
+            onClose={() => {
+              closeShopOverlays?.();
+              navigate('/');
+            }}
+          />
+        )}
+        {isSocialOverlayOpen && selectedShop && (
+          <SocialOverlay
+            shop={selectedShop}
+            onClose={() => { closeShopOverlays?.(); navigate('/'); }}
+          />
+        )}
+      </main>
+      {isInitialModalOpen && <InitialSearchModal />}
+      <Routes>
+          <Route path="/" element={<React.Fragment />} />
+          <Route path="/farm/:slug" element={<React.Fragment />} />
+      </Routes>
+    </div>
+  );
 }
 
 export default App;
