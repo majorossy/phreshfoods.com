@@ -194,6 +194,61 @@ const MapComponent: React.FC = () => {
     markersRef.current = newMarkersMap;
   }, [currentlyDisplayedShops, mapsApiReady, selectedShop, navigate, setSelectedShop, markerColor]);
 
+
+
+
+
+
+
+
+
+
+
+// src/components/Map/MapComponent.tsx
+
+// ... (other code, including the AppContext destructuring) ...
+
+// New useEffect to pan the map when a shop is selected
+useEffect(() => {
+  const map = googleMapRef.current;
+
+  if (!map || !mapsApiReady || !selectedShop) {
+    // If no map, API not ready, or no shop selected, do nothing.
+    return;
+  }
+
+  if (selectedShop.lat != null && selectedShop.lng != null && !isNaN(selectedShop.lat) && !isNaN(selectedShop.lng)) {
+    const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+    
+    console.log(`MapComponent: Panning to selected shop: ${selectedShop.Name} at`, shopLatLng.toString());
+    map.panTo(shopLatLng);
+
+    // Optional: Consider setting a specific zoom level after panning
+    // This ensures the shop is not too zoomed out or too zoomed in.
+    // You might want a different zoom level than the default autocomplete zoom.
+    // const desiredZoom = 15; // Example zoom level
+    // if (map.getZoom() !== desiredZoom) { // Only set zoom if it's different to avoid unnecessary re-renders
+    //   setTimeout(() => { // Slight delay for panTo to start/finish
+    //      map.setZoom(desiredZoom);
+    //   }, 100); // Adjust delay if needed
+    // }
+
+  } else {
+    console.warn(`MapComponent: Selected shop ${selectedShop.Name} has invalid coordinates for panning.`);
+  }
+
+  // No cleanup needed for this effect as it only pans the map.
+}, [selectedShop, mapsApiReady]); // Re-run when selectedShop or mapsApiReady changes
+
+// ... (rest of MapComponent.tsx, including the InfoWindow useEffect and autocomplete useEffect)
+
+
+
+
+
+
+
+
   // Effect to handle OPENING/RENDERING InfoWindow content and CLEANING UP
   useEffect(() => {
     const map = googleMapRef.current;
