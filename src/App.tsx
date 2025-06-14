@@ -120,36 +120,43 @@ function App() {
     return <div>Loading application context...</div>; // Or some other loading indicator
   }
 
-  return (
-    <div id="app-container" className="h-screen flex flex-col">
-      <Header />
-      <main className="flex flex-grow relative">
-        {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200">Loading Map API...</div>}
-        <ListingsPanel />
 
-        {isShopOverlayOpen && selectedShop && (
-          <ShopDetailsOverlay
-            shop={selectedShop}
-            onClose={() => {
-              closeShopOverlays?.(); // From context
-              navigate('/'); // Navigate to home when closing
-            }}
-          />
-        )}
-        {isSocialOverlayOpen && selectedShop && (
-          <SocialOverlay
-            shop={selectedShop}
-            onClose={() => { closeShopOverlays?.(); navigate('/'); }}
-          />
-        )}
-      </main>
-      {isInitialModalOpen && <InitialSearchModal />}
-      <Routes>
-          <Route path="/" element={<></>} />
-          <Route path="/farm/:slug" element={<></>} />
-      </Routes>
-    </div>
-  );
+return (
+  <div id="app-container" className="h-screen flex flex-col">
+    <Header />
+    <main className="flex-grow relative overflow-hidden"> {/* Ensure main can contain absolutely positioned children properly */}
+      {/* Map Component - This should fill the main area */}
+      <div className="w-full h-full"> {/* Wrapper for the map to ensure it takes full space */}
+        {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200">Loading Map API...</div>}
+      </div>
+
+      {/* Listings Panel - This will overlay the map */}
+      <ListingsPanel />
+
+      {/* Other Overlays - These will also overlay the map and potentially ListingsPanel */}
+      {isShopOverlayOpen && selectedShop && (
+        <ShopDetailsOverlay
+          shop={selectedShop}
+          onClose={() => {
+            closeShopOverlays?.();
+            navigate('/');
+          }}
+        />
+      )}
+      {isSocialOverlayOpen && selectedShop && (
+        <SocialOverlay
+          shop={selectedShop}
+          onClose={() => { closeShopOverlays?.(); navigate('/'); }}
+        />
+      )}
+    </main>
+    {isInitialModalOpen && <InitialSearchModal />}
+    <Routes>
+        <Route path="/" element={<></>} />
+        <Route path="/farm/:slug" element={<></>} />
+    </Routes>
+  </div>
+);
 }
 
 export default App;

@@ -2,22 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-    font-family: 'Inter', sans-serif;
-    overscroll-behavior: none; 
-    height: 100vh; 
-    margin: 0; 
-    display: flex; 
-    flex-direction: column; 
+/* index.css - Ensure these styles for #root */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Important to prevent scrollbars from slight full-screen mismatches */
 }
 
+#root {
+    height: 100%;
+    width: 100%;
+    display: flex; /* To make #app-container fill it properly */
+    flex-direction: column; /* To make #app-container fill it properly */
+    margin: 0; /* Override App.css */
+    padding: 0; /* Override App.css */
+    text-align: left; /* Override App.css if not desired */
+}
+
+/* Your existing body style in index.css is good:
+body {
+    font-family: 'Inter', sans-serif;
+    overscroll-behavior: none;
+    height: 100vh; // This is good!
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+} */
+
+/* Your existing #app-container style in index.css is good,
+   and in App.tsx you have className="h-screen flex flex-col" which is also good.
 #app-container {
     display: flex;
     flex-direction: column;
-    flex-grow: 1; 
-    overflow: hidden; 
+    flex-grow: 1;
+    overflow: hidden;
 }
-
+*/
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -35,10 +61,10 @@ body {
 }
 
 main {
-    flex-grow: 1; 
-    overflow: hidden; 
-    position: relative; 
-    display: flex; 
+    flex-grow: 1;
+    overflow: hidden; /* Keep this */
+    position: relative; /* Keep this for absolute children */
+    /* display: flex; /* REMOVE THIS or comment out */
 }
 
 #mapPanel {
@@ -54,15 +80,17 @@ main {
 }
 
 #listingsPanel {
+    background:transparent;
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0;
-    z-index: 10; 
-    width: 42%; 
-    overflow-y: auto; 
-    background: transparent;
-    flex-shrink: 0; 
+    bottom: 0; /* This makes it full height */
+    z-index: 10;
+    width: 42%; /* For desktop - this is fine for an overlay */
+    /* On mobile, it's width: 100% - also fine for an overlay */
+    overflow-y: auto;
+    /* background: transparent; Is overridden by Tailwind in component */
+    /* flex-shrink: 0; /* Likely not needed anymore here */
 }
 @media (max-width: 767px) { 
     #listingsPanel {
