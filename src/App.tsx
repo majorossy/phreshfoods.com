@@ -166,28 +166,62 @@ function App() {
   );
 
   // Handle direct navigation to /farm/:slug or overlay closure
+// src/App.tsx
+// ... (inside the useEffect that handles navigation)
   useEffect(() => {
     if (!allFarmStands || !openShopOverlays || !closeShopOverlays) {
       return;
     }
+
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
-    if (slugMatch && slugMatch[1] && allFarmStands.length > 0) {
+
+    if (slugMatch && slugMatch[1]) { // A farm slug is in the URL
       const slug = slugMatch[1];
       const shopFromSlug = allFarmStands.find(s => s.slug === slug);
+
       if (shopFromSlug) {
+        // If the selectedShop in context is not this shop yet, or if no shop is selected,
+        // then update selectedShop (if needed) and open overlays.
+        // This condition is key: ensures openShopOverlays is called when the URL changes to a farm path.
         if (!selectedShop || selectedShop.slug !== slug) {
+          console.log(`[App.tsx] Path effect: URL changed to /farm/${slug}. Opening overlays for ${shopFromSlug.Name}`);
+          // It's important that setSelectedShop is called if App.tsx relies on it
+          // to know *which* shop's details to show in the overlay.
+          // openShopOverlays likely already does setSelectedShop internally or relies on it being set.
+          if (appContext.setSelectedShop) appContext.setSelectedShop(shopFromSlug); // Ensure selectedShop is up-to-date
           openShopOverlays(shopFromSlug);
+        } else {
+          // URL matches the already selected shop, overlays should already be open or opening.
+          // console.log(`[App.tsx] Path effect: URL matches selectedShop ${selectedShop.Name}. No action needed or overlays already handled.`);
         }
       } else {
-        console.warn(`[App.tsx] Nav: Farm stand with slug '${slug}' not found. Redirecting to home.`);
+        // Slug in URL, but no matching shop found in allFarmStands
+        console.warn(`[App.tsx] Path effect: Farm stand with slug '${slug}' not found. Redirecting to home.`);
         navigate('/', { replace: true });
         closeShopOverlays();
       }
-    } else if (location.pathname === '/' && (isShopOverlayOpen || isSocialOverlayOpen)) {
-      closeShopOverlays();
+    } else if (location.pathname === '/') { // On the home path
+      // If an overlay is open and we are on the home path, close it.
+      // This handles cases like pressing browser back button from a farm page.
+      if (isShopOverlayOpen || isSocialOverlayOpen) {
+        console.log("[App.tsx] Path effect: On home path with overlay open. Closing overlays.");
+        closeShopOverlays();
+        // Optionally, also clear selectedShop if overlays are closed due to navigating to '/'
+        // if (appContext.setSelectedShop) appContext.setSelectedShop(null);
+      }
     }
-  }, [location.pathname, allFarmStands, selectedShop, openShopOverlays, closeShopOverlays, navigate, isShopOverlayOpen, isSocialOverlayOpen]);
-
+  }, [
+      location.pathname,
+      allFarmStands,
+      selectedShop, // Adding selectedShop here makes the effect re-evaluate if it changes
+      openShopOverlays,
+      closeShopOverlays,
+      navigate,
+      isShopOverlayOpen,
+      isSocialOverlayOpen,
+      appContext.setSelectedShop // If used directly
+    ]
+  );
   // Keyboard listener for Escape key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

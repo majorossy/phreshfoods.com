@@ -129,14 +129,53 @@ const MapComponent: React.FC = () => {
           content: markerElement,
         });
 
+// src/components/Map/MapComponent.tsx
+// ...
+  const {
+    mapsApiReady,
+    currentlyDisplayedShops,
+    lastPlaceSelectedByAutocomplete,
+    selectedShop,
+    openShopOverlays,  // <<<< MAKE SURE THIS IS DIRECTLY FROM CONTEXT
+    setSelectedShop,
+    // ... other context items
+  } = appContext;
+
+// ...
+
+// Inside your marker creation loop (useEffect for currentlyDisplayedShops)
+// ...
         marker.addListener('gmp-click', (event: MouseEvent) => {
-          event.domEvent?.stopPropagation();
-          console.log(`Marker clicked: ${shop.Name}`);
-          setSelectedShop(shop); // Triggers InfoWindow effect
+          event.domEvent?.stopPropagation(); 
+          console.log(`MapComponent: Marker clicked for ${shop.Name}`);
+
+          // 1. Update the selected shop in context
+          // This is still useful for highlighting the marker and potentially for the InfoWindow
+          // if you decide to keep a brief InfoWindow or remove it later.
+          setSelectedShop(shop);
+
+          // 2. Directly open the main shop/social overlays
+          if (openShopOverlays) { // Ensure the function exists
+            openShopOverlays(shop); // This function should handle setting isShopOverlayOpen=true etc.
+          } else {
+            console.error("MapComponent: openShopOverlays function is not available from AppContext.");
+          }
+
+          // 3. Update the URL
           if (shop.slug) {
             navigate(`/farm/${shop.slug}`, { replace: true });
           }
+
+          // 4. Close the Google Maps InfoWindow if you don't want it to appear alongside the main overlay
+          // (Your closeNativeInfoWindow or similar function)
+          // If closeNativeInfoWindow also calls setSelectedShop(null), then call it *before* setSelectedShop(shop)
+          // or adjust its logic. For now, let's assume you want to close it if the main overlay opens.
+          // This assumes you have `closeNativeInfoWindow` and `unmountInfoWindowReactRoot` as defined in previous discussions.
+          if (typeof closeNativeInfoWindow === 'function') closeNativeInfoWindow();
+          if (typeof unmountInfoWindowReactRoot === 'function') unmountInfoWindowReactRoot();
+
         });
+// ...
       } else {
         marker.map = map;
       }
