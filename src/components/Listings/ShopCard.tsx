@@ -1,13 +1,15 @@
 // src/components/Listings/ShopCard.tsx
 import React, { useContext } from 'react'; // Added useContext
-import { Shop } from '../../types';
+import { ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import StarRating from '../UI/StarRating.tsx';
 import { kmToMiles, escapeHTMLSafe } from '../../utils';
 import { AppContext } from '../../contexts/AppContext.tsx'; // For selectedShop styling
 
 interface ShopCardProps {
-  shop: Shop;
+  shop: ShopWithDistance;
+  onSelect: (shop: ShopWithDistance) => void;
+  isSelected: boolean;
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
@@ -73,11 +75,6 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
             target.src = fallbackImageUrlCard;
           }}
         />
-        {distanceString && (
-          <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-md backdrop-blur-sm">
-            {distanceString}
-          </div>
-        )}
       </div>
 
       {/* Content Section */}
@@ -110,6 +107,20 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
             Fresh Produce
           </span>
         </div> */}
+
+        {/* Display Distance - NEW */}
+        {shop.distanceText && shop.distanceText !== "N/A" && shop.distanceText !== "Set location" && (
+          <div className="flex items-center text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12 1.5a.75.75 0 01.75.75v5.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM12.56 8.22a.75.75 0 00-1.061 0L6.22 13.56a.75.75 0 00.02 1.062l5.024 4.466a.75.75 0 001.042-.021l5.25-6.75a.75.75 0 00-.001-1.042L12.56 8.22zM12 10a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /> {/* Example icon, choose one you like */}
+               <path fillRule="evenodd" d="M9.694 3.138a.75.75 0 01.04.04l4.5 4.5a.75.75 0 01-1.06 1.06L10 5.561V15a.75.75 0 01-1.5 0V5.56L5.372 8.738a.75.75 0 01-1.06-1.06l4.5-4.5a.75.75 0 011.062-.04zm0-1.5a2.25 2.25 0 013.182.119l4.5 4.5A2.25 2.25 0 0116.25 9H13V3.75A2.25 2.25 0 0010.75 1.5h-1.5a2.25 2.25 0 00-2.25 2.25V9H3.75a2.25 2.25 0 01-1.122-4.262l4.5-4.5A2.25 2.25 0 019.694 1.638zM4 10.5a.75.75 0 01.75.75v3.045c0 .084.036.162.096.222L8.5 18.179a.75.75 0 001.038.021l5.25-6.75a.75.75 0 10-1.204-.936L10 15.561V11.25a.75.75 0 011.5 0v5.679c0 .084-.036.162-.096.222L4.75 12.48A2.25 2.25 0 014 10.5z" clipRule="evenodd" /> {/* Another direction icon */}
+            </svg>
+            <span>{shop.distanceText}</span>
+          </div>
+        )}
+         {shop.distanceText === "Set location" && (
+            <p className="text-xs text-gray-500 italic mt-1">Set start location for distance</p>
+        )}
 
         <div className="!mt-auto pt-2"> {/* Pushes button to bottom, !mt-auto overrides space-y for this specific div */}
           <button

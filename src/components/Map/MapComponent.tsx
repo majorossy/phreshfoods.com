@@ -1,8 +1,17 @@
 // src/components/Map/MapComponent.tsx
 import React, { useEffect, useRef, useContext, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import { AppContext } from '../../contexts/AppContext.tsx';
-import { DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM, MAINE_BOUNDS_LITERAL, MAP_ID, USER_LOCATION_MAP_ZOOM, markerColor } from '../../config/appConfig.ts';
+import { AppContext, AutocompletePlace } from '../../contexts/AppContext.tsx';
+import {
+  DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_ZOOM,
+  MAINE_BOUNDS_LITERAL,
+  MAP_ID,
+  USER_LOCATION_MAP_ZOOM,
+  markerColor,
+  mapStyles, // For custom map styling
+  USE_CUSTOM_MAP_STYLE // Flag to enable/disable custom styles
+} from '../../config/appConfig.ts';
 import { Shop } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import InfoWindowContent from './InfoWindowContent.tsx';
@@ -11,8 +20,9 @@ const MapComponent: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
-  const googleInfoWindowRef = useRef<google.maps.InfoWindow | null>(null); // Renamed for clarity
-  const infoWindowReactRootRef = useRef<ReturnType<typeof ReactDOM.createRoot> | null>(null); // Renamed for clarity
+  const googleInfoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const infoWindowReactRootRef = useRef<ReturnType<typeof ReactDOM.createRoot> | null>(null);
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null); // --- ADDED ---
 
   const appContext = useContext(AppContext);
   const navigate = useNavigate();
@@ -24,32 +34,29 @@ const MapComponent: React.FC = () => {
   const {
     mapsApiReady,
     currentlyDisplayedShops,
-    lastPlaceSelectedByAutocomplete,
+    mapViewTargetLocation, // --- MODIFIED: Using this from context for autocomplete/initial pan ---
     selectedShop,
     openShopOverlays,
     setSelectedShop,
+    directionsResult,   // --- ADDED ---
+    clearDirections,    // --- ADDED ---
+    isShopOverlayOpen,  // --- ADDED ---
+    isSocialOverlayOpen // --- ADDED ---
   } = appContext;
 
-  // Callback to ONLY close the Google Maps native InfoWindow
   const closeNativeInfoWindow = useCallback(() => {
-    if (googleInfoWindowRef.current?.getMap()) { // Check if it's actually open
+    if (googleInfoWindowRef.current?.getMap()) {
       googleInfoWindowRef.current.close();
-      console.log("MapComponent: Native Google Maps InfoWindow closed.");
     }
-  }, []); // googleInfoWindowRef is stable
+  }, []);
 
-  // Callback to unmount the React root for InfoWindow content (DEFERRED)
   const unmountInfoWindowReactRoot = useCallback(() => {
     const rootToUnmount = infoWindowReactRootRef.current;
     if (rootToUnmount) {
-      console.log("MapComponent: Scheduling DEFERRED unmount of InfoWindow React root.");
-      setTimeout(() => {
-        console.log("MapComponent: Asynchronously unmounting InfoWindow React root.");
-        rootToUnmount.unmount(); // THIS IS THE ACTUAL UNMOUNT
-      }, 0);
-      infoWindowReactRootRef.current = null; // Clear the ref synchronously
+      setTimeout(() => { rootToUnmount.unmount(); }, 0);
+      infoWindowReactRootRef.current = null;
     }
-  }, []); // infoWindowReactRootRef is stable
+  }, []);
 
   // Initialize Map and its specific listeners
   useEffect(() => {
@@ -65,6 +72,7 @@ const MapComponent: React.FC = () => {
       fullscreenControl: true,
       restriction: { latLngBounds: MAINE_BOUNDS_LITERAL, strictBounds: false },
       mapId: MAP_ID,
+      styles: USE_CUSTOM_MAP_STYLE ? mapStyles.maineLicensePlate : undefined,
     });
     googleMapRef.current = mapInstance;
 
@@ -73,54 +81,68 @@ const MapComponent: React.FC = () => {
       disableAutoPan: false,
     });
 
-    // Listener for map clicks (to close InfoWindow and deselect shop)
-    const mapClickListener = mapInstance.addListener("click", () => {
-      console.log("MapComponent: Map clicked.");
+    // --- ADDED: Initialize DirectionsRenderer ---
+    if (window.google?.maps?.DirectionsRenderer) {
+        directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
+            // Optional: You can provide options for the renderer here
+            // suppressMarkers: true, // If you want to use your own markers for origin/destination
+            // preserveViewport: false, // Allow renderer to adjust viewport to fit route
+        });
+        directionsRendererRef.current.setMap(mapInstance);
+    } else {
+        console.error("[MapComponent] google.maps.DirectionsRenderer not available.");
+    }
+    // --- END ADDED ---
+
+    const mapClickListener = mapInstance.addListener("click", (e: google.maps.MapMouseEvent | google.maps.IconMouseEvent) => {
+      if ((e as google.maps.IconMouseEvent).placeId) { return; } // Clicked on a Google POI
+      
+      // console.log("MapComponent: Map base clicked."); // Optional debug
       closeNativeInfoWindow();
-      unmountInfoWindowReactRoot(); // Also ensure React root is unmounted
-      setSelectedShop(null);
+      unmountInfoWindowReactRoot();
+      if (setSelectedShop) setSelectedShop(null);
+      if (directionsResult && clearDirections) {
+        // console.log("MapComponent: Clearing directions due to map click."); // Optional debug
+        clearDirections();
+      }
     });
 
-    console.log("MapComponent: Google Map Initialized.");
-
-    return () => { // Cleanup for map initialization
+    // console.log("MapComponent: Google Map Initialized."); // Optional debug
+    return () => {
       if (mapClickListener) mapClickListener.remove();
-      // Potentially close and unmount InfoWindow if map itself is destroyed,
-      // though the selectedShop effect cleanup should handle this too.
+      if (directionsRendererRef.current) {
+        directionsRendererRef.current.setMap(null);
+        directionsRendererRef.current = null;
+      }
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [mapsApiReady, setSelectedShop, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [mapsApiReady, setSelectedShop, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections]);
+
 
   // Plot/Update Markers
   useEffect(() => {
     const map = googleMapRef.current;
-    if (!map || !mapsApiReady || !window.google.maps.marker || !currentlyDisplayedShops) {
+    if (!map || !mapsApiReady || !window.google?.maps?.marker || !currentlyDisplayedShops) {
       return;
     }
-    console.log(`MapComponent: Plotting/Updating ${currentlyDisplayedShops.length} markers.`);
     const newMarkersMap = new Map<string, google.maps.marker.AdvancedMarkerElement>();
 
-    currentlyDisplayedShops.forEach((shop: Shop) => {
-      if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) {
-        console.warn(`MapComponent: Invalid lat/lng for shop ${shop.Name}, skipping.`);
-        return;
-      }
-      const shopId = shop.slug || shop.GoogleProfileID || shop.id;
-      if (!shopId) {
-        console.warn("Shop has no usable ID for marker key:", shop.Name);
-        return;
-      }
+    currentlyDisplayedShops.forEach((shop: Shop, index) => {
+      if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return;
+      const shopId = shop.slug || shop.GoogleProfileID || String(shop.id) || `marker-${index}`;
+      if (!shopId) return;
+
       let marker = markersRef.current.get(shopId);
       if (!marker) {
         const markerElement = document.createElement('div');
-        markerElement.style.width = '18px';
-        markerElement.style.height = '18px';
+        markerElement.style.width = '20px';
+        markerElement.style.height = '20px';
         markerElement.style.borderRadius = '50%';
         markerElement.style.border = '2px solid white';
-        markerElement.style.boxShadow = '0 1px 3px rgba(0,0,0,0.4)';
+        markerElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
         markerElement.style.cursor = 'pointer';
-        markerElement.style.transition = 'transform 0.1s ease-out, background-color 0.1s ease-out';
+        markerElement.style.transition = 'transform 0.15s ease-out, background-color 0.15s ease-out';
         
         marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: { lat: shop.lat, lng: shop.lng },
@@ -129,60 +151,26 @@ const MapComponent: React.FC = () => {
           content: markerElement,
         });
 
-// src/components/Map/MapComponent.tsx
-// ...
-  const {
-    mapsApiReady,
-    currentlyDisplayedShops,
-    lastPlaceSelectedByAutocomplete,
-    selectedShop,
-    openShopOverlays,  // <<<< MAKE SURE THIS IS DIRECTLY FROM CONTEXT
-    setSelectedShop,
-    // ... other context items
-  } = appContext;
-
-// ...
-
-// Inside your marker creation loop (useEffect for currentlyDisplayedShops)
-// ...
         marker.addListener('gmp-click', (event: MouseEvent) => {
-          event.domEvent?.stopPropagation(); 
-          console.log(`MapComponent: Marker clicked for ${shop.Name}`);
-
-          // 1. Update the selected shop in context
-          // This is still useful for highlighting the marker and potentially for the InfoWindow
-          // if you decide to keep a brief InfoWindow or remove it later.
-          setSelectedShop(shop);
-
-          // 2. Directly open the main shop/social overlays
-          if (openShopOverlays) { // Ensure the function exists
-            openShopOverlays(shop); // This function should handle setting isShopOverlayOpen=true etc.
-          } else {
-            console.error("MapComponent: openShopOverlays function is not available from AppContext.");
-          }
-
-          // 3. Update the URL
-          if (shop.slug) {
-            navigate(`/farm/${shop.slug}`, { replace: true });
-          }
-
-          // 4. Close the Google Maps InfoWindow if you don't want it to appear alongside the main overlay
-          // (Your closeNativeInfoWindow or similar function)
-          // If closeNativeInfoWindow also calls setSelectedShop(null), then call it *before* setSelectedShop(shop)
-          // or adjust its logic. For now, let's assume you want to close it if the main overlay opens.
-          // This assumes you have `closeNativeInfoWindow` and `unmountInfoWindowReactRoot` as defined in previous discussions.
-          if (typeof closeNativeInfoWindow === 'function') closeNativeInfoWindow();
-          if (typeof unmountInfoWindowReactRoot === 'function') unmountInfoWindowReactRoot();
-
+          event.domEvent?.stopPropagation();
+          // console.log(`MapComponent: Marker clicked for ${shop.Name}`); // Optional debug
+          if (setSelectedShop) setSelectedShop(shop);
+          if (openShopOverlays) openShopOverlays(shop, 'shop'); // Default to 'shop' tab
+          if (shop.slug) navigate(`/farm/${shop.slug}`, { replace: true });
+          
+          // Close small InfoWindow if main overlay is opening
+          closeNativeInfoWindow();
+          unmountInfoWindowReactRoot();
         });
-// ...
       } else {
         marker.map = map;
       }
+      
       const isSelected = selectedShop?.slug === shop.slug;
-      (marker.content as HTMLElement).style.transform = isSelected ? 'scale(1.4)' : 'scale(1)';
+      (marker.content as HTMLElement).style.transform = isSelected ? 'scale(1.5)' : 'scale(1.2)';
       (marker.content as HTMLElement).style.backgroundColor = isSelected ? 'darkred' : markerColor;
-      marker.zIndex = isSelected ? 1001 : newMarkersMap.size + 1;
+      marker.zIndex = isSelected ? 1001 : index + 1;
+
       newMarkersMap.set(shopId, marker);
     });
 
@@ -192,167 +180,116 @@ const MapComponent: React.FC = () => {
       }
     });
     markersRef.current = newMarkersMap;
-  }, [currentlyDisplayedShops, mapsApiReady, selectedShop, navigate, setSelectedShop, markerColor]);
+  }, [currentlyDisplayedShops, mapsApiReady, selectedShop, navigate, setSelectedShop, openShopOverlays, markerColor, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
 
+  // Effect to pan map to selectedShop
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady || !selectedShop) return;
+    if (selectedShop.lat != null && selectedShop.lng != null && !isNaN(selectedShop.lat) && !isNaN(selectedShop.lng)) {
+      const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+      map.panTo(shopLatLng);
+      // if(map.getZoom() && map.getZoom() < 13) map.setZoom(13); // Optional zoom
+    }
+  }, [selectedShop, mapsApiReady]);
 
+  // Effect to pan map to mapViewTargetLocation (from Autocomplete or initial cookie load)
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady || !mapViewTargetLocation?.geometry?.location) return;
 
+    const location = mapViewTargetLocation.geometry.location;
+    let targetLatLng: google.maps.LatLng;
 
-
-
-
-
-
-
-
-// src/components/Map/MapComponent.tsx
-
-// ... (other code, including the AppContext destructuring) ...
-
-// New useEffect to pan the map when a shop is selected
-useEffect(() => {
-  const map = googleMapRef.current;
-
-  if (!map || !mapsApiReady || !selectedShop) {
-    // If no map, API not ready, or no shop selected, do nothing.
-    return;
-  }
-
-  if (selectedShop.lat != null && selectedShop.lng != null && !isNaN(selectedShop.lat) && !isNaN(selectedShop.lng)) {
-    const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+    if (typeof (location as google.maps.LatLng).lat === 'function') {
+      targetLatLng = location as google.maps.LatLng;
+    } else if (typeof (location as google.maps.LatLngLiteral).lat === 'number') {
+      targetLatLng = new window.google.maps.LatLng(
+        (location as google.maps.LatLngLiteral).lat,
+        (location as google.maps.LatLngLiteral).lng
+      );
+    } else { return; }
     
-    console.log(`MapComponent: Panning to selected shop: ${selectedShop.Name} at`, shopLatLng.toString());
-    map.panTo(shopLatLng);
-
-    // Optional: Consider setting a specific zoom level after panning
-    // This ensures the shop is not too zoomed out or too zoomed in.
-    // You might want a different zoom level than the default autocomplete zoom.
-    // const desiredZoom = 15; // Example zoom level
-    // if (map.getZoom() !== desiredZoom) { // Only set zoom if it's different to avoid unnecessary re-renders
-    //   setTimeout(() => { // Slight delay for panTo to start/finish
-    //      map.setZoom(desiredZoom);
-    //   }, 100); // Adjust delay if needed
-    // }
-
-  } else {
-    console.warn(`MapComponent: Selected shop ${selectedShop.Name} has invalid coordinates for panning.`);
-  }
-
-  // No cleanup needed for this effect as it only pans the map.
-}, [selectedShop, mapsApiReady]); // Re-run when selectedShop or mapsApiReady changes
-
-// ... (rest of MapComponent.tsx, including the InfoWindow useEffect and autocomplete useEffect)
+    map.panTo(targetLatLng);
+    const viewport = mapViewTargetLocation.geometry.viewport;
+    if (viewport) {
+        map.fitBounds(viewport);
+    } else {
+        map.setZoom(USER_LOCATION_MAP_ZOOM);
+    }
+  }, [mapViewTargetLocation, mapsApiReady]);
 
 
+  // --- ADDED: Effect to display/clear directions route on map ---
+  useEffect(() => {
+    if (mapsApiReady && directionsRendererRef.current) {
+      if (directionsResult) {
+        // console.log("[MapComponent] Rendering directions on map."); // Optional debug
+        directionsRendererRef.current.setDirections(directionsResult);
+      } else {
+        // console.log("[MapComponent] Clearing directions from map."); // Optional debug
+        directionsRendererRef.current.setDirections(null);
+      }
+    }
+  }, [directionsResult, mapsApiReady]);
+  // --- END ADDED ---
 
-
-
-
-
-
-  // Effect to handle OPENING/RENDERING InfoWindow content and CLEANING UP
+  // Effect to handle InfoWindow content rendering
   useEffect(() => {
     const map = googleMapRef.current;
     const googleInfoWin = googleInfoWindowRef.current;
 
-    if (!mapsApiReady || !map || !googleInfoWin) {
-      return; // Essential components not ready
+    // --- MODIFIED: Added isShopOverlayOpen and isSocialOverlayOpen to condition ---
+    if (!mapsApiReady || !map || !googleInfoWin || !setSelectedShop || !openShopOverlays || isShopOverlayOpen || isSocialOverlayOpen) {
+      // If main overlays are open, or essential components not ready, ensure InfoWindow is closed
+      if (googleInfoWin?.getMap()) closeNativeInfoWindow();
+      if (infoWindowReactRootRef.current) unmountInfoWindowReactRoot();
+      return;
     }
 
-    // If a shop is selected and valid, create and render its InfoWindow content
     if (selectedShop && selectedShop.lat != null && selectedShop.lng != null) {
-      const shopId = selectedShop.slug || selectedShop.GoogleProfileID || selectedShop.id;
+      const shopId = selectedShop.slug || selectedShop.GoogleProfileID || String(selectedShop.id);
       const markerInstance = markersRef.current.get(shopId);
 
       if (markerInstance) {
-        console.log(`MapComponent: Rendering InfoWindow for ${selectedShop.Name}`);
-
-        // Defensive unmount of any existing React root BEFORE creating a new one.
-        // This is crucial if the cleanup from a previous effect run was somehow missed or delayed.
-        if (infoWindowReactRootRef.current) {
-          console.warn("MapComponent: Stale React root found before rendering new InfoWindow. Unmounting (deferred).");
-          unmountInfoWindowReactRoot(); // This is already deferred
-        }
-
-        const contentDiv = document.createElement('div');
-        // You can add Tailwind classes to contentDiv if needed for wrapper styling:
-        // contentDiv.className = 'infowindow-content-wrapper p-0'; // Example
+        if (infoWindowReactRootRef.current) unmountInfoWindowReactRoot(); // Defensive unmount
         
+        const contentDiv = document.createElement('div');
         const newReactRoot = ReactDOM.createRoot(contentDiv);
-        infoWindowReactRootRef.current = newReactRoot; // Store the NEW root
+        infoWindowReactRootRef.current = newReactRoot;
 
         newReactRoot.render(
           <InfoWindowContent
             shop={selectedShop}
             onDirectionsClick={(clickedShop) => {
-              const destination = clickedShop.Address || (clickedShop.lat && clickedShop.lng ? `${clickedShop.lat},${clickedShop.lng}` : '');
-              if (destination) {
-                window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`, '_blank');
-              }
+              // --- MODIFIED: Open SocialOverlay to 'directions' tab ---
+              if (openShopOverlays) openShopOverlays(clickedShop, 'directions');
               closeNativeInfoWindow();
-              unmountInfoWindowReactRoot(); // Important: Ensure React root is unmounted
-              setSelectedShop(null);
+              unmountInfoWindowReactRoot();
+              // setSelectedShop(null); // Keep shop selected for SocialOverlay
             }}
             onDetailsClick={(clickedShop) => {
-              openShopOverlays(clickedShop);
+              if (openShopOverlays) openShopOverlays(clickedShop, 'shop');
               closeNativeInfoWindow();
-              unmountInfoWindowReactRoot(); // Important: Ensure React root is unmounted
-              // selectedShop remains for the main overlay, but IW is gone
+              unmountInfoWindowReactRoot();
             }}
           />
         );
-
         googleInfoWin.setContent(contentDiv);
         if (!googleInfoWin.getMap() || googleInfoWin.getAnchor() !== markerInstance) {
             googleInfoWin.open({ anchor: markerInstance, map });
         }
       } else {
-        console.warn(`MapComponent: Marker for ${selectedShop.Name} not found. Closing native InfoWindow if open.`);
         closeNativeInfoWindow();
-        // No marker, so no new React root to worry about. Any old one is handled by cleanup.
       }
     } else {
-      // No shop selected (or invalid shop), ensure native InfoWindow is closed.
-      // The React root (if any) will be handled by the cleanup function.
       closeNativeInfoWindow();
     }
-
-    // Cleanup function for THIS effect:
-    // This runs when `selectedShop` (or other deps) changes BEFORE the effect runs again,
-    // OR when MapComponent unmounts.
     return () => {
-      console.log(`MapComponent: Cleanup for InfoWindow effect (shop: ${selectedShop?.Name || 'none'})`);
-      // It's generally good to close the native InfoWindow here too as a final measure,
-      // though primary calls are above or in event handlers.
       closeNativeInfoWindow();
-      // Unmount the React root for the InfoWindow content DEFERRED
       unmountInfoWindowReactRoot();
     };
-  }, [selectedShop, mapsApiReady, openShopOverlays, setSelectedShop, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
-
-  // Effect to pan/zoom map when `lastPlaceSelectedByAutocomplete` changes
-  useEffect(() => {
-    if (!googleMapRef.current || !mapsApiReady) return;
-
-    if (lastPlaceSelectedByAutocomplete?.geometry?.location) {
-      const place = lastPlaceSelectedByAutocomplete;
-      const location = place.geometry.location as google.maps.LatLngLiteral;
-      console.log("MapComponent: Updating map view for autocomplete selection:", place.formatted_address);
-
-      if (googleMapRef.current && location) {
-        const currentZoom = googleMapRef.current.getZoom();
-        googleMapRef.current.panTo(location);
-        if (currentZoom) {
-          googleMapRef.current.setZoom(currentZoom);
-        } else {
-          googleMapRef.current.setZoom(USER_LOCATION_MAP_ZOOM);
-        }
-      }
-      // When map re-centers due to search, close InfoWindow and deselect shop
-      closeNativeInfoWindow();
-      unmountInfoWindowReactRoot();
-      setSelectedShop(null);
-    }
-  }, [lastPlaceSelectedByAutocomplete, mapsApiReady, setSelectedShop, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [selectedShop, mapsApiReady, setSelectedShop, openShopOverlays, closeNativeInfoWindow, unmountInfoWindowReactRoot, isShopOverlayOpen, isSocialOverlayOpen]);
 
   return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>;
 };

@@ -1,212 +1,169 @@
-// src/components/Overlays/ShopDetailsOverlay.tsx
-import React, { useEffect, useState, useContext } from 'react';
-import { Shop } from '../../types'; // Adjust path as needed
-import { AppContext } from '../../contexts/AppContext.tsx'; // For currentShopForDirections, etc.
-// import ProductIconsDisplay from '../UI/ProductIconsDisplay.tsx'; // You'll create this
-// import OpeningHoursDisplay from '../UI/OpeningHoursDisplay.tsx'; // You'll create this
-// import DirectionsPanel from '../UI/DirectionsPanel.tsx'; // You'll create this
-import { escapeHTMLSafe } from '../../utils'; // Or wherever your escapeHTML is
-import ProductIconsDisplay from '../UI/ProductIconsDisplay.tsx'; // <-- IMPORT
+// src/components/Overlays/SocialOverlay.tsx
+import React, { useState, useEffect } from 'react';
+import { Shop } from '../../types'; // Adjust path
 
-interface ShopDetailsOverlayProps {
-  shop: Shop | null; // Can be null if no shop is selected
+interface SocialOverlayProps {
+  shop: Shop; // Assuming shop is never null when this overlay is rendered
   onClose: () => void;
 }
 
-const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
-  const appContext = useContext(AppContext);
-  // const { currentShopForDirections, setCurrentShopForDirections } = appContext || {}; // Example if needed
-  // Or, if directions logic is fully self-contained or triggered by this component:
-  const [showDirectionsPanel, setShowDirectionsPanel] = useState(false);
-  const [directionsData, setDirectionsData] = useState<any | null>(null); // Replace 'any' with your DirectionsResponse type
+const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
+  const [activeTab, setActiveTab] = useState('photos'); // 'photos', 'reviews', 'posts'
 
-
+  // Log the photo data when the component mounts or shop changes
   useEffect(() => {
-    if (shop) {
-      // When a new shop is selected, reset directions view
-      setShowDirectionsPanel(false);
-      setDirectionsData(null);
-      // If you were using currentShopForDirections from context:
-      // setCurrentShopForDirections?.(shop);
+    console.log("[SocialOverlay] Shop Data:", shop);
+    if (shop.placeDetails) {
+      console.log("[SocialOverlay] placeDetails:", shop.placeDetails);
+      if (shop.placeDetails.photos) {
+        console.log("[SocialOverlay] placeDetails.photos:", shop.placeDetails.photos);
+        if (shop.placeDetails.photos.length > 0) {
+          // Log the first photo object to see its structure and methods
+          console.log("[SocialOverlay] First photo object:", shop.placeDetails.photos[0]);
+          // Test getUrl() on the first photo
+          try {
+            const testUrl = shop.placeDetails.photos[0].getUrl({ maxWidth: 400 });
+            console.log("[SocialOverlay] Test getUrl() for first photo:", testUrl);
+          } catch (e) {
+            console.error("[SocialOverlay] Error calling getUrl() on first photo:", e);
+          }
+        }
+      } else {
+        console.log("[SocialOverlay] No photos array in placeDetails.");
+      }
+    } else {
+      console.log("[SocialOverlay] No placeDetails on shop object.");
     }
-  }, [shop /*, setCurrentShopForDirections */]);
+  }, [shop]);
 
-  if (!shop) {
-    // This component shouldn't be rendered by App.tsx if shop is null,
-    // but this is a good safeguard.
-    return null;
-  }
+  if (!shop) return null; // Should not happen if App.tsx controls rendering
 
-  const displayName = escapeHTMLSafe(shop.placeDetails?.name || shop.Name || 'Farm Stand Details');
-
-  const handleGetDirections = async () => {
-    // Logic to get origin (e.g., from appContext.lastPlaceSelectedByAutocomplete)
-    // and destination (shop.lat, shop.lng or shop.GoogleProfileID)
-    // Then call apiService.getDirectionsClient(...)
-    // setDirectionsData(result);
-    // setShowDirectionsPanel(true);
-    console.log("Get Directions clicked for:", shop.Name);
-    alert("Directions functionality to be implemented!");
-    // Example of how you might trigger it:
-    // if (appContext?.lastPlaceSelectedByAutocomplete?.geometry?.location && shop) {
-    //   try {
-    //     const origin = appContext.lastPlaceSelectedByAutocomplete.geometry.location;
-    //     const destination = shop.GoogleProfileID ? { placeId: shop.GoogleProfileID } : { lat: shop.lat!, lng: shop.lng! };
-    //     const data = await apiService.getDirectionsClient(origin, destination);
-    //     setDirectionsData(data);
-    //     setShowDirectionsPanel(true);
-    //   } catch (error) {
-    //     console.error("Error getting directions:", error);
-    //     alert("Could not get directions.");
-    //   }
-    // } else {
-    //   alert("Please set a starting location first.");
-    // }
-  };
-
-  const handleClearDirections = () => {
-    // Logic to clear directions from map (call a map function via context/ref)
-    // and hide the directions panel
-    setDirectionsData(null);
-    setShowDirectionsPanel(false);
-    console.log("Clear Directions clicked");
-    // Example: appContext?.clearMapDirections?.();
-  };
-
-
-  // Image gallery logic
-  const images = [shop.ImageOne, shop.ImageTwo, shop.ImageThree].filter(Boolean).map(imgName => `/images/${String(imgName).trim()}`);
-  const hasImages = images.length > 0;
+  const googlePhotos = shop.placeDetails?.photos;
 
   return (
-    <div
-      id="detailsOverlayShop"
-      className="detail-pop-overlay custom-scrollbar is-open" // 'is-open' class should be managed by App.tsx based on state
-      // Add Tailwind classes for positioning from your style.css:
-      // e.g., fixed inset-0 md:top-0 md:bottom-0 md:right-0 md:w-2/5 lg:w-1/3 transform md:translate-x-0
-      // The CSS you had:
-      // #detailsOverlayShop { right: 0; transform: translateX(100%); }
-      // #detailsOverlayShop.is-open { transform: translateX(0%); }
-      // @media (min-width: 768px) { #detailsOverlayShop { width: 42%; left: auto; } }
-      // So, in Tailwind it might be:
-      // fixed inset-0 bg-white/95 backdrop-blur-sm shadow-xl z-50
-      // md:absolute md:top-0 md:bottom-0 md:right-0 md:w-[42%] md:max-w-md lg:md:w-1/3
-      // transform transition-transform duration-300 ease-in-out
-      // ${isShopOverlayOpen ? 'translate-x-0' : 'translate-x-full'}
-      // BUT, visibility is controlled by App.tsx, so just the base styles here:
-      style={{
-        // These styles are from your original CSS, applied via Tailwind in App.tsx's conditional render
-        // This component just defines the *content* and internal layout.
-        // The 'is-open' class and transition are handled by App.tsx's conditional rendering.
-      }}
-    >
-      <button
-        onClick={onClose}
-        className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 hover:text-gray-900 z-10"
-        aria-label="Close shop details"
-      >
-        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-        </svg>
+    <div id="detailsOverlaySocial" className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open">
+      <button onClick={onClose} className="overlay-close-button" aria-label="Close social details">
+        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
 
-      {/* Header of Shop Details (Fixed relative to this overlay) */}
-      <div className="p-4 pt-12 sm:pt-16 md:pt-4 border-b border-gray-200 shrink-0 sticky top-0 bg-white/90 backdrop-blur-sm z-[5]">
-        <h2 id="shopDetailName" className="text-xl sm:text-2xl font-bold text-gray-800 truncate" title={displayName}>
-          {displayName}
-        </h2>
-        {/* Potentially add short address/distance here if desired */}
+      {/* Tab Headers */}
+      <div className="pt-10 sm:pt-12 shrink-0">
+        <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4">
+          <nav id="socialOverlayTabs" className="flex flex-wrap -mb-px" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('photos')}
+              className={`social-tab-button group inline-flex items-center py-3 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm
+                ${activeTab === 'photos' ? 'active-social-tab border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}
+            >
+              <svg className={`mr-1 h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'photos' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              Photos
+            </button>
+            <button
+              onClick={() => setActiveTab('reviews')}
+              className={`social-tab-button group inline-flex items-center py-3 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4
+                ${activeTab === 'reviews' ? 'active-social-tab border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}
+            >
+             <svg className={`mr-1 h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'reviews' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+              Reviews
+            </button>
+            {/* Add more tabs for Facebook, Instagram, Twitter if needed */}
+          </nav>
+        </div>
       </div>
 
-      {/* Scrollable Content of Shop Details */}
-      <div id="shopDetailsContent" className="flex-grow overflow-y-auto custom-scrollbar p-4 space-y-4">
-        {/* Image Gallery - MODIFIED FOR HORIZONTAL ROW */}
-        <section id="shopImageGallery" aria-labelledby="gallery-heading">
-          <h3 id="gallery-heading" className="sr-only">Image Gallery</h3>
-          {hasImages ? (
-            <div className="flex space-x-3 overflow-x-auto pb-2 custom-scrollbar-thin"> {/* Horizontal scroll */}
-              {images.map((src, index) => (
-                <div
-                  key={index}
-                  className="gallery-image-item-row flex-shrink-0 w-48 h-32 sm:w-60 sm:h-40 md:w-56 md:h-36 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden shadow"
-                > {/* Fixed width and height, flex-shrink-0 prevents shrinking */}
-                  <img
-                    src={src}
-                    alt={`${displayName} image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if(parent) {
-                            parent.innerHTML = `<div class="w-full h-full flex items-center justify-center text-xs text-gray-500">Image not found</div>`;
-                        }
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 py-4 text-center rounded-md bg-gray-100 dark:bg-gray-700">No provided photos for this stand.</p>
-          )}
-        </section>
+      {/* Tab Content Panels */}
+      <div className="flex-grow overflow-y-auto custom-scrollbar px-2 sm:px-4 pb-4">
+        {/* Photos Tab Panel */}
+        {activeTab === 'photos' && (
+          <div id="social-photos-panel">
+            {/* Google Places Photos */}
+            {googlePhotos && googlePhotos.length > 0 ? (
+              <div id="socialOverlayGooglePhotosContainer" className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 pb-4">
+                {googlePhotos.map((photo, index) => {
+                  // CRITICAL: You MUST provide maxWidth or maxHeight (or both) for getUrl()
+                  let imageUrl = '';
+                  try {
+                    // You can adjust maxWidth/maxHeight based on your desired display size
+                    imageUrl = photo.getUrl({ maxWidth: 400, maxHeight: 400 });
+                  } catch (e) {
+                    console.error("Error calling getUrl for photo:", photo, e);
+                    return (
+                      <div key={`error-${index}`} className="gallery-image-container aspect-square bg-red-100 dark:bg-red-900 rounded overflow-hidden flex items-center justify-center text-red-700 dark:text-red-300 text-xs p-1">
+                        Error loading
+                      </div>
+                    );
+                  }
+                  
+                  if (!imageUrl) return null; // Skip if URL couldn't be generated
 
-        {/* Opening Hours Section */}
-        <div className="opening-hours-section border-t pt-3">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">Hours</h3>
-          <div id="shopOpeningHoursContainer">
-            {/* <OpeningHoursDisplay placeDetails={shop.placeDetails} /> */}
-            <p className="text-sm p-2 text-center">Opening hours display to be implemented.</p>
-            {shop.placeDetails?.opening_hours?.weekday_text?.map((line, index) => (
-                <p key={index} className="text-sm text-gray-600">{line}</p>
-            ))}
-            {(!shop.placeDetails?.opening_hours?.weekday_text && shop.placeDetails?.business_status) && (
-                <p className={`text-sm font-semibold ${shop.placeDetails.business_status === 'OPERATIONAL' ? 'text-green-600' : 'text-red-600'}`}>
-                    Status: {shop.placeDetails.business_status.replace('_', ' ')}
-                </p>
+                  return (
+                    <div key={imageUrl || index} className="gallery-image-container aspect-square bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
+                      <a href={imageUrl} target="_blank" rel="noopener noreferrer" title={`View full image ${index + 1} for ${shop.Name}`}>
+                        <img
+                          src={imageUrl}
+                          alt={`Shop image ${index + 1} for ${shop.Name}`}
+                          className="w-full h-full object-cover transition-transform duration-200 ease-in-out hover:scale-105"
+                          loading="lazy"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                            const parent = (e.target as HTMLImageElement).parentElement;
+                            if (parent) {
+                               const errorDiv = document.createElement('div');
+                               errorDiv.className = "w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 p-1";
+                               errorDiv.textContent = "Img Error";
+                               parent.appendChild(errorDiv);
+                            }
+                          }}
+                        />
+                      </a>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">No Google photos available for this location.</p>
+            )}
+            {/* You can add sections for other photo sources (e.g., your own uploaded images) here */}
+          </div>
+        )}
+
+        {/* Reviews Tab Panel */}
+        {activeTab === 'reviews' && (
+          <div id="social-reviews-panel">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Reviews</h3>
+            {shop.placeDetails?.reviews && shop.placeDetails.reviews.length > 0 ? (
+              <ul className="space-y-3">
+                {shop.placeDetails.reviews.map((review, index) => (
+                  <li key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow">
+                    <div className="flex items-center mb-1.5">
+                      {review.profile_photo_url && (
+                        <img src={review.profile_photo_url} alt={review.author_name} className="w-8 h-8 rounded-full mr-2" />
+                      )}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{review.author_name}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{review.relative_time_description}</p>
+                      </div>
+                      {review.rating && (
+                        <div className="ml-auto flex items-center text-xs text-yellow-500">
+                          {Array.from({ length: 5 }, (_, i) => (
+                            <svg key={i} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path></svg>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-line">{review.text}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">No reviews available for this location.</p>
             )}
           </div>
-        </div>
-       
-        {/* Products Available Section */}
-        <div className="product-icons-section pt-3 border-t">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-700 mb-2">Products Available</h3>
-          <div id="shopProductIconsContainer">
-            <ProductIconsDisplay shop={shop} /> {/* <-- USE THE COMPONENT HERE */}
-          </div>
-        </div>
-
-        {/* Directions Control Section */}
-        <div id="directionsControlSection" className="mt-3 pt-3 border-t">
-          {!showDirectionsPanel || !directionsData ? (
-            <button
-              id="getShopDirectionsButton"
-              onClick={handleGetDirections}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-            >
-              Get Directions
-            </button>
-          ) : (
-            <button
-              id="clearShopDirectionsButton"
-              onClick={handleClearDirections}
-              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-            >
-              Clear Directions
-            </button>
-          )}
-          {showDirectionsPanel && directionsData && (
-            <div id="directionsPanelRendered" className="mt-3 text-sm bg-gray-50 p-2 border rounded">
-              {/* <DirectionsPanel directionsData={directionsData} /> */}
-              <p>Turn-by-turn directions to be implemented here.</p>
-              <pre className="text-xs whitespace-pre-wrap">{JSON.stringify(directionsData, null, 2)}</pre>
-            </div>
-          )}
-        </div>
+        )}
+        {/* Add other tab panels here */}
       </div>
     </div>
   );
 };
 
-export default ShopDetailsOverlay;
+export default SocialOverlay;

@@ -25,6 +25,7 @@ export interface LatLngLiteral {
   lng: number;
 }
 
+
 export const DEFAULT_MAP_CENTER: LatLngLiteral = { lat: 43.6591, lng: -70.2568 }; // Example: Portland, ME
 export const DEFAULT_PORTLAND_CENTER: LatLngLiteral = { lat: 43.6591, lng: -70.2568 };
 
@@ -43,6 +44,7 @@ export const LAST_SELECTED_RADIUS_KEY: string = 'farmStandFinder_lastSelectedRad
 export const LAST_SEARCHED_LOCATION_COOKIE_NAME: string = 'farmStandFinder_lastLocation';
 export const COOKIE_EXPIRY_DAYS: number = 30; // Cookie will last for 30 days
 
+export const GOOGLE_MAPS_API_KEY: string = 'AIzaSyAeu_BXDUXVVut_mW4n-WFqR0lnwlY0VLs';
 // --- Google Maps Specific ---
 export const MAP_ID: string = '6c1bbba6c5f48ca2beb388ad'; // Your Google Maps Map ID
 

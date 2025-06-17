@@ -2,7 +2,7 @@
 import React, { useContext, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppContext } from './contexts/AppContext.tsx';
-import { Shop } from './types'; // Assuming your Shop type is here
+import { Shop, ShopWithDistance } from './types'; // Ensure these types are defined
 
 import Header from './components/Header/Header.tsx';
 import MapComponent from './components/Map/MapComponent.tsx';
@@ -30,82 +30,50 @@ function App() {
     setIsInitialModalOpen,
     currentRadius,
     mapsApiReady,
+    setSelectedShop,
   } = appContext || {};
 
   // Unified Search/Filter Logic
   useEffect(() => {
-    console.log("-------------------- FILTERING EFFECT START --------------------");
+    // console.log("-------------------- FILTERING EFFECT START --------------------"); // Optional: for detailed tracing
 
     if (!setCurrentlyDisplayedShops) {
-      console.log("[App.tsx] Effect: setCurrentlyDisplayedShops is not available. Skipping filter.");
-      console.log("-------------------- FILTERING EFFECT END (skipped) --------------------");
+      // console.log("[App.tsx] Effect: setCurrentlyDisplayedShops is not available. Skipping filter.");
       return;
     }
     if (!allFarmStands) {
-      console.log("[App.tsx] Effect: allFarmStands is not yet available. Setting displayed to empty.");
+      // console.log("[App.tsx] Effect: allFarmStands is not yet available. Setting displayed to empty.");
       setCurrentlyDisplayedShops([]);
-      console.log("-------------------- FILTERING EFFECT END (no stands data) --------------------");
       return;
     }
 
-    console.log(
-      "[App.tsx] Effect: Initial state for this run -> AllFarmStands:", allFarmStands.length,
-      "ActiveProducts:", JSON.stringify(activeProductFilters),
-      "Location:", lastPlaceSelectedByAutocomplete?.formatted_address,
-      "Radius:", currentRadius
-    );
+    // console.log( // Optional: for detailed tracing
+    //   "[App.tsx] Effect: Initial state for this run -> AllFarmStands:", allFarmStands.length,
+    //   "ActiveProducts:", JSON.stringify(activeProductFilters),
+    //   "Location:", lastPlaceSelectedByAutocomplete?.formatted_address,
+    //   "Radius:", currentRadius
+    // );
 
     if (allFarmStands.length === 0) {
-      console.log("[App.tsx] Effect: No farm stands loaded in allFarmStands array. Setting displayed to empty.");
       setCurrentlyDisplayedShops([]);
-      console.log("-------------------- FILTERING EFFECT END (allFarmStands empty) --------------------");
       return;
     }
 
-    // --- DEBUGGING THE FIRST SHOP TO VERIFY PRODUCT PROPERTY NAMES AND VALUES ---
-    const firstShopForDebug = allFarmStands[0];
-    if (firstShopForDebug) {
-        console.log("********************************************************************************");
-        console.log("[App.tsx] DEBUGGING SHOP PRODUCTS (Direct Properties):");
-        console.log("  First Shop Name:", firstShopForDebug.Name || "N/A");
-        // Log a few known product keys to see their values for the first shop
-        console.log("  First shop 'corn' value:", firstShopForDebug.corn);
-        console.log("  First shop 'beef' value:", firstShopForDebug.beef);
-        // console.log("  Full first shop object for inspection:", JSON.stringify(firstShopForDebug)); // Uncomment if needed
-        console.log("********************************************************************************");
-    }
-    // --- END DEBUGGING ---
-
-    let filteredStands = [...allFarmStands];
+    let tempFilteredStands: Shop[] = [...allFarmStands];
 
     // 1. Apply Product Filters
     const currentActiveProductFilters = activeProductFilters || {};
     const activeFilterKeys = Object.keys(currentActiveProductFilters).filter(key => currentActiveProductFilters[key]);
     
     if (activeFilterKeys.length > 0) {
-      console.log("[App.tsx] Effect: Active product filter keys:", activeFilterKeys);
-      filteredStands = filteredStands.filter((shop: Shop) => { // Added type Shop here
+      // console.log("[App.tsx] Effect: Active product filter keys:", activeFilterKeys);
+      tempFilteredStands = tempFilteredStands.filter((shop: Shop) => {
         return activeFilterKeys.every(filterKey => {
-          // Accessing direct boolean properties on the shop object.
-          // The filterKey (e.g., "corn") must exactly match the property name in your JSON.
-          // (shop as any)[filterKey] is used to bypass strict TypeScript key checking if Shop type isn't exhaustive for products.
-          // A better approach is to ensure your Shop type includes all possible product keys as optional booleans.
-          const productIsAvailable = !!(shop as any)[filterKey];
-          // Or, if your Shop type is correctly defined with all product keys:
-          // const productIsAvailable = !!shop[filterKey as keyof Shop];
-
-
-          // --- DETAILED DEBUG LOG FOR A SPECIFIC FILTER ---
-          // if (filterKey === 'corn') { // Replace 'corn' with any filter you are actively testing
-          //    console.log(`    [Product Check] Shop: ${shop.Name}, Filter: ${filterKey}, Shop's Value for '${filterKey}': ${shop[filterKey as keyof Shop]}, Evaluated: ${productIsAvailable}`);
-          // }
-          // --- END DETAILED DEBUG LOG ---
+          const productIsAvailable = !!(shop as any)[filterKey]; // Assumes direct boolean properties
           return productIsAvailable;
         });
       });
-      console.log("[App.tsx] Effect: After product filters, count:", filteredStands.length);
-    } else {
-      // console.log("[App.tsx] Effect: No active product filters.");
+      // console.log("[App.tsx] Effect: After product filters, count:", tempFilteredStands.length);
     }
 
     // 2. Apply Location/Radius Filter
@@ -115,113 +83,120 @@ function App() {
       let searchCenterLng: number | undefined;
 
       if (placeLocation && typeof placeLocation.lat === 'function' && typeof placeLocation.lng === 'function') {
-        // It's a google.maps.LatLng object
         searchCenterLat = placeLocation.lat();
         searchCenterLng = placeLocation.lng();
       } else if (placeLocation && typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
-        // It's a LatLngLiteral (plain object)
         searchCenterLat = placeLocation.lat;
         searchCenterLng = placeLocation.lng;
-      } else {
-        console.warn("[App.tsx] Effect: lastPlaceSelectedByAutocomplete.geometry.location is in an unexpected format or undefined.", placeLocation);
       }
 
       if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
-        console.log("[App.tsx] Effect: Applying location filter. Center:", lastPlaceSelectedByAutocomplete.formatted_address, "Radius:", currentRadius, "mi");
-        const searchCenter = { lat: searchCenterLat, lng: searchCenterLng };
+        const searchCenterLatLng = new window.google.maps.LatLng(searchCenterLat, searchCenterLng);
         const radiusInMeters = currentRadius * 1609.34;
 
-        filteredStands = filteredStands.filter(shop => {
+        tempFilteredStands = tempFilteredStands.filter(shop => {
           if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return false;
-          const shopLocation = { lat: shop.lat, lng: shop.lng };
+          const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
           try {
-            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
-              new window.google.maps.LatLng(searchCenter),
-              new window.google.maps.LatLng(shopLocation)
-            );
+            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLatLng);
             return distance <= radiusInMeters;
-          } catch (e) {
-            console.error("[App.tsx] Effect: Error computing distance:", e);
-            return false;
-          }
+          } catch (e) { return false; }
         });
-        console.log("[App.tsx] Effect: After location filter, count:", filteredStands.length);
+        // console.log("[App.tsx] Effect: After location filter, count:", tempFilteredStands.length);
       }
-    } else if (lastPlaceSelectedByAutocomplete?.geometry?.location && currentRadius > 0) {
-      // console.warn("[App.tsx] Effect: Location filter conditions not fully met. mapsApiReady:", mapsApiReady, "Geometry Lib Loaded:", !!window.google?.maps?.geometry?.spherical);
     }
 
-    console.log("[App.tsx] Effect: END Filtering. Final displayedShops count:", filteredStands.length);
-    setCurrentlyDisplayedShops(filteredStands);
-    console.log("-------------------- FILTERING EFFECT END --------------------");
+    // 3. Calculate Distances and Format for Display
+    let finalStandsToDisplay: ShopWithDistance[] = [];
+    if (mapsApiReady && window.google?.maps?.geometry?.spherical && lastPlaceSelectedByAutocomplete?.geometry?.location) {
+      const placeLocation = lastPlaceSelectedByAutocomplete.geometry.location;
+      let searchCenterLat: number | undefined;
+      let searchCenterLng: number | undefined;
+
+      if (placeLocation && typeof placeLocation.lat === 'function' && typeof placeLocation.lng === 'function') {
+        searchCenterLat = placeLocation.lat();
+        searchCenterLng = placeLocation.lng();
+      } else if (placeLocation && typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
+        searchCenterLat = placeLocation.lat;
+        searchCenterLng = placeLocation.lng;
+      }
+
+      if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
+        const searchCenterLatLng = new window.google.maps.LatLng(searchCenterLat, searchCenterLng);
+        finalStandsToDisplay = tempFilteredStands.map(shop => {
+          if (shop.lat != null && shop.lng != null && !isNaN(shop.lat) && !isNaN(shop.lng)) {
+            const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
+            try {
+              const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLatLng);
+              const distanceInMiles = distanceInMeters / 1609.34;
+              return { ...shop, distance: distanceInMeters, distanceText: `${distanceInMiles.toFixed(1)} mi` };
+            } catch (e) { return { ...shop, distanceText: undefined }; }
+          }
+          return { ...shop, distanceText: undefined };
+        });
+      } else {
+        finalStandsToDisplay = tempFilteredStands.map(shop => ({ ...shop, distanceText: undefined }));
+      }
+    } else {
+      finalStandsToDisplay = tempFilteredStands.map(shop => ({ ...shop, distanceText: undefined }));
+    }
+    
+    if (finalStandsToDisplay.some(shop => shop.distance !== undefined)) {
+      finalStandsToDisplay.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
+    }
+
+    // console.log("[App.tsx] Effect: END Filtering. Final displayedShops count:", finalStandsToDisplay.length);
+    setCurrentlyDisplayedShops(finalStandsToDisplay);
+    // console.log("-------------------- FILTERING EFFECT END --------------------");
 
   }, [
-      allFarmStands,
-      activeProductFilters,
-      lastPlaceSelectedByAutocomplete,
-      currentRadius,
-      setCurrentlyDisplayedShops,
-      mapsApiReady
+      allFarmStands, activeProductFilters, lastPlaceSelectedByAutocomplete,
+      currentRadius, setCurrentlyDisplayedShops, mapsApiReady
     ]
   );
 
-  // Handle direct navigation to /farm/:slug or overlay closure
-// src/App.tsx
-// ... (inside the useEffect that handles navigation)
+  // Handle direct navigation to /farm/:slug, overlay closure, and map click deselection
   useEffect(() => {
-    if (!allFarmStands || !openShopOverlays || !closeShopOverlays) {
+    // console.log("-------------------- NAV/OVERLAY EFFECT START --------------------"); // Optional debug
+    // console.log("[App.tsx] Nav Effect current state: path=", location.pathname, "selectedShop=", selectedShop ? selectedShop.Name : 'null', "isShopOverlayOpen=", isShopOverlayOpen);
+
+    if (!allFarmStands || !openShopOverlays || !closeShopOverlays || !setSelectedShop) {
       return;
     }
 
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
 
-    if (slugMatch && slugMatch[1]) { // A farm slug is in the URL
-      const slug = slugMatch[1];
-      const shopFromSlug = allFarmStands.find(s => s.slug === slug);
-
+    if (slugMatch && slugMatch[1]) {
+      const slugInUrl = slugMatch[1];
+      const shopFromSlug = allFarmStands.find(s => s.slug === slugInUrl);
       if (shopFromSlug) {
-        // If the selectedShop in context is not this shop yet, or if no shop is selected,
-        // then update selectedShop (if needed) and open overlays.
-        // This condition is key: ensures openShopOverlays is called when the URL changes to a farm path.
-        if (!selectedShop || selectedShop.slug !== slug) {
-          console.log(`[App.tsx] Path effect: URL changed to /farm/${slug}. Opening overlays for ${shopFromSlug.Name}`);
-          // It's important that setSelectedShop is called if App.tsx relies on it
-          // to know *which* shop's details to show in the overlay.
-          // openShopOverlays likely already does setSelectedShop internally or relies on it being set.
-          if (appContext.setSelectedShop) appContext.setSelectedShop(shopFromSlug); // Ensure selectedShop is up-to-date
-          openShopOverlays(shopFromSlug);
-        } else {
-          // URL matches the already selected shop, overlays should already be open or opening.
-          // console.log(`[App.tsx] Path effect: URL matches selectedShop ${selectedShop.Name}. No action needed or overlays already handled.`);
+        if (!selectedShop || selectedShop.slug !== slugInUrl) {
+          setSelectedShop(shopFromSlug); // Set selected shop first
+          openShopOverlays(shopFromSlug); // Then open overlay
+        } else if (!isShopOverlayOpen && !isSocialOverlayOpen) { // If URL matches but overlays somehow got closed
+             openShopOverlays(selectedShop); // Re-open with the current selectedShop
         }
       } else {
-        // Slug in URL, but no matching shop found in allFarmStands
-        console.warn(`[App.tsx] Path effect: Farm stand with slug '${slug}' not found. Redirecting to home.`);
         navigate('/', { replace: true });
-        closeShopOverlays();
+        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+        if (selectedShop) setSelectedShop(null);
       }
-    } else if (location.pathname === '/') { // On the home path
-      // If an overlay is open and we are on the home path, close it.
-      // This handles cases like pressing browser back button from a farm page.
-      if (isShopOverlayOpen || isSocialOverlayOpen) {
-        console.log("[App.tsx] Path effect: On home path with overlay open. Closing overlays.");
-        closeShopOverlays();
-        // Optionally, also clear selectedShop if overlays are closed due to navigating to '/'
-        // if (appContext.setSelectedShop) appContext.setSelectedShop(null);
+    } else if (location.pathname === '/') {
+      if (selectedShop || isShopOverlayOpen || isSocialOverlayOpen) {
+        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+        if (selectedShop) setSelectedShop(null);
       }
+    } else if (!selectedShop && location.pathname.startsWith('/farm/')) {
+      navigate('/', { replace: true });
+      if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
     }
+    // console.log("-------------------- NAV/OVERLAY EFFECT END --------------------"); // Optional debug
   }, [
-      location.pathname,
-      allFarmStands,
-      selectedShop, // Adding selectedShop here makes the effect re-evaluate if it changes
-      openShopOverlays,
-      closeShopOverlays,
-      navigate,
-      isShopOverlayOpen,
-      isSocialOverlayOpen,
-      appContext.setSelectedShop // If used directly
+      location.pathname, allFarmStands, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
+      openShopOverlays, closeShopOverlays, setSelectedShop, navigate
     ]
   );
+
   // Keyboard listener for Escape key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -230,13 +205,14 @@ function App() {
            setIsInitialModalOpen(false);
         } else if ((isShopOverlayOpen || isSocialOverlayOpen) && closeShopOverlays) {
           closeShopOverlays();
+          if (setSelectedShop) setSelectedShop(null); // Also deselect shop
           navigate('/');
         }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isInitialModalOpen, setIsInitialModalOpen, isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate]);
+  }, [isInitialModalOpen, setIsInitialModalOpen, isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, setSelectedShop]);
 
   if (!appContext) {
     return <div className="flex items-center justify-center h-screen text-xl">Loading application context...</div>;
@@ -256,6 +232,7 @@ function App() {
             shop={selectedShop}
             onClose={() => {
               closeShopOverlays?.();
+              if (setSelectedShop) setSelectedShop(null);
               navigate('/');
             }}
           />
@@ -263,7 +240,11 @@ function App() {
         {isSocialOverlayOpen && selectedShop && (
           <SocialOverlay
             shop={selectedShop}
-            onClose={() => { closeShopOverlays?.(); navigate('/'); }}
+            onClose={() => { 
+              closeShopOverlays?.(); 
+              if (setSelectedShop) setSelectedShop(null);
+              navigate('/'); 
+            }}
           />
         )}
       </main>

@@ -122,3 +122,8 @@ export interface Shop {
   distance?: number; // Calculated distance from search center
   // marker?: any; // For Google Maps marker instance - typically managed by Map component's state/refs now
 }
+
+export interface ShopWithDistance extends Shop {
+  distance?: number; // Distance in meters (optional, for sorting)
+  distanceText?: string; // Formatted distance string for display (e.g., "2.3 mi away")
+}

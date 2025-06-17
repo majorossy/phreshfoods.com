@@ -3,269 +3,177 @@
 @tailwind utilities;
 
 /* index.css - Ensure these styles for #root */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* The duplicate @tailwind directives can be removed if they are at the top once */
 
 html, body {
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
-    overflow: hidden; /* Important to prevent scrollbars from slight full-screen mismatches */
+    overflow: hidden;
 }
 
 #root {
     height: 100%;
     width: 100%;
-    display: flex; /* To make #app-container fill it properly */
-    flex-direction: column; /* To make #app-container fill it properly */
-    margin: 0; /* Override App.css */
-    padding: 0; /* Override App.css */
-    text-align: left; /* Override App.css if not desired */
-}
-
-/* Your existing body style in index.css is good:
-body {
-    font-family: 'Inter', sans-serif;
-    overscroll-behavior: none;
-    height: 100vh; // This is good!
+    display: flex;
+    flex-direction: column;
     margin: 0;
-    display: flex;
-    flex-direction: column;
-} */
-
-/* Your existing #app-container style in index.css is good,
-   and in App.tsx you have className="h-screen flex flex-col" which is also good.
-#app-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    overflow: hidden;
+    padding: 0;
+    text-align: left;
 }
-*/
+
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #c9bcae;
+    background: #c9bcae; /* Consider using Tailwind dark: equivalent for consistency if needed */
     border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #a0aec0; 
+    background: #a0aec0; /* Tailwind gray-400 */
     border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #718096; 
+    background: #718096; /* Tailwind gray-500 */
 }
 
 main {
     flex-grow: 1;
-    overflow: hidden; /* Keep this */
-    position: relative; /* Keep this for absolute children */
-    /* display: flex; /* REMOVE THIS or comment out */
+    overflow: hidden;
+    position: relative;
 }
 
-#mapPanel {
-    height: 100%; 
-    width: 100%; 
-    position: absolute; 
+#mapPanel { /* This ID seems unused if MapComponent is directly in <main> */
+    height: 100%;
+    width: 100%;
+    position: absolute;
     top: 0;
     left: 0;
 }
-#map {
+#map { /* This is the ID used by MapComponent's div */
     height: 100%;
     width: 100%;
 }
 
 #listingsPanel {
-    background:transparent;
+    background:transparent; /* This is often overridden by Tailwind utility in the component itself */
     position: absolute;
     top: 0;
     right: 0;
-    bottom: 0; /* This makes it full height */
+    bottom: 0;
     z-index: 10;
-    width: 42%; /* For desktop - this is fine for an overlay */
-    /* On mobile, it's width: 100% - also fine for an overlay */
+    width: 42%;
     overflow-y: auto;
-    /* background: transparent; Is overridden by Tailwind in component */
-    /* flex-shrink: 0; /* Likely not needed anymore here */
 }
-@media (max-width: 767px) { 
+@media (max-width: 767px) {
     #listingsPanel {
-        width: 100%; 
+        width: 100%;
     }
 }
-
 
 /* --- Overlay Styling --- */
 .detail-pop-overlay {
     position: absolute;
-    inset: 0; 
-    background-color: rgba(249, 250, 251, 0.97); 
-    backdrop-filter: blur(4px);
+    inset: 0;
+    background-color: rgba(249, 250, 251, 0.97); /* Consider dark:bg-gray-800/97 for dark mode */
+    -webkit-backdrop-filter: blur(4px); /* Ensure browser compatibility for backdrop-filter if needed */
+            backdrop-filter: blur(4px);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     opacity: 0;
     visibility: hidden;
     transition: opacity 0.3s ease-in-out, visibility 0s linear 0.3s, transform 0.3s ease-in-out;
     z-index: 50;
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
 }
 
-@media (min-width: 768px) { 
+@media (min-width: 768px) {
     .detail-pop-overlay {
-        top: 0; 
-        bottom: 0; 
-        width: 30%; 
-        inset-inline-start: auto; 
-        inset-inline-end: auto;  
+        /* top: 0; /* inset:0 covers this */
+        /* bottom: 0; /* inset:0 covers this */
+        /* width: 30%; /* This should be set by specific overlay ID now */
+        /* inset-inline-start: auto; /* If using logical properties, fine */
+        /* inset-inline-end: auto; */
     }
 }
 
 .detail-pop-overlay.is-open {
     opacity: 1;
     visibility: visible;
-    transform: translateX(0);
+    transform: translateX(0); /* Default transform for opening */
     transition-delay: 0s;
-    z-index: 50; 
+    /* z-index: 50; /* Already set */
 }
 
-#detailsOverlayShop { 
-    right: 0; 
-    transform: translateX(100%);
+#detailsOverlayShop {
+    right: 0;
+    transform: translateX(100%); /* Initial off-screen position for sliding from right */
 }
 #detailsOverlayShop.is-open { transform: translateX(0%); }
-@media (min-width: 768px) { #detailsOverlayShop { width: 42%; left: auto; } }
+@media (min-width: 768px) { #detailsOverlayShop { width: 42%; /* left: auto; */ } } /* 'left: auto' is default with 'right:0' */
 
-#detailsOverlaySocial { 
-    left: 0; 
-    transform: translateX(-100%);
+#detailsOverlaySocial {
+    left: 0;
+    transform: translateX(-100%); /* Initial off-screen position for sliding from left */
 }
 #detailsOverlaySocial.is-open { transform: translateX(0%); }
-@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; right: auto; } }
+@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; /* right: auto; */ } } /* 'right: auto' is default with 'left:0' */
+
 
 .overlay-close-button {
-    position: absolute; 
-    top: 0.75rem; 
-    right: 0.75rem; 
-    color: #4B5563; 
-    z-index: 60; 
+    position: absolute;
+    top: 0.75rem; /* Tailwind's top-3 */
+    right: 0.75rem; /* Tailwind's right-3 */
+    color: #4B5563; /* Tailwind's text-gray-600 */
+    z-index: 60;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.25rem; 
+    padding: 0.25rem; /* Tailwind's p-1 */
 }
-.overlay-close-button:hover { color: #1F2937; }
-@media (min-width: 640px) { .overlay-close-button { top: 1rem; right: 1rem; } }
-
-
-/* --- Overlay Content Structure for Full Height Tabs (Social Overlay) --- */
-#detailsOverlaySocial > div:nth-child(2) { 
-    padding: 1rem 1rem 0 1rem; 
-    flex-shrink: 0; 
-}
-#detailsOverlaySocial > div:nth-child(3) {
-    flex-grow: 1; 
-    overflow: hidden; 
-    padding: 0 1rem 1rem 1rem; 
-    display: flex; 
-    flex-direction: column; 
+.overlay-close-button:hover { color: #1F2937; } /* Tailwind's text-gray-800 or 900 */
+@media (min-width: 640px) { /* sm breakpoint */
+    .overlay-close-button {
+        top: 1rem; /* Tailwind's sm:top-4 */
+        right: 1rem; /* Tailwind's sm:right-4 */
+    }
 }
 
-.social-tab-content:not(.hidden) {
-    display: flex; 
-    flex-direction: column; 
-    height: 100%; 
+/* --- Overlay Content Structure for Social Overlay (if still needed for height) --- */
+/* These can often be replaced by flex utilities in the component JSX */
+#detailsOverlaySocial > div:nth-child(2) { /* Header/Tabs container */
+    padding: 1rem 1rem 0 1rem; /* Replicate with Tailwind: px-4 pt-4 */
+    flex-shrink: 0;
+}
+#detailsOverlaySocial > div:nth-child(3) { /* Content container */
+    flex-grow: 1;
+    overflow: hidden;
+    padding: 0 1rem 1rem 1rem; /* Replicate with Tailwind: px-4 pb-4 and handle top padding by inner elements */
+    display: flex;
+    flex-direction: column;
 }
 
-#social-reviews-panel > h3, 
-#social-photos-panel > h3,
-#social-facebook-panel > h3, /* If Facebook panel has a title */
-#social-instagram-panel > h3, /* If Instagram panel has a title */
-#social-twitter-panel > h3 { /* If Twitter panel has a title */
-    flex-shrink: 0; 
-    /* Tailwind mb-2 is likely applied in HTML for spacing */
+.social-tab-content:not(.hidden) { /* Handled by conditional rendering in React or Tailwind's 'hidden' class */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
-#socialOverlayReviewsContainer, 
-#socialOverlayGooglePhotosContainer,
-#socialLinksContainer, 
-#instagramFeedContainer, 
+/* Generic containers for scrollable content within tabs */
+#socialOverlayReviewsContainer,
+/* #socialOverlayGooglePhotosContainer, /* NOW HANDLED BY TAILWIND IN JSX */
+#socialLinksContainer,
+#instagramFeedContainer,
 #twitterTimelineContainer {
-    flex-grow: 1; 
-    overflow-y: auto; 
-    /* Ensure child elements can also expand if needed */
-    display: flex; /* Helps if the direct child (e.g. fb-page) needs to fill height */
-    flex-direction: column; /* Stack children inside this scrollable area */
-}
-
-/* --- Shop Details Overlay Content Structure --- */
-#detailsOverlayShop > #shopDetailsContent { 
     flex-grow: 1;
     overflow-y: auto;
-    padding: 1rem; 
-}
-#detailsOverlayShop #shopDetailName,
-#detailsOverlayShop #shopDetailsContent > h3 { 
-    flex-shrink: 0; 
-}
-#detailsOverlayShop #shopImageGallery, 
-#detailsOverlayShop #directionsControlSection { 
-    flex-shrink: 0; 
-}
-
-/* --- Social Overlay Tab Button Styling --- */
-.social-tab-button {
-    border-color: transparent; color: #6b7280; 
-    transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
-}
-.social-tab-button:hover { color: #374151; border-color: #d1d5db; }
-.social-tab-button.active-social-tab { color: #2563eb; border-color: #2563eb; font-weight: 600; }
-
-/* --- Social Media Embed Specific Styling --- */
-/* Facebook Page Plugin Specific Styling for Full Height */
-#socialLinksContainer .fb-page,
-#socialLinksContainer .fb-page span, /* Target the span FB wraps its iframe in */
-#socialLinksContainer .fb-page iframe {
-    width: 100% !important;
-    height: 100% !important; /* Crucial for full height */
-    max-width: 100%;
-    min-height: 300px; /* Fallback minimum height */
-    display: block !important; /* Or flex if needed for internal alignment */
-    flex-grow: 1 !important; /* If parent is flex */
-}
-/* Ensure the parent of .fb-page (which is #socialLinksContainer) is also flex column and allows growth */
-#socialLinksContainer {
-    border: 1px solid #e5e7eb; /* Keep border if desired */
-    border-radius: 0.375rem; /* Tailwind rounded-lg */
-    overflow: hidden; /* To contain the iframe */
-    /* flex-grow: 1; -- Already set */
-    /* display: flex; -- Already set */
-    /* flex-direction: column; -- Already set */
+    display: flex;
+    flex-direction: column;
 }
 
 
-#twitterTimelineContainer iframe {
-    width: 100% !important;
-    max-width: 100%;
-    min-height: 400px; 
-    height: 100%; /* Attempt full height for Twitter */
-    border-radius: 0; 
-    border: none !important; 
-}
-.instagram-embed-wrapper iframe,
-.instagram-embed-wrapper .instagram-media {
-    margin-left: auto !important; margin-right: auto !important;
-    max-width: 100% !important; 
-    width: calc(100% - 1rem) !important; 
-    min-width: 280px !important; 
-    box-shadow: none !important; 
-    border-radius: 0.375rem; 
-}
-
-.gm-style-iw-c button.gm-ui-hover-effect { display: none !important; }
 
 /* --- Gallery Styling (Shop & Social) --- */
 #shopImageGallery,

@@ -137,8 +137,8 @@ const Header: React.FC = () => {
 
   return (
     <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden">
-      <div className="container mx-auto px-2 sm:px-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4">
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full">
           {/* Logo and Title Section */}
           <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
             <img src="/images/flag.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
@@ -155,8 +155,8 @@ const Header: React.FC = () => {
               ref={autocompleteInputRef}
               id="headerSearchAutocompleteClassic"
               type="text"
-              placeholder="Enter town, city, or address"
-              className="flex-grow sm:flex-grow-0 sm:w-60 md:w-72 p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              placeholder="Enter a zip, city, or address"
+              className="flex-grow sm:flex-grow-0 sm:w-80 md:w-96 p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
               value={inputValue}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
