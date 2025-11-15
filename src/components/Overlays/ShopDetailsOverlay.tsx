@@ -21,6 +21,21 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const businessStatus = shop.placeDetails?.business_status;
   const openingHours = shop.placeDetails?.opening_hours;
 
+  // Parse hours for modern display
+  const parsedHours = openingHours?.weekday_text?.map(dayText => {
+    // Format: "Monday: 9:00 AM – 6:00 PM" or "Monday: Closed"
+    const parts = dayText.split(': ');
+    return {
+      day: parts[0],
+      hours: parts[1] || 'Closed'
+    };
+  }) || [];
+
+  // Get current day (0 = Sunday, 1 = Monday, etc.)
+  const today = new Date().getDay();
+  // Google's weekday_text starts with Monday (index 0), so we need to adjust
+  const todayIndex = today === 0 ? 6 : today - 1;
+
   // Group available products by category
   const availableProducts: Record<string, Array<{ id: string; name: string; icon: string }>> = {};
   for (const productId in PRODUCT_ICONS_CONFIG) {
@@ -85,19 +100,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
           </div>
         )}
 
-        {/* Business Status */}
-        {businessStatus && (
-          <div className="mb-4">
-            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-              businessStatus === 'OPERATIONAL'
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-            }`}>
-              {businessStatus === 'OPERATIONAL' ? 'Open' : 'Closed'}
-            </span>
-          </div>
-        )}
-
         {/* Address */}
         {displayAddress && displayAddress !== 'N/A' && (
           <div className="mb-4">
@@ -145,51 +147,121 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
           </div>
         )}
 
-        {/* Opening Hours */}
-        {openingHours?.weekday_text && openingHours.weekday_text.length > 0 && (
+        {/* Opening Hours - Modern Collapsible Design */}
+        {parsedHours.length > 0 && (
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Hours</h3>
-            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              {openingHours.weekday_text.map((hours, index) => (
-                <li key={index} className="flex justify-between">
-                  <span>{hours}</span>
-                </li>
-              ))}
-            </ul>
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Hours</h3>
+                    {parsedHours[todayIndex] && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Today: <span className="font-medium text-gray-700 dark:text-gray-300">{parsedHours[todayIndex].hours}</span>
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {openingHours?.open_now !== undefined && (
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                      openingHours.open_now
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {openingHours.open_now ? 'Open' : 'Closed'}
+                    </span>
+                  )}
+                  <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </summary>
+              <div className="mt-3 space-y-2 px-3 pb-2">
+                {parsedHours.map((dayHours, index) => {
+                  const isToday = index === todayIndex;
+                  return (
+                    <div
+                      key={index}
+                      className={`flex justify-between items-center py-2 px-3 rounded-md transition-colors ${
+                        isToday
+                          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                      }`}
+                    >
+                      <span className={`text-sm font-medium ${
+                        isToday
+                          ? 'text-blue-700 dark:text-blue-300'
+                          : 'text-gray-600 dark:text-gray-400'
+                      }`}>
+                        {dayHours.day}
+                      </span>
+                      <span className={`text-sm ${
+                        isToday
+                          ? 'font-semibold text-blue-900 dark:text-blue-100'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {dayHours.hours}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
           </div>
         )}
 
-        {/* Products Available */}
+        {/* Products Available - Collapsible Accordion */}
         {hasProducts && (
           <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Products Available</h3>
-            <div className="space-y-3">
-              {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(availableProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
-                .filter(category => availableProducts[category] && availableProducts[category].length > 0)
-                .map((category) => (
-                  <div key={category}>
-                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 capitalize">{category}</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {availableProducts[category].map(product => (
-                        <div
-                          key={product.id}
-                          className="flex items-center space-x-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-xs"
-                        >
-                          <img
-                            src={`/images/icons/${product.icon}`}
-                            alt={product.name}
-                            className="w-5 h-5 object-contain"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
-                          />
-                          <span className="text-gray-700 dark:text-gray-300">{product.name}</span>
-                        </div>
-                      ))}
-                    </div>
+            <details className="group">
+              <summary className="flex items-center justify-between cursor-pointer list-none p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                  <div>
+                    <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Products Available</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {Object.values(availableProducts).flat().length} {Object.values(availableProducts).flat().length === 1 ? 'product' : 'products'}
+                    </p>
                   </div>
-                ))}
-            </div>
+                </div>
+                <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div className="mt-3 space-y-3 px-3 pb-2">
+                {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(availableProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
+                  .filter(category => availableProducts[category] && availableProducts[category].length > 0)
+                  .map((category) => (
+                    <div key={category}>
+                      <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 capitalize">{category}</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {availableProducts[category].map(product => (
+                          <div
+                            key={product.id}
+                            className="flex items-center space-x-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-xs"
+                          >
+                            <img
+                              src={`/images/icons/${product.icon}`}
+                              alt={product.name}
+                              className="w-5 h-5 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                            <span className="text-gray-700 dark:text-gray-300">{product.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </details>
           </div>
         )}
 

@@ -22,7 +22,8 @@ const MapComponent: React.FC = () => {
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const googleInfoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const infoWindowReactRootRef = useRef<ReturnType<typeof ReactDOM.createRoot> | null>(null);
-  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null); // --- ADDED ---
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+  const radiusCircleRef = useRef<google.maps.Circle | null>(null); // --- ADDED: For visual radius circle ---
 
   const appContext = useContext(AppContext);
   const navigate = useNavigate();
@@ -34,15 +35,18 @@ const MapComponent: React.FC = () => {
   const {
     mapsApiReady,
     currentlyDisplayedShops,
-    mapViewTargetLocation, // --- MODIFIED: Using this from context for autocomplete/initial pan ---
+    mapViewTargetLocation,
     selectedShop,
     openShopOverlays,
-    closeShopOverlays,  // --- ADDED ---
+    closeShopOverlays,
     setSelectedShop,
-    directionsResult,   // --- ADDED ---
-    clearDirections,    // --- ADDED ---
-    isShopOverlayOpen,  // --- ADDED ---
-    isSocialOverlayOpen // --- ADDED ---
+    directionsResult,
+    clearDirections,
+    isShopOverlayOpen,
+    isSocialOverlayOpen,
+    currentRadius,          // --- ADDED: For radius circle and zoom sync ---
+    setCurrentRadius,       // --- ADDED: For zoom sync ---
+    lastPlaceSelectedByAutocomplete  // --- ADDED: For radius circle center ---
   } = appContext;
 
   const closeNativeInfoWindow = useCallback(() => {
@@ -114,17 +118,59 @@ const MapComponent: React.FC = () => {
       }
     });
 
+    // --- ADDED: Map bounds changed listener for zoom sync ---
+    let boundsChangedTimeout: NodeJS.Timeout | null = null;
+    const boundsChangedListener = mapInstance.addListener("bounds_changed", () => {
+      // Debounce to avoid updating too frequently during pan/zoom
+      if (boundsChangedTimeout) clearTimeout(boundsChangedTimeout);
+
+      boundsChangedTimeout = setTimeout(() => {
+        if (!lastPlaceSelectedByAutocomplete?.geometry?.location || !setCurrentRadius) return;
+
+        const bounds = mapInstance.getBounds();
+        const center = mapInstance.getCenter();
+
+        if (!bounds || !center) return;
+
+        // Calculate the distance from center to the top-middle of the visible area
+        // This gives us a radius that roughly matches what's visible on screen
+        const ne = bounds.getNorthEast();
+        const centerToNorth = new window.google.maps.LatLng(ne.lat(), center.lng());
+
+        if (window.google?.maps?.geometry?.spherical) {
+          const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(center, centerToNorth);
+          const distanceInMiles = distanceInMeters / 1609.34;
+
+          // Round to nearest 5 miles to match slider step
+          const roundedRadius = Math.max(10, Math.min(100, Math.round(distanceInMiles / 5) * 5));
+
+          // Only update if the difference is significant (more than 3 miles)
+          if (Math.abs(roundedRadius - currentRadius) > 3) {
+            console.log(`[MapComponent] Zoom/pan detected: updating radius from ${currentRadius} to ${roundedRadius} miles`);
+            setCurrentRadius(roundedRadius);
+          }
+        }
+      }, 500); // 500ms debounce
+    });
+    // --- END ADDED ---
+
     // console.log("MapComponent: Google Map Initialized."); // Optional debug
     return () => {
+      if (boundsChangedTimeout) clearTimeout(boundsChangedTimeout);
+      if (boundsChangedListener) boundsChangedListener.remove();
       if (mapClickListener) mapClickListener.remove();
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null);
         directionsRendererRef.current = null;
       }
+      if (radiusCircleRef.current) {
+        radiusCircleRef.current.setMap(null);
+        radiusCircleRef.current = null;
+      }
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [mapsApiReady, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections]);
+  }, [mapsApiReady, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections, lastPlaceSelectedByAutocomplete, setCurrentRadius, currentRadius]);
 
 
   // Plot/Update Markers
@@ -239,6 +285,59 @@ const MapComponent: React.FC = () => {
       }
     }
   }, [directionsResult, mapsApiReady]);
+  // --- END ADDED ---
+
+  // --- ADDED: Effect to display/update radius circle on map ---
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady || !window.google?.maps?.Circle) {
+      return;
+    }
+
+    // Only show radius circle if a location is selected
+    if (lastPlaceSelectedByAutocomplete?.geometry?.location && currentRadius > 0) {
+      const location = lastPlaceSelectedByAutocomplete.geometry.location;
+      let centerLatLng: google.maps.LatLng;
+
+      if (typeof (location as google.maps.LatLng).lat === 'function') {
+        centerLatLng = location as google.maps.LatLng;
+      } else if (typeof (location as google.maps.LatLngLiteral).lat === 'number') {
+        centerLatLng = new window.google.maps.LatLng(
+          (location as google.maps.LatLngLiteral).lat,
+          (location as google.maps.LatLngLiteral).lng
+        );
+      } else {
+        return;
+      }
+
+      const radiusInMeters = currentRadius * 1609.34; // Convert miles to meters
+
+      if (!radiusCircleRef.current) {
+        // Create new circle
+        radiusCircleRef.current = new window.google.maps.Circle({
+          map: map,
+          center: centerLatLng,
+          radius: radiusInMeters,
+          strokeColor: '#ed411a',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#ed411a',
+          fillOpacity: 0.15,
+          clickable: false,
+        });
+      } else {
+        // Update existing circle
+        radiusCircleRef.current.setCenter(centerLatLng);
+        radiusCircleRef.current.setRadius(radiusInMeters);
+        radiusCircleRef.current.setMap(map);
+      }
+    } else {
+      // Remove circle if no location selected
+      if (radiusCircleRef.current) {
+        radiusCircleRef.current.setMap(null);
+      }
+    }
+  }, [lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady]);
   // --- END ADDED ---
 
   // Effect to handle InfoWindow content rendering

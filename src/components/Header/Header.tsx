@@ -49,9 +49,11 @@ const Header: React.FC = () => {
 
   // Effect for Autocomplete Initialization
   useEffect(() => {
+    console.log("[Header] Autocomplete init check - mapsApiReady:", mapsApiReady, "inputRef:", !!autocompleteInputRef.current, "places API:", !!window.google?.maps?.places, "already initialized:", !!autocompleteInstanceRef.current);
     if (!mapsApiReady || !autocompleteInputRef.current || !window.google?.maps?.places || autocompleteInstanceRef.current) {
       return;
     }
+    console.log("[Header] Initializing Google Places Autocomplete...");
     const autocompleteOptions: google.maps.places.AutocompleteOptions = {
       types: ['geocode', 'establishment'],
       componentRestrictions: { country: 'us' },
@@ -67,7 +69,9 @@ const Header: React.FC = () => {
     }
     const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, autocompleteOptions);
     autocompleteInstanceRef.current = autocomplete;
+    console.log("[Header] Autocomplete initialized successfully!");
     autocomplete.addListener('place_changed', () => {
+      console.log("[Header] Autocomplete place_changed event fired");
       const placeResult = autocomplete.getPlace();
       if (placeResult.geometry && placeResult.geometry.location) {
         const adaptedPlace: AutocompletePlace = {
