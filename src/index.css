@@ -76,7 +76,9 @@ main {
 /* --- Overlay Styling --- */
 .detail-pop-overlay {
     position: absolute;
-    inset: 0;
+    top: 0;
+    bottom: 0;
+    /* Don't use inset: 0 as it makes overlays span full width and block map clicks */
     background-color: rgba(249, 250, 251, 0.97); /* Consider dark:bg-gray-800/97 for dark mode */
     -webkit-backdrop-filter: blur(4px); /* Ensure browser compatibility for backdrop-filter if needed */
             backdrop-filter: blur(4px);
@@ -87,6 +89,7 @@ main {
     z-index: 50;
     display: flex;
     flex-direction: column;
+    pointer-events: auto; /* Allow clicks on the overlay itself */
 }
 
 @media (min-width: 768px) {
@@ -110,16 +113,20 @@ main {
 #detailsOverlayShop {
     right: 0;
     transform: translateX(100%); /* Initial off-screen position for sliding from right */
+    pointer-events: auto; /* Ensure overlay content is clickable */
 }
 #detailsOverlayShop.is-open { transform: translateX(0%); }
-@media (min-width: 768px) { #detailsOverlayShop { width: 42%; /* left: auto; */ } } /* 'left: auto' is default with 'right:0' */
+@media (min-width: 768px) { #detailsOverlayShop { width: 42%; } }
+@media (max-width: 767px) { #detailsOverlayShop { width: 100%; } } /* Full width on mobile */
 
 #detailsOverlaySocial {
     left: 0;
     transform: translateX(-100%); /* Initial off-screen position for sliding from left */
+    pointer-events: auto; /* Ensure overlay content is clickable */
 }
 #detailsOverlaySocial.is-open { transform: translateX(0%); }
-@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; /* right: auto; */ } } /* 'right: auto' is default with 'left:0' */
+@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; } }
+@media (max-width: 767px) { #detailsOverlaySocial { width: 100%; } } /* Full width on mobile */
 
 
 .overlay-close-button {

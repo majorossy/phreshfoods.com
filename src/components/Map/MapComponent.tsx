@@ -37,6 +37,7 @@ const MapComponent: React.FC = () => {
     mapViewTargetLocation, // --- MODIFIED: Using this from context for autocomplete/initial pan ---
     selectedShop,
     openShopOverlays,
+    closeShopOverlays,  // --- ADDED ---
     setSelectedShop,
     directionsResult,   // --- ADDED ---
     clearDirections,    // --- ADDED ---
@@ -95,14 +96,20 @@ const MapComponent: React.FC = () => {
     // --- END ADDED ---
 
     const mapClickListener = mapInstance.addListener("click", (e: google.maps.MapMouseEvent | google.maps.IconMouseEvent) => {
-      if ((e as google.maps.IconMouseEvent).placeId) { return; } // Clicked on a Google POI
-      
-      // console.log("MapComponent: Map base clicked."); // Optional debug
+      if ((e as google.maps.IconMouseEvent).placeId) {
+        console.log("MapComponent: Clicked on Google POI, ignoring");
+        return;
+      } // Clicked on a Google POI
+
+      console.log("MapComponent: Map base clicked - navigating to /");
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
-      if (setSelectedShop) setSelectedShop(null);
+
+      // Navigate to home - this will trigger App.tsx to close overlays and clear selected shop
+      navigate('/', { replace: true });
+
       if (directionsResult && clearDirections) {
-        // console.log("MapComponent: Clearing directions due to map click."); // Optional debug
+        console.log("MapComponent: Clearing directions due to map click.");
         clearDirections();
       }
     });
@@ -117,7 +124,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [mapsApiReady, setSelectedShop, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections]);
+  }, [mapsApiReady, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections]);
 
 
   // Plot/Update Markers
@@ -228,7 +235,7 @@ const MapComponent: React.FC = () => {
         directionsRendererRef.current.setDirections(directionsResult);
       } else {
         // console.log("[MapComponent] Clearing directions from map."); // Optional debug
-        directionsRendererRef.current.setDirections(null);
+        directionsRendererRef.current.setDirections({ routes: [] } as google.maps.DirectionsResult);
       }
     }
   }, [directionsResult, mapsApiReady]);
@@ -239,9 +246,9 @@ const MapComponent: React.FC = () => {
     const map = googleMapRef.current;
     const googleInfoWin = googleInfoWindowRef.current;
 
-    // --- MODIFIED: Added isShopOverlayOpen and isSocialOverlayOpen to condition ---
-    if (!mapsApiReady || !map || !googleInfoWin || !setSelectedShop || !openShopOverlays || isShopOverlayOpen || isSocialOverlayOpen) {
-      // If main overlays are open, or essential components not ready, ensure InfoWindow is closed
+    // Check if essential components are ready
+    if (!mapsApiReady || !map || !googleInfoWin || !setSelectedShop || !openShopOverlays) {
+      // If essential components not ready, ensure InfoWindow is closed
       if (googleInfoWin?.getMap()) closeNativeInfoWindow();
       if (infoWindowReactRootRef.current) unmountInfoWindowReactRoot();
       return;
@@ -289,7 +296,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [selectedShop, mapsApiReady, setSelectedShop, openShopOverlays, closeNativeInfoWindow, unmountInfoWindowReactRoot, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [selectedShop, mapsApiReady, setSelectedShop, openShopOverlays, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
 
   return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>;
 };

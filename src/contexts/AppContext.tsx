@@ -153,18 +153,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   // --- MODIFIED openShopOverlays ---
   const openShopOverlays = useCallback((shop: Shop, openTab: 'shop' | 'social' | 'directions' = 'shop') => {
     handleSetSelectedShop(shop); // This will clear previous directions if shop changes
-    
-    // If opening for directions, ensure social overlay is active, others closed.
-    // The SocialOverlay component itself will handle switching to its 'directions' tab.
-    if (openTab === 'directions') {
+
+    // Open both overlays by default to show full shop details
+    if (openTab === 'shop') {
+        // Open BOTH overlays: shop details on right, photos/reviews on left
+        setIsShopOverlayOpen(true);
+        setIsSocialOverlayOpen(true);
+    } else if (openTab === 'directions') {
+        // Just social overlay for directions
         setIsSocialOverlayOpen(true);
         setIsShopOverlayOpen(false);
     } else if (openTab === 'social') {
+        // Just social overlay for photos/reviews
         setIsSocialOverlayOpen(true);
         setIsShopOverlayOpen(false);
-    } else { // Default to 'shop'
-        setIsShopOverlayOpen(true);
-        setIsSocialOverlayOpen(false);
     }
     document.body.classList.add('modal-active');
   }, [handleSetSelectedShop]);

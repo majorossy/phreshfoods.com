@@ -235,6 +235,34 @@ app.get('/api/directions', async (req, res) => {
     }
 });
 
+// Proxy for Google Maps photo requests (to keep API key secure)
+app.get('/api/photo', async (req, res) => {
+    const photoReference = req.query.photo_reference;
+    const maxWidth = req.query.maxwidth || 400;
+
+    if (!photoReference) {
+        return res.status(400).json({ error: 'photo_reference query parameter is required' });
+    }
+
+    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photo_reference=${photoReference}&key=${GOOGLE_API_KEY_BACKEND}`;
+
+    try {
+        const response = await fetch(photoUrl);
+        if (!response.ok) {
+            return res.status(response.status).send('Failed to fetch photo');
+        }
+
+        // Get the image data and forward it
+        const arrayBuffer = await response.arrayBuffer();
+        const imageBuffer = Buffer.from(arrayBuffer);
+        res.set('Content-Type', response.headers.get('content-type'));
+        res.send(imageBuffer);
+    } catch (error) {
+        console.error('Error proxying photo request:', error);
+        res.status(500).json({ error: 'Failed to fetch photo' });
+    }
+});
+
 // Route to manually flush the on-demand cache and trigger data refresh
 app.get('/api/cache/flush-and-refresh', async (req, res) => { // Renamed for clarity
     if (process.env.NODE_ENV === 'development' || process.env.ALLOW_CACHE_FLUSH === 'true') {

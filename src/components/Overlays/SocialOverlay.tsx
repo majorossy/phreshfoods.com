@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Shop, PlacePhoto as PlacePhotoData } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
-import { GOOGLE_MAPS_API_KEY } from '../../config/appConfig';
 import { AppContext } from '../../contexts/AppContext';
 
 interface SocialOverlayProps {
@@ -12,7 +11,6 @@ interface SocialOverlayProps {
 
 const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   const [activeTab, setActiveTab] = useState('photos');
-  const apiKey = GOOGLE_MAPS_API_KEY;
   const appContext = useContext(AppContext);
 
   const [manualOrigin, setManualOrigin] = useState('');
@@ -129,10 +127,10 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             {googlePhotosData && googlePhotosData.length > 0 ? (
               <div id="socialOverlayGooglePhotosContainer" className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 pb-4">
                 {googlePhotosData.map((photoDataObject, index) => {
-                  if (!photoDataObject.photo_reference || !apiKey) return null;
+                  if (!photoDataObject.photo_reference) return null;
                   const maxWidthForThumbnail = 400;
-                  const thumbnailUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidthForThumbnail}&photoreference=${photoDataObject.photo_reference}&key=${apiKey}`;
-                  const fullSizeUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=1600&photoreference=${photoDataObject.photo_reference}&key=${apiKey}`;
+                  const thumbnailUrl = `/api/photo?photo_reference=${encodeURIComponent(photoDataObject.photo_reference)}&maxwidth=${maxWidthForThumbnail}`;
+                  const fullSizeUrl = `/api/photo?photo_reference=${encodeURIComponent(photoDataObject.photo_reference)}&maxwidth=1600`;
                   return (
                     <div key={photoDataObject.photo_reference || `gphoto-${index}`} className="gallery-image-container aspect-square bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
                       <a href={fullSizeUrl} target="_blank" rel="noopener noreferrer" title={`View full image ${index + 1} for ${shop.Name}`}>

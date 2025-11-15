@@ -1,169 +1,217 @@
-// src/components/Overlays/SocialOverlay.tsx
-import React, { useState, useEffect } from 'react';
-import { Shop } from '../../types'; // Adjust path
+// src/components/Overlays/ShopDetailsOverlay.tsx
+import React from 'react';
+import { Shop } from '../../types';
+import { escapeHTMLSafe } from '../../utils';
+import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
 
-interface SocialOverlayProps {
-  shop: Shop; // Assuming shop is never null when this overlay is rendered
+interface ShopDetailsOverlayProps {
+  shop: Shop;
   onClose: () => void;
 }
 
-const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
-  const [activeTab, setActiveTab] = useState('photos'); // 'photos', 'reviews', 'posts'
+const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
+  if (!shop) return null;
 
-  // Log the photo data when the component mounts or shop changes
-  useEffect(() => {
-    console.log("[SocialOverlay] Shop Data:", shop);
-    if (shop.placeDetails) {
-      console.log("[SocialOverlay] placeDetails:", shop.placeDetails);
-      if (shop.placeDetails.photos) {
-        console.log("[SocialOverlay] placeDetails.photos:", shop.placeDetails.photos);
-        if (shop.placeDetails.photos.length > 0) {
-          // Log the first photo object to see its structure and methods
-          console.log("[SocialOverlay] First photo object:", shop.placeDetails.photos[0]);
-          // Test getUrl() on the first photo
-          try {
-            const testUrl = shop.placeDetails.photos[0].getUrl({ maxWidth: 400 });
-            console.log("[SocialOverlay] Test getUrl() for first photo:", testUrl);
-          } catch (e) {
-            console.error("[SocialOverlay] Error calling getUrl() on first photo:", e);
-          }
-        }
-      } else {
-        console.log("[SocialOverlay] No photos array in placeDetails.");
+  const displayName = escapeHTMLSafe(shop.placeDetails?.name || shop.Name || 'Farm Stand');
+  const displayAddress = escapeHTMLSafe(shop.placeDetails?.formatted_address || shop.Address || 'N/A');
+  const displayPhone = shop.placeDetails?.formatted_phone_number || shop.Phone;
+  const displayWebsite = shop.placeDetails?.website || shop.Website;
+  const displayRating = shop.placeDetails?.rating !== undefined ? shop.placeDetails.rating : (shop.Rating !== "N/A" ? parseFloat(shop.Rating) : null);
+  const displayReviewCount = shop.placeDetails?.user_ratings_total;
+  const businessStatus = shop.placeDetails?.business_status;
+  const openingHours = shop.placeDetails?.opening_hours;
+
+  // Group available products by category
+  const availableProducts: Record<string, Array<{ id: string; name: string; icon: string }>> = {};
+  for (const productId in PRODUCT_ICONS_CONFIG) {
+    if (shop[productId as keyof Shop] === true) {
+      const product = PRODUCT_ICONS_CONFIG[productId];
+      const category = product.category || 'Other';
+      if (!availableProducts[category]) {
+        availableProducts[category] = [];
       }
-    } else {
-      console.log("[SocialOverlay] No placeDetails on shop object.");
+      availableProducts[category].push({
+        id: productId,
+        name: product.name,
+        icon: product.icon_available
+      });
     }
-  }, [shop]);
+  }
 
-  if (!shop) return null; // Should not happen if App.tsx controls rendering
-
-  const googlePhotos = shop.placeDetails?.photos;
+  // Check if there are any products to display
+  const hasProducts = Object.keys(availableProducts).length > 0;
 
   return (
-    <div id="detailsOverlaySocial" className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open">
-      <button onClick={onClose} className="overlay-close-button" aria-label="Close social details">
-        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    <div id="detailsOverlayShop" className="detail-pop-overlay custom-scrollbar is-open">
+      <button
+        onClick={onClose}
+        className="overlay-close-button"
+        aria-label="Close shop details"
+      >
+        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
       </button>
 
-      {/* Tab Headers */}
-      <div className="pt-10 sm:pt-12 shrink-0">
-        <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4">
-          <nav id="socialOverlayTabs" className="flex flex-wrap -mb-px" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('photos')}
-              className={`social-tab-button group inline-flex items-center py-3 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm
-                ${activeTab === 'photos' ? 'active-social-tab border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}
-            >
-              <svg className={`mr-1 h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'photos' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-              Photos
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`social-tab-button group inline-flex items-center py-3 px-1 sm:px-2 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4
-                ${activeTab === 'reviews' ? 'active-social-tab border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}
-            >
-             <svg className={`mr-1 h-4 w-4 sm:h-5 sm:w-5 ${activeTab === 'reviews' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-              Reviews
-            </button>
-            {/* Add more tabs for Facebook, Instagram, Twitter if needed */}
-          </nav>
-        </div>
-      </div>
+      <div className="p-4 sm:p-6 overflow-y-auto h-full">
+        {/* Shop Name */}
+        <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">
+          {displayName}
+        </h2>
 
-      {/* Tab Content Panels */}
-      <div className="flex-grow overflow-y-auto custom-scrollbar px-2 sm:px-4 pb-4">
-        {/* Photos Tab Panel */}
-        {activeTab === 'photos' && (
-          <div id="social-photos-panel">
-            {/* Google Places Photos */}
-            {googlePhotos && googlePhotos.length > 0 ? (
-              <div id="socialOverlayGooglePhotosContainer" className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 pb-4">
-                {googlePhotos.map((photo, index) => {
-                  // CRITICAL: You MUST provide maxWidth or maxHeight (or both) for getUrl()
-                  let imageUrl = '';
-                  try {
-                    // You can adjust maxWidth/maxHeight based on your desired display size
-                    imageUrl = photo.getUrl({ maxWidth: 400, maxHeight: 400 });
-                  } catch (e) {
-                    console.error("Error calling getUrl for photo:", photo, e);
-                    return (
-                      <div key={`error-${index}`} className="gallery-image-container aspect-square bg-red-100 dark:bg-red-900 rounded overflow-hidden flex items-center justify-center text-red-700 dark:text-red-300 text-xs p-1">
-                        Error loading
-                      </div>
-                    );
-                  }
-                  
-                  if (!imageUrl) return null; // Skip if URL couldn't be generated
-
-                  return (
-                    <div key={imageUrl || index} className="gallery-image-container aspect-square bg-gray-200 dark:bg-gray-700 rounded overflow-hidden">
-                      <a href={imageUrl} target="_blank" rel="noopener noreferrer" title={`View full image ${index + 1} for ${shop.Name}`}>
-                        <img
-                          src={imageUrl}
-                          alt={`Shop image ${index + 1} for ${shop.Name}`}
-                          className="w-full h-full object-cover transition-transform duration-200 ease-in-out hover:scale-105"
-                          loading="lazy"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                            const parent = (e.target as HTMLImageElement).parentElement;
-                            if (parent) {
-                               const errorDiv = document.createElement('div');
-                               errorDiv.className = "w-full h-full flex items-center justify-center text-xs text-gray-500 dark:text-gray-400 p-1";
-                               errorDiv.textContent = "Img Error";
-                               parent.appendChild(errorDiv);
-                            }
-                          }}
-                        />
-                      </a>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">No Google photos available for this location.</p>
+        {/* Rating */}
+        {displayRating && (
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center">
+              {Array.from({ length: 5 }, (_, i) => (
+                <svg
+                  key={i}
+                  className={`w-5 h-5 ${i < Math.floor(displayRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
+                </svg>
+              ))}
+            </div>
+            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              {displayRating.toFixed(1)}
+            </span>
+            {displayReviewCount && (
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                ({displayReviewCount} reviews)
+              </span>
             )}
-            {/* You can add sections for other photo sources (e.g., your own uploaded images) here */}
           </div>
         )}
 
-        {/* Reviews Tab Panel */}
-        {activeTab === 'reviews' && (
-          <div id="social-reviews-panel">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Reviews</h3>
-            {shop.placeDetails?.reviews && shop.placeDetails.reviews.length > 0 ? (
-              <ul className="space-y-3">
-                {shop.placeDetails.reviews.map((review, index) => (
-                  <li key={index} className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg shadow">
-                    <div className="flex items-center mb-1.5">
-                      {review.profile_photo_url && (
-                        <img src={review.profile_photo_url} alt={review.author_name} className="w-8 h-8 rounded-full mr-2" />
-                      )}
-                      <div>
-                        <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">{review.author_name}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{review.relative_time_description}</p>
-                      </div>
-                      {review.rating && (
-                        <div className="ml-auto flex items-center text-xs text-yellow-500">
-                          {Array.from({ length: 5 }, (_, i) => (
-                            <svg key={i} className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${i < review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-500'}`} fill="currentColor" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path></svg>
-                          ))}
+        {/* Business Status */}
+        {businessStatus && (
+          <div className="mb-4">
+            <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+              businessStatus === 'OPERATIONAL'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+            }`}>
+              {businessStatus === 'OPERATIONAL' ? 'Open' : 'Closed'}
+            </span>
+          </div>
+        )}
+
+        {/* Address */}
+        {displayAddress && displayAddress !== 'N/A' && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Address</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-start">
+              <svg className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+              </svg>
+              {displayAddress}
+            </p>
+          </div>
+        )}
+
+        {/* Phone */}
+        {displayPhone && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</h3>
+            <a
+              href={`tel:${displayPhone}`}
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+              </svg>
+              {displayPhone}
+            </a>
+          </div>
+        )}
+
+        {/* Website */}
+        {displayWebsite && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Website</h3>
+            <a
+              href={displayWebsite}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+            >
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+              </svg>
+              Visit Website
+            </a>
+          </div>
+        )}
+
+        {/* Opening Hours */}
+        {openingHours?.weekday_text && openingHours.weekday_text.length > 0 && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Hours</h3>
+            <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+              {openingHours.weekday_text.map((hours, index) => (
+                <li key={index} className="flex justify-between">
+                  <span>{hours}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Products Available */}
+        {hasProducts && (
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Products Available</h3>
+            <div className="space-y-3">
+              {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(availableProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
+                .filter(category => availableProducts[category] && availableProducts[category].length > 0)
+                .map((category) => (
+                  <div key={category}>
+                    <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 capitalize">{category}</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {availableProducts[category].map(product => (
+                        <div
+                          key={product.id}
+                          className="flex items-center space-x-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-xs"
+                        >
+                          <img
+                            src={`/images/icons/${product.icon}`}
+                            alt={product.name}
+                            className="w-5 h-5 object-contain"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                          <span className="text-gray-700 dark:text-gray-300">{product.name}</span>
                         </div>
-                      )}
+                      ))}
                     </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-300 whitespace-pre-line">{review.text}</p>
-                  </li>
+                  </div>
                 ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-gray-500 dark:text-gray-400 p-4 text-center">No reviews available for this location.</p>
-            )}
+            </div>
           </div>
         )}
-        {/* Add other tab panels here */}
+
+        {/* Google Maps Link */}
+        {shop.placeDetails?.url && (
+          <div className="mt-6">
+            <a
+              href={shop.placeDetails.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+            >
+              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+              </svg>
+              View on Google Maps
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default SocialOverlay;
+export default ShopDetailsOverlay;

@@ -50,8 +50,16 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop, onDirection
     onDetailsClick(shop);
   };
 
-  // Assuming shop.photos might be an array of URLs, or shop.primaryImage
-  const imageUrl = shop.photos && shop.photos.length > 0 ? shop.photos[0] : shop.icon || '/images/placeholder-sm.png'; // Fallback placeholder
+  // Get image URL from shop data - prioritize custom images from sheet, then Google Photos
+  let imageUrl = '/images/placeholder-sm.png'; // Default fallback
+
+  if (shop.ImageOne) {
+    imageUrl = shop.ImageOne;
+  } else if (shop.placeDetails?.photos && shop.placeDetails.photos.length > 0) {
+    const photoRef = shop.placeDetails.photos[0].photo_reference;
+    // Use backend proxy to fetch photo (keeps API key secure)
+    imageUrl = `/api/photo?photo_reference=${photoRef}&maxwidth=400`;
+  }
 
   return (
     <div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
@@ -67,10 +75,10 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop, onDirection
           {shop.Name}
         </h3>
 
-        {/* Optional Rating - ensure shop.rating and shop.user_ratings_total exist */}
-        {shop.rating !== undefined && shop.rating > 0 && (
+        {/* Optional Rating - ensure shop.placeDetails.rating exists */}
+        {shop.placeDetails?.rating !== undefined && shop.placeDetails.rating > 0 && (
           <div className="mb-1">
-            <StarRating rating={shop.rating} reviewCount={shop.user_ratings_total} />
+            <StarRating rating={shop.placeDetails.rating} reviewCount={shop.placeDetails.user_ratings_total} />
           </div>
         )}
 

@@ -49,20 +49,35 @@ const ProductFilters: React.FC = () => {
             <div key={category}>
               <h4 className="text-sm font-medium text-gray-600 mb-1.5 capitalize">{category}</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5"> {/* Adjusted grid for dropdown context */}
-                {filtersGroupedByCategory[category].map(filter => (
-                  <label 
-                    key={filter.id} 
-                    className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={!!activeProductFilters[filter.id]}
-                      onChange={() => handleFilterChange(filter.id)}
-                      className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-                    />
-                    <span>{filter.name}</span>
-                  </label>
-                ))}
+                {filtersGroupedByCategory[category].map(filter => {
+                  const productConfig = PRODUCT_ICONS_CONFIG[filter.id];
+                  const iconPath = productConfig?.icon_available ? `/images/icons/${productConfig.icon_available}` : null;
+
+                  return (
+                    <label
+                      key={filter.id}
+                      className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={!!activeProductFilters[filter.id]}
+                        onChange={() => handleFilterChange(filter.id)}
+                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+                      />
+                      {iconPath && (
+                        <img
+                          src={iconPath}
+                          alt={filter.name}
+                          className="w-6 h-6 object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <span>{filter.name}</span>
+                    </label>
+                  );
+                })}
               </div>
             </div>
         ))}

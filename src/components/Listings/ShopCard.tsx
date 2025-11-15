@@ -18,12 +18,14 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const { selectedShop } = appContext || {}; // Get selectedShop from context
 
   const handleCardClick = () => {
-    if (shop.slug) {
-      navigate(`/farm/${shop.slug}`);
-    } else {
-      console.warn("ShopCard: Clicked on shop without slug:", shop.Name);
-      // Fallback: appContext?.openShopOverlays?.(shop);
+    // Use slug if available, otherwise use GoogleProfileID as fallback
+    const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
+
+    if (!shop.slug) {
+      console.warn("ShopCard: Shop missing slug, using fallback:", shop.Name, "->", urlIdentifier);
     }
+
+    navigate(`/farm/${urlIdentifier}`);
   };
 
   const displayName = escapeHTMLSafe(shop.placeDetails?.name || shop.Name || 'Farm Stand');

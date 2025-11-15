@@ -167,12 +167,16 @@ function App() {
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
 
     if (slugMatch && slugMatch[1]) {
-      const slugInUrl = slugMatch[1];
-      const shopFromSlug = allFarmStands.find(s => s.slug === slugInUrl);
-      if (shopFromSlug) {
-        if (!selectedShop || selectedShop.slug !== slugInUrl) {
-          setSelectedShop(shopFromSlug); // Set selected shop first
-          openShopOverlays(shopFromSlug); // Then open overlay
+      const urlIdentifier = slugMatch[1];
+      // Try to find by slug first, then by GoogleProfileID as fallback
+      const shopFromUrl = allFarmStands.find(s => s.slug === urlIdentifier)
+                       || allFarmStands.find(s => s.GoogleProfileID === urlIdentifier);
+
+      if (shopFromUrl) {
+        const shopId = shopFromUrl.slug || shopFromUrl.GoogleProfileID;
+        if (!selectedShop || (selectedShop.slug !== shopFromUrl.slug && selectedShop.GoogleProfileID !== shopFromUrl.GoogleProfileID)) {
+          setSelectedShop(shopFromUrl); // Set selected shop first
+          openShopOverlays(shopFromUrl); // Then open overlay
         } else if (!isShopOverlayOpen && !isSocialOverlayOpen) { // If URL matches but overlays somehow got closed
              openShopOverlays(selectedShop); // Re-open with the current selectedShop
         }
@@ -182,7 +186,9 @@ function App() {
         if (selectedShop) setSelectedShop(null);
       }
     } else if (location.pathname === '/') {
+      console.log("[App.tsx] At home path, checking overlays. isShopOverlayOpen:", isShopOverlayOpen, "isSocialOverlayOpen:", isSocialOverlayOpen, "selectedShop:", selectedShop?.Name);
       if (selectedShop || isShopOverlayOpen || isSocialOverlayOpen) {
+        console.log("[App.tsx] Closing overlays and clearing selected shop");
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }

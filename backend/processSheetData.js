@@ -33,6 +33,17 @@ function parseCSVLine(line) {
     return values;
 }
 
+// Generate a URL-safe slug from a name
+function generateSlug(name) {
+    if (!name) return '';
+    return name
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '') // Remove special characters
+        .replace(/[\s_-]+/g, '-') // Replace spaces, underscores with hyphens
+        .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+}
+
 async function getPlaceDetailsWithDelay(placeId, fieldsArray = ['geometry']) {
     if (!placeId) return null;
     // The delay is already implemented here before the API call
@@ -166,8 +177,11 @@ async function updateFarmStandsData() {
             let decodedEmbed = '';
             if (encodedEmbed) { try { decodedEmbed = Buffer.from(encodedEmbed, 'base64').toString('utf-8'); } catch (e) { decodedEmbed = "<!-- Invalid Embed -->"; } }
 
+            const shopName = getStringValue("name") || "Farm Stand (Name Missing)";
+            const providedSlug = getStringValue("slugUrl").trim();
+
             let shop = {
-                Name: getStringValue("name") || "Farm Stand (Name Missing)",
+                Name: shopName,
                 Address: getStringValue("address") || "N/A",
                 City: getStringValue("city") || "N/A",
                 Zip: getStringValue("zip") || "N/A",
@@ -175,7 +189,7 @@ async function updateFarmStandsData() {
                 Phone: getStringValue("phone"),
                 Website: getStringValue("website"),
                 GoogleProfileID: getStringValue("googleprofileid"),
-                slug: getStringValue("slugUrl").trim(),
+                slug: providedSlug || generateSlug(shopName),
                 TwitterHandle: getStringValue("twitterhandle"), FacebookPageID: getStringValue("facebookpageid"),
                 InstagramUsername: getStringValue("instagramusername"), InstagramRecentPostEmbedCode: decodedEmbed, InstagramLink: getStringValue("instagramlink"),
                 ImageOne: getStringValue("imageone"), ImageTwo: getStringValue("imagetwo"), ImageThree: getStringValue("imagethree"),
