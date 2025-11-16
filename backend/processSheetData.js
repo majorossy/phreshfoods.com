@@ -114,10 +114,11 @@ async function updateFarmStandsData() {
 
     try {
         // ... (rest of your CSV fetching logic) ...
-        const PROXY_URL = "https://api.allorigins.win/raw?url=";
-        const DATA_FETCH_URL = PROXY_URL + encodeURIComponent(GOOGLE_SHEET_URL);
+        // Fetch directly from Google Sheets (follows redirects automatically)
         console.log(`[Processor] Fetching CSV from sheet...`);
-        const sheetResponse = await fetch(DATA_FETCH_URL);
+        const sheetResponse = await fetch(GOOGLE_SHEET_URL, {
+            redirect: 'follow'
+        });
         if (!sheetResponse.ok) {
             throw new Error(`[Processor] Failed to fetch sheet data: ${sheetResponse.statusText}`);
         }
@@ -143,7 +144,7 @@ async function updateFarmStandsData() {
             imageone: headers.indexOf("image_one"), imagetwo: headers.indexOf("image_two"),
             imagethree: headers.indexOf("image_three"), twitterhandle: headers.indexOf("twitter"),
             facebookpageid: headers.indexOf("facebook"), instagramusername: headers.indexOf("instagram username"),
-            instagramembedcode: headers.indexOf("instagram embed code"), instagramlink: headers.indexOf("instagram"),
+            instagramlink: headers.indexOf("instagram"),
             beef: headers.indexOf("beef"), pork: headers.indexOf("pork"), lamb: headers.indexOf("lamb"),
             chicken: headers.indexOf("chicken"), turkey: headers.indexOf("turkey"), duck: headers.indexOf("duck"),
             eggs: headers.indexOf("eggs"), corn: headers.indexOf("corn"), carrots: headers.indexOf("carrots"),
@@ -173,9 +174,7 @@ async function updateFarmStandsData() {
             const getProductBoolean = (key) => { // REMOVED: : string
                 const val = getStringValue(key).trim().toLowerCase();
                 return ['true', '1', 'yes', 't', 'x', 'available'].includes(val);
-            };            const encodedEmbed = getStringValue("instagramembedcode");
-            let decodedEmbed = '';
-            if (encodedEmbed) { try { decodedEmbed = Buffer.from(encodedEmbed, 'base64').toString('utf-8'); } catch (e) { decodedEmbed = "<!-- Invalid Embed -->"; } }
+            };
 
             const shopName = getStringValue("name") || "Farm Stand (Name Missing)";
             const providedSlug = getStringValue("slugUrl").trim();
@@ -191,7 +190,7 @@ async function updateFarmStandsData() {
                 GoogleProfileID: getStringValue("googleprofileid"),
                 slug: providedSlug || generateSlug(shopName),
                 TwitterHandle: getStringValue("twitterhandle"), FacebookPageID: getStringValue("facebookpageid"),
-                InstagramUsername: getStringValue("instagramusername"), InstagramRecentPostEmbedCode: decodedEmbed, InstagramLink: getStringValue("instagramlink"),
+                InstagramUsername: getStringValue("instagramusername"), InstagramRecentPostEmbedCode: '', InstagramLink: getStringValue("instagramlink"),
                 ImageOne: getStringValue("imageone"), ImageTwo: getStringValue("imagetwo"), ImageThree: getStringValue("imagethree"),
                 beef: getProductBoolean("beef"), pork: getProductBoolean("pork"), lamb: getProductBoolean("lamb"),
                 chicken: getProductBoolean("chicken"), turkey: getProductBoolean("turkey"), duck: getProductBoolean("duck"),
