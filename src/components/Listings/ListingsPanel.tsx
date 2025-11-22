@@ -21,10 +21,21 @@ const ListingsPanel = () => {
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
   const panelRef = useRef<HTMLElement>(null);
 
-  // Reset visible count when shops change
+  // Track the number of shops to detect meaningful changes (not just re-sorts)
+  const prevShopCountRef = useRef<number>(0);
+
+  // Reset visible count only when the number of shops significantly changes
+  // This prevents reset on distance re-calculations or minor updates
   useEffect(() => {
-    setVisibleCount(INITIAL_ITEMS);
-  }, [currentlyDisplayedShops]);
+    const currentCount = currentlyDisplayedShops?.length || 0;
+    const prevCount = prevShopCountRef.current;
+
+    // Reset if: initial load, or shop count changed significantly (filter/search applied)
+    if (prevCount === 0 || Math.abs(currentCount - prevCount) > 0) {
+      setVisibleCount(Math.max(INITIAL_ITEMS, currentCount)); // Show all results immediately
+      prevShopCountRef.current = currentCount;
+    }
+  }, [currentlyDisplayedShops?.length]);
 
   // Scroll handler for infinite scrolling (throttled with requestAnimationFrame)
   const handleScroll = useCallback(() => {

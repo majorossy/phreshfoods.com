@@ -7,8 +7,15 @@ import App from './App.tsx';
 import { AppProvider } from './contexts/AppContext.tsx';
 import { ToastProvider } from './contexts/ToastContext.tsx';
 import ErrorBoundary from './components/ErrorBoundary.tsx';
+import { loadGoogleMapsScript } from './utils/loadGoogleMapsScript';
 
 import './index.css'; // <--- THIS IS THE CRUCIAL IMPORT
+
+// Load Google Maps API before rendering the app
+// Error handling is done in SearchContext after ToastProvider is mounted
+loadGoogleMapsScript().catch(() => {
+  // Error will be shown via toast in SearchContext
+});
 
 const rootElement = document.getElementById('root');
 
@@ -30,9 +37,5 @@ if (rootElement) {
         </BrowserRouter>
       </ErrorBoundary>
     </React.StrictMode>
-  );
-} else {
-  console.error(
-    "Failed to find the root element. Ensure your public/index.html has an element with id='root'."
   );
 }

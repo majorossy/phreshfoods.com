@@ -1,5 +1,5 @@
 // src/contexts/FilterContext.tsx
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useMemo } from 'react';
 
 interface FilterContextType {
   activeProductFilters: Record<string, boolean>;
@@ -11,10 +11,11 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [activeProductFilters, setActiveProductFilters] = useState<Record<string, boolean>>({});
 
-  const value: FilterContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: FilterContextType = useMemo(() => ({
     activeProductFilters,
     setActiveProductFilters,
-  };
+  }), [activeProductFilters]);
 
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>;
 };

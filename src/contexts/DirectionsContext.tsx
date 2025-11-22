@@ -1,5 +1,5 @@
 // src/contexts/DirectionsContext.tsx
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { ToastType } from '../types';
 
 interface DirectionsContextType {
@@ -26,15 +26,20 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [directionsError, setDirectionsError] = useState<string | null>(null);
   const [isFetchingDirections, setIsFetchingDirections] = useState<boolean>(false);
+  const pendingRequestRef = useRef<Promise<void> | null>(null);
+  const lastRequestKeyRef = useRef<string>('');
 
   const clearDirections = useCallback(() => {
     setDirectionsResult(null);
     setDirectionsError(null);
     setIsFetchingDirections(false);
+    pendingRequestRef.current = null;
+    lastRequestKeyRef.current = '';
   }, []);
 
   /**
    * Fetches and displays driving directions between two points
+   * Includes request deduplication to prevent duplicate requests
    */
   const fetchAndDisplayDirections = useCallback(async (
     origin: google.maps.LatLngLiteral | string | google.maps.Place,
@@ -43,7 +48,6 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
     const mapsApiReady = window.googleMapsApiLoaded && window.google?.maps?.DirectionsService;
 
     if (!mapsApiReady) {
-      console.error("[DirectionsContext] Directions Service not available or Maps API not ready.");
       const errorMsg = "Directions service is not available right now.";
       setDirectionsError(errorMsg);
       setIsFetchingDirections(false);
@@ -52,6 +56,18 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
       }
       return;
     }
+
+    // Create a unique key for this request to deduplicate
+    const requestKey = `${JSON.stringify(origin)}-${JSON.stringify(destination)}`;
+
+    // If there's an identical pending request, return the same promise
+    if (pendingRequestRef.current && lastRequestKeyRef.current === requestKey) {
+      return pendingRequestRef.current;
+    }
+
+    // Cancel any pending different request
+    pendingRequestRef.current = null;
+    lastRequestKeyRef.current = requestKey;
 
     setIsFetchingDirections(true);
     setDirectionsResult(null);
@@ -64,37 +80,42 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
       travelMode: window.google.maps.TravelMode.DRIVING,
     };
 
-    try {
-      const response = await directionsService.route(request);
-      if (response.status === 'OK') {
-        setDirectionsResult(response);
-      } else {
-        console.warn('[DirectionsContext] Directions request failed due to ' + response.status);
-        const errorMsg = 'Could not retrieve directions: ' + response.status;
+    const requestPromise = (async () => {
+      try {
+        const response = await directionsService.route(request);
+        if (response.status === 'OK') {
+          setDirectionsResult(response);
+        } else {
+          const errorMsg = 'Could not retrieve directions: ' + response.status;
+          setDirectionsError(errorMsg);
+          if (toastHandler) {
+            toastHandler('error', errorMsg);
+          }
+        }
+      } catch (error) {
+        const errorMsg = 'An error occurred while fetching directions.';
         setDirectionsError(errorMsg);
         if (toastHandler) {
           toastHandler('error', errorMsg);
         }
+      } finally {
+        setIsFetchingDirections(false);
+        pendingRequestRef.current = null;
       }
-    } catch (error) {
-      console.error('[DirectionsContext] Error fetching directions:', error);
-      const errorMsg = 'An error occurred while fetching directions.';
-      setDirectionsError(errorMsg);
-      if (toastHandler) {
-        toastHandler('error', errorMsg);
-      }
-    } finally {
-      setIsFetchingDirections(false);
-    }
+    })();
+
+    pendingRequestRef.current = requestPromise;
+    return requestPromise;
   }, []);
 
-  const value: DirectionsContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: DirectionsContextType = useMemo(() => ({
     directionsResult,
     directionsError,
     isFetchingDirections,
     fetchAndDisplayDirections,
     clearDirections,
-  };
+  }), [directionsResult, directionsError, isFetchingDirections, fetchAndDisplayDirections, clearDirections]);
 
   return <DirectionsContext.Provider value={value}>{children}</DirectionsContext.Provider>;
 };

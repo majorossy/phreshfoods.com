@@ -23,40 +23,14 @@
 
     <!--
       Google Maps API Script:
-      - `async` allows the script to load without blocking HTML parsing.
-      - `YOUR_ACTUAL_GOOGLE_API_KEY_FRONTEND` MUST be replaced with your valid API key.
-      - `libraries` loads specific Google Maps libraries you need.
-      - `callback=initAppMapGlobal` calls the global function once the API is loaded.
-        This function (defined below or in a tiny inline script) will signal to your React app.
-    -->
-    <script>
-      function initAppMapGlobal() {
-        // This global function is called by the Google Maps API script when it's ready.
-        // It sets a flag and dispatches an event that your React AppContext can listen for.
-        window.googleMapsApiLoaded = true;
-        window.dispatchEvent(new CustomEvent('google-maps-api-loaded'));
-        console.log("Google Maps API script loaded and callback 'initAppMapGlobal' executed.");
-      }
-    </script>
-    <script async
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker,maps,geocoding&loading=async&callback=initAppMapGlobal"></script>
-    <!--
-        IMPORTANT: Replace YOUR_ACTUAL_GOOGLE_API_KEY_FRONTEND with your real Google Maps API key.
-        Ensure this key is properly restricted in your Google Cloud Console for security.
+      - Loaded dynamically from React using environment variables
+      - See src/utils/loadGoogleMapsScript.ts for implementation
+      - API key is stored in .env as VITE_GOOGLE_MAPS_API_KEY
+      - This prevents hardcoding sensitive keys in the HTML
     -->
 
-    <!-- Social Media SDKs - These can also be loaded dynamically within React components if preferred -->
-    <!-- Twitter Widgets -->
-    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-    <!-- Instagram Embeds -->
-    <script async src="https://www.instagram.com/embed.js"></script>
-    <!-- Facebook SDK -->
-    <!--
-        Facebook Page Plugin works via iframe without requiring the SDK or App ID
-        Commenting out SDK to avoid console errors from placeholder values
-    -->
-    <!-- <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script> -->
+    <!-- Social Media SDKs are lazy-loaded in SocialOverlay component for better performance -->
+    <!-- See src/components/Overlays/SocialOverlay.tsx for dynamic loading implementation -->
 
 </head>
 <body class="bg-white antialiased">

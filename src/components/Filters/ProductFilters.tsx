@@ -1,5 +1,5 @@
 // src/components/Filters/ProductFilters.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useFilters } from '../../contexts/FilterContext';
 import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
 
@@ -13,23 +13,27 @@ const ProductFilters: React.FC = () => {
     }));
   };
 
-  // Group products by category based on PRODUCT_ICONS_CONFIG and respect CATEGORY_DISPLAY_ORDER
-  const filtersGroupedByCategory: Record<string, Array<{ id: string; name: string }>> = {};
+  // Memoize the grouping and sorting logic to prevent recalculation on every render
+  const filtersGroupedByCategory = useMemo(() => {
+    const grouped: Record<string, Array<{ id: string; name: string }>> = {};
 
-  // First, populate all categories found in PRODUCT_ICONS_CONFIG
-  for (const productId in PRODUCT_ICONS_CONFIG) {
-    const product = PRODUCT_ICONS_CONFIG[productId];
-    const category = product.category || 'Other';
-    if (!filtersGroupedByCategory[category]) {
-      filtersGroupedByCategory[category] = [];
+    // First, populate all categories found in PRODUCT_ICONS_CONFIG
+    for (const productId in PRODUCT_ICONS_CONFIG) {
+      const product = PRODUCT_ICONS_CONFIG[productId];
+      const category = product.category || 'Other';
+      if (!grouped[category]) {
+        grouped[category] = [];
+      }
+      grouped[category].push({ id: productId, name: product.name });
     }
-    filtersGroupedByCategory[category].push({ id: productId, name: product.name });
-  }
-  
-  // Sort products within each category alphabetically by name (optional)
-  for (const category in filtersGroupedByCategory) {
-    filtersGroupedByCategory[category].sort((a, b) => a.name.localeCompare(b.name));
-  }
+
+    // Sort products within each category alphabetically by name
+    for (const category in grouped) {
+      grouped[category].sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return grouped;
+  }, []); // Empty deps array - PRODUCT_ICONS_CONFIG is a constant
 
 
   return (

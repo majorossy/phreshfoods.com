@@ -10,6 +10,32 @@ export interface FilterOptions {
 }
 
 /**
+ * Helper function to extract lat/lng from AutocompletePlace location
+ * Handles both function-based and literal-based LatLng objects
+ */
+function extractLatLng(placeLocation: google.maps.LatLng | google.maps.LatLngLiteral | null | undefined): { lat: number; lng: number } | null {
+  if (!placeLocation) return null;
+
+  // Type guard for LatLng (has methods)
+  if ('lat' in placeLocation && typeof placeLocation.lat === 'function') {
+    return {
+      lat: placeLocation.lat(),
+      lng: (placeLocation as google.maps.LatLng).lng()
+    };
+  }
+
+  // Type guard for LatLngLiteral (has properties)
+  if ('lat' in placeLocation && typeof placeLocation.lat === 'number') {
+    return {
+      lat: placeLocation.lat,
+      lng: (placeLocation as google.maps.LatLngLiteral).lng
+    };
+  }
+
+  return null;
+}
+
+/**
  * Filters and sorts shops based on product availability, location, and radius
  *
  * @param shops - All available shops to filter
@@ -40,127 +66,75 @@ export function filterAndSortShops(
     });
   }
 
-  // 2. Apply Location/Radius Filter
-  if (
-    options.mapsApiReady &&
-    window.google?.maps?.geometry?.spherical &&
-    options.location?.geometry?.location &&
-    options.radius > 0
-  ) {
-    const placeLocation = options.location.geometry.location;
-    let searchCenterLat: number | undefined;
-    let searchCenterLng: number | undefined;
-
-    if (
-      placeLocation &&
-      typeof placeLocation.lat === 'function' &&
-      typeof placeLocation.lng === 'function'
-    ) {
-      searchCenterLat = placeLocation.lat();
-      searchCenterLng = placeLocation.lng();
-    } else if (
-      placeLocation &&
-      typeof placeLocation.lat === 'number' &&
-      typeof placeLocation.lng === 'number'
-    ) {
-      searchCenterLat = placeLocation.lat;
-      searchCenterLng = placeLocation.lng;
-    }
-
-    if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
-      const searchCenterLatLng = new window.google.maps.LatLng(
-        searchCenterLat,
-        searchCenterLng
-      );
-      const radiusInMeters = options.radius * METERS_PER_MILE;
-
-      filteredShops = filteredShops.filter(shop => {
-        if (
-          shop.lat == null ||
-          shop.lng == null ||
-          isNaN(shop.lat) ||
-          isNaN(shop.lng)
-        )
-          return false;
-        const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
-        try {
-          const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
-            searchCenterLatLng,
-            shopLatLng
-          );
-          return distance <= radiusInMeters;
-        } catch (e) {
-          return false;
-        }
-      });
-    }
-  }
-
-  // 3. Calculate Distances and Format for Display
-  let shopsWithDistance: ShopWithDistance[] = [];
+  // 2. Extract search center coordinates once (reuse for both filtering and distance calculation)
+  let searchCenterLatLng: google.maps.LatLng | null = null;
 
   if (
     options.mapsApiReady &&
     window.google?.maps?.geometry?.spherical &&
     options.location?.geometry?.location
   ) {
-    const placeLocation = options.location.geometry.location;
-    let searchCenterLat: number | undefined;
-    let searchCenterLng: number | undefined;
-
-    if (
-      placeLocation &&
-      typeof placeLocation.lat === 'function' &&
-      typeof placeLocation.lng === 'function'
-    ) {
-      searchCenterLat = placeLocation.lat();
-      searchCenterLng = placeLocation.lng();
-    } else if (
-      placeLocation &&
-      typeof placeLocation.lat === 'number' &&
-      typeof placeLocation.lng === 'number'
-    ) {
-      searchCenterLat = placeLocation.lat;
-      searchCenterLng = placeLocation.lng;
+    const coords = extractLatLng(options.location.geometry.location);
+    if (coords) {
+      searchCenterLatLng = new window.google.maps.LatLng(coords.lat, coords.lng);
     }
+  }
 
-    if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
-      const searchCenterLatLng = new window.google.maps.LatLng(
-        searchCenterLat,
-        searchCenterLng
-      );
+  // 3. Apply Location/Radius Filter (if we have a search center)
+  if (searchCenterLatLng && options.radius > 0) {
+    const radiusInMeters = options.radius * METERS_PER_MILE;
 
-      shopsWithDistance = filteredShops.map(shop => {
-        if (
-          shop.lat != null &&
-          shop.lng != null &&
-          !isNaN(shop.lat) &&
-          !isNaN(shop.lng)
-        ) {
-          const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
-          try {
-            const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(
-              searchCenterLatLng,
-              shopLatLng
-            );
-            const distanceInMiles = distanceInMeters * MILES_PER_METER;
-            return {
-              ...shop,
-              distance: distanceInMeters,
-              distanceText: `${distanceInMiles.toFixed(1)} mi`,
-            };
-          } catch (e) {
-            return { ...shop, distanceText: undefined };
-          }
+    filteredShops = filteredShops.filter(shop => {
+      if (
+        shop.lat == null ||
+        shop.lng == null ||
+        isNaN(shop.lat) ||
+        isNaN(shop.lng)
+      )
+        return false;
+
+      const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
+      try {
+        const distance = window.google.maps.geometry.spherical.computeDistanceBetween(
+          searchCenterLatLng,
+          shopLatLng
+        );
+        return distance <= radiusInMeters;
+      } catch (e) {
+        return false;
+      }
+    });
+  }
+
+  // 4. Calculate Distances and Format for Display (reuse searchCenterLatLng)
+  let shopsWithDistance: ShopWithDistance[] = [];
+
+  if (searchCenterLatLng) {
+    shopsWithDistance = filteredShops.map(shop => {
+      if (
+        shop.lat != null &&
+        shop.lng != null &&
+        !isNaN(shop.lat) &&
+        !isNaN(shop.lng)
+      ) {
+        const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
+        try {
+          const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(
+            searchCenterLatLng,
+            shopLatLng
+          );
+          const distanceInMiles = distanceInMeters * MILES_PER_METER;
+          return {
+            ...shop,
+            distance: distanceInMeters,
+            distanceText: `${distanceInMiles.toFixed(1)} mi`,
+          };
+        } catch (e) {
+          return { ...shop, distanceText: undefined };
         }
-        return { ...shop, distanceText: undefined };
-      });
-    } else {
-      shopsWithDistance = filteredShops.map(shop => ({
-        ...shop,
-        distanceText: undefined,
-      }));
-    }
+      }
+      return { ...shop, distanceText: undefined };
+    });
   } else {
     shopsWithDistance = filteredShops.map(shop => ({
       ...shop,
@@ -168,7 +142,7 @@ export function filterAndSortShops(
     }));
   }
 
-  // 4. Sort by distance if available
+  // 5. Sort by distance if available
   if (shopsWithDistance.some(shop => shop.distance !== undefined)) {
     shopsWithDistance.sort(
       (a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity)

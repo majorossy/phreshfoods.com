@@ -234,7 +234,29 @@ const farmStandsCache = {
 };
 
 // Track ongoing data updates to prevent duplicate updates and allow waiting
-let ongoingUpdate = null;
+// Use object to prevent race conditions during assignment
+const updateTracker = {
+    promise: null,
+    isUpdating: false
+};
+
+// Helper to start or get existing update
+async function ensureDataUpdate() {
+    // Check if already updating
+    if (updateTracker.isUpdating && updateTracker.promise) {
+        console.log('[Data Update] Reusing existing update promise');
+        return updateTracker.promise;
+    }
+
+    // Start new update with proper locking
+    updateTracker.isUpdating = true;
+    updateTracker.promise = updateFarmStandsData().finally(() => {
+        updateTracker.isUpdating = false;
+        updateTracker.promise = null;
+    });
+
+    return updateTracker.promise;
+}
 
 // Endpoint to get farm stands data with ETag caching
 app.get('/api/farm-stands', async (req, res) => {
@@ -242,10 +264,10 @@ app.get('/api/farm-stands', async (req, res) => {
         console.log('[Farm Stands API] Request received');
 
         // If an update is in progress, wait for it to complete
-        if (ongoingUpdate) {
+        if (updateTracker.isUpdating && updateTracker.promise) {
             console.log('[Farm Stands API] Waiting for ongoing data update to complete...');
             try {
-                await ongoingUpdate;
+                await updateTracker.promise;
             } catch (err) {
                 console.error('[Farm Stands API] Ongoing update failed:', err);
             }
@@ -254,14 +276,7 @@ app.get('/api/farm-stands', async (req, res) => {
         // Check if file exists
         if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
             console.warn(`[Farm Stands API] Data file not found. Generating...`);
-
-            // Start update and track it
-            if (!ongoingUpdate) {
-                ongoingUpdate = updateFarmStandsData().finally(() => {
-                    ongoingUpdate = null;
-                });
-            }
-            await ongoingUpdate;
+            await ensureDataUpdate();
 
             if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
                 console.error(`[Farm Stands API] Failed to generate data file`);
@@ -322,9 +337,30 @@ app.get('/api/farm-stands', async (req, res) => {
     } catch (error) {
         console.error('[Farm Stands API] ERROR:', error);
         if (!res.headersSent) {
-            res.status(500).json({
-                error: "An unexpected error occurred while fetching farm stands."
-            });
+            // Differentiate between error types
+            if (error.code === 'ENOENT') {
+                // File not found - service unavailable
+                res.status(503).json({
+                    error: "Farm stand data is temporarily unavailable. Please try again in a few moments."
+                });
+            } else if (error instanceof SyntaxError) {
+                // JSON parsing error - data corruption, internal server error
+                console.error('[Farm Stands API] Data file corrupted');
+                res.status(500).json({
+                    error: "Data file is corrupted. Please contact support."
+                });
+            } else if (error.code === 'EACCES' || error.code === 'EPERM') {
+                // Permission error - server misconfiguration
+                console.error('[Farm Stands API] Permission denied');
+                res.status(500).json({
+                    error: "Server configuration error. Please contact support."
+                });
+            } else {
+                // Unknown error - generic 500
+                res.status(500).json({
+                    error: "An unexpected error occurred while fetching farm stands."
+                });
+            }
         }
     }
 });
@@ -478,11 +514,8 @@ setTimeout(async () => {
             console.log('Initial farm stand data file not found. Triggering update...');
         }
 
-        if (needsInitialUpdate && !ongoingUpdate) {
-            ongoingUpdate = updateFarmStandsData().finally(() => {
-                ongoingUpdate = null;
-            });
-            await ongoingUpdate;
+        if (needsInitialUpdate) {
+            await ensureDataUpdate();
         }
     } catch (err) {
         console.error('Error during initial farm stand data check/update:', err);

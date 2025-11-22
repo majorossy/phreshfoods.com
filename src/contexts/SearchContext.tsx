@@ -1,13 +1,21 @@
 // src/contexts/SearchContext.tsx
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
-import { AutocompletePlace } from '../types';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import { AutocompletePlace, ToastType } from '../types';
 import { getCookie, setCookie, eraseCookie } from '../utils/cookieHelper';
+import { getLoadError } from '../utils/loadGoogleMapsScript';
 import {
   LAST_SEARCHED_LOCATION_COOKIE_NAME,
   COOKIE_EXPIRY_DAYS,
   DEFAULT_SEARCH_RADIUS_MILES,
   DEFAULT_PORTLAND_CENTER,
 } from '../config/appConfig';
+
+// Toast handler reference (shared across contexts)
+let toastHandler: ((type: ToastType, message: string) => void) | null = null;
+
+export const setSearchToastHandler = (handler: (type: ToastType, message: string) => void) => {
+  toastHandler = handler;
+};
 
 interface SearchContextType {
   lastPlaceSelectedByAutocomplete: AutocompletePlace | null;
@@ -30,7 +38,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const [mapsApiReady, setMapsApiReady] = useState(false);
   const [mapViewTargetLocation, setMapViewTargetLocation] = useState<AutocompletePlace | null>(null);
 
-  // Check Maps API readiness
+  // Check Maps API readiness and handle errors
   useEffect(() => {
     const checkApi = () => {
       if (window.googleMapsApiLoaded && window.google?.maps?.DirectionsService) {
@@ -38,12 +46,31 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
         window.removeEventListener('google-maps-api-loaded', checkApi);
       }
     };
+
+    const handleApiError = ((event: CustomEvent) => {
+      const error = event.detail as Error;
+      if (toastHandler) {
+        toastHandler('error', error.message || 'Failed to load Google Maps. Please refresh the page.');
+      }
+    }) as EventListener;
+
     if (window.googleMapsApiLoaded && window.google?.maps?.DirectionsService) {
       setMapsApiReady(true);
     } else {
       window.addEventListener('google-maps-api-loaded', checkApi);
+      window.addEventListener('google-maps-api-error', handleApiError);
+
+      // Check if there was already a load error before this component mounted
+      const loadError = getLoadError();
+      if (loadError && toastHandler) {
+        toastHandler('error', loadError.message);
+      }
     }
-    return () => window.removeEventListener('google-maps-api-loaded', checkApi);
+
+    return () => {
+      window.removeEventListener('google-maps-api-loaded', checkApi);
+      window.removeEventListener('google-maps-api-error', handleApiError);
+    };
   }, []);
 
   // Load saved location from cookie, or default to Portland, Maine
@@ -94,7 +121,8 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  const value: SearchContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: SearchContextType = useMemo(() => ({
     lastPlaceSelectedByAutocomplete,
     setLastPlaceSelectedByAutocompleteAndCookie,
     searchTerm,
@@ -104,7 +132,14 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     mapsApiReady,
     mapViewTargetLocation,
     setMapViewTargetLocation,
-  };
+  }), [
+    lastPlaceSelectedByAutocomplete,
+    setLastPlaceSelectedByAutocompleteAndCookie,
+    searchTerm,
+    currentRadius,
+    mapsApiReady,
+    mapViewTargetLocation,
+  ]);
 
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 };

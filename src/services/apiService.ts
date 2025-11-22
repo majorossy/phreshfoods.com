@@ -60,15 +60,16 @@ const toBoolean = (value: string | boolean | number | undefined | null): boolean
  * Fetches and processes farm stand data from the server backend.
  * Uses request caching to prevent duplicate calls and improve performance.
  *
+ * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
  * @returns {Promise<Shop[]>} A promise that resolves to an array of shop objects.
  */
-export async function fetchAndProcessFarmStands(): Promise<Shop[]> {
+export async function fetchAndProcessFarmStands(signal?: AbortSignal): Promise<Shop[]> {
   try {
     // Use cachedFetch with 5-minute cache duration
     // This prevents duplicate requests during React Strict Mode and hot reloading
     const rawData = await cachedFetch<Shop[]>(
       '/api/farm-stands',
-      {}, // No special fetch options needed
+      { signal }, // Pass abort signal to fetch
       300000 // 5 minutes cache (farm stands update hourly)
     );
 
@@ -76,18 +77,15 @@ export async function fetchAndProcessFarmStands(): Promise<Shop[]> {
     let processedData: Shop[] = [];
     if (Array.isArray(rawData)) {
       processedData = rawData as Shop[];
-    } else {
-      console.warn("apiService: rawData from API was not an array as expected.", rawData);
-    }
-
-    if (processedData.length === 0) {
-      console.warn('apiService: Processed data resulted in zero farm stands.');
     }
 
     return processedData;
 
   } catch (error) {
-    console.error('apiService: Error within fetchAndProcessFarmStands:', error);
+    // Don't log errors for aborted requests
+    if (error instanceof Error && error.name === 'AbortError') {
+      return [];
+    }
     return []; // ALWAYS return an array, even on error
   }
 }
@@ -110,16 +108,16 @@ export interface GeocodeResponse extends GeoLocation {
 /**
  * Fetches geocoded location data from the backend API.
  * @param {string} address - The address string to geocode.
+ * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
  * @returns {Promise<GeocodeResponse | null>} A promise that resolves to a location object or null on failure.
  */
-export async function geocodeAddressClient(address: string): Promise<GeocodeResponse | null> {
+export async function geocodeAddressClient(address: string, signal?: AbortSignal): Promise<GeocodeResponse | null> {
   if (!address || typeof address !== 'string' || address.trim() === "") {
-    console.warn("geocodeAddressClient: Invalid or empty address provided.");
     return null;
   }
   try {
     return await retryAsync(async () => {
-      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address.trim())}`);
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address.trim())}`, { signal });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Geocoding request failed" }));
         throw new Error(
@@ -133,9 +131,9 @@ export async function geocodeAddressClient(address: string): Promise<GeocodeResp
       delayMs: API_RETRY_GEOCODE_DELAY_MS,
     });
   } catch (error) {
-    console.error("Error geocoding address on client (via backend):", error instanceof Error ? error.message : String(error));
-    // Optionally re-throw or return null based on how you want to handle errors in components
-    // throw error;
+    if (error instanceof Error && error.name === 'AbortError') {
+      return null;
+    }
     return null;
   }
 }
@@ -150,7 +148,6 @@ export async function geocodeAddressClient(address: string): Promise<GeocodeResp
  */
 export async function getPlaceDetailsClient(placeId: string, fields?: string): Promise<Partial<PlaceDetails> | null> {
   if (!placeId) {
-    console.warn("getPlaceDetailsClient: No Place ID provided.");
     return null;
   }
   try {
@@ -170,8 +167,6 @@ export async function getPlaceDetailsClient(placeId: string, fields?: string): P
       delayMs: API_RETRY_GEOCODE_DELAY_MS,
     });
   } catch (error) {
-    console.error("Error fetching place details on client (via backend):", error instanceof Error ? error.message : String(error));
-    // throw error;
     return null;
   }
 }
@@ -200,7 +195,6 @@ export async function getDirectionsClient(
   destination: string | GeoLocation | { placeId: string }
 ): Promise<DirectionsResponse | null> {
   if (!origin || !destination) {
-    console.warn("getDirectionsClient: Origin or destination missing.");
     return null;
   }
 
@@ -219,8 +213,6 @@ export async function getDirectionsClient(
       const response = await fetch(`/api/directions?origin=${encodeURIComponent(originQuery)}&destination=${encodeURIComponent(destinationQuery)}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Fetching directions failed" }));
-        // The backend /api/directions might return different status codes for directions errors (e.g., 400 for bad request)
-        // vs server errors (500). Handle accordingly.
         const errorMessage = (errorData as { error?: string; details?: string }).error ||
                              (errorData as { error?: string; details?: string }).details ||
                              `Directions request failed: ${response.statusText}`;
@@ -232,8 +224,6 @@ export async function getDirectionsClient(
       delayMs: API_RETRY_GEOCODE_DELAY_MS,
     });
   } catch (error) {
-    console.error("Error fetching directions on client (via backend):", error instanceof Error ? error.message : String(error));
-    // throw error;
     return null;
   }
 }

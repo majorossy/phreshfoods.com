@@ -21,7 +21,6 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
     if (PRODUCT_ICONS_CONFIG.hasOwnProperty(key)) {
       const config = PRODUCT_ICONS_CONFIG[key];
       if (!config || typeof config.category !== 'string' || !config.name || !config.csvHeader) {
-        console.warn(`ProductIconsDisplay: Invalid configuration for product key "${key}". Skipping.`);
         continue;
       }
       const category = config.category;
@@ -80,7 +79,6 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
                             errorText.textContent = 'Img err';
                             parent.appendChild(errorText);
                           }
-                          console.warn(`Image not found: /images/icons/${iconFileToUse}`);
                         }}
                       />
                     <span className="text-[0.65rem] sm:text-[0.7rem] font-medium text-gray-600 leading-tight"> {/* Slightly smaller text too */}

@@ -14,7 +14,6 @@ const InitialSearchModal = () => {
   const [inputValue, setInputValue] = useState<string>("");
 
   if (!appContext) {
-    console.warn("InitialSearchModal: AppContext is not available.");
     return null;
   }
 
@@ -77,7 +76,6 @@ const InitialSearchModal = () => {
         setSelectedPlaceFromModal(adaptedPlace);
         setInputValue(placeResult.formatted_address || placeResult.name || ""); // Update input value with selection
       } else {
-        console.warn("InitialSearchModal: Autocomplete selection invalid or no geometry.");
         setSelectedPlaceFromModal(null); // Clear selection if invalid
         // Input value remains what the user typed if they didn't pick from dropdown
       }
@@ -109,7 +107,6 @@ const InitialSearchModal = () => {
 
   const handleModalSearch = () => {
     if (!setIsInitialModalOpen || !setLastPlaceSelectedByAutocompleteAndCookie || !setSearchTerm) {
-      console.error("InitialSearchModal: Context functions missing for search.");
       return;
     }
 
@@ -123,7 +120,6 @@ const InitialSearchModal = () => {
       setLastPlaceSelectedByAutocompleteAndCookie(null, inputValue.trim());
       setIsInitialModalOpen(false);
     } else {
-      console.warn("InitialSearchModal: Search clicked with no input or selection.");
       autocompleteInputRef.current?.focus();
       if(autocompleteInputRef.current){
         autocompleteInputRef.current.style.border = "1px solid red";
@@ -131,13 +127,12 @@ const InitialSearchModal = () => {
             if(autocompleteInputRef.current) autocompleteInputRef.current.style.border = "";
         }, 2000);
       }
-      return; 
+      return;
     }
   };
 
   const handleSkip = () => {
     if (!setIsInitialModalOpen || !setLastPlaceSelectedByAutocompleteAndCookie || !setSearchTerm) {
-      console.error("InitialSearchModal: Context functions missing for skip.");
       return;
     }
     const portlandTerm = "Portland, Maine";

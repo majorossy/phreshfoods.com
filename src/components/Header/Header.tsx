@@ -126,7 +126,6 @@ const Header: React.FC = () => {
         }
       });
     } catch (error) {
-      console.error('Failed to initialize Google Places Autocomplete:', error);
       autocompleteInstanceRef.current = null;
     }
 
@@ -135,7 +134,7 @@ const Header: React.FC = () => {
             try {
               google.maps.event.clearInstanceListeners(autocompleteInstanceRef.current);
             } catch (error) {
-              console.error('Error clearing autocomplete listeners:', error);
+              // Cleanup error, silently continue
             }
             // Clean up pac-container elements
             const pacContainers = document.getElementsByClassName('pac-container');

@@ -155,6 +155,7 @@ npm run process-data
 3. **server.js:**
    - Serves static files from `public/`
    - Provides `/api/farm-stands` endpoint (reads from farmStandsData.json)
+   - Uses `ongoingUpdate` promise tracking to prevent ECONNRESET errors when data is being processed
    - Proxies Google Maps API calls: `/api/geocode`, `/api/places/details`, `/api/directions`
    - On-demand API calls are cached via `cacheService.js`
 
@@ -201,10 +202,13 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 
 **Google Maps Integration:**
 - Uses Google Maps JavaScript API with Map ID (`6c1bbba6c5f48ca2beb388ad`)
-- Custom markers for shops (color: `#ed411a`)
+- Advanced Marker Elements with custom styling:
+  - Default markers: Red (`#ed411a`) at scale 1.2
+  - Hovered markers: Blue (`#4285F4`) at scale 1.6
+  - Selected markers: Blue (`#4285F4`) at scale 1.5 (maintains hover color for visual consistency)
 - InfoWindow for shop preview
 - Directions rendering with DirectionsService/DirectionsRenderer
-- Place Autocomplete for location search
+- Place Autocomplete for location search (Note: Google deprecated `Autocomplete` in favor of `PlaceAutocompleteElement` - migration recommended but not urgent, 12+ months support guaranteed)
 
 **Overlays:**
 - Shop Details Overlay - Basic shop info
@@ -277,6 +281,8 @@ npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @
 ### Distance Calculations
 - Uses `google.maps.geometry.spherical.computeDistanceBetween()`
 - Results sorted by distance when location search is active
+- Default search radius: 20 miles (configurable in `src/config/map.ts`)
+- Default location: Portland, Maine (`{ lat: 43.6591, lng: -70.2568 }`)
 
 ### Proxy Configuration
 - Vite dev server proxies `/api/*` to `http://localhost:3000`
@@ -315,6 +321,16 @@ The following components have been migrated from `AppContext` to specific domain
 - ErrorBoundaries wrapped around major sections (Header, Map, ListingsPanel)
 - Prevents component errors from crashing the entire app
 - User-friendly error messages with retry functionality
+
+### Backend Improvements (2025-01)
+- **Fixed ECONNRESET errors:** Added `ongoingUpdate` promise tracking in `server.js` to handle concurrent requests during data processing
+- Prevents API endpoint failures when farm stand data is being refreshed
+- API requests now wait for any ongoing data updates to complete before responding
+
+### UI/UX Improvements (2025-01)
+- **Map panning offset:** Reduced `SELECTED_SHOP_PAN_OFFSET_X` from 140px to 40px for better centering when shop is selected
+- **Marker colors:** Selected markers now stay blue (`#4285F4`) instead of dark red for consistent visual feedback
+- **Default search radius:** Increased from 10 miles to 20 miles for broader initial search results
 
 ## Common Workflows
 

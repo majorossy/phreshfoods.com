@@ -1,5 +1,5 @@
 // src/contexts/FarmDataContext.tsx
-import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useRef, useMemo } from 'react';
 import { Shop, ShopWithDistance, ToastType } from '../types';
 import * as apiService from '../services/apiService';
 
@@ -27,21 +27,36 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
   const [currentlyDisplayedShops, setCurrentlyDisplayedShops] = useState<ShopWithDistance[]>([]);
   const [isLoadingFarmStands, setIsLoadingFarmStands] = useState<boolean>(true);
   const [farmStandsError, setFarmStandsError] = useState<string | null>(null);
-  const [hasLoaded, setHasLoaded] = useState<boolean>(false);
+
+  // Use ref instead of state to track loading without triggering re-renders
+  const hasLoadedRef = useRef<boolean>(false);
 
   /**
    * Loads farm stand data from the API with error handling
    */
-  const loadFarmStands = useCallback(async () => {
+  const loadFarmStands = useCallback(async (signal?: AbortSignal) => {
+    // Prevent duplicate loads
+    if (hasLoadedRef.current) {
+      return;
+    }
+
     setIsLoadingFarmStands(true);
     setFarmStandsError(null);
 
     try {
-      const fetchedStands = await apiService.fetchAndProcessFarmStands();
+      const fetchedStands = await apiService.fetchAndProcessFarmStands(signal);
+
+      // Don't update state if request was aborted
+      if (signal?.aborted) {
+        // Reset the loaded flag so the next mount can try again
+        hasLoadedRef.current = false;
+        return;
+      }
+
       if (fetchedStands && Array.isArray(fetchedStands)) {
         setAllFarmStands(fetchedStands);
         setFarmStandsError(null);
-        setHasLoaded(true);
+        hasLoadedRef.current = true;
       } else {
         setAllFarmStands([]);
         const errorMsg = 'Failed to load farm stands. Please try again.';
@@ -51,7 +66,12 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     } catch (error) {
-      console.error("[FarmDataContext] Error fetching farm stands:", error);
+      // Don't show error for aborted requests
+      if (signal?.aborted) {
+        // Reset the loaded flag so the next mount can try again
+        hasLoadedRef.current = false;
+        return;
+      }
       setAllFarmStands([]);
       const errorMsg = 'Unable to load farm data. Please check your connection and try again.';
       setFarmStandsError(errorMsg);
@@ -59,26 +79,39 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
         toastHandler('error', errorMsg);
       }
     } finally {
-      setIsLoadingFarmStands(false);
+      if (!signal?.aborted) {
+        setIsLoadingFarmStands(false);
+      }
     }
   }, []);
 
-  // Load farm stands on mount (only once)
+  // Load farm stands on mount (only once) with abort support
   useEffect(() => {
-    if (!hasLoaded) {
-      loadFarmStands();
-    }
-  }, []); // Empty dependency array - only run once on mount
+    const abortController = new AbortController();
+    loadFarmStands(abortController.signal);
 
-  const value: FarmDataContextType = {
+    // Cleanup: abort request if component unmounts
+    return () => {
+      abortController.abort();
+    };
+  }, [loadFarmStands]); // Include loadFarmStands in deps - it's stable from useCallback
+
+  // Retry function that resets the loaded flag
+  const retryLoadFarmStands = useCallback(() => {
+    hasLoadedRef.current = false;
+    loadFarmStands();
+  }, [loadFarmStands]);
+
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: FarmDataContextType = useMemo(() => ({
     allFarmStands,
     setAllFarmStands,
     currentlyDisplayedShops,
     setCurrentlyDisplayedShops,
     isLoadingFarmStands,
     farmStandsError,
-    retryLoadFarmStands: loadFarmStands,
-  };
+    retryLoadFarmStands,
+  }), [allFarmStands, currentlyDisplayedShops, isLoadingFarmStands, farmStandsError, retryLoadFarmStands]);
 
   return <FarmDataContext.Provider value={value}>{children}</FarmDataContext.Provider>;
 };

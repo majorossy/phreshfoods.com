@@ -27,11 +27,13 @@ const MapComponent: React.FC = () => {
   const markersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
   const googleInfoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const infoWindowReactRootRef = useRef<ReturnType<typeof ReactDOM.createRoot> | null>(null);
+  const unmountTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const previousSelectedShopSlugRef = useRef<string | null>(null);
   const previousHoveredShopSlugRef = useRef<string | null>(null);
   const searchLocationMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const searchRadiusCircleRef = useRef<google.maps.Circle | null>(null);
+  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigate = useNavigate();
 
@@ -48,15 +50,22 @@ const MapComponent: React.FC = () => {
   }, []);
 
   const unmountInfoWindowReactRoot = useCallback(() => {
+    // Clear any pending unmount timeout
+    if (unmountTimeoutRef.current) {
+      clearTimeout(unmountTimeoutRef.current);
+      unmountTimeoutRef.current = null;
+    }
+
     const rootToUnmount = infoWindowReactRootRef.current;
     if (rootToUnmount) {
-      // Defer unmount to avoid React 18 warning about synchronous unmount during render
-      setTimeout(() => {
+      // Use queueMicrotask for proper cleanup timing without blocking
+      unmountTimeoutRef.current = setTimeout(() => {
         try {
           rootToUnmount.unmount();
         } catch (error) {
-          console.error('Error unmounting InfoWindow root:', error);
+          // Error during unmount, silently continue
         }
+        unmountTimeoutRef.current = null;
       }, 0);
       infoWindowReactRootRef.current = null;
     }
@@ -119,8 +128,6 @@ const MapComponent: React.FC = () => {
             // preserveViewport: false, // Allow renderer to adjust viewport to fit route
         });
         directionsRendererRef.current.setMap(mapInstance);
-    } else {
-        console.error("[MapComponent] google.maps.DirectionsRenderer not available.");
     }
     // --- END ADDED ---
 
@@ -140,7 +147,6 @@ const MapComponent: React.FC = () => {
       }
     });
 
-    // console.log("MapComponent: Google Map Initialized."); // Optional debug
     return () => {
       if (mapClickListener) mapClickListener.remove();
       if (directionsRendererRef.current) {
@@ -155,8 +161,21 @@ const MapComponent: React.FC = () => {
         searchRadiusCircleRef.current.setMap(null);
         searchRadiusCircleRef.current = null;
       }
+      // Clear unmount timeout on component cleanup
+      if (unmountTimeoutRef.current) {
+        clearTimeout(unmountTimeoutRef.current);
+        unmountTimeoutRef.current = null;
+      }
       closeNativeInfoWindow();
-      unmountInfoWindowReactRoot();
+      // Synchronously unmount root on cleanup to prevent leaks
+      if (infoWindowReactRootRef.current) {
+        try {
+          infoWindowReactRootRef.current.unmount();
+        } catch (error) {
+          // Error during unmount, silently continue
+        }
+        infoWindowReactRootRef.current = null;
+      }
     };
   }, [mapsApiReady, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, directionsResult, clearDirections]);
 
@@ -185,12 +204,23 @@ const MapComponent: React.FC = () => {
         // Create new marker using memoized helper
         const markerElement = createMarkerElement();
 
-        // Add hover listeners to marker element
+        // Add hover listeners to marker element with debouncing
         markerElement.addEventListener('mouseenter', () => {
-          if (setHoveredShop) setHoveredShop(shop);
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+          }
+          // Small debounce to prevent rapid state changes
+          hoverTimeoutRef.current = setTimeout(() => {
+            if (setHoveredShop) setHoveredShop(shop);
+          }, 50);
         });
         markerElement.addEventListener('mouseleave', () => {
-          if (setHoveredShop) setHoveredShop(null);
+          if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+          }
+          hoverTimeoutRef.current = setTimeout(() => {
+            if (setHoveredShop) setHoveredShop(null);
+          }, 50);
         });
 
         marker = new window.google.maps.marker.AdvancedMarkerElement({
@@ -503,10 +533,8 @@ const MapComponent: React.FC = () => {
   useEffect(() => {
     if (mapsApiReady && directionsRendererRef.current) {
       if (directionsResult) {
-        // console.log("[MapComponent] Rendering directions on map."); // Optional debug
         directionsRendererRef.current.setDirections(directionsResult);
       } else {
-        // console.log("[MapComponent] Clearing directions from map."); // Optional debug
         directionsRendererRef.current.setDirections({ routes: [] } as google.maps.DirectionsResult);
       }
     }

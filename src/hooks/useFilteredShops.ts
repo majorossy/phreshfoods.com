@@ -1,12 +1,12 @@
 // src/hooks/useFilteredShops.ts
 import { useMemo } from 'react';
-import { Shop, ShopWithDistance } from '../types';
+import { Shop, ShopWithDistance, AutocompletePlace } from '../types';
 import { filterAndSortShops } from '../utils/shopFilters';
 
 interface UseFilteredShopsOptions {
   allFarmStands: Shop[] | undefined;
   activeProductFilters: Record<string, boolean> | undefined;
-  searchLocation: any; // AutocompletePlace type
+  searchLocation: AutocompletePlace | null;
   currentRadius: number;
   mapsApiReady: boolean;
 }

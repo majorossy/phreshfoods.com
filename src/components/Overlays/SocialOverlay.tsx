@@ -55,29 +55,54 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
     }
   }, [socialOverlayInitialTab, tabChangeKey]);
 
-  // Process Instagram embeds after they're rendered in the DOM
+  // Lazy load and process Instagram embeds
   useEffect(() => {
     if (activeTab === 'instagram') {
-      // Instagram embed script needs to process the embed after rendering
-      // Use setTimeout to ensure DOM is ready
-      const timer = setTimeout(() => {
-        if (window.instgrm) {
+      // Lazy load Instagram embed script if not already loaded
+      if (!window.instgrm) {
+        const script = document.createElement('script');
+        script.src = 'https://www.instagram.com/embed.js';
+        script.async = true;
+        script.onload = () => {
+          if (window.instgrm) {
+            window.instgrm.Embeds.process();
+          }
+        };
+        document.body.appendChild(script);
+      } else {
+        // Already loaded, just process the embeds
+        const timer = setTimeout(() => {
           window.instgrm.Embeds.process();
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     }
   }, [activeTab]);
 
-  // Process Twitter widgets after they're rendered in the DOM
+  // Lazy load and process Twitter widgets
   useEffect(() => {
     if (activeTab === 'x') {
-      const timer = setTimeout(() => {
-        if (window.twttr && window.twttr.widgets) {
-          window.twttr.widgets.load();
-        }
-      }, 100);
-      return () => clearTimeout(timer);
+      // Lazy load Twitter widgets script if not already loaded
+      if (!window.twttr) {
+        const script = document.createElement('script');
+        script.src = 'https://platform.twitter.com/widgets.js';
+        script.async = true;
+        script.charset = 'utf-8';
+        script.onload = () => {
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load();
+          }
+        };
+        document.body.appendChild(script);
+      } else {
+        // Already loaded, just process the widgets
+        const timer = setTimeout(() => {
+          if (window.twttr && window.twttr.widgets) {
+            window.twttr.widgets.load();
+          }
+        }, 100);
+        return () => clearTimeout(timer);
+      }
     }
   }, [activeTab]);
 
@@ -110,7 +135,6 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             fetchAndDisplayDirections(originRequest, shopDestinationForApi);
           },
           (error) => {
-            console.error("Error getting current location:", error);
             alert("Could not get current location. Please enter an address or use a previously searched location.");
           },
           { timeout: 10000 }
@@ -402,7 +426,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
                 </p>
                 {directionsResult.routes[0].legs.flatMap(leg => leg.steps || []).map((step, stepIndex) => (
                   <div key={`step-${stepIndex}`} className="py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                    <span className="text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: step.instructions || '' }} />
+                    <span className="text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(step.instructions || '') }} />
                     {step.distance?.text && ( <span className="text-gray-500 dark:text-gray-400 text-[0.65rem] ml-1"> ({step.distance.text})</span> )}
                   </div>
                 ))}

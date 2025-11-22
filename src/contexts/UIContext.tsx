@@ -1,5 +1,5 @@
 // src/contexts/UIContext.tsx
-import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo } from 'react';
 import { Shop } from '../types';
 
 interface UIContextType {
@@ -63,7 +63,8 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     setTabChangeKey(prev => prev + 1); // Force update even if tab is the same
   }, []);
 
-  const value: UIContextType = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value: UIContextType = useMemo(() => ({
     selectedShop,
     setSelectedShop: handleSetSelectedShop,
     hoveredShop,
@@ -77,7 +78,19 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     socialOverlayInitialTab,
     setSocialOverlayActiveTab,
     tabChangeKey,
-  };
+  }), [
+    selectedShop,
+    handleSetSelectedShop,
+    hoveredShop,
+    isShopOverlayOpen,
+    isSocialOverlayOpen,
+    openShopOverlays,
+    closeShopOverlays,
+    isInitialModalOpen,
+    socialOverlayInitialTab,
+    setSocialOverlayActiveTab,
+    tabChangeKey,
+  ]);
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 };

@@ -31,10 +31,6 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     // Use slug if available, otherwise use GoogleProfileID as fallback
     const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
 
-    if (!shop.slug) {
-      console.warn("ShopCard: Shop missing slug, using fallback:", shop.Name, "->", urlIdentifier);
-    }
-
     navigate(`/farm/${urlIdentifier}`);
   };
 
@@ -52,7 +48,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     : fallbackImageUrlCard;
 
   let distanceString = '';
-  if (shop.distance != null && shop.distance !== Infinity && typeof kmToMiles === 'function') {
+  if (shop.distance != null && shop.distance !== Infinity) {
     const distMiles = kmToMiles(shop.distance / 1000);
     distanceString = `~${distMiles.toFixed(1)} mi`; // Removed "away" for brevity
   }
@@ -87,6 +83,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           loading="lazy"
           src={actualImageUrl}
           alt={`Image of ${displayName}`}
+          width="400"
+          height="250"
+          decoding="async"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.onerror = null;

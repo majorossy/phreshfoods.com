@@ -16,7 +16,7 @@ interface CacheEntry<T> {
 }
 
 class RequestCache {
-  private pendingRequests: Map<string, CacheEntry<any>>;
+  private pendingRequests: Map<string, CacheEntry<unknown>>;
   private defaultCacheDuration: number;
 
   constructor(defaultCacheDuration: number = 60000) {
@@ -46,19 +46,17 @@ class RequestCache {
 
       // If result is cached and fresh, return it immediately
       if (existing.result && age < cacheDuration) {
-        console.log(`[RequestCache] HIT (${Math.round(age)}ms old):`, url);
         return existing.result;
       }
 
-      // If request is still in flight, return the same promise
-      if (!existing.result) {
-        console.log(`[RequestCache] In-flight request detected:`, url);
+      // If request is still in flight AND no abort signal is present, return the same promise
+      // Don't share promises when AbortSignal is used, as aborting one would abort all
+      if (!existing.result && !options?.signal) {
         return existing.promise;
       }
     }
 
     // Create new request
-    console.log(`[RequestCache] MISS - creating new request:`, url);
     const promise = this.executeRequest<T>(url, options);
 
     // Store the promise immediately to prevent duplicates
@@ -79,11 +77,10 @@ class RequestCache {
         // Clean up after cache duration expires
         setTimeout(() => {
           this.pendingRequests.delete(cacheKey);
-          console.log(`[RequestCache] Expired:`, url);
         }, cacheDuration);
       })
-      .catch(() => {
-        // Remove failed requests immediately
+      .catch((error) => {
+        // Remove failed/aborted requests immediately so they can be retried
         this.pendingRequests.delete(cacheKey);
       });
 
@@ -122,7 +119,6 @@ class RequestCache {
   clear(url: string, options?: RequestInit): void {
     const cacheKey = this.getCacheKey(url, options);
     this.pendingRequests.delete(cacheKey);
-    console.log(`[RequestCache] Cleared:`, url);
   }
 
   /**
@@ -130,7 +126,6 @@ class RequestCache {
    */
   clearAll(): void {
     this.pendingRequests.clear();
-    console.log(`[RequestCache] All entries cleared`);
   }
 
   /**
@@ -155,7 +150,6 @@ export const requestCache = new RequestCache();
 if (typeof window !== 'undefined') {
   (window as any).clearAppCache = () => {
     requestCache.clearAll();
-    console.log('[DEBUG] App cache cleared! Reload the page to fetch fresh data.');
   };
 }
 

@@ -2,6 +2,7 @@
 import React, { useContext, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AppContext, setToastHandler } from './contexts/AppContext.tsx';
+import { setSearchToastHandler } from './contexts/SearchContext.tsx';
 import { useToast } from './contexts/ToastContext.tsx';
 import { useFilteredShops } from './hooks/useFilteredShops';
 import {
@@ -28,9 +29,10 @@ function App() {
   const location = useLocation();
   const { showToast } = useToast();
 
-  // Connect toast handler to AppContext
+  // Connect toast handler to AppContext and SearchContext
   useEffect(() => {
     setToastHandler(showToast);
+    setSearchToastHandler(showToast);
   }, [showToast]);
 
   const {
@@ -58,6 +60,7 @@ function App() {
   });
 
   // Update displayed shops when filtered results change
+  // This effect only runs when filtered results actually change
   useEffect(() => {
     if (setCurrentlyDisplayedShops) {
       setCurrentlyDisplayedShops(filteredAndSortedShops);
