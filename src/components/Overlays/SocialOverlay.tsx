@@ -64,15 +64,32 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         script.src = 'https://www.instagram.com/embed.js';
         script.async = true;
         script.onload = () => {
-          if (window.instgrm) {
-            window.instgrm.Embeds.process();
+          try {
+            if (window.instgrm) {
+              window.instgrm.Embeds.process();
+            }
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.warn('[SocialOverlay] Error processing Instagram embeds:', error);
+            }
+          }
+        };
+        script.onerror = () => {
+          if (import.meta.env.DEV) {
+            console.warn('[SocialOverlay] Failed to load Instagram embed script');
           }
         };
         document.body.appendChild(script);
       } else {
         // Already loaded, just process the embeds
         const timer = setTimeout(() => {
-          window.instgrm.Embeds.process();
+          try {
+            window.instgrm.Embeds.process();
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.warn('[SocialOverlay] Error processing Instagram embeds:', error);
+            }
+          }
         }, 100);
         return () => clearTimeout(timer);
       }
@@ -89,16 +106,33 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         script.async = true;
         script.charset = 'utf-8';
         script.onload = () => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load();
+          try {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load();
+            }
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.warn('[SocialOverlay] Error loading Twitter widgets:', error);
+            }
+          }
+        };
+        script.onerror = () => {
+          if (import.meta.env.DEV) {
+            console.warn('[SocialOverlay] Failed to load Twitter widgets script');
           }
         };
         document.body.appendChild(script);
       } else {
         // Already loaded, just process the widgets
         const timer = setTimeout(() => {
-          if (window.twttr && window.twttr.widgets) {
-            window.twttr.widgets.load();
+          try {
+            if (window.twttr && window.twttr.widgets) {
+              window.twttr.widgets.load();
+            }
+          } catch (error) {
+            if (import.meta.env.DEV) {
+              console.warn('[SocialOverlay] Error loading Twitter widgets:', error);
+            }
           }
         }, 100);
         return () => clearTimeout(timer);
@@ -617,4 +651,6 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   );
 };
 
-export default SocialOverlay;
+// Memoize component to prevent unnecessary re-renders
+// Only re-renders when shop or onClose props change
+export default React.memo(SocialOverlay);

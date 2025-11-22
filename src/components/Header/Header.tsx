@@ -1,7 +1,15 @@
 // src/components/Header/Header.tsx
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AutocompletePlace } from '../../types';
-import { MAINE_BOUNDS_LITERAL, DEFAULT_PORTLAND_CENTER } from '../../config/appConfig';
+import {
+  MAINE_BOUNDS_LITERAL,
+  DEFAULT_PORTLAND_CENTER,
+  DEFAULT_SEARCH_RADIUS_MILES,
+  RADIUS_SLIDER_MIN_MILES,
+  RADIUS_SLIDER_MAX_MILES,
+  RADIUS_SLIDER_STEP_MILES,
+  RADIUS_DEBOUNCE_MS,
+} from '../../config/appConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductFilters from '../Filters/ProductFilters'; // Import the filters component
 import { useDebounce } from '../../hooks/useDebounce';
@@ -18,9 +26,9 @@ const Header: React.FC = () => {
   const filterDropdownRef = useRef<HTMLDivElement>(null); // For click outside listener
 
   // Local state for radius slider (for immediate UI feedback)
-  const [localRadius, setLocalRadius] = useState<number>(20); // Default 20 miles
+  const [localRadius, setLocalRadius] = useState<number>(DEFAULT_SEARCH_RADIUS_MILES);
   // Debounced radius value (delays filter computation)
-  const debouncedRadius = useDebounce(localRadius, 300);
+  const debouncedRadius = useDebounce(localRadius, RADIUS_DEBOUNCE_MS);
 
   // Get search and UI contexts
   const {
@@ -32,6 +40,7 @@ const Header: React.FC = () => {
     currentRadius,
     setCurrentRadius,
     lastPlaceSelectedByAutocomplete,
+    mapViewTargetLocation,
   } = useSearch();
 
   const {
@@ -52,15 +61,21 @@ const Header: React.FC = () => {
   }, [debouncedRadius, currentRadius, setCurrentRadius]);
 
   // Effect to initialize/update inputValue
+  // Always display the address of the current map center (radius pin location)
   useEffect(() => {
-    if (lastPlaceSelectedByAutocomplete && lastPlaceSelectedByAutocomplete.formatted_address) {
-        setInputValue(lastPlaceSelectedByAutocomplete.formatted_address);
-    } else if (searchTerm) {
-        setInputValue(searchTerm);
-    } else {
-        // setInputValue(''); // Optional based on UX
+    // Priority 1: Use mapViewTargetLocation (current center pin) if available
+    if (mapViewTargetLocation?.formatted_address) {
+      setInputValue(mapViewTargetLocation.formatted_address);
     }
-  }, [searchTerm, lastPlaceSelectedByAutocomplete]);
+    // Priority 2: Fall back to lastPlaceSelectedByAutocomplete
+    else if (lastPlaceSelectedByAutocomplete?.formatted_address) {
+      setInputValue(lastPlaceSelectedByAutocomplete.formatted_address);
+    }
+    // Priority 3: Fall back to searchTerm
+    else if (searchTerm) {
+      setInputValue(searchTerm);
+    }
+  }, [mapViewTargetLocation, lastPlaceSelectedByAutocomplete, searchTerm]);
 
   // Effect for Autocomplete Initialization
   useEffect(() => {
@@ -173,11 +188,19 @@ const Header: React.FC = () => {
     };
   }, [showFilterDropdown]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => setInputValue(event.target.value);
-  const handleInputBlur = () => { /* ... your existing blur logic ... */ };
-  const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { /* ... your existing keydown logic ... */ };
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(event.target.value);
+  }, []);
 
-  const handleTitleClick = () => {
+  const handleInputBlur = useCallback(() => {
+    /* ... your existing blur logic ... */
+  }, []);
+
+  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    /* ... your existing keydown logic ... */
+  }, []);
+
+  const handleTitleClick = useCallback(() => {
     setSelectedShop(null);
     closeShopOverlays();
 
@@ -197,7 +220,7 @@ const Header: React.FC = () => {
     setSearchTerm('Portland, ME, USA');
     setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, 'Portland, ME, USA');
     setMapViewTargetLocation(portlandPlace);
-  };
+  }, [setSelectedShop, closeShopOverlays, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
 
   return (
     <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden" role="banner">
@@ -236,14 +259,15 @@ const Header: React.FC = () => {
                 type="range"
                 id="radiusSliderHeader"
                 name="radius"
-                min="10" max="100"
+                min={RADIUS_SLIDER_MIN_MILES}
+                max={RADIUS_SLIDER_MAX_MILES}
                 value={localRadius}
-                step="5"
+                step={RADIUS_SLIDER_STEP_MILES}
                 onChange={(e) => setLocalRadius(Number(e.target.value))}
                 className="w-20 sm:w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
                 aria-label="Search radius"
-                aria-valuemin={10}
-                aria-valuemax={100}
+                aria-valuemin={RADIUS_SLIDER_MIN_MILES}
+                aria-valuemax={RADIUS_SLIDER_MAX_MILES}
                 aria-valuenow={localRadius}
                 aria-valuetext={`${localRadius} miles`}
               />

@@ -6,7 +6,7 @@ import { useSearch } from './contexts/SearchContext';
 import { useFilters } from './contexts/FilterContext';
 import { useUI } from './contexts/UIContext';
 import { useFilteredShops } from './hooks/useFilteredShops';
-import { AutocompletePlace } from './types';
+import type { AutocompletePlace } from './types';
 import {
   getHomepageSEO,
   getFarmStandSEO,
@@ -15,13 +15,14 @@ import {
   addStructuredData
 } from './utils/seo';
 
-import Header from './components/Header/Header.tsx';
-import MapComponent from './components/Map/MapComponent.tsx';
-import ListingsPanel from './components/Listings/ListingsPanel.tsx';
 import LazyLoadErrorBoundary from './components/LazyLoadErrorBoundary.tsx';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 
-// Code splitting: Lazy load overlay components to reduce initial bundle size
+// Code splitting: Lazy load components to reduce initial bundle size
+// These components are loaded on-demand, improving initial page load time
+const Header = lazy(() => import('./components/Header/Header.tsx'));
+const MapComponent = lazy(() => import('./components/Map/MapComponent.tsx'));
+const ListingsPanel = lazy(() => import('./components/Listings/ListingsPanel.tsx'));
 const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsOverlay.tsx'));
 const SocialOverlay = lazy(() => import('./components/Overlays/SocialOverlay.tsx'));
 
@@ -173,16 +174,22 @@ function App() {
         Skip to main content
       </a>
       <ErrorBoundary>
-        <Header />
+        <Suspense fallback={<div className="bg-[#e8dcc3] shadow-md z-30 h-16 animate-pulse" />}>
+          <Header />
+        </Suspense>
       </ErrorBoundary>
       <main id="main-content" className="flex-grow relative overflow-hidden" role="main">
         <ErrorBoundary>
-          <div className="w-full h-full">
-            {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
-          </div>
+          <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading map...</div>}>
+            <div className="w-full h-full">
+              {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
+            </div>
+          </Suspense>
         </ErrorBoundary>
         <ErrorBoundary>
-          <ListingsPanel />
+          <Suspense fallback={<div className="w-full md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse" />}>
+            <ListingsPanel />
+          </Suspense>
         </ErrorBoundary>
 
         {isShopOverlayOpen && selectedShop && (

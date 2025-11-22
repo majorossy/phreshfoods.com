@@ -1,17 +1,15 @@
 // src/components/Filters/ProductFilters.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useFilters } from '../../contexts/FilterContext';
 import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
 
 const ProductFilters: React.FC = () => {
-  const { activeProductFilters, setActiveProductFilters } = useFilters();
+  const { activeProductFilters, toggleFilter, clearAllFilters } = useFilters();
 
-  const handleFilterChange = (filterId: string) => {
-    setActiveProductFilters(prevFilters => ({
-      ...prevFilters,
-      [filterId]: !prevFilters[filterId],
-    }));
-  };
+  // Use the optimized toggleFilter from context instead of local handler
+  const handleFilterChange = useCallback((filterId: string) => {
+    toggleFilter(filterId);
+  }, [toggleFilter]);
 
   // Memoize the grouping and sorting logic to prevent recalculation on every render
   const filtersGroupedByCategory = useMemo(() => {
@@ -82,7 +80,7 @@ const ProductFilters: React.FC = () => {
       </div>
       {Object.keys(activeProductFilters).some(key => activeProductFilters[key]) && ( // Show "Clear All" only if some filters are active
         <button
-          onClick={() => setActiveProductFilters({})}
+          onClick={clearAllFilters}
           className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"
         >
           Clear All Filters
@@ -92,4 +90,6 @@ const ProductFilters: React.FC = () => {
   );
 };
 
-export default ProductFilters;
+// Memoize component to prevent re-renders when parent re-renders
+// Only re-renders when activeProductFilters from context changes
+export default React.memo(ProductFilters);

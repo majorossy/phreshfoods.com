@@ -3,6 +3,38 @@ import {
   AUTO_ZOOM_PADDING_PERCENT,
   DESKTOP_BREAKPOINT_PX,
 } from '../config/map';
+import type { AutocompletePlace } from '../types';
+
+/**
+ * Extract google.maps.LatLng from an AutocompletePlace's geometry.location
+ * Handles both LatLng objects and LatLngLiteral objects
+ *
+ * @param place - AutocompletePlace with geometry.location
+ * @returns google.maps.LatLng or null if extraction fails
+ */
+export function extractLatLngFromPlace(place: AutocompletePlace | null | undefined): google.maps.LatLng | null {
+  if (!place?.geometry?.location) {
+    return null;
+  }
+
+  const location = place.geometry.location;
+
+  // Check if it's already a LatLng object (has lat() and lng() methods)
+  if (typeof (location as google.maps.LatLng).lat === 'function') {
+    return location as google.maps.LatLng;
+  }
+
+  // Check if it's a LatLngLiteral (plain object with lat and lng properties)
+  if (typeof (location as google.maps.LatLngLiteral).lat === 'number') {
+    return new window.google.maps.LatLng(
+      (location as google.maps.LatLngLiteral).lat,
+      (location as google.maps.LatLngLiteral).lng
+    );
+  }
+
+  // Unable to extract LatLng
+  return null;
+}
 
 /**
  * Calculate the horizontal offset needed to account for visible overlays/panels
