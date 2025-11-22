@@ -57,7 +57,41 @@ const toBoolean = (value: string | boolean | number | undefined | null): boolean
 };
 
 /**
- * Fetches and processes farm stand data from the server backend.
+ * Fetches and processes all location data (farm stands + cheese shops) from the server backend.
+ * Uses request caching to prevent duplicate calls and improve performance.
+ *
+ * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
+ * @returns {Promise<Shop[]>} A promise that resolves to an array of location objects.
+ */
+export async function fetchAndProcessLocations(signal?: AbortSignal): Promise<Shop[]> {
+  try {
+    // Use cachedFetch with 5-minute cache duration
+    // This prevents duplicate requests during React Strict Mode and hot reloading
+    const rawData = await cachedFetch<Shop[]>(
+      '/api/locations',
+      { signal }, // Pass abort signal to fetch
+      300000 // 5 minutes cache (locations update hourly)
+    );
+
+    // Process the data
+    let processedData: Shop[] = [];
+    if (Array.isArray(rawData)) {
+      processedData = rawData as Shop[];
+    }
+
+    return processedData;
+
+  } catch (error) {
+    // Don't log errors for aborted requests
+    if (error instanceof Error && error.name === 'AbortError') {
+      return [];
+    }
+    return []; // ALWAYS return an array, even on error
+  }
+}
+
+/**
+ * Fetches and processes farm stand data from the server backend (backward compatibility).
  * Uses request caching to prevent duplicate calls and improve performance.
  *
  * @param {AbortSignal} [signal] - Optional abort signal for request cancellation

@@ -7,7 +7,12 @@ const { Client, Status } = require("@googlemaps/google-maps-services-js");
 
 const GOOGLE_API_KEY_BACKEND = process.env.GOOGLE_API_KEY_BACKEND;
 const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL;
-const OUTPUT_JSON_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
+const GOOGLE_SHEET_URL_CHEESE_SHOPS = process.env.GOOGLE_SHEET_URL_CHEESE_SHOPS;
+const FARM_STANDS_OUTPUT_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
+const CHEESE_SHOPS_OUTPUT_PATH = path.join(__dirname, 'data', 'cheeseShopsData.json');
+
+// Backward compatibility
+const OUTPUT_JSON_PATH = FARM_STANDS_OUTPUT_PATH;
 
 // --- CHANGE THE DELAY HERE ---
 const DELAY_BETWEEN_API_CALLS_MS = 500; // Changed to 500ms (half a second)
@@ -113,10 +118,25 @@ async function geocodeAddressWithDelay(address) {
     }
 }
 
-async function updateFarmStandsData() {
-    console.log('[Processor] Starting farm stands data update process...');
-    if (!GOOGLE_SHEET_URL || GOOGLE_SHEET_URL.includes("YOUR_GOOGLE_SHEET_PUBLISHED_CSV_URL_HERE")) {
-        console.error('[Processor] ERROR: GOOGLE_SHEET_URL is not configured correctly. Aborting.');
+// Product column mappings for different location types
+const FARM_STAND_PRODUCT_COLUMNS = [
+    'beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'eggs',
+    'corn', 'carrots', 'garlic', 'onions', 'potatoes', 'lettuce', 'spinach',
+    'squash', 'tomatoes', 'peppers', 'cucumbers', 'zucchini',
+    'strawberries', 'blueberries'
+];
+
+const CHEESE_SHOP_PRODUCT_COLUMNS = [
+    'cheddar', 'brie', 'gouda', 'mozzarella', 'feta', 'blue_cheese',
+    'parmesan', 'swiss', 'provolone',
+    'cow_milk', 'goat_milk', 'sheep_milk'
+];
+
+// Generic function to process location data of any type
+async function processLocationData(locationType, sheetUrl, outputPath, productColumns) {
+    console.log(`[Processor] Starting ${locationType} data update process...`);
+    if (!sheetUrl || sheetUrl.includes("YOUR_") || sheetUrl.includes("SPREADSHEET_ID")) {
+        console.error(`[Processor] ERROR: Sheet URL for ${locationType} is not configured correctly. Aborting.`);
         return;
     }
     if (!GOOGLE_API_KEY_BACKEND) {
@@ -125,10 +145,9 @@ async function updateFarmStandsData() {
     }
 
     try {
-        // ... (rest of your CSV fetching logic) ...
         // Fetch directly from Google Sheets (follows redirects automatically)
-        console.log(`[Processor] Fetching CSV from sheet...`);
-        const sheetResponse = await fetch(GOOGLE_SHEET_URL, {
+        console.log(`[Processor] Fetching CSV from ${locationType} sheet...`);
+        const sheetResponse = await fetch(sheetUrl, {
             redirect: 'follow'
         });
         if (!sheetResponse.ok) {
@@ -136,36 +155,51 @@ async function updateFarmStandsData() {
         }
         const csvText = await sheetResponse.text();
         if (!csvText || csvText.trim() === "") {
-            console.error("[Processor] No data received from source CSV.");
+            console.error(`[Processor] No data received from ${locationType} CSV.`);
             return;
         }
-        console.log("[Processor] CSV data fetched successfully.");
+        console.log(`[Processor] ${locationType} CSV data fetched successfully.`);
 
         const lines = csvText.trim().split(/\r?\n/);
         if (lines.length < 2) {
-            console.error("[Processor] CSV data has insufficient lines.");
+            console.error(`[Processor] ${locationType} CSV data has insufficient lines.`);
             return;
         }
 
         const headerLine = lines.shift();
         const headers = parseCSVLine(headerLine).map(h => h.trim().toLowerCase());
+
+        // Build header map dynamically based on common and product-specific columns
         const headerMap = {
-            name: headers.indexOf("name"), address: headers.indexOf("address"), city: headers.indexOf("city"),
-            zip: headers.indexOf("zip"), rating: headers.indexOf("rating"), phone: headers.indexOf("phone"),
-            website: headers.indexOf("website"), googleprofileid: headers.indexOf("place id"),
-            imageone: headers.indexOf("image_one"), imagetwo: headers.indexOf("image_two"),
-            imagethree: headers.indexOf("image_three"), xhandle: headers.indexOf("x"),
-            facebookpageid: headers.indexOf("facebook"), instagramusername: headers.indexOf("instagram username"),
+            name: headers.indexOf("name"),
+            address: headers.indexOf("address"),
+            city: headers.indexOf("city"),
+            zip: headers.indexOf("zip"),
+            rating: headers.indexOf("rating"),
+            phone: headers.indexOf("phone"),
+            website: headers.indexOf("website"),
+            googleprofileid: headers.indexOf("place id"),
+            imageone: headers.indexOf("image_one"),
+            imagetwo: headers.indexOf("image_two"),
+            imagethree: headers.indexOf("image_three"),
+            xhandle: headers.indexOf("x"),
+            facebookpageid: headers.indexOf("facebook"),
+            instagramusername: headers.indexOf("instagram username"),
             instagramlink: headers.indexOf("instagram"),
-            beef: headers.indexOf("beef"), pork: headers.indexOf("pork"), lamb: headers.indexOf("lamb"),
-            chicken: headers.indexOf("chicken"), turkey: headers.indexOf("turkey"), duck: headers.indexOf("duck"),
-            eggs: headers.indexOf("eggs"), corn: headers.indexOf("corn"), carrots: headers.indexOf("carrots"),
-            garlic: headers.indexOf("garlic"), onions: headers.indexOf("onions"), potatoes: headers.indexOf("potatoes"),
-            lettus: headers.indexOf("lettus"), spinach: headers.indexOf("spinach"), squash: headers.indexOf("squash"),
-            tomatoes: headers.indexOf("tomatoes"), peppers: headers.indexOf("peppers"), cucumbers: headers.indexOf("cucumbers"),
-            zucchini: headers.indexOf("zucchini"), strawberries: headers.indexOf("strawberries"), blueberries: headers.indexOf("blueberries"),
             slugUrl: headers.indexOf("url"),
         };
+
+        // Add product-specific columns to header map
+        productColumns.forEach(product => {
+            // Handle lettuce special case (sheet might have "lettus" or "lettuce")
+            if (product === 'lettuce') {
+                const lettusIdx = headers.indexOf("lettus");
+                const lettuceIdx = headers.indexOf("lettuce");
+                headerMap[product] = lettuceIdx !== -1 ? lettuceIdx : lettusIdx;
+            } else {
+                headerMap[product] = headers.indexOf(product);
+            }
+        });
 
         const processedShops = [];
         const fieldsToFetchFromPlaces = [ /* ... your fields ... */
@@ -189,10 +223,17 @@ async function updateFarmStandsData() {
                 return ['true', '1', 'yes', 't', 'x', 'available'].includes(val);
             };
 
-            const shopName = getStringValue("name") || "Farm Stand (Name Missing)";
+            const shopName = getStringValue("name") || `${locationType} (Name Missing)`;
             const providedSlug = getStringValue("slugUrl").trim();
 
+            // Build products object dynamically based on product columns
+            const products = {};
+            productColumns.forEach(product => {
+                products[product] = getProductBoolean(product);
+            });
+
             let shop = {
+                type: locationType,
                 Name: shopName,
                 Address: getStringValue("address") || "N/A",
                 City: getStringValue("city") || "N/A",
@@ -207,21 +248,17 @@ async function updateFarmStandsData() {
                 InstagramUsername: getStringValue("instagramusername"),
                 InstagramRecentPostEmbedCode: '',
                 InstagramLink: getStringValue("instagramlink"),
-                ImageOne: getStringValue("imageone"), ImageTwo: getStringValue("imagetwo"), ImageThree: getStringValue("imagethree"),
-                beef: getProductBoolean("beef"), pork: getProductBoolean("pork"), lamb: getProductBoolean("lamb"),
-                chicken: getProductBoolean("chicken"), turkey: getProductBoolean("turkey"), duck: getProductBoolean("duck"),
-                eggs: getProductBoolean("eggs"), corn: getProductBoolean("corn"), carrots: getProductBoolean("carrots"),
-                garlic: getProductBoolean("garlic"), onions: getProductBoolean("onions"), potatoes: getProductBoolean("potatoes"),
-                lettus: getProductBoolean("lettus"), spinach: getProductBoolean("spinach"), squash: getProductBoolean("squash"),
-                tomatoes: getProductBoolean("tomatoes"), peppers: getProductBoolean("peppers"), cucumbers: getProductBoolean("cucumbers"),
-                zucchini: getProductBoolean("zucchini"), strawberries: getProductBoolean("strawberries"), blueberries: getProductBoolean("blueberries"),
+                ImageOne: getStringValue("imageone"),
+                ImageTwo: getStringValue("imagetwo"),
+                ImageThree: getStringValue("imagethree"),
+                products: products,
                 lat: null,
                 lng: null,
                 placeDetails: {}
             };
 
 
-            if (!shop.Name || shop.Name === "Farm Stand (Name Missing)" || shop.Name.trim() === "N/A") {
+            if (!shop.Name || shop.Name.includes("(Name Missing)") || shop.Name.trim() === "N/A") {
                 console.log(`[Processor] Skipping row due to missing or invalid Name: ${line.substring(0, 50)}...`);
                 continue;
             }
@@ -297,21 +334,47 @@ async function updateFarmStandsData() {
             }
         }
 
-        await fs.ensureDir(path.dirname(OUTPUT_JSON_PATH));
-        await fs.writeJson(OUTPUT_JSON_PATH, processedShops, { spaces: 2 });
-        console.log(`[Processor] Successfully processed ${processedShops.length} farm stands and saved to ${OUTPUT_JSON_PATH}`);
+        await fs.ensureDir(path.dirname(outputPath));
+        await fs.writeJson(outputPath, processedShops, { spaces: 2 });
+        console.log(`[Processor] Successfully processed ${processedShops.length} ${locationType} locations and saved to ${outputPath}`);
 
     } catch (error) {
-        console.error("[Processor] Error during farm stands data update process:", error);
+        console.error(`[Processor] Error during ${locationType} data update process:`, error);
     }
 }
 
-module.exports = { updateFarmStandsData };
+// Wrapper function for farm stands (backward compatibility)
+async function updateFarmStandsData() {
+    return await processLocationData('farm_stand', GOOGLE_SHEET_URL, FARM_STANDS_OUTPUT_PATH, FARM_STAND_PRODUCT_COLUMNS);
+}
+
+// New function for cheese shops
+async function updateCheeseShopsData() {
+    return await processLocationData('cheese_shop', GOOGLE_SHEET_URL_CHEESE_SHOPS, CHEESE_SHOPS_OUTPUT_PATH, CHEESE_SHOP_PRODUCT_COLUMNS);
+}
+
+// Function to update all location types
+async function updateAllLocationData() {
+    console.log('[Processor] Starting update for all location types...');
+    await updateFarmStandsData();
+    if (GOOGLE_SHEET_URL_CHEESE_SHOPS && !GOOGLE_SHEET_URL_CHEESE_SHOPS.includes("YOUR_") && !GOOGLE_SHEET_URL_CHEESE_SHOPS.includes("SPREADSHEET_ID")) {
+        await updateCheeseShopsData();
+    } else {
+        console.log('[Processor] Cheese shops sheet URL not configured, skipping...');
+    }
+    console.log('[Processor] All location data updated.');
+}
+
+module.exports = {
+    updateFarmStandsData,
+    updateCheeseShopsData,
+    updateAllLocationData
+};
 
 // if require.main === module block
 if (require.main === module) {
     console.log('Running processor directly...');
-    updateFarmStandsData().then(() => {
+    updateAllLocationData().then(() => {
         console.log('Direct run finished.');
         process.exit(0);
     }).catch(err => {
