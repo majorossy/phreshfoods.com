@@ -1,9 +1,10 @@
 // src/utils/shopFilters.ts
-import { Shop, ShopWithDistance, AutocompletePlace } from '../types';
+import { Shop, ShopWithDistance, AutocompletePlace, LocationType } from '../types';
 import { METERS_PER_MILE, MILES_PER_METER } from '../config/appConfig';
 
 export interface FilterOptions {
   productFilters: Record<string, boolean>;
+  locationTypes: Set<LocationType>; // NEW: location type filter
   location: AutocompletePlace | null;
   radius: number; // in miles
   mapsApiReady: boolean;
@@ -52,7 +53,12 @@ export function filterAndSortShops(
 
   let filteredShops: Shop[] = [...shops];
 
-  // 1. Apply Product Filters
+  // 1. Filter by Location Type (if not all types selected)
+  if (options.locationTypes.size < 2) { // Not "all types"
+    filteredShops = filteredShops.filter(shop => options.locationTypes.has(shop.type));
+  }
+
+  // 2. Apply Product Filters (now works with nested products object)
   const activeFilterKeys = Object.keys(options.productFilters).filter(
     key => options.productFilters[key]
   );
@@ -60,13 +66,14 @@ export function filterAndSortShops(
   if (activeFilterKeys.length > 0) {
     filteredShops = filteredShops.filter((shop: Shop) => {
       return activeFilterKeys.every(filterKey => {
-        const productIsAvailable = !!(shop[filterKey as keyof Shop] as boolean | undefined);
+        // Access products from the nested products object
+        const productIsAvailable = !!(shop.products[filterKey as keyof typeof shop.products]);
         return productIsAvailable;
       });
     });
   }
 
-  // 2. Extract search center coordinates once (reuse for both filtering and distance calculation)
+  // 3. Extract search center coordinates once (reuse for both filtering and distance calculation)
   let searchCenterLatLng: google.maps.LatLng | null = null;
 
   if (
@@ -80,7 +87,7 @@ export function filterAndSortShops(
     }
   }
 
-  // 3. Apply Location/Radius Filter (if we have a search center)
+  // 4. Apply Location/Radius Filter (if we have a search center)
   if (searchCenterLatLng && options.radius > 0) {
     const radiusInMeters = options.radius * METERS_PER_MILE;
 
@@ -106,7 +113,7 @@ export function filterAndSortShops(
     });
   }
 
-  // 4. Calculate Distances and Format for Display (reuse searchCenterLatLng)
+  // 5. Calculate Distances and Format for Display (reuse searchCenterLatLng)
   let shopsWithDistance: ShopWithDistance[] = [];
 
   if (searchCenterLatLng) {
@@ -142,7 +149,7 @@ export function filterAndSortShops(
     }));
   }
 
-  // 5. Sort by distance if available
+  // 6. Sort by distance if available
   if (shopsWithDistance.some(shop => shop.distance !== undefined)) {
     shopsWithDistance.sort(
       (a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity)

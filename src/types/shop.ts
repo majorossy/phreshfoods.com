@@ -64,8 +64,14 @@ export interface PlaceDetails {
   // e.g., international_phone_number, adr_address, types, etc.
 }
 
-// Main Shop interface, combining sheet data and enriched Google data
-export interface Shop {
+// Location type discriminator
+export type LocationType = 'farm_stand' | 'cheese_shop';
+
+// Base interface with common fields shared by all location types
+export interface BaseLocation {
+  // Type discriminator
+  type: LocationType;
+
   // Fields primarily from your Google Sheet
   Name: string; // Should always be present
   Address: string; // Should always be present
@@ -85,30 +91,6 @@ export interface Shop {
   ImageTwo?: string;
   ImageThree?: string;
 
-  // Product booleans (keys should match PRODUCT_ICONS_CONFIG csvHeader values)
-  beef?: boolean;
-  pork?: boolean;
-  lamb?: boolean;
-  chicken?: boolean;
-  turkey?: boolean;
-  duck?: boolean;
-  eggs?: boolean;
-  corn?: boolean;
-  carrots?: boolean;
-  potatoes?: boolean;
-  lettuce?: boolean; // Renamed from 'lettus' for consistency
-  spinach?: boolean;
-  squash?: boolean;
-  tomatoes?: boolean;
-  peppers?: boolean;
-  cucumbers?: boolean;
-  zucchini?: boolean;
-  garlic?: boolean;
-  onions?: boolean;
-  strawberries?: boolean;
-  blueberries?: boolean;
-  // Add any other product fields from your sheet if they become filterable
-
   // Fields derived or enriched, especially after geocoding/Place Details API calls
   lat: number | null; // Can be null if geocoding fails
   lng: number | null; // Can be null if geocoding fails
@@ -121,6 +103,74 @@ export interface Shop {
   // Client-side properties (optional, for UI state if not handled by React state directly)
   distance?: number; // Calculated distance from search center
   // marker?: any; // For Google Maps marker instance - typically managed by Map component's state/refs now
+}
+
+// Farm stand specific products
+export interface FarmStandProducts {
+  beef?: boolean;
+  pork?: boolean;
+  lamb?: boolean;
+  chicken?: boolean;
+  turkey?: boolean;
+  duck?: boolean;
+  eggs?: boolean;
+  corn?: boolean;
+  carrots?: boolean;
+  potatoes?: boolean;
+  lettuce?: boolean;
+  spinach?: boolean;
+  squash?: boolean;
+  tomatoes?: boolean;
+  peppers?: boolean;
+  cucumbers?: boolean;
+  zucchini?: boolean;
+  garlic?: boolean;
+  onions?: boolean;
+  strawberries?: boolean;
+  blueberries?: boolean;
+}
+
+// Cheese shop specific products
+export interface CheeseShopProducts {
+  // Cheese types
+  cheddar?: boolean;
+  brie?: boolean;
+  gouda?: boolean;
+  mozzarella?: boolean;
+  feta?: boolean;
+  blue_cheese?: boolean;
+  parmesan?: boolean;
+  swiss?: boolean;
+  provolone?: boolean;
+
+  // Milk sources
+  cow_milk?: boolean;
+  goat_milk?: boolean;
+  sheep_milk?: boolean;
+}
+
+// Farm stand location type
+export interface FarmStand extends BaseLocation {
+  type: 'farm_stand';
+  products: FarmStandProducts;
+}
+
+// Cheese shop location type
+export interface CheeseShop extends BaseLocation {
+  type: 'cheese_shop';
+  products: CheeseShopProducts;
+}
+
+// Main Shop type as discriminated union
+export type Shop = FarmStand | CheeseShop;
+
+// Type guards for runtime checking
+export function isFarmStand(shop: Shop): shop is FarmStand {
+  return shop.type === 'farm_stand';
+}
+
+export function isCheeseShop(shop: Shop): shop is CheeseShop {
+  return shop.type === 'cheese_shop';
 }
 
 export interface ShopWithDistance extends Shop {

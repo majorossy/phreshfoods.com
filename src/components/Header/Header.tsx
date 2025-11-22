@@ -229,16 +229,16 @@ const Header: React.FC = () => {
           {/* Logo and Title Section */}
           <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
             <img src="/images/flag.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
-            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="Farm Stand Finder - Go to Homepage">
+            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms & Cheese Shops">
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: 'rgb(27, 74, 123)' }}>
-                Farm Stand Finder
+                PhreshFoods
               </h1>
             </Link>
           </div>
 
           {/* Search, Radius, and Filters Section */}
           <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2 w-full sm:w-auto" role="search"> {/* Use gap-x for horizontal spacing */}
-            <label htmlFor="headerSearchAutocompleteClassic" className="sr-only">Search for farm stands by location</label>
+            <label htmlFor="headerSearchAutocompleteClassic" className="sr-only">Search for local farms and cheese shops by location</label>
             <input
               ref={autocompleteInputRef}
               id="headerSearchAutocompleteClassic"
@@ -249,10 +249,10 @@ const Header: React.FC = () => {
               onChange={handleInputChange}
               onBlur={handleInputBlur}
               onKeyDown={handleInputKeyDown}
-              aria-label="Search for farm stands by zip code, city, or address"
+              aria-label="Search for local farms and cheese shops by zip code, city, or address"
               aria-describedby="search-hint"
             />
-            <span id="search-hint" className="sr-only">Start typing to search for farm stands near you</span>
+            <span id="search-hint" className="sr-only">Start typing to search for local farms and cheese shops near you</span>
             <div className="flex items-center gap-1">
               <label htmlFor="radiusSliderHeader" className="text-xs sm:text-sm font-medium whitespace-nowrap text-gray-700">Radius:</label>
               <input

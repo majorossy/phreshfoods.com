@@ -31,7 +31,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     // Use slug if available, otherwise use GoogleProfileID as fallback
     const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
 
-    navigate(`/farm/${urlIdentifier}`);
+    // Route based on location type
+    const basePath = shop.type === 'cheese_shop' ? '/cheese' : '/farm';
+    navigate(`${basePath}/${urlIdentifier}`);
   };
 
   // Google Place Details data is already safe (comes from Google API), only escape our own data
@@ -96,12 +98,25 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
 
       {/* Content Section */}
       <div className="p-4 flex-grow flex flex-col space-y-2"> {/* Uniform padding and spacing */}
-        <h2
-          className="text-md lg:text-lg font-semibold text-gray-800 dark:text-gray-100 leading-tight line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400"
-          title={displayName}
-        >
-          {displayName}
-        </h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2
+            className="text-md lg:text-lg font-semibold text-gray-800 dark:text-gray-100 leading-tight line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-1"
+            title={displayName}
+          >
+            {displayName}
+          </h2>
+          {/* Location Type Badge */}
+          <span
+            className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${
+              shop.type === 'farm_stand'
+                ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
+                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100'
+            }`}
+            title={shop.type === 'farm_stand' ? 'Farm Stand' : 'Cheese Shop'}
+          >
+            {shop.type === 'farm_stand' ? 'Farm' : 'Cheese'}
+          </span>
+        </div>
 
         {/* Rating moved up for prominence */}
         {(displayRating !== "N/A" || (typeof displayReviewCount === 'number' && displayReviewCount > 0)) && (

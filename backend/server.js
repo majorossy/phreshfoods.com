@@ -9,13 +9,14 @@ const compression = require('compression'); // Response compression
 const rateLimit = require('express-rate-limit'); // Rate limiting
 const { Client, Status } = require("@googlemaps/google-maps-services-js");
 const cacheService = require('./cacheService'); // For on-demand API call caching
-const { updateFarmStandsData } = require('./processSheetData'); // Import the processor
+const { updateFarmStandsData, updateAllLocationData } = require('./processSheetData'); // Import the processor
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const GOOGLE_API_KEY_BACKEND = process.env.GOOGLE_API_KEY_BACKEND; // Still needed for on-demand calls
 const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL; // Used by processSheetData.js
 const FARM_STANDS_DATA_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
+const CHEESE_SHOPS_DATA_PATH = path.join(__dirname, 'data', 'cheeseShopsData.json');
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
 
@@ -233,6 +234,14 @@ const farmStandsCache = {
     etag: null
 };
 
+// In-memory cache for unified locations data (farm stands + cheese shops)
+const locationsCache = {
+    data: null,
+    lastModifiedFarms: null,
+    lastModifiedCheese: null,
+    etag: null
+};
+
 // Track ongoing data updates to prevent duplicate updates and allow waiting
 // Use object to prevent race conditions during assignment
 const updateTracker = {
@@ -250,7 +259,7 @@ async function ensureDataUpdate() {
 
     // Start new update with proper locking
     updateTracker.isUpdating = true;
-    updateTracker.promise = updateFarmStandsData().finally(() => {
+    updateTracker.promise = updateAllLocationData().finally(() => {
         updateTracker.isUpdating = false;
         updateTracker.promise = null;
     });
@@ -359,6 +368,138 @@ app.get('/api/farm-stands', async (req, res) => {
                 // Unknown error - generic 500
                 res.status(500).json({
                     error: "An unexpected error occurred while fetching farm stands."
+                });
+            }
+        }
+    }
+});
+
+// Unified endpoint to get all locations (farm stands + cheese shops) with ETag caching
+app.get('/api/locations', async (req, res) => {
+    try {
+        console.log('[Locations API] Request received');
+
+        // If an update is in progress, wait for it to complete
+        if (updateTracker.isUpdating && updateTracker.promise) {
+            console.log('[Locations API] Waiting for ongoing data update to complete...');
+            try {
+                await updateTracker.promise;
+            } catch (err) {
+                console.error('[Locations API] Ongoing update failed:', err);
+            }
+        }
+
+        // Check if both data files exist
+        const farmStandsExist = await fs.pathExists(FARM_STANDS_DATA_PATH);
+        const cheeseShopsExist = await fs.pathExists(CHEESE_SHOPS_DATA_PATH);
+
+        if (!farmStandsExist) {
+            console.warn(`[Locations API] Farm stands data file not found. Generating...`);
+            await ensureDataUpdate();
+
+            if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
+                console.error(`[Locations API] Failed to generate farm stands data file`);
+                return res.status(503).json({
+                    error: "Location data is currently unavailable. Please try again shortly."
+                });
+            }
+        }
+
+        // Get file stats for both files for cache validation
+        const farmStats = await fs.stat(FARM_STANDS_DATA_PATH);
+        const farmModTime = farmStats.mtime.getTime();
+
+        let cheeseModTime = null;
+        if (cheeseShopsExist) {
+            const cheeseStats = await fs.stat(CHEESE_SHOPS_DATA_PATH);
+            cheeseModTime = cheeseStats.mtime.getTime();
+        }
+
+        // Check if browser has current version (ETag validation)
+        const clientETag = req.headers['if-none-match'];
+
+        // Check memory cache first
+        const cacheValid = locationsCache.lastModifiedFarms === farmModTime &&
+                           locationsCache.lastModifiedCheese === cheeseModTime &&
+                           locationsCache.data;
+
+        if (cacheValid) {
+            console.log('[Locations API] Memory cache HIT');
+
+            // Browser has current version - send 304 Not Modified
+            if (clientETag && clientETag === locationsCache.etag) {
+                console.log('[Locations API] Client cache valid - 304 Not Modified');
+                return res.status(304).end();
+            }
+
+            // Send from memory cache with proper headers
+            res.set({
+                'ETag': locationsCache.etag,
+                'Cache-Control': 'public, max-age=3600, must-revalidate',
+                'Last-Modified': new Date(Math.max(farmModTime, cheeseModTime || 0)).toUTCString(),
+                'X-Cache': 'HIT'
+            });
+            return res.json(locationsCache.data);
+        }
+
+        // Memory cache miss - read from disk and merge
+        console.log('[Locations API] Cache MISS - reading from disk');
+        const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
+        let cheeseShops = [];
+
+        if (cheeseShopsExist) {
+            try {
+                cheeseShops = await fs.readJson(CHEESE_SHOPS_DATA_PATH);
+                console.log(`[Locations API] Loaded ${cheeseShops.length} cheese shops`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load cheese shops, continuing with farms only:', err.message);
+            }
+        } else {
+            console.log('[Locations API] Cheese shops data file not found, serving farms only');
+        }
+
+        // Merge both arrays
+        const allLocations = [...farmStands, ...cheeseShops];
+        const etag = `"${farmModTime}-${cheeseModTime || 0}-${allLocations.length}"`;
+
+        // Update memory cache
+        locationsCache.data = allLocations;
+        locationsCache.lastModifiedFarms = farmModTime;
+        locationsCache.lastModifiedCheese = cheeseModTime;
+        locationsCache.etag = etag;
+
+        console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops = ${allLocations.length} total locations (cache updated)`);
+
+        // Send with cache headers
+        res.set({
+            'ETag': etag,
+            'Cache-Control': 'public, max-age=3600, must-revalidate',
+            'Last-Modified': new Date(Math.max(farmModTime, cheeseModTime || 0)).toUTCString(),
+            'X-Cache': 'MISS'
+        });
+        res.json(allLocations);
+
+    } catch (error) {
+        console.error('[Locations API] ERROR:', error);
+        if (!res.headersSent) {
+            // Differentiate between error types
+            if (error.code === 'ENOENT') {
+                res.status(503).json({
+                    error: "Location data is temporarily unavailable. Please try again in a few moments."
+                });
+            } else if (error instanceof SyntaxError) {
+                console.error('[Locations API] Data file corrupted');
+                res.status(500).json({
+                    error: "Data file is corrupted. Please contact support."
+                });
+            } else if (error.code === 'EACCES' || error.code === 'EPERM') {
+                console.error('[Locations API] Permission denied');
+                res.status(500).json({
+                    error: "Server configuration error. Please contact support."
+                });
+            } else {
+                res.status(500).json({
+                    error: "An unexpected error occurred while fetching locations."
                 });
             }
         }
@@ -481,13 +622,13 @@ app.get('/api/cache/flush-and-refresh', async (req, res) => { // Renamed for cla
 
 
 // --- Cron Job Scheduling ---
-const CRON_SCHEDULE = process.env.DATA_REFRESH_SCHEDULE || '1 * * * *'; // Default to every 4 hours
+const CRON_SCHEDULE = process.env.DATA_REFRESH_SCHEDULE || '1 * * * *'; // Default to hourly
 if (cron.validate(CRON_SCHEDULE)) {
-    console.log(`Scheduling farm stand data update with cron expression: ${CRON_SCHEDULE}`);
+    console.log(`Scheduling location data update (all types) with cron expression: ${CRON_SCHEDULE}`);
     cron.schedule(CRON_SCHEDULE, () => {
-        console.log(`[${new Date().toISOString()}] Running scheduled farm stand data update...`);
-        updateFarmStandsData().catch(err => { // Added catch for scheduled job
-            console.error(`[${new Date().toISOString()}] Scheduled farm stand data update FAILED:`, err);
+        console.log(`[${new Date().toISOString()}] Running scheduled location data update...`);
+        updateAllLocationData().catch(err => { // Update all location types
+            console.error(`[${new Date().toISOString()}] Scheduled location data update FAILED:`, err);
         });
     });
 } else {
@@ -506,19 +647,19 @@ setTimeout(async () => {
             const stats = await fs.stat(FARM_STANDS_DATA_PATH);
             if ((Date.now() - stats.mtime.getTime()) < MAX_DATA_AGE_MS) {
                 needsInitialUpdate = false;
-                console.log(`Initial farm stand data file is recent. Skipping immediate update. Next update via cron: ${CRON_SCHEDULE}`);
+                console.log(`Initial location data files are recent. Skipping immediate update. Next update via cron: ${CRON_SCHEDULE}`);
             } else {
-                console.log('Initial farm stand data file is old. Triggering update...');
+                console.log('Initial location data files are old. Triggering update...');
             }
         } else {
-            console.log('Initial farm stand data file not found. Triggering update...');
+            console.log('Initial location data files not found. Triggering update...');
         }
 
         if (needsInitialUpdate) {
             await ensureDataUpdate();
         }
     } catch (err) {
-        console.error('Error during initial farm stand data check/update:', err);
+        console.error('Error during initial location data check/update:', err);
     }
 }, INITIAL_REFRESH_DELAY_MS);
 
