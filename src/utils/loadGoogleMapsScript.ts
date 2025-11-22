@@ -55,6 +55,18 @@ export function loadGoogleMapsScript(): Promise<void> {
       resolve();
     };
 
+    // Listen for Google Maps API errors (auth failures, quota exceeded, etc.)
+    (window as any).gm_authFailure = () => {
+      isLoading = false;
+      const error = new Error(
+        'Google Maps authentication failed. The API key may have restrictions that block this website. ' +
+        'Please contact support if this issue persists.'
+      );
+      loadError = error;
+      window.dispatchEvent(new CustomEvent('google-maps-api-error', { detail: error }));
+      reject(error);
+    };
+
     // Create and append the script tag
     const script = document.createElement('script');
     script.async = true;

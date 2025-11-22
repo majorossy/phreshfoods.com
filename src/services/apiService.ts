@@ -4,6 +4,7 @@
 import { Shop, PlaceDetails, GeoLocation } from '../types'; // Assuming your types are in ../types
 import { retryAsync } from '../utils/retry';
 import { cachedFetch } from '../utils/requestCache';
+import { parseGoogleMapsError, logGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
 import {
   API_RETRY_GEOCODE_MAX,
   API_RETRY_GEOCODE_DELAY_MS,
@@ -151,10 +152,14 @@ export async function geocodeAddressClient(address: string, signal?: AbortSignal
       const response = await fetch(`/api/geocode?address=${encodeURIComponent(address.trim())}`, { signal });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Geocoding request failed" }));
-        throw new Error(
-          (errorData as { error?: string }).error ||
-          `Geocoding request failed: ${response.statusText}`
-        );
+        const errorMessage = (errorData as { error?: string }).error || `Geocoding request failed: ${response.statusText}`;
+
+        // Parse and log Google Maps API errors
+        logGoogleMapsError(errorMessage, 'Geocoding');
+        const errorInfo = parseGoogleMapsError(errorMessage);
+
+        // Throw user-friendly error message
+        throw new Error(formatErrorMessage(errorInfo));
       }
       return await response.json() as GeocodeResponse;
     }, {
@@ -164,6 +169,10 @@ export async function geocodeAddressClient(address: string, signal?: AbortSignal
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       return null;
+    }
+    // Log other errors
+    if (error instanceof Error) {
+      logGoogleMapsError(error, 'Geocoding');
     }
     return null;
   }
@@ -187,10 +196,14 @@ export async function getPlaceDetailsClient(placeId: string, fields?: string): P
       const response = await fetch(`/api/places/details?placeId=${encodeURIComponent(placeId)}${fieldQuery}`);
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: "Fetching place details failed" }));
-        throw new Error(
-          (errorData as { error?: string }).error ||
-          `Place details request failed: ${response.statusText}`
-        );
+        const errorMessage = (errorData as { error?: string }).error || `Place details request failed: ${response.statusText}`;
+
+        // Parse and log Google Maps API errors
+        logGoogleMapsError(errorMessage, 'Place Details');
+        const errorInfo = parseGoogleMapsError(errorMessage);
+
+        // Throw user-friendly error message
+        throw new Error(formatErrorMessage(errorInfo));
       }
       return await response.json() as Partial<PlaceDetails>;
     }, {
@@ -198,6 +211,9 @@ export async function getPlaceDetailsClient(placeId: string, fields?: string): P
       delayMs: API_RETRY_GEOCODE_DELAY_MS,
     });
   } catch (error) {
+    if (error instanceof Error) {
+      logGoogleMapsError(error, 'Place Details');
+    }
     return null;
   }
 }
@@ -247,7 +263,13 @@ export async function getDirectionsClient(
         const errorMessage = (errorData as { error?: string; details?: string }).error ||
                              (errorData as { error?: string; details?: string }).details ||
                              `Directions request failed: ${response.statusText}`;
-        throw new Error(errorMessage);
+
+        // Parse and log Google Maps API errors
+        logGoogleMapsError(errorMessage, 'Directions');
+        const errorInfo = parseGoogleMapsError(errorMessage);
+
+        // Throw user-friendly error message
+        throw new Error(formatErrorMessage(errorInfo));
       }
       return await response.json() as DirectionsResponse;
     }, {
@@ -255,6 +277,9 @@ export async function getDirectionsClient(
       delayMs: API_RETRY_GEOCODE_DELAY_MS,
     });
   } catch (error) {
+    if (error instanceof Error) {
+      logGoogleMapsError(error, 'Directions');
+    }
     return null;
   }
 }

@@ -4,6 +4,7 @@ import { AutocompletePlace } from '../types';
 import { getCookie, setCookie, eraseCookie } from '../utils/cookieHelper';
 import { getLoadError } from '../utils/loadGoogleMapsScript';
 import { useToast } from './ToastContext';
+import { parseGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
 import {
   LAST_SEARCHED_LOCATION_COOKIE_NAME,
   COOKIE_EXPIRY_DAYS,
@@ -44,7 +45,10 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
 
     const handleApiError = ((event: CustomEvent) => {
       const error = event.detail as Error;
-      showError(error.message || 'Failed to load Google Maps. Please refresh the page.');
+      // Parse error for user-friendly message
+      const errorInfo = parseGoogleMapsError(error);
+      const userMessage = formatErrorMessage(errorInfo);
+      showError(userMessage);
     }) as EventListener;
 
     if (window.googleMapsApiLoaded && window.google?.maps?.DirectionsService) {
@@ -56,7 +60,9 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
       // Check if there was already a load error before this component mounted
       const loadError = getLoadError();
       if (loadError) {
-        showError(loadError.message);
+        const errorInfo = parseGoogleMapsError(loadError);
+        const userMessage = formatErrorMessage(errorInfo);
+        showError(userMessage);
       }
     }
 

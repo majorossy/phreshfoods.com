@@ -235,7 +235,8 @@ const MapComponent: React.FC = () => {
       return;
     }
 
-    console.log('MapComponent: Updating markers for', currentlyDisplayedLocations.length, 'locations');
+    // Debug logging (only in dev mode if needed)
+    // console.log('MapComponent: Updating markers for', currentlyDisplayedLocations.length, 'locations');
 
     const newMarkersMap = new Map<string, google.maps.marker.AdvancedMarkerElement>();
 

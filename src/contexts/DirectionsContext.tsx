@@ -1,6 +1,7 @@
 // src/contexts/DirectionsContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo, useRef } from 'react';
 import { useToast } from './ToastContext';
+import { parseGoogleMapsError, logGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
 
 interface DirectionsContextType {
   directionsResult: google.maps.DirectionsResult | null;
@@ -78,14 +79,21 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
         if (response.status === 'OK') {
           setDirectionsResult(response);
         } else {
-          const errorMsg = 'Could not retrieve directions: ' + response.status;
+          // Parse Google Maps API error status
+          const errorInfo = parseGoogleMapsError(response.status);
+          const errorMsg = formatErrorMessage(errorInfo);
+          logGoogleMapsError(response.status, 'Directions (DirectionsService)');
           setDirectionsError(errorMsg);
           showError(errorMsg);
         }
       } catch (error) {
-        const errorMsg = 'An error occurred while fetching directions.';
-        setDirectionsError(errorMsg);
-        showError(errorMsg);
+        // Parse and log the error
+        const errorMessage = error instanceof Error ? error.message : 'An error occurred while fetching directions.';
+        logGoogleMapsError(errorMessage, 'Directions (DirectionsService)');
+        const errorInfo = parseGoogleMapsError(errorMessage);
+        const userMsg = formatErrorMessage(errorInfo);
+        setDirectionsError(userMsg);
+        showError(userMsg);
       } finally {
         setIsFetchingDirections(false);
         pendingRequestRef.current = null;

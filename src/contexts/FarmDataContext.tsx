@@ -39,7 +39,7 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
     setFarmStandsError(null);
 
     try {
-      const fetchedStands = await apiService.fetchAndProcessFarmStands(signal);
+      const fetchedStands = await apiService.fetchAndProcessLocations(signal);
 
       // Don't update state if request was aborted
       if (signal?.aborted) {

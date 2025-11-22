@@ -7,6 +7,7 @@ const cron = require('node-cron'); // For scheduling
 const cors = require('cors'); // CORS middleware
 const compression = require('compression'); // Response compression
 const rateLimit = require('express-rate-limit'); // Rate limiting
+const helmet = require('helmet'); // Security headers
 const { Client, Status } = require("@googlemaps/google-maps-services-js");
 const cacheService = require('./cacheService'); // For on-demand API call caching
 const { updateFarmStandsData, updateAllLocationData } = require('./processSheetData'); // Import the processor
@@ -39,6 +40,49 @@ const PRODUCT_FIELDS = {
 };
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
+
+// CORS configuration - restrict to specific origins in production
+// Security headers with helmet
+// Content Security Policy configured for Google Maps
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Google Maps
+        "https://maps.googleapis.com",
+        "https://maps.gstatic.com"
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Google Maps
+        "https://fonts.googleapis.com"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:",
+        "blob:",
+        "https://*.googleapis.com",
+        "https://*.gstatic.com",
+        "https://*.google.com"
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://*.googleapis.com",
+        "https://*.google.com"
+      ],
+      frameSrc: ["https://www.google.com"],
+      workerSrc: ["blob:"]
+    }
+  },
+  crossOriginEmbedderPolicy: false, // Required for Google Maps
+  crossOriginResourcePolicy: { policy: "cross-origin" } // Required for Google Maps resources
+}));
 
 // CORS configuration - restrict to specific origins in production
 const corsOptions = {

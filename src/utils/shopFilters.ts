@@ -47,12 +47,13 @@ export function filterAndSortShops(
   shops: Shop[],
   options: FilterOptions
 ): ShopWithDistance[] {
-  console.log('filterAndSortShops called with:', {
-    shopCount: shops?.length,
-    productFilters: options.productFilters,
-    locationTypes: Array.from(options.locationTypes),
-    radius: options.radius
-  });
+  // Debug logging (uncomment if needed for debugging)
+  // console.log('filterAndSortShops called with:', {
+  //   shopCount: shops?.length,
+  //   productFilters: options.productFilters,
+  //   locationTypes: Array.from(options.locationTypes),
+  //   radius: options.radius
+  // });
 
   if (!shops || shops.length === 0) {
     return [];

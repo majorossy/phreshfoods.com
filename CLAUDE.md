@@ -243,7 +243,14 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
   - Selected markers: Blue (`#4285F4`) at scale 1.5 (maintains hover color for visual consistency)
 - InfoWindow for shop preview
 - Directions rendering with DirectionsService/DirectionsRenderer
-- Place Autocomplete for location search (Note: Google deprecated `Autocomplete` in favor of `PlaceAutocompleteElement` - migration recommended but not urgent, 12+ months support guaranteed)
+- Place Autocomplete for location search
+
+**⚠️ Google Places Autocomplete Migration Notice:**
+- Current: Using `google.maps.places.Autocomplete` (Header.tsx:113)
+- Recommended: Migrate to `google.maps.places.PlaceAutocompleteElement`
+- Timeline: Not urgent - 12+ months support guaranteed (as of March 2025)
+- Migration guide: https://developers.google.com/maps/documentation/javascript/places-migration-overview
+- Note: You'll see deprecation warnings in the browser console until migration is complete
 
 **Overlays:**
 - **Shop Details Overlay** - Tabbed interface with:
