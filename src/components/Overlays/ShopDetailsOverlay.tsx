@@ -14,6 +14,12 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
   const [activeTab, setActiveTab] = useState('info');
+  const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
+
+  // When the overlay opens for a new shop, reset collapse state
+  useEffect(() => {
+    setIsCollapsed(false); // Reset to expanded state when shop changes
+  }, [shop]);
 
   // Focus management: focus close button when overlay opens
   useEffect(() => {
@@ -107,10 +113,50 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
     <div
       id="detailsOverlayShop"
       className="detail-pop-overlay custom-scrollbar is-open"
+      style={{
+        transform: isCollapsed ? 'translateX(100%)' : 'translateX(0)',
+        transition: 'transform 0.3s ease-in-out'
+      }}
       role="dialog"
       aria-modal="true"
       aria-labelledby="shop-name-heading"
     >
+      {/* Collapse/Expand Button */}
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsCollapsed(!isCollapsed);
+        }}
+        className={`
+          absolute top-1/2 -translate-y-1/2 left-0 -translate-x-full z-[60]
+          bg-white dark:bg-gray-800
+          hover:bg-gray-50 dark:hover:bg-gray-700
+          border border-gray-300 dark:border-gray-600
+          rounded-l-lg shadow-md
+          flex items-center justify-center
+          transition-all duration-200
+        `}
+        style={{
+          width: '32px',
+          height: '80px',
+        }}
+        aria-label={isCollapsed ? 'Expand shop details overlay' : 'Collapse shop details overlay'}
+        title={isCollapsed ? 'Expand shop details overlay' : 'Collapse shop details overlay'}
+        type="button"
+      >
+        <svg
+          className="w-5 h-5 text-gray-600 transition-transform duration-300"
+          style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          aria-hidden="true"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+
       <button
         ref={closeButtonRef}
         onClick={onClose}
