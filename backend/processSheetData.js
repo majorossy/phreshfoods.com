@@ -248,6 +248,9 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
 
             const shopName = getStringValue("name") || `${locationType} (Name Missing)`;
             const providedSlug = getStringValue("slugUrl").trim();
+            // Ignore the provided slug if it's a URL - generate a proper slug from the name instead
+            const isUrl = providedSlug.startsWith('http://') || providedSlug.startsWith('https://');
+            const finalSlug = (providedSlug && !isUrl) ? providedSlug : generateSlug(shopName);
 
             // Build products object dynamically based on product columns
             const products = {};
@@ -265,7 +268,7 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
                 Phone: getStringValue("phone"),
                 Website: getStringValue("website"),
                 GoogleProfileID: getStringValue("googleprofileid"),
-                slug: providedSlug || generateSlug(shopName),
+                slug: finalSlug,
                 XHandle: getStringValue("xhandle"),
                 FacebookPageID: getStringValue("facebookpageid"),
                 InstagramUsername: getStringValue("instagramusername"),
@@ -332,6 +335,7 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
                 shop.Address = googlePlaceAPIData.formatted_address || shop.Address;
 
                 shop.placeDetails = {
+                    place_id: googlePlaceAPIData.place_id,
                     name: googlePlaceAPIData.name,
                     formatted_address: googlePlaceAPIData.formatted_address,
                     rating: googlePlaceAPIData.rating,

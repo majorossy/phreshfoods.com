@@ -322,12 +322,11 @@ const MapComponent: React.FC = () => {
 
       if (isHovered || isSelected) {
         // Hover or Selected state - use Maine state flag image with larger scale
-        // Increase scale by 25% (1.6 -> 2.0 for hover, 1.5 -> 1.875 for selected)
-        scale = isHovered ? 'scale(2.0)' : 'scale(1.875)';
+        scale = isHovered ? 'scale(2.0)' : 'scale(2.08125)';
 
         // Use Maine state flag image
         backgroundImage = 'url(https://www.maine.gov/sos/kids/themes/kids/images/flag.gif)';
-        backgroundColor = ''; // Clear backgroundColor when using image
+        backgroundColor = '';
 
         zIndex = isHovered ? MARKER_HOVER_Z_INDEX : MARKER_SELECTED_Z_INDEX;
       }
@@ -339,31 +338,40 @@ const MapComponent: React.FC = () => {
                           (hoverChanged && (isHovered || wasHovered));
 
       if (needsUpdate) {
-        // Target the inner marker element (first child of wrapper)
         const innerMarker = (marker.content as HTMLElement).firstChild as HTMLElement;
         if (innerMarker) {
-          // Only update transform if changed
+          // Update transform (scale)
           if (innerMarker.style.transform !== scale) {
             innerMarker.style.transform = scale;
           }
 
-          // Only update background if changed
+          // Update background image or color
           if (backgroundImage) {
             if (innerMarker.style.backgroundImage !== backgroundImage) {
               innerMarker.style.backgroundImage = backgroundImage;
-              innerMarker.style.backgroundSize = 'cover';
-              innerMarker.style.backgroundPosition = 'center';
+              innerMarker.style.backgroundSize = `${100 + 48}%`; // Zoom: 100% base + 48% additional
+              innerMarker.style.backgroundPosition = `${50 + 2}% ${50 + 16}%`; // Position: 2% right, 16% down
               innerMarker.style.backgroundColor = '';
             }
           } else {
             if (innerMarker.style.backgroundColor !== backgroundColor) {
               innerMarker.style.backgroundImage = '';
               innerMarker.style.backgroundColor = backgroundColor;
+              innerMarker.style.backgroundSize = '';
+              innerMarker.style.backgroundPosition = '';
             }
+          }
+
+          // Update border width (thinner when selected/hovered)
+          const borderWidth = (isHovered || isSelected)
+            ? `${MARKER_BORDER_WIDTH_PX * 0.5}px`
+            : `${MARKER_BORDER_WIDTH_PX}px`;
+          if (innerMarker.style.borderWidth !== borderWidth) {
+            innerMarker.style.borderWidth = borderWidth;
           }
         }
 
-        // Only update zIndex if changed
+        // Update z-index
         if (marker.zIndex !== zIndex) {
           marker.zIndex = zIndex;
         }

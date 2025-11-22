@@ -227,6 +227,9 @@ function App() {
           <Route path="/" element={<React.Fragment />} />
           <Route path="/farm/:slug" element={<React.Fragment />} />
           <Route path="/cheese/:slug" element={<React.Fragment />} />
+          <Route path="/fish/:slug" element={<React.Fragment />} />
+          <Route path="/butcher/:slug" element={<React.Fragment />} />
+          <Route path="/antique/:slug" element={<React.Fragment />} />
       </Routes>
     </div>
   );

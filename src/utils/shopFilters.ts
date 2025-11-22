@@ -47,14 +47,6 @@ export function filterAndSortShops(
   shops: Shop[],
   options: FilterOptions
 ): ShopWithDistance[] {
-  // Debug logging (uncomment if needed for debugging)
-  // console.log('filterAndSortShops called with:', {
-  //   shopCount: shops?.length,
-  //   productFilters: options.productFilters,
-  //   locationTypes: Array.from(options.locationTypes),
-  //   radius: options.radius
-  // });
-
   if (!shops || shops.length === 0) {
     return [];
   }
@@ -62,7 +54,8 @@ export function filterAndSortShops(
   let filteredShops: Shop[] = [...shops];
 
   // 1. Filter by Location Type (if not all types selected)
-  if (options.locationTypes.size < 2) { // Not "all types"
+  // Total location types: farm_stand, cheese_shop, fish_monger, butcher, antique_shop = 5
+  if (options.locationTypes.size < 5) { // Not "all types"
     filteredShops = filteredShops.filter(shop => {
       // Support both single type and types array
       if (Array.isArray(shop.types)) {
@@ -79,7 +72,7 @@ export function filterAndSortShops(
 
   if (activeFilterKeys.length > 0) {
     filteredShops = filteredShops.filter((shop: Shop) => {
-      return activeFilterKeys.every(filterKey => {
+      return activeFilterKeys.some(filterKey => {
         // Access products from the nested products object
         const productIsAvailable = !!(shop.products[filterKey as keyof typeof shop.products]);
         return productIsAvailable;

@@ -10,10 +10,29 @@ interface ShopCardProps {
   shop: ShopWithDistance;
 }
 
+// Helper function to get location type display info
+const getLocationTypeDisplay = (type: string) => {
+  switch (type) {
+    case 'farm_stand':
+      return { emoji: '🌾', label: 'Farm', title: 'Farm Stand', color: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' };
+    case 'cheese_shop':
+      return { emoji: '🧀', label: 'Cheese', title: 'Cheese Shop', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100' };
+    case 'fish_monger':
+      return { emoji: '🐟', label: 'Fish', title: 'Fish Monger', color: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100' };
+    case 'butcher':
+      return { emoji: '🥩', label: 'Butcher', title: 'Butcher Shop', color: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100' };
+    case 'antique_shop':
+      return { emoji: '🏺', label: 'Antiques', title: 'Antique Shop', color: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100' };
+    default:
+      return { emoji: '🏪', label: 'Shop', title: 'Shop', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100' };
+  }
+};
+
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const navigate = useNavigate();
   const { selectedShop, hoveredShop, setHoveredShop } = useUI(); // Get selectedShop and hoveredShop from UI context
   const cardRef = useRef<HTMLDivElement>(null);
+  const locationDisplay = getLocationTypeDisplay(shop.type);
 
   // Scroll card into view when hovered from map
   useEffect(() => {
@@ -32,7 +51,23 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
 
     // Route based on location type
-    const basePath = shop.type === 'cheese_shop' ? '/cheese' : '/farm';
+    let basePath = '/farm'; // default
+    switch (shop.type) {
+      case 'cheese_shop':
+        basePath = '/cheese';
+        break;
+      case 'fish_monger':
+        basePath = '/fish';
+        break;
+      case 'butcher':
+        basePath = '/butcher';
+        break;
+      case 'antique_shop':
+        basePath = '/antique';
+        break;
+      default:
+        basePath = '/farm';
+    }
     navigate(`${basePath}/${urlIdentifier}`);
   };
 
@@ -107,14 +142,10 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           </h2>
           {/* Location Type Badge */}
           <span
-            className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${
-              shop.type === 'farm_stand'
-                ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
-                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100'
-            }`}
-            title={shop.type === 'farm_stand' ? 'Farm Stand' : 'Cheese Shop'}
+            className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${locationDisplay.color}`}
+            title={locationDisplay.title}
           >
-            {shop.type === 'farm_stand' ? '🌾 Farm' : '🧀 Cheese'}
+            {locationDisplay.emoji} {locationDisplay.label}
           </span>
         </div>
 
