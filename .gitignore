@@ -28,3 +28,7 @@ coverage/
 .env
 node_modules/
 dist/
+
+# Generated data files (regenerate via: npm run process-data)
+backend/data/*.json
+!backend/data/.gitkeep

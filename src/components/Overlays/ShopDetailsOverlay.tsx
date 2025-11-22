@@ -1,5 +1,5 @@
 // src/components/Overlays/ShopDetailsOverlay.tsx
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Shop } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
 import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
@@ -13,6 +13,7 @@ interface ShopDetailsOverlayProps {
 const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
+  const [activeTab, setActiveTab] = useState('info');
 
   // Focus management: focus close button when overlay opens
   useEffect(() => {
@@ -22,6 +23,36 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   // Handler for clicking on rating stars to switch to reviews tab
   const handleRatingClick = () => {
     setSocialOverlayActiveTab('reviews');
+  };
+
+  // Tab click handler
+  const handleTabClick = (tabName: string) => {
+    setActiveTab(tabName);
+  };
+
+  // Helper function to get tab classes (3-state system)
+  const getTabClasses = (tabName: string) => {
+    const isActive = activeTab === tabName;
+    if (isActive) {
+      return 'border-b-2 border-current';
+    } else {
+      return 'border-b-2 border-transparent cursor-pointer hover:opacity-80';
+    }
+  };
+
+  // Helper function to get SVG icon classes
+  const getIconClasses = (tabName: string, brandColor: string) => {
+    const isActive = activeTab === tabName;
+    if (isActive) {
+      return brandColor;
+    } else {
+      const brandIconClasses: Record<string, string> = {
+        info: 'text-blue-600 dark:text-blue-400',
+        hours: 'text-green-600 dark:text-green-400',
+        products: 'text-purple-600 dark:text-purple-400',
+      };
+      return brandIconClasses[tabName] || 'text-gray-600 dark:text-gray-400';
+    }
   };
 
   if (!shop) return null;
@@ -83,7 +114,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
       <button
         ref={closeButtonRef}
         onClick={onClose}
-        className="overlay-close-button"
+        className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-50 z-10"
         aria-label="Close shop details"
       >
         <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,7 +122,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
         </svg>
       </button>
 
-      <div className="p-4 sm:p-6 overflow-y-auto h-full">
+      <div className="pt-10 sm:pt-12 shrink-0 px-4 sm:px-6">
         {/* Shop Name */}
         <h2 id="shop-name-heading" className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">
           {displayName}
@@ -131,212 +162,268 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
           </div>
         )}
 
-        {/* Address */}
-        {displayAddress && displayAddress !== 'N/A' && (
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Address</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-start">
-              <svg className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-              </svg>
-              {displayAddress}
-            </p>
-          </div>
-        )}
-
-        {/* Phone */}
-        {displayPhone && (
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</h3>
-            <a
-              href={`tel:${displayPhone}`}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+        {/* Tab Navigation */}
+        <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700">
+          <nav id="shopDetailsTabs" className="flex flex-wrap -mb-px gap-1" aria-label="Tabs">
+            {/* Info Tab */}
+            <button
+              onClick={() => handleTabClick('info')}
+              title="Information"
+              aria-label="View information tab"
+              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('info')}`}
             >
-              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('info', 'text-blue-500 dark:text-blue-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              {displayPhone}
-            </a>
-          </div>
-        )}
+            </button>
 
-        {/* Website */}
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Website</h3>
-          {displayWebsite ? (
-            <a
-              href={displayWebsite}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+            {/* Hours Tab */}
+            <button
+              onClick={() => handleTabClick('hours')}
+              title="Hours"
+              aria-label="View hours tab"
+              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('hours')}`}
             >
-              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('hours', 'text-green-500 dark:text-green-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              Visit Website
-            </a>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+            </button>
+
+            {/* Products Tab */}
+            <button
+              onClick={() => handleTabClick('products')}
+              title="Products"
+              aria-label="View products tab"
+              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('products')}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('products', 'text-purple-500 dark:text-purple-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
               </svg>
-              N/A
-            </p>
-          )}
+            </button>
+          </nav>
         </div>
+      </div>
 
-        {/* Opening Hours - Modern Collapsible Design - Always Visible */}
-        <div className="mb-4">
-          <details className={`group ${parsedHours.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
-            <summary className="flex items-center justify-between cursor-pointer list-none p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Hours</h3>
-                  {parsedHours.length > 0 && parsedHours[todayIndex] ? (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      Today: <span className="font-medium text-gray-700 dark:text-gray-300">{parsedHours[todayIndex].hours}</span>
-                    </p>
-                  ) : (
-                    <p className="text-xs text-gray-400 dark:text-gray-500">No hours available</p>
-                  )}
-                </div>
+      <div className="flex-grow overflow-y-auto custom-scrollbar px-4 sm:px-6 pb-4">
+        {/* Tab Content - Info Tab */}
+        {activeTab === 'info' && (
+          <div id="shop-info-panel">
+            {/* Address */}
+            {displayAddress && displayAddress !== 'N/A' && (
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Address</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 flex items-start">
+                  <svg className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                  </svg>
+                  {displayAddress}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
-                {parsedHours.length > 0 && openingHours?.open_now !== undefined && (
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    openingHours.open_now
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                  }`}>
-                    {openingHours.open_now ? 'Open' : 'Closed'}
-                  </span>
-                )}
-                <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+            )}
+
+            {/* Phone */}
+            {displayPhone && (
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</h3>
+                <a
+                  href={`tel:${displayPhone}`}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+                  </svg>
+                  {displayPhone}
+                </a>
               </div>
-            </summary>
+            )}
+
+            {/* Website */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Website</h3>
+              {displayWebsite ? (
+                <a
+                  href={displayWebsite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+                  </svg>
+                  Visit Website
+                </a>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+                  </svg>
+                  N/A
+                </p>
+              )}
+            </div>
+
+            {/* Google Maps Link */}
+            {shop.placeDetails?.url && (
+              <div className="mt-6">
+                <a
+                  href={shop.placeDetails.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                  </svg>
+                  View on Google Maps
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab Content - Hours Tab */}
+        {activeTab === 'hours' && (
+          <div id="shop-hours-panel">
             {parsedHours.length > 0 ? (
-              <div className="mt-3 space-y-2 px-3 pb-2">
-                {parsedHours.map((dayHours, index) => {
-                  const isToday = index === todayIndex;
-                  return (
-                    <div
-                      key={index}
-                      className={`flex justify-between items-center py-2 px-3 rounded-md transition-colors ${
-                        isToday
-                          ? 'bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      <span className={`text-sm font-medium ${
-                        isToday
-                          ? 'text-blue-700 dark:text-blue-300'
-                          : 'text-gray-600 dark:text-gray-400'
-                      }`}>
-                        {dayHours.day}
-                      </span>
-                      <span className={`text-sm ${
-                        isToday
-                          ? 'font-semibold text-blue-900 dark:text-blue-100'
-                          : 'text-gray-700 dark:text-gray-300'
-                      }`}>
-                        {dayHours.hours}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="mt-3 px-3 pb-2">
-                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Hours information not available</p>
-              </div>
-            )}
-          </details>
-        </div>
+              <>
+                {/* Open/Closed Status */}
+                {openingHours?.open_now !== undefined && (
+                  <div className="mb-4 flex items-center justify-center">
+                    <span className={`px-4 py-2 text-sm font-semibold rounded-full ${
+                      openingHours.open_now
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    }`}>
+                      {openingHours.open_now ? 'Currently Open' : 'Currently Closed'}
+                    </span>
+                  </div>
+                )}
 
-        {/* Products Available - Collapsible Accordion - Always Visible */}
-        <div className="mb-4">
-          <details className={`group ${!hasProducts ? 'opacity-50 pointer-events-none' : ''}`} open={hasProducts}>
-            <summary className="flex items-center justify-between cursor-pointer list-none p-3 bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+                {/* Hours List */}
+                <div className="space-y-2">
+                  {parsedHours.map((dayHours, index) => {
+                    const isToday = index === todayIndex;
+                    return (
+                      <div
+                        key={index}
+                        className={`flex justify-between items-center py-3 px-4 rounded-md transition-colors ${
+                          isToday
+                            ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
+                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <span className={`text-sm font-medium ${
+                          isToday
+                            ? 'text-blue-700 dark:text-blue-300'
+                            : 'text-gray-600 dark:text-gray-400'
+                        }`}>
+                          {dayHours.day}
+                        </span>
+                        <span className={`text-sm ${
+                          isToday
+                            ? 'font-semibold text-blue-900 dark:text-blue-100'
+                            : 'text-gray-700 dark:text-gray-300'
+                        }`}>
+                          {dayHours.hours}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Products</h3>
-                  {hasProducts ? (
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {Object.values(allProducts).flat().filter(p => p.available).length} available of {Object.values(allProducts).flat().length} total
-                    </p>
-                  ) : (
-                    <p className="text-xs text-gray-400 dark:text-gray-500">No products listed</p>
-                  )}
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    No Hours Available
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Hours information not available for this location.
+                  </p>
                 </div>
               </div>
-              <svg className="w-5 h-5 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </summary>
+            )}
+          </div>
+        )}
+
+        {/* Tab Content - Products Tab */}
+        {activeTab === 'products' && (
+          <div id="shop-products-panel">
             {hasProducts ? (
-              <div className="mt-3 space-y-3 px-3 pb-2">
-                {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(allProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
-                  .filter(category => allProducts[category] && allProducts[category].length > 0)
-                  .map((category) => (
-                    <div key={category}>
-                      <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5 capitalize">{category}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {allProducts[category].map(product => (
-                          <div
-                            key={product.id}
-                            className={`flex items-center space-x-1.5 px-2 py-1 rounded-md text-xs ${
-                              product.available
-                                ? 'bg-gray-100 dark:bg-gray-700'
-                                : 'bg-gray-50 dark:bg-gray-800 opacity-60'
-                            }`}
-                          >
-                            <img
-                              src={`/images/icons/${product.icon}`}
-                              alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
-                              className="w-5 h-5 object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = 'none';
-                              }}
-                            />
-                            <span className={product.available ? 'text-gray-700 dark:text-gray-300' : 'text-gray-500 dark:text-gray-500'}>
-                              {product.name}
-                            </span>
-                          </div>
-                        ))}
+              <>
+                {/* Products Summary */}
+                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    <span className="font-semibold text-purple-600 dark:text-purple-400">
+                      {Object.values(allProducts).flat().filter(p => p.available).length}
+                    </span>
+                    {' '}available of{' '}
+                    <span className="font-semibold">
+                      {Object.values(allProducts).flat().length}
+                    </span>
+                    {' '}total products
+                  </p>
+                </div>
+
+                {/* Products by Category */}
+                <div className="space-y-4">
+                  {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(allProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
+                    .filter(category => allProducts[category] && allProducts[category].length > 0)
+                    .map((category) => (
+                      <div key={category}>
+                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
+                          {category}
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {allProducts[category].map(product => (
+                            <div
+                              key={product.id}
+                              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
+                                product.available
+                                  ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
+                                  : 'bg-gray-50 dark:bg-gray-800 opacity-50'
+                              }`}
+                            >
+                              <img
+                                src={`/images/icons/${product.icon}`}
+                                alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
+                                className="w-6 h-6 object-contain"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).style.display = 'none';
+                                }}
+                              />
+                              <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
+                                {product.name}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-              </div>
+                    ))}
+                </div>
+              </>
             ) : (
-              <div className="mt-3 px-3 pb-2">
-                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">Product information not available</p>
+              <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
+                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                    No Products Listed
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Product information not available for this location.
+                  </p>
+                </div>
               </div>
             )}
-          </details>
-        </div>
-
-        {/* Google Maps Link */}
-        {shop.placeDetails?.url && (
-          <div className="mt-6">
-            <a
-              href={shop.placeDetails.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-              </svg>
-              View on Google Maps
-            </a>
           </div>
         )}
       </div>
