@@ -85,6 +85,10 @@ export const mapStyles: MapStyles = {
 
 // Distance and Location Settings
 export const DEFAULT_SEARCH_RADIUS_MILES: number = 20;
+export const RADIUS_SLIDER_MIN_MILES: number = 10;
+export const RADIUS_SLIDER_MAX_MILES: number = 100;
+export const RADIUS_SLIDER_STEP_MILES: number = 5;
+export const RADIUS_DEBOUNCE_MS: number = 300;           // Debounce for radius slider changes
 export const METERS_PER_MILE: number = 1609.34;
 export const MILES_PER_METER: number = 1 / 1609.34;
 
@@ -94,3 +98,38 @@ export const SELECTED_SHOP_PAN_OFFSET_Y: number = 20;  // Pixels to pan down whe
 export const AUTO_ZOOM_PADDING_PERCENT: number = 0.1;  // 10% padding around radius circle when auto-zooming
 export const DESKTOP_BREAKPOINT_PX: number = 768;       // Min width to apply panel offset (tablet/desktop)
 export const MAP_PAN_DELAY_MS: number = 100;            // Delay before applying offset after pan operation
+
+// Marker Styling
+export const MARKER_SIZE_PX: number = 20;              // Size of regular farm stand markers
+export const MARKER_BORDER_WIDTH_PX: number = 2;       // Border width for markers
+export const MARKER_TRANSITION_DURATION_S: string = '0.15s'; // Transition duration for marker animations
+export const MARKER_DEFAULT_SCALE: string = 'scale(1.2)';    // Default marker scale
+export const MARKER_HOVER_SCALE: string = 'scale(1.6)';      // Hovered marker scale
+export const MARKER_SELECTED_SCALE: string = 'scale(1.5)';   // Selected marker scale
+export const MARKER_DEFAULT_Z_INDEX_OFFSET: number = 1;      // Base z-index offset for markers
+export const MARKER_SELECTED_Z_INDEX: number = 1001;         // Z-index for selected markers
+export const MARKER_HOVER_Z_INDEX: number = 2000;            // Z-index for hovered markers
+export const MARKER_HOVER_DEBOUNCE_MS: number = 50;          // Debounce time for marker hover events
+export const MARKER_HOVER_COLOR: string = '#4285F4';         // Google blue for hover/selected state
+
+// Search Location Marker Styling
+export const SEARCH_MARKER_SIZE_PX: number = 30;             // Size of search location marker
+export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 3;      // Border width for search marker
+export const SEARCH_MARKER_INNER_DOT_SIZE_PX: number = 10;   // Size of inner dot in search marker
+export const SEARCH_MARKER_Z_INDEX: number = 9999;           // Z-index for search marker (always on top)
+export const SEARCH_MARKER_COLOR: string = '#4285F4';        // Google blue for search marker
+
+// Search Radius Circle Styling
+export const RADIUS_CIRCLE_FILL_OPACITY: number = 0.1;       // Fill opacity for search radius circle
+export const RADIUS_CIRCLE_STROKE_OPACITY: number = 0.4;     // Stroke opacity for search radius circle
+export const RADIUS_CIRCLE_STROKE_WIDTH: number = 2;         // Stroke width for search radius circle
+export const RADIUS_CIRCLE_Z_INDEX: number = 1;              // Z-index for radius circle (behind markers)
+export const RADIUS_CIRCLE_COLOR: string = '#4285F4';        // Google blue for radius circle
+
+// InfoWindow Settings
+export const INFO_WINDOW_PIXEL_OFFSET_X: number = 0;         // Horizontal offset for InfoWindow
+export const INFO_WINDOW_PIXEL_OFFSET_Y: number = -10;       // Vertical offset for InfoWindow (negative = up)
+
+// Debounce/Throttle Timings
+export const PANEL_RESIZE_DEBOUNCE_MS: number = 150;         // Debounce for listings panel resize events
+export const WINDOW_RESIZE_DEBOUNCE_MS: number = 300;        // Debounce for window resize events

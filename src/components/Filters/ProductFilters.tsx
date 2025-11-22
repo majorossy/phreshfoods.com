@@ -1,18 +1,16 @@
 // src/components/Filters/ProductFilters.tsx
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { useFilters } from '../../contexts/FilterContext';
 import { getMergedProductConfigs, CATEGORY_DISPLAY_ORDERS } from '../../config/products';
 import { LocationType } from '../../types/shop';
 
 const ProductFilters: React.FC = () => {
-  const { activeProductFilters, setActiveProductFilters, activeLocationTypes, toggleLocationType } = useFilters();
+  const { activeProductFilters, activeLocationTypes, toggleLocationType, toggleFilter, clearAllFilters } = useFilters();
 
-  const handleFilterChange = (filterId: string) => {
-    setActiveProductFilters(prevFilters => ({
-      ...prevFilters,
-      [filterId]: !prevFilters[filterId],
-    }));
-  };
+  // Use the optimized toggleFilter from context instead of local handler
+  const handleFilterChange = useCallback((filterId: string) => {
+    toggleFilter(filterId);
+  }, [toggleFilter]);
 
   // Get merged product configs for selected location types
   const productConfig = useMemo(() => {
@@ -126,7 +124,7 @@ const ProductFilters: React.FC = () => {
       </div>
       {Object.keys(activeProductFilters).some(key => activeProductFilters[key]) && ( // Show "Clear All" only if some filters are active
         <button
-          onClick={() => setActiveProductFilters({})}
+          onClick={clearAllFilters}
           className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"
         >
           Clear All Filters
@@ -136,4 +134,6 @@ const ProductFilters: React.FC = () => {
   );
 };
 
-export default ProductFilters;
+// Memoize component to prevent re-renders when parent re-renders
+// Only re-renders when activeProductFilters from context changes
+export default React.memo(ProductFilters);

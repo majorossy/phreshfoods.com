@@ -45,14 +45,47 @@ interface RawShopData extends Omit<Shop, 'lat' | 'lng' | 'beef' /* ... other boo
 }
 
 
-// Helper to convert various truthy/falsy string/number values to boolean
-const toBoolean = (value: string | boolean | number | undefined | null): boolean => {
+/**
+ * Converts various truthy/falsy values to boolean with strict validation
+ * @param value - The value to convert
+ * @param fieldName - Optional field name for error logging
+ * @returns boolean value
+ */
+const toBoolean = (value: string | boolean | number | undefined | null, fieldName?: string): boolean => {
+  // Handle boolean directly
   if (typeof value === 'boolean') return value;
-  if (typeof value === 'number') return value === 1;
-  if (typeof value === 'string') {
-    const lower = value.trim().toLowerCase();
-    return lower === 'true' || lower === '1' || lower === 'yes' || lower === 't' || lower === 'x' || lower === 'available';
+
+  // Handle numbers (1 = true, 0 = false, anything else is suspicious)
+  if (typeof value === 'number') {
+    if (value === 1) return true;
+    if (value === 0) return false;
+    // Log unexpected numeric values in development
+    if (import.meta.env.DEV && fieldName) {
+      console.warn(`[apiService] Unexpected numeric value for ${fieldName}: ${value}, treating as false`);
+    }
+    return false;
   }
+
+  // Handle strings
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (!trimmed) return false; // Empty string = false
+
+    const lower = trimmed.toLowerCase();
+    const truthyValues = ['true', '1', 'yes', 't', 'x', 'available'];
+    const falsyValues = ['false', '0', 'no', 'f', 'n/a', 'unavailable'];
+
+    if (truthyValues.includes(lower)) return true;
+    if (falsyValues.includes(lower)) return false;
+
+    // Log unrecognized string values in development
+    if (import.meta.env.DEV && fieldName) {
+      console.warn(`[apiService] Unrecognized value for ${fieldName}: "${value}", treating as false`);
+    }
+    return false;
+  }
+
+  // Null or undefined = false
   return false;
 };
 

@@ -72,6 +72,11 @@ const ListingsPanel = () => {
     };
   }, [handleScroll]);
 
+  // Clear filters handler - must be defined before early returns (Rules of Hooks)
+  const handleClearFilters = useCallback(() => {
+    setActiveProductFilters({});
+  }, [setActiveProductFilters]);
+
   // Show loading state
   if (isLoadingFarmStands) {
     return (
@@ -108,10 +113,6 @@ const ListingsPanel = () => {
       </section>
     );
   }
-
-  const handleClearFilters = () => {
-    setActiveProductFilters({});
-  };
 
   // Get visible shops for windowed rendering
   const visibleShops = currentlyDisplayedShops.slice(0, visibleCount);

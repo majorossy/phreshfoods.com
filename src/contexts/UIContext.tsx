@@ -36,6 +36,22 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const openShopOverlays = useCallback((shop: Shop, openTab: 'shop' | 'social' | 'directions' = 'shop', socialTab: string = 'photos') => {
+    // Validate shop object
+    if (!shop) {
+      if (import.meta.env.DEV) {
+        console.error('[UIContext] Attempted to open overlay with null/undefined shop');
+      }
+      return;
+    }
+
+    // Validate required shop fields
+    if (!shop.Name && !shop.slug && !shop.GoogleProfileID) {
+      if (import.meta.env.DEV) {
+        console.error('[UIContext] Shop missing required identifiers (Name, slug, or GoogleProfileID)');
+      }
+      return;
+    }
+
     handleSetSelectedShop(shop);
     setSocialOverlayInitialTab(socialTab);
 
@@ -49,13 +65,20 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
       setIsSocialOverlayOpen(true);
       setIsShopOverlayOpen(false);
     }
-    document.body.classList.add('modal-active');
+
+    // Safely add class to body
+    if (document.body) {
+      document.body.classList.add('modal-active');
+    }
   }, [handleSetSelectedShop]);
 
   const closeShopOverlays = useCallback(() => {
     setIsShopOverlayOpen(false);
     setIsSocialOverlayOpen(false);
-    document.body.classList.remove('modal-active');
+    // Safely remove class from body
+    if (document.body) {
+      document.body.classList.remove('modal-active');
+    }
   }, []);
 
   const setSocialOverlayActiveTab = useCallback((tab: string) => {

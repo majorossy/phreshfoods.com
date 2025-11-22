@@ -1,12 +1,105 @@
 // vite.config.ts
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc'; // Using SWC for faster compilation
+import { visualizer } from 'rollup-plugin-visualizer';
+import { VitePWA } from 'vite-plugin-pwa';
 // If you chose the standard TypeScript template without SWC, it might be:
 // import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Bundle analyzer - generates stats.html after build
+    visualizer({
+      open: false, // Set to true to auto-open after build
+      filename: 'dist/stats.html',
+      gzipSize: true,
+      brotliSize: true,
+    }) as any,
+    // PWA plugin for offline support and installability
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: ['favicon.ico', 'images/**/*', 'robots.txt'],
+      manifest: {
+        name: 'Farm Stand Finder - Maine',
+        short_name: 'Farm Stands',
+        description: 'Find local farm stands selling fresh produce, meat, and more across Maine',
+        theme_color: '#e8dcc3',
+        background_color: '#ffffff',
+        display: 'standalone',
+        scope: '/',
+        start_url: '/',
+        orientation: 'portrait-primary',
+        icons: [
+          {
+            src: '/images/flag.png',
+            sizes: 'any',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        // Cache farm stand data
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\/api\/farm-stands$/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'farm-data-cache',
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 4, // 4 hours
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/maps\.googleapis\.com\/.*/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-maps-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+              }
+            }
+          },
+          {
+            urlPattern: /\.(png|jpg|jpeg|svg|gif)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              }
+            }
+          }
+        ]
+      }
+    }),
+  ],
+  build: {
+    // Enable source maps for better debugging (can disable for production)
+    sourcemap: false,
+    // Optimize chunk splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Google Maps and related utilities in separate chunk
+          'maps-vendor': [],
+        },
+      },
+    },
+    // Increase chunk size warning limit (default is 500kb)
+    chunkSizeWarningLimit: 1000,
+  },
   server: {
     // Port for the Vite development server (optional, Vite will pick one if not set)
     // port: 5173, // Example, default is often 5173
