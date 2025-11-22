@@ -32,7 +32,7 @@
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import {
-  fetchAndProcessFarmStands,
+  fetchAndProcessLocations,
   geocodeAddressClient,
   getPlaceDetailsClient,
   getDirectionsClient,
@@ -94,16 +94,16 @@ afterEach(() => {
 });
 
 /**
- * TEST SUITE 1: fetchAndProcessFarmStands
+ * TEST SUITE 1: fetchAndProcessLocations
  * ========================================
- * This is the MOST CRITICAL function - it gets all farm data
+ * This is the MOST CRITICAL function - it gets all location data (farm stands, cheese shops, etc.)
  */
-describe('apiService - fetchAndProcessFarmStands', () => {
-  it('successfully fetches farm stand data', async () => {
+describe('apiService - fetchAndProcessLocations', () => {
+  it('successfully fetches location data', async () => {
     // WHY THIS TEST: Happy path - does it work when everything goes right?
 
     // ARRANGE: Set up mock data
-    const mockFarmStands: Shop[] = [
+    const mockLocations: Shop[] = [
       {
         id: 1,
         Name: 'Happy Farm',
@@ -114,6 +114,7 @@ describe('apiService - fetchAndProcessFarmStands', () => {
         lat: 43.6591,
         lng: -70.2568,
         slug: 'happy-farm',
+        type: 'farm',
       } as Shop,
       {
         id: 2,
@@ -125,23 +126,24 @@ describe('apiService - fetchAndProcessFarmStands', () => {
         lat: 43.7204,
         lng: -70.2520,
         slug: 'sunny-acres',
+        type: 'farm',
       } as Shop,
     ];
 
     // Mock the fetch response
     mockFetch.mockResolvedValueOnce({
       ok: true, // HTTP 200
-      json: async () => mockFarmStands, // Return our mock data
+      json: async () => mockLocations, // Return our mock data
     });
 
     // ACT: Call the function
-    const result = await fetchAndProcessFarmStands();
+    const result = await fetchAndProcessLocations();
 
     // ASSERT: Verify the results
     expect(mockFetch).toHaveBeenCalledTimes(1); // fetch was called
-    expect(mockFetch).toHaveBeenCalledWith('/api/farm-stands', expect.anything()); // Called correct endpoint
-    expect(result).toEqual(mockFarmStands); // Got back the data we expected
-    expect(result).toHaveLength(2); // Two farms
+    expect(mockFetch).toHaveBeenCalledWith('/api/locations', expect.anything()); // Called correct endpoint
+    expect(result).toEqual(mockLocations); // Got back the data we expected
+    expect(result).toHaveLength(2); // Two locations
   });
 
   it('returns empty array when fetch fails', async () => {
@@ -151,7 +153,7 @@ describe('apiService - fetchAndProcessFarmStands', () => {
     // Mock a network error
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-    const result = await fetchAndProcessFarmStands();
+    const result = await fetchAndProcessLocations();
 
     // Should return empty array, not throw an error
     expect(result).toEqual([]);
@@ -171,7 +173,7 @@ describe('apiService - fetchAndProcessFarmStands', () => {
     abortError.name = 'AbortError';
     mockFetch.mockRejectedValueOnce(abortError);
 
-    const result = await fetchAndProcessFarmStands(signal);
+    const result = await fetchAndProcessLocations(signal);
 
     // Should return empty array, not throw
     expect(result).toEqual([]);
@@ -186,7 +188,7 @@ describe('apiService - fetchAndProcessFarmStands', () => {
       json: async () => ({ error: 'Invalid data format' }), // Object instead of array
     });
 
-    const result = await fetchAndProcessFarmStands();
+    const result = await fetchAndProcessLocations();
 
     // Should still return an array (might be empty)
     expect(Array.isArray(result)).toBe(true);
@@ -202,11 +204,11 @@ describe('apiService - fetchAndProcessFarmStands', () => {
       json: async () => [],
     });
 
-    await fetchAndProcessFarmStands(signal);
+    await fetchAndProcessLocations(signal);
 
     // Verify that fetch was called with the signal
     expect(mockFetch).toHaveBeenCalledWith(
-      '/api/farm-stands',
+      '/api/locations',
       expect.objectContaining({ signal })
     );
   });
@@ -491,7 +493,7 @@ describe('apiService - getDirectionsClient', () => {
  * ============
  *
  * What we tested:
- * ✅ fetchAndProcessFarmStands - Main data fetching
+ * ✅ fetchAndProcessLocations - Main data fetching (farm stands, cheese shops, fish mongers, butchers, antique shops)
  * ✅ geocodeAddressClient - Address to coordinates
  * ✅ getPlaceDetailsClient - Place information
  * ✅ getDirectionsClient - Driving directions

@@ -62,14 +62,18 @@ function createMockShop(overrides: Partial<Shop> = {}): Shop {
     lat: 43.6591, // Portland, Maine coordinates
     lng: -70.2568,
     slug: 'test-farm',
+    type: 'farm', // Default location type
 
     // Default: no products available (all false)
-    strawberries: false,
-    blueberries: false,
-    eggs: false,
-    beef: false,
-    pork: false,
-    chicken: false,
+    // Products are now in a nested object
+    products: {
+      strawberries: false,
+      blueberries: false,
+      eggs: false,
+      beef: false,
+      pork: false,
+      chicken: false,
+    },
 
     // Override any properties specified
     ...overrides,
@@ -83,6 +87,7 @@ function createMockShop(overrides: Partial<Shop> = {}): Shop {
 function createDefaultFilterOptions(overrides: Partial<FilterOptions> = {}): FilterOptions {
   return {
     productFilters: {}, // No product filters by default
+    locationTypes: new Set(['farm']), // Default to farm stands
     location: {
       name: 'Portland, ME',
       formatted_address: 'Portland, ME, USA',
@@ -158,9 +163,9 @@ describe('shopFilters - Product Filtering', () => {
   it('filters shops by single product (strawberries)', () => {
     // WHY THIS TEST: Core feature - user clicks "strawberries" filter
     const shops = [
-      createMockShop({ id: 1, Name: 'Strawberry Farm', strawberries: true }),
-      createMockShop({ id: 2, Name: 'Blueberry Farm', blueberries: true }),
-      createMockShop({ id: 3, Name: 'Berry Mix Farm', strawberries: true, blueberries: true }),
+      createMockShop({ id: 1, Name: 'Strawberry Farm', products: { strawberries: true } }),
+      createMockShop({ id: 2, Name: 'Blueberry Farm', products: { blueberries: true } }),
+      createMockShop({ id: 3, Name: 'Berry Mix Farm', products: { strawberries: true, blueberries: true } }),
     ];
 
     const options = createDefaultFilterOptions({
@@ -180,10 +185,10 @@ describe('shopFilters - Product Filtering', () => {
     // WHY THIS TEST: User selects both "strawberries" AND "eggs"
     // Farm must have BOTH to show up
     const shops = [
-      createMockShop({ id: 1, Name: 'Strawberry Only', strawberries: true, eggs: false }),
-      createMockShop({ id: 2, Name: 'Eggs Only', strawberries: false, eggs: true }),
-      createMockShop({ id: 3, Name: 'Both', strawberries: true, eggs: true }),
-      createMockShop({ id: 4, Name: 'Neither', strawberries: false, eggs: false }),
+      createMockShop({ id: 1, Name: 'Strawberry Only', products: { strawberries: true, eggs: false } }),
+      createMockShop({ id: 2, Name: 'Eggs Only', products: { strawberries: false, eggs: true } }),
+      createMockShop({ id: 3, Name: 'Both', products: { strawberries: true, eggs: true } }),
+      createMockShop({ id: 4, Name: 'Neither', products: { strawberries: false, eggs: false } }),
     ];
 
     const options = createDefaultFilterOptions({
@@ -379,21 +384,21 @@ describe('shopFilters - Combined Product and Distance Filtering', () => {
         Name: 'Nearby Strawberry Farm',
         lat: 43.6600,
         lng: -70.2600,
-        strawberries: true,
+        products: { strawberries: true },
       }),
       createMockShop({
         id: 2,
         Name: 'Far Strawberry Farm',
         lat: 44.3000,
         lng: -69.0000,
-        strawberries: true,
+        products: { strawberries: true },
       }),
       createMockShop({
         id: 3,
         Name: 'Nearby Blueberry Farm',
         lat: 43.6600,
         lng: -70.2600,
-        blueberries: true,
+        products: { blueberries: true },
       }),
     ];
 
@@ -417,14 +422,14 @@ describe('shopFilters - Combined Product and Distance Filtering', () => {
         Name: 'Nearby Farm (no strawberries)',
         lat: 43.6600,
         lng: -70.2600,
-        strawberries: false,
+        products: { strawberries: false },
       }),
       createMockShop({
         id: 2,
         Name: 'Far Strawberry Farm',
         lat: 44.3000,
         lng: -69.0000,
-        strawberries: true,
+        products: { strawberries: true },
       }),
     ];
 
