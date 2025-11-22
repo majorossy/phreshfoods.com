@@ -1,6 +1,6 @@
 // src/contexts/DirectionsContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useCallback, useMemo, useRef } from 'react';
-import { ToastType } from '../types';
+import { useToast } from './ToastContext';
 
 interface DirectionsContextType {
   directionsResult: google.maps.DirectionsResult | null;
@@ -15,14 +15,8 @@ interface DirectionsContextType {
 
 const DirectionsContext = createContext<DirectionsContextType | undefined>(undefined);
 
-// Toast handler reference (shared)
-let toastHandler: ((type: ToastType, message: string) => void) | null = null;
-
-export const setDirectionsToastHandler = (handler: (type: ToastType, message: string) => void) => {
-  toastHandler = handler;
-};
-
 export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
+  const { showError } = useToast();
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [directionsError, setDirectionsError] = useState<string | null>(null);
   const [isFetchingDirections, setIsFetchingDirections] = useState<boolean>(false);
@@ -51,9 +45,7 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
       const errorMsg = "Directions service is not available right now.";
       setDirectionsError(errorMsg);
       setIsFetchingDirections(false);
-      if (toastHandler) {
-        toastHandler('error', errorMsg);
-      }
+      showError(errorMsg);
       return;
     }
 
@@ -88,16 +80,12 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
         } else {
           const errorMsg = 'Could not retrieve directions: ' + response.status;
           setDirectionsError(errorMsg);
-          if (toastHandler) {
-            toastHandler('error', errorMsg);
-          }
+          showError(errorMsg);
         }
       } catch (error) {
         const errorMsg = 'An error occurred while fetching directions.';
         setDirectionsError(errorMsg);
-        if (toastHandler) {
-          toastHandler('error', errorMsg);
-        }
+        showError(errorMsg);
       } finally {
         setIsFetchingDirections(false);
         pendingRequestRef.current = null;
@@ -106,7 +94,7 @@ export const DirectionsProvider = ({ children }: { children: ReactNode }) => {
 
     pendingRequestRef.current = requestPromise;
     return requestPromise;
-  }, []);
+  }, [showError]);
 
   // Memoize the context value to prevent unnecessary re-renders
   const value: DirectionsContextType = useMemo(() => ({

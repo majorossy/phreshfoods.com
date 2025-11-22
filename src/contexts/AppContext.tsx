@@ -26,18 +26,6 @@ import { useSearch } from './SearchContext';
 import { useFilters } from './FilterContext';
 import { useUI } from './UIContext';
 import { useDirections } from './DirectionsContext';
-import { setToastHandler as setFarmDataToastHandler } from './FarmDataContext';
-import { setDirectionsToastHandler } from './DirectionsContext';
-
-// Toast handler for notifications (shared across contexts)
-let toastHandler: ((type: ToastType, message: string) => void) | null = null;
-
-export const setToastHandler = (handler: (type: ToastType, message: string) => void) => {
-  toastHandler = handler;
-  // Also set the handler for the individual contexts
-  setFarmDataToastHandler(handler);
-  setDirectionsToastHandler(handler);
-};
 
 interface AppContextType {
   allFarmStands: Shop[];

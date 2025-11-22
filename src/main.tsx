@@ -5,8 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App.tsx';
 import { AppProvider } from './contexts/AppContext.tsx';
-import { ToastProvider } from './contexts/ToastContext.tsx';
-import ErrorBoundary from './components/ErrorBoundary.tsx';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 import { loadGoogleMapsScript } from './utils/loadGoogleMapsScript';
 
 import './index.css'; // <--- THIS IS THE CRUCIAL IMPORT
@@ -30,9 +29,7 @@ if (rootElement) {
           }}
         >
           <AppProvider>
-            <ToastProvider>
-              <App />
-            </ToastProvider>
+            <App />
           </AppProvider>
         </BrowserRouter>
       </ErrorBoundary>

@@ -1,10 +1,13 @@
 // src/components/Overlays/InitialSearchModal.tsx
-import React, { useContext, useRef, useEffect, useState } from 'react';
-import { AppContext, AutocompletePlace } from '../../contexts/AppContext'; // Adjust path
-import { DEFAULT_PORTLAND_CENTER, MAINE_BOUNDS_LITERAL } from '../../config/appConfig.ts'; // Adjust path
+import React, { useRef, useEffect, useState } from 'react';
+import { AutocompletePlace } from '../../types';
+import { useSearch } from '../../contexts/SearchContext';
+import { useUI } from '../../contexts/UIContext';
+import { DEFAULT_PORTLAND_CENTER, MAINE_BOUNDS_LITERAL } from '../../config/appConfig.ts';
 
 const InitialSearchModal = () => {
-  const appContext = useContext(AppContext);
+  const { setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, mapsApiReady } = useSearch();
+  const { setIsInitialModalOpen } = useUI();
   const autocompleteInputRef = useRef<HTMLInputElement | null>(null); // Ref for the <input> element
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null); // Ref for the Autocomplete instance
 
@@ -12,17 +15,6 @@ const InitialSearchModal = () => {
   const [selectedPlaceFromModal, setSelectedPlaceFromModal] = useState<AutocompletePlace | null>(null);
   // Local state for the input field's current text value
   const [inputValue, setInputValue] = useState<string>("");
-
-  if (!appContext) {
-    return null;
-  }
-
-  const {
-    setIsInitialModalOpen,
-    setLastPlaceSelectedByAutocompleteAndCookie,
-    setSearchTerm,
-    mapsApiReady,
-  } = appContext;
 
   // Initialize Google Maps Autocomplete
   useEffect(() => {
@@ -106,10 +98,6 @@ const InitialSearchModal = () => {
 
 
   const handleModalSearch = () => {
-    if (!setIsInitialModalOpen || !setLastPlaceSelectedByAutocompleteAndCookie || !setSearchTerm) {
-      return;
-    }
-
     if (selectedPlaceFromModal && selectedPlaceFromModal.geometry) {
       const term = selectedPlaceFromModal.formatted_address || selectedPlaceFromModal.name || "Selected Location";
       setSearchTerm(term);
@@ -132,9 +120,6 @@ const InitialSearchModal = () => {
   };
 
   const handleSkip = () => {
-    if (!setIsInitialModalOpen || !setLastPlaceSelectedByAutocompleteAndCookie || !setSearchTerm) {
-      return;
-    }
     const portlandTerm = "Portland, Maine";
     const portlandPlace: AutocompletePlace = {
       name: portlandTerm,

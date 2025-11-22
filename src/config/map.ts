@@ -22,8 +22,9 @@ export interface LatLngLiteral {
   lng: number;
 }
 
-export const DEFAULT_MAP_CENTER: LatLngLiteral = { lat: 43.6591, lng: -70.2568 }; // Portland, ME
+// Portland, Maine coordinates (default map center)
 export const DEFAULT_PORTLAND_CENTER: LatLngLiteral = { lat: 43.6591, lng: -70.2568 };
+export const DEFAULT_MAP_CENTER: LatLngLiteral = DEFAULT_PORTLAND_CENTER;
 
 export const DEFAULT_MAP_ZOOM: number = 11;
 export const USER_LOCATION_MAP_ZOOM: number = 10;

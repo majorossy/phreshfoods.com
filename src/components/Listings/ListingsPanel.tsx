@@ -1,6 +1,7 @@
 // src/components/Listings/ListingsPanel.tsx
-import React, { useContext, useState, useEffect, useRef, useCallback } from 'react';
-import { AppContext } from '../../contexts/AppContext.tsx';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useFarmData } from '../../contexts/FarmDataContext';
+import { useFilters } from '../../contexts/FilterContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
@@ -9,15 +10,8 @@ const INITIAL_ITEMS = 20; // Initial number of items to render
 const LOAD_MORE_THRESHOLD = 300; // px from bottom to trigger load more
 
 const ListingsPanel = () => {
-  const appContext = useContext(AppContext);
-  const {
-    currentlyDisplayedShops,
-    allFarmStands,
-    setActiveProductFilters,
-    isLoadingFarmStands,
-    farmStandsError,
-    retryLoadFarmStands,
-  } = appContext || {};
+  const { currentlyDisplayedShops, allFarmStands, isLoadingFarmStands, farmStandsError, retryLoadFarmStands } = useFarmData();
+  const { setActiveProductFilters } = useFilters();
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
   const panelRef = useRef<HTMLElement>(null);
 
@@ -27,7 +21,7 @@ const ListingsPanel = () => {
   // Reset visible count only when the number of shops significantly changes
   // This prevents reset on distance re-calculations or minor updates
   useEffect(() => {
-    const currentCount = currentlyDisplayedShops?.length || 0;
+    const currentCount = currentlyDisplayedShops.length;
     const prevCount = prevShopCountRef.current;
 
     // Reset if: initial load, or shop count changed significantly (filter/search applied)
@@ -35,7 +29,7 @@ const ListingsPanel = () => {
       setVisibleCount(Math.max(INITIAL_ITEMS, currentCount)); // Show all results immediately
       prevShopCountRef.current = currentCount;
     }
-  }, [currentlyDisplayedShops?.length]);
+  }, [currentlyDisplayedShops.length]);
 
   // Scroll handler for infinite scrolling (throttled with requestAnimationFrame)
   const handleScroll = useCallback(() => {
@@ -93,7 +87,7 @@ const ListingsPanel = () => {
   }
 
   // Show error state
-  if (farmStandsError && (!allFarmStands || allFarmStands.length === 0)) {
+  if (farmStandsError && allFarmStands.length === 0) {
     return (
       <section id="listingsPanel" className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0">
         <div className="flex flex-col items-center justify-center h-full p-6 text-center">
@@ -116,14 +110,12 @@ const ListingsPanel = () => {
   }
 
   const handleClearFilters = () => {
-    if (setActiveProductFilters) {
-      setActiveProductFilters({});
-    }
+    setActiveProductFilters({});
   };
 
   // Get visible shops for windowed rendering
-  const visibleShops = currentlyDisplayedShops?.slice(0, visibleCount) || [];
-  const hasMore = currentlyDisplayedShops && visibleCount < currentlyDisplayedShops.length;
+  const visibleShops = currentlyDisplayedShops.slice(0, visibleCount);
+  const hasMore = visibleCount < currentlyDisplayedShops.length;
 
   return (
     <section
@@ -131,7 +123,7 @@ const ListingsPanel = () => {
       ref={panelRef}
       className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
     >
-      {currentlyDisplayedShops && currentlyDisplayedShops.length > 0 ? (
+      {currentlyDisplayedShops.length > 0 ? (
         <>
           <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {visibleShops.map(shop => (

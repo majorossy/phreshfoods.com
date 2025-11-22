@@ -1,10 +1,12 @@
 // src/App.tsx
-import React, { useContext, useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppContext, setToastHandler } from './contexts/AppContext.tsx';
-import { setSearchToastHandler } from './contexts/SearchContext.tsx';
-import { useToast } from './contexts/ToastContext.tsx';
+import { useFarmData } from './contexts/FarmDataContext';
+import { useSearch } from './contexts/SearchContext';
+import { useFilters } from './contexts/FilterContext';
+import { useUI } from './contexts/UIContext';
 import { useFilteredShops } from './hooks/useFilteredShops';
+import { AutocompletePlace } from './types';
 import {
   getHomepageSEO,
   getFarmStandSEO,
@@ -24,31 +26,14 @@ const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsO
 const SocialOverlay = lazy(() => import('./components/Overlays/SocialOverlay.tsx'));
 
 function App() {
-  const appContext = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const { showToast } = useToast();
 
-  // Connect toast handler to AppContext and SearchContext
-  useEffect(() => {
-    setToastHandler(showToast);
-    setSearchToastHandler(showToast);
-  }, [showToast]);
-
-  const {
-    allFarmStands,
-    setCurrentlyDisplayedShops,
-    activeProductFilters,
-    lastPlaceSelectedByAutocomplete,
-    selectedShop,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-    openShopOverlays,
-    closeShopOverlays,
-    currentRadius,
-    mapsApiReady,
-    setSelectedShop,
-  } = appContext || {};
+  // Domain-specific hooks
+  const { allFarmStands, setCurrentlyDisplayedShops } = useFarmData();
+  const { lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation } = useSearch();
+  const { activeProductFilters } = useFilters();
+  const { selectedShop, isShopOverlayOpen, isSocialOverlayOpen, openShopOverlays, closeShopOverlays, setSelectedShop } = useUI();
 
   // Use custom hook for filtering and sorting shops
   const filteredAndSortedShops = useFilteredShops({
@@ -62,9 +47,7 @@ function App() {
   // Update displayed shops when filtered results change
   // This effect only runs when filtered results actually change
   useEffect(() => {
-    if (setCurrentlyDisplayedShops) {
-      setCurrentlyDisplayedShops(filteredAndSortedShops);
-    }
+    setCurrentlyDisplayedShops(filteredAndSortedShops);
   }, [filteredAndSortedShops, setCurrentlyDisplayedShops]);
 
   // Auto-populate search location when loading a direct farm URL
@@ -86,22 +69,14 @@ function App() {
         };
 
         // Set the search location without showing the modal (already hidden by UIContext)
-        if (appContext?.setLastPlaceSelectedByAutocompleteAndCookie) {
-          appContext.setLastPlaceSelectedByAutocompleteAndCookie(autocompletePlace, shopAddress);
-        }
-        if (appContext?.setMapViewTargetLocation) {
-          appContext.setMapViewTargetLocation(autocompletePlace);
-        }
+        setLastPlaceSelectedByAutocompleteAndCookie(autocompletePlace, shopAddress);
+        setMapViewTargetLocation(autocompletePlace);
       }
     }
-  }, [location.pathname, selectedShop, lastPlaceSelectedByAutocomplete, mapsApiReady, appContext]);
+  }, [location.pathname, selectedShop, lastPlaceSelectedByAutocomplete, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
 
   // Handle direct navigation to /farm/:slug, overlay closure, and map click deselection
   useEffect(() => {
-    if (!openShopOverlays || !closeShopOverlays || !setSelectedShop) {
-      return;
-    }
-
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
 
     if (slugMatch && slugMatch[1]) {
@@ -153,12 +128,10 @@ function App() {
   // Escape key handler to close overlays
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if ((isShopOverlayOpen || isSocialOverlayOpen) && closeShopOverlays) {
-          closeShopOverlays();
-          if (setSelectedShop) setSelectedShop(null); // Also deselect shop
-          navigate('/');
-        }
+      if (event.key === 'Escape' && (isShopOverlayOpen || isSocialOverlayOpen)) {
+        closeShopOverlays();
+        setSelectedShop(null); // Also deselect shop
+        navigate('/');
       }
     };
     document.addEventListener('keydown', handleKeyDown);
@@ -190,10 +163,6 @@ function App() {
     }
   }, [location.pathname, selectedShop]);
 
-  if (!appContext) {
-    return <div className="flex items-center justify-center h-screen text-xl">Loading application context...</div>;
-  }
-
   return (
     <div id="app-container" className="h-screen flex flex-col">
       {/* Skip to main content link for keyboard navigation */}
@@ -222,8 +191,8 @@ function App() {
               <ShopDetailsOverlay
                 shop={selectedShop}
                 onClose={() => {
-                  closeShopOverlays?.();
-                  if (setSelectedShop) setSelectedShop(null);
+                  closeShopOverlays();
+                  setSelectedShop(null);
                   navigate('/');
                 }}
               />
@@ -236,8 +205,8 @@ function App() {
               <SocialOverlay
                 shop={selectedShop}
                 onClose={() => {
-                  closeShopOverlays?.();
-                  if (setSelectedShop) setSelectedShop(null);
+                  closeShopOverlays();
+                  setSelectedShop(null);
                   navigate('/');
                 }}
               />

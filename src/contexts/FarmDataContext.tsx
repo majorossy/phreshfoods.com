@@ -1,7 +1,8 @@
 // src/contexts/FarmDataContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useRef, useMemo } from 'react';
-import { Shop, ShopWithDistance, ToastType } from '../types';
+import { Shop, ShopWithDistance } from '../types';
 import * as apiService from '../services/apiService';
+import { useToast } from './ToastContext';
 
 interface FarmDataContextType {
   allFarmStands: Shop[];
@@ -15,14 +16,8 @@ interface FarmDataContextType {
 
 const FarmDataContext = createContext<FarmDataContextType | undefined>(undefined);
 
-// Toast handler reference (shared across contexts)
-let toastHandler: ((type: ToastType, message: string) => void) | null = null;
-
-export const setToastHandler = (handler: (type: ToastType, message: string) => void) => {
-  toastHandler = handler;
-};
-
 export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
+  const { showError } = useToast();
   const [allFarmStands, setAllFarmStands] = useState<Shop[]>([]);
   const [currentlyDisplayedShops, setCurrentlyDisplayedShops] = useState<ShopWithDistance[]>([]);
   const [isLoadingFarmStands, setIsLoadingFarmStands] = useState<boolean>(true);
@@ -61,9 +56,7 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
         setAllFarmStands([]);
         const errorMsg = 'Failed to load farm stands. Please try again.';
         setFarmStandsError(errorMsg);
-        if (toastHandler) {
-          toastHandler('error', errorMsg);
-        }
+        showError(errorMsg);
       }
     } catch (error) {
       // Don't show error for aborted requests
@@ -75,15 +68,13 @@ export const FarmDataProvider = ({ children }: { children: ReactNode }) => {
       setAllFarmStands([]);
       const errorMsg = 'Unable to load farm data. Please check your connection and try again.';
       setFarmStandsError(errorMsg);
-      if (toastHandler) {
-        toastHandler('error', errorMsg);
-      }
+      showError(errorMsg);
     } finally {
       if (!signal?.aborted) {
         setIsLoadingFarmStands(false);
       }
     }
-  }, []);
+  }, [showError]);
 
   // Load farm stands on mount (only once) with abort support
   useEffect(() => {
