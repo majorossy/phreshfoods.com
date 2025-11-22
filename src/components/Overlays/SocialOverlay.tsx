@@ -28,6 +28,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   const [activeTab, setActiveTab] = useState(socialOverlayInitialTab);
   const [manualOrigin, setManualOrigin] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
 
   // Get directions and search contexts
   const {
@@ -42,9 +43,10 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
     lastPlaceSelectedByAutocomplete,
   } = useSearch();
 
-  // When the overlay opens for a new shop, reset directions and set initial tab
+  // When the overlay opens for a new shop, reset directions, collapse state, and set initial tab
   useEffect(() => {
     clearDirections();
+    setIsCollapsed(false); // Reset to expanded state when shop changes
   }, [shop, clearDirections]);
 
   // Watch for external tab changes (e.g., from clicking rating stars)
@@ -246,10 +248,50 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   };
 
   return (
-    <div id="detailsOverlaySocial" className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open">
-      <button onClick={onClose} className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-50 z-10" aria-label="Close social details">
-        <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
+      <div
+        id="detailsOverlaySocial"
+        className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open"
+        style={{
+          transform: isCollapsed ? 'translateX(-100%)' : 'translateX(0)',
+          transition: 'transform 0.3s ease-in-out'
+        }}
+      >
+        {/* Toggle Button on Right Edge of Overlay */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsCollapsed(!isCollapsed);
+          }}
+          className={`
+            absolute top-1/2 -translate-y-1/2 right-0 translate-x-full z-[60]
+            bg-white shadow-lg rounded-r-lg border border-l-0 border-gray-300
+            hover:bg-gray-50 active:bg-gray-100
+            transition-all duration-300 ease-in-out
+            flex items-center justify-center
+            pointer-events-auto cursor-pointer
+          `}
+          style={{
+            width: '32px',
+            height: '80px',
+          }}
+          aria-label={isCollapsed ? 'Expand social overlay' : 'Collapse social overlay'}
+          title={isCollapsed ? 'Expand social overlay' : 'Collapse social overlay'}
+          type="button"
+        >
+          <svg
+            className="w-5 h-5 text-gray-600 transition-transform duration-300"
+            style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+        <button onClick={onClose} className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-50 z-10" aria-label="Close social details">
+          <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
 
       <div className="pt-10 sm:pt-12 shrink-0">
         <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4">
@@ -647,7 +689,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
           </div>
         )}
       </div>
-    </div>
+      </div>
   );
 };
 

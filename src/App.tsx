@@ -1,7 +1,7 @@
 // src/App.tsx
 import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { useFarmData } from './contexts/FarmDataContext';
+import { useLocationData } from './contexts/LocationDataContext';
 import { useSearch } from './contexts/SearchContext';
 import { useFilters } from './contexts/FilterContext';
 import { useUI } from './contexts/UIContext';
@@ -31,15 +31,16 @@ function App() {
   const location = useLocation();
 
   // Domain-specific hooks
-  const { allFarmStands, setCurrentlyDisplayedShops } = useFarmData();
+  const { allLocations, setCurrentlyDisplayedLocations } = useLocationData();
   const { lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation } = useSearch();
-  const { activeProductFilters } = useFilters();
+  const { activeProductFilters, activeLocationTypes } = useFilters();
   const { selectedShop, isShopOverlayOpen, isSocialOverlayOpen, openShopOverlays, closeShopOverlays, setSelectedShop } = useUI();
 
   // Use custom hook for filtering and sorting shops
   const filteredAndSortedShops = useFilteredShops({
-    allFarmStands,
+    allFarmStands: allLocations,
     activeProductFilters,
+    activeLocationTypes,
     searchLocation: lastPlaceSelectedByAutocomplete,
     currentRadius,
     mapsApiReady,
@@ -48,8 +49,8 @@ function App() {
   // Update displayed shops when filtered results change
   // This effect only runs when filtered results actually change
   useEffect(() => {
-    setCurrentlyDisplayedShops(filteredAndSortedShops);
-  }, [filteredAndSortedShops, setCurrentlyDisplayedShops]);
+    setCurrentlyDisplayedLocations(filteredAndSortedShops);
+  }, [filteredAndSortedShops, setCurrentlyDisplayedLocations]);
 
   // Auto-populate search location when loading a direct farm URL
   useEffect(() => {
@@ -83,15 +84,15 @@ function App() {
     if (slugMatch && slugMatch[1]) {
       const urlIdentifier = slugMatch[1];
 
-      // Wait for farm data to load before attempting to find the shop
-      if (!allFarmStands || allFarmStands.length === 0) {
+      // Wait for location data to load before attempting to find the shop
+      if (!allLocations || allLocations.length === 0) {
         // Data is still loading, don't redirect yet
         return;
       }
 
       // Try to find by slug first, then by GoogleProfileID as fallback
-      const shopFromUrl = allFarmStands.find(s => s.slug === urlIdentifier)
-                       || allFarmStands.find(s => s.GoogleProfileID === urlIdentifier);
+      const shopFromUrl = allLocations.find(s => s.slug === urlIdentifier)
+                       || allLocations.find(s => s.GoogleProfileID === urlIdentifier);
 
       if (shopFromUrl) {
         if (!selectedShop || (selectedShop.slug !== shopFromUrl.slug && selectedShop.GoogleProfileID !== shopFromUrl.GoogleProfileID)) {
@@ -114,13 +115,13 @@ function App() {
       }
     } else if (!selectedShop && location.pathname.startsWith('/farm/')) {
       // Edge case: farm URL but no selected shop and data is loaded
-      if (allFarmStands && allFarmStands.length > 0) {
+      if (allLocations && allLocations.length > 0) {
         navigate('/', { replace: true });
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
       }
     }
   }, [
-      location.pathname, allFarmStands, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
+      location.pathname, allLocations, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
       openShopOverlays, closeShopOverlays, setSelectedShop, navigate
     ]
   );
@@ -178,16 +179,16 @@ function App() {
           <Header />
         </Suspense>
       </ErrorBoundary>
-      <main id="main-content" className="flex-grow relative overflow-hidden" role="main">
+      <main id="main-content" className="flex-grow flex overflow-hidden" role="main">
         <ErrorBoundary>
-          <Suspense fallback={<div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading map...</div>}>
-            <div className="w-full h-full">
+          <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-gray-200 text-lg">Loading map...</div>}>
+            <div className="flex-1">
               {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
             </div>
           </Suspense>
         </ErrorBoundary>
         <ErrorBoundary>
-          <Suspense fallback={<div className="w-full md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse" />}>
+          <Suspense fallback={<div className="w-full md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse z-10" />}>
             <ListingsPanel />
           </Suspense>
         </ErrorBoundary>

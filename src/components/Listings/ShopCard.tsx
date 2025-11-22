@@ -114,7 +114,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
             }`}
             title={shop.type === 'farm_stand' ? 'Farm Stand' : 'Cheese Shop'}
           >
-            {shop.type === 'farm_stand' ? 'Farm' : 'Cheese'}
+            {shop.type === 'farm_stand' ? '🌾 Farm' : '🧀 Cheese'}
           </span>
         </div>
 

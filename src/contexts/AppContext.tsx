@@ -3,14 +3,14 @@
  * Legacy AppContext for backward compatibility
  *
  * This context now wraps the new domain-specific contexts:
- * - FarmDataContext
+ * - LocationDataContext (formerly FarmDataContext)
  * - SearchContext
  * - FilterContext
  * - UIContext
  * - DirectionsContext
  *
  * New code should use the specific contexts directly via their hooks:
- * - useFarmData()
+ * - useLocationData() (formerly useFarmData())
  * - useSearch()
  * - useFilters()
  * - useUI()
@@ -21,7 +21,7 @@
 import React, { createContext, useContext, ReactNode, useMemo } from 'react';
 import { Shop, ShopWithDistance, AutocompletePlace, ToastType } from '../types';
 import { AppProviders } from './AppProviders';
-import { useFarmData } from './FarmDataContext';
+import { useLocationData } from './LocationDataContext';
 import { useSearch } from './SearchContext';
 import { useFilters } from './FilterContext';
 import { useUI } from './UIContext';
@@ -91,7 +91,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
  */
 const AppContextProvider = ({ children }: { children: ReactNode }) => {
   // Get all domain-specific contexts
-  const farmData = useFarmData();
+  const locationData = useLocationData();
   const search = useSearch();
   const filters = useFilters();
   const ui = useUI();
@@ -99,14 +99,14 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
 
   // Combine them into the legacy AppContext shape
   const value: AppContextType = useMemo(() => ({
-    // FarmData domain
-    allFarmStands: farmData.allFarmStands,
-    setAllFarmStands: farmData.setAllFarmStands,
-    currentlyDisplayedShops: farmData.currentlyDisplayedShops,
-    setCurrentlyDisplayedShops: farmData.setCurrentlyDisplayedShops,
-    isLoadingFarmStands: farmData.isLoadingFarmStands,
-    farmStandsError: farmData.farmStandsError,
-    retryLoadFarmStands: farmData.retryLoadFarmStands,
+    // LocationData domain (backward compatible property names)
+    allFarmStands: locationData.allLocations,
+    setAllFarmStands: locationData.setAllLocations,
+    currentlyDisplayedShops: locationData.currentlyDisplayedLocations,
+    setCurrentlyDisplayedShops: locationData.setCurrentlyDisplayedLocations,
+    isLoadingFarmStands: locationData.isLoadingLocations,
+    farmStandsError: locationData.locationsError,
+    retryLoadFarmStands: locationData.retryLoadLocations,
 
     // Search domain
     lastPlaceSelectedByAutocomplete: search.lastPlaceSelectedByAutocomplete,
@@ -142,7 +142,7 @@ const AppContextProvider = ({ children }: { children: ReactNode }) => {
     isFetchingDirections: directions.isFetchingDirections,
     fetchAndDisplayDirections: directions.fetchAndDisplayDirections,
     clearDirections: directions.clearDirections,
-  }), [farmData, search, filters, ui, directions]);
+  }), [locationData, search, filters, ui, directions]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

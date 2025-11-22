@@ -229,7 +229,7 @@ const Header: React.FC = () => {
           {/* Logo and Title Section */}
           <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
             <img src="/images/flag.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
-            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms & Cheese Shops">
+            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms, Cheese Shops, Fish Mongers, Butchers & Antique Shops">
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: 'rgb(27, 74, 123)' }}>
                 PhreshFoods
               </h1>

@@ -1,7 +1,7 @@
 // src/components/Map/MapComponent.tsx
 import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import { useFarmData } from '../../contexts/FarmDataContext.tsx';
+import { useLocationData } from '../../contexts/LocationDataContext.tsx';
 import { useSearch } from '../../contexts/SearchContext.tsx';
 import { useUI } from '../../contexts/UIContext.tsx';
 import { useDirections } from '../../contexts/DirectionsContext.tsx';
@@ -12,6 +12,7 @@ import {
   MAP_ID,
   USER_LOCATION_MAP_ZOOM,
   markerColor,
+  MARKER_COLORS,
   mapStyles, // For custom map styling
   USE_CUSTOM_MAP_STYLE, // Flag to enable/disable custom styles
   METERS_PER_MILE, // For radius circle conversion
@@ -63,7 +64,7 @@ const MapComponent: React.FC = () => {
   const navigate = useNavigate();
 
   // Use domain-specific hooks for better performance (only re-render when relevant state changes)
-  const { currentlyDisplayedShops } = useFarmData();
+  const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius } = useSearch();
   const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
   const { directionsResult, clearDirections } = useDirections();
@@ -103,7 +104,7 @@ const MapComponent: React.FC = () => {
   }, []);
 
   // Memoized helper for creating marker DOM elements
-  const createMarkerElement = useCallback(() => {
+  const createMarkerElement = useCallback((color: string = markerColor) => {
     // Determine if mobile based on screen width
     const isMobile = window.innerWidth < 768;
 
@@ -124,6 +125,7 @@ const MapComponent: React.FC = () => {
     markerElement.style.border = `${MARKER_BORDER_WIDTH_PX}px solid white`;
     markerElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
     markerElement.style.transition = `transform ${MARKER_TRANSITION_DURATION_S} ease-out, background-color ${MARKER_TRANSITION_DURATION_S} ease-out`;
+    markerElement.style.backgroundColor = color;
     markerElement.style.pointerEvents = 'none'; // Let wrapper handle events
 
     wrapper.appendChild(markerElement);
@@ -229,9 +231,12 @@ const MapComponent: React.FC = () => {
   // Plot/Update Markers
   useEffect(() => {
     const map = googleMapRef.current;
-    if (!map || !mapsApiReady || !window.google?.maps?.marker || !currentlyDisplayedShops) {
+    if (!map || !mapsApiReady || !window.google?.maps?.marker || !currentlyDisplayedLocations) {
       return;
     }
+
+    console.log('MapComponent: Updating markers for', currentlyDisplayedLocations.length, 'locations');
+
     const newMarkersMap = new Map<string, google.maps.marker.AdvancedMarkerElement>();
 
     const selectedShopSlug = selectedShop?.slug || null;
@@ -240,15 +245,18 @@ const MapComponent: React.FC = () => {
     const hoveredShopSlug = hoveredShop?.slug || null;
     const hoverChanged = hoveredShopSlug !== previousHoveredShopSlugRef.current;
 
-    currentlyDisplayedShops.forEach((shop: Shop, index) => {
+    currentlyDisplayedLocations.forEach((shop: Shop, index) => {
       if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return;
       const shopId = shop.slug || shop.GoogleProfileID || String(shop.id) || `marker-${index}`;
       if (!shopId) return;
 
+      // Determine marker color based on shop type
+      const markerColorForShop = MARKER_COLORS[shop.type as keyof typeof MARKER_COLORS] || MARKER_COLORS.default;
+
       let marker = markersRef.current.get(shopId);
       if (!marker) {
-        // Create new marker using memoized helper
-        const markerElement = createMarkerElement();
+        // Create new marker using memoized helper with type-specific color
+        const markerElement = createMarkerElement(markerColorForShop);
 
         // Add hover listeners to marker element with debouncing
         markerElement.addEventListener('mouseenter', () => {
@@ -290,19 +298,21 @@ const MapComponent: React.FC = () => {
 
       // Determine marker styling based on state (hover takes precedence)
       let scale = MARKER_DEFAULT_SCALE;
-      let backgroundColor = markerColor; // Default red
+      // Type-specific colors: Use markerColorForShop determined above
+      let backgroundColor = markerColorForShop;
+      let backgroundImage = '';
       let zIndex = index + MARKER_DEFAULT_Z_INDEX_OFFSET;
 
-      if (isHovered) {
-        // Hover state - blue and larger
-        scale = MARKER_HOVER_SCALE;
-        backgroundColor = MARKER_HOVER_COLOR;
-        zIndex = MARKER_HOVER_Z_INDEX;
-      } else if (isSelected) {
-        // Selected state - blue and large (same as hover to keep visual consistency)
-        scale = MARKER_SELECTED_SCALE;
-        backgroundColor = MARKER_HOVER_COLOR;
-        zIndex = MARKER_SELECTED_Z_INDEX;
+      if (isHovered || isSelected) {
+        // Hover or Selected state - use Maine state flag image with larger scale
+        // Increase scale by 25% (1.6 -> 2.0 for hover, 1.5 -> 1.875 for selected)
+        scale = isHovered ? 'scale(2.0)' : 'scale(1.875)';
+
+        // Use Maine state flag image
+        backgroundImage = 'url(https://www.maine.gov/sos/kids/themes/kids/images/flag.gif)';
+        backgroundColor = ''; // Clear backgroundColor when using image
+
+        zIndex = isHovered ? MARKER_HOVER_Z_INDEX : MARKER_SELECTED_Z_INDEX;
       }
 
       // Apply styling if state changed or this is a new marker
@@ -315,7 +325,16 @@ const MapComponent: React.FC = () => {
         const innerMarker = (marker.content as HTMLElement).firstChild as HTMLElement;
         if (innerMarker) {
           innerMarker.style.transform = scale;
-          innerMarker.style.backgroundColor = backgroundColor;
+
+          if (backgroundImage) {
+            innerMarker.style.backgroundImage = backgroundImage;
+            innerMarker.style.backgroundSize = 'cover';
+            innerMarker.style.backgroundPosition = 'center';
+            innerMarker.style.backgroundColor = '';
+          } else {
+            innerMarker.style.backgroundImage = '';
+            innerMarker.style.backgroundColor = backgroundColor;
+          }
         }
         marker.zIndex = zIndex;
       }
@@ -333,7 +352,7 @@ const MapComponent: React.FC = () => {
       }
     });
     markersRef.current = newMarkersMap;
-  }, [currentlyDisplayedShops, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, markerColor]);
+  }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, markerColor]);
 
   // Effect to pan map to selectedShop with offset to frame info window
   // Uses single pan operation with calculated offsets for smooth movement

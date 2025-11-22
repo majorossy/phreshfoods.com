@@ -1,7 +1,17 @@
 // src/config/map.ts
 'use strict';
 
-export const markerColor: string = "#ed411a";
+export const markerColor: string = "#ed411a"; // Default/legacy color
+
+// Location type specific marker colors
+export const MARKER_COLORS = {
+  farm_stand: "#22c55e",    // Green for farm stands
+  cheese_shop: "#f59e0b",   // Gold/amber for cheese shops
+  fish_monger: "#3b82f6",   // Blue for fish mongers
+  butcher: "#ef4444",       // Red for butchers
+  antique_shop: "#6b7280",  // Grey for antique shops
+  default: "#ed411a"        // Red fallback
+};
 
 export interface BoundsLiteral {
   north: number;
@@ -101,7 +111,7 @@ export const MAP_PAN_DELAY_MS: number = 100;            // Delay before applying
 
 // Marker Styling
 export const MARKER_SIZE_PX: number = 20;              // Size of regular farm stand markers
-export const MARKER_BORDER_WIDTH_PX: number = 2;       // Border width for markers
+export const MARKER_BORDER_WIDTH_PX: number = 1;       // Border width for markers
 export const MARKER_TRANSITION_DURATION_S: string = '0.15s'; // Transition duration for marker animations
 export const MARKER_DEFAULT_SCALE: string = 'scale(1.2)';    // Default marker scale
 export const MARKER_HOVER_SCALE: string = 'scale(1.6)';      // Hovered marker scale
@@ -114,7 +124,7 @@ export const MARKER_HOVER_COLOR: string = '#4285F4';         // Google blue for 
 
 // Search Location Marker Styling
 export const SEARCH_MARKER_SIZE_PX: number = 30;             // Size of search location marker
-export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 3;      // Border width for search marker
+export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 2;      // Border width for search marker
 export const SEARCH_MARKER_INNER_DOT_SIZE_PX: number = 10;   // Size of inner dot in search marker
 export const SEARCH_MARKER_Z_INDEX: number = 9999;           // Z-index for search marker (always on top)
 export const SEARCH_MARKER_COLOR: string = '#4285F4';        // Google blue for search marker

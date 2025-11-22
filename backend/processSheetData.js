@@ -8,8 +8,15 @@ const { Client, Status } = require("@googlemaps/google-maps-services-js");
 const GOOGLE_API_KEY_BACKEND = process.env.GOOGLE_API_KEY_BACKEND;
 const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL;
 const GOOGLE_SHEET_URL_CHEESE_SHOPS = process.env.GOOGLE_SHEET_URL_CHEESE_SHOPS;
+const GOOGLE_SHEET_URL_FISH_MONGERS = process.env.GOOGLE_SHEET_URL_FISH_MONGERS;
+const GOOGLE_SHEET_URL_BUTCHERS = process.env.GOOGLE_SHEET_URL_BUTCHERS;
+const GOOGLE_SHEET_URL_ANTIQUE_SHOPS = process.env.GOOGLE_SHEET_URL_ANTIQUE_SHOPS;
+
 const FARM_STANDS_OUTPUT_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
 const CHEESE_SHOPS_OUTPUT_PATH = path.join(__dirname, 'data', 'cheeseShopsData.json');
+const FISH_MONGERS_OUTPUT_PATH = path.join(__dirname, 'data', 'fishMongersData.json');
+const BUTCHERS_OUTPUT_PATH = path.join(__dirname, 'data', 'butchersData.json');
+const ANTIQUE_SHOPS_OUTPUT_PATH = path.join(__dirname, 'data', 'antiqueShopsData.json');
 
 // Backward compatibility
 const OUTPUT_JSON_PATH = FARM_STANDS_OUTPUT_PATH;
@@ -132,6 +139,21 @@ const CHEESE_SHOP_PRODUCT_COLUMNS = [
     'cow_milk', 'goat_milk', 'sheep_milk'
 ];
 
+const FISH_MONGER_PRODUCT_COLUMNS = [
+    'salmon', 'cod', 'haddock', 'tuna', 'lobster', 'shrimp', 'crab',
+    'oysters', 'clams', 'mussels', 'scallops', 'halibut'
+];
+
+const BUTCHER_PRODUCT_COLUMNS = [
+    'beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'veal',
+    'sausages', 'bacon', 'ground_meat', 'steaks', 'roasts'
+];
+
+const ANTIQUE_SHOP_PRODUCT_COLUMNS = [
+    'furniture', 'jewelry', 'art', 'books', 'ceramics', 'glassware',
+    'silverware', 'textiles', 'collectibles', 'vintage_clothing'
+];
+
 // Generic function to process location data of any type
 async function processLocationData(locationType, sheetUrl, outputPath, productColumns) {
     console.log(`[Processor] Starting ${locationType} data update process...`);
@@ -147,6 +169,7 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
     try {
         // Fetch directly from Google Sheets (follows redirects automatically)
         console.log(`[Processor] Fetching CSV from ${locationType} sheet...`);
+        console.log(`[Processor] DEBUG: Sheet URL = ${sheetUrl}`);
         const sheetResponse = await fetch(sheetUrl, {
             redirect: 'follow'
         });
@@ -353,15 +376,56 @@ async function updateCheeseShopsData() {
     return await processLocationData('cheese_shop', GOOGLE_SHEET_URL_CHEESE_SHOPS, CHEESE_SHOPS_OUTPUT_PATH, CHEESE_SHOP_PRODUCT_COLUMNS);
 }
 
+// Function for fish mongers
+async function updateFishMongersData() {
+    return await processLocationData('fish_monger', GOOGLE_SHEET_URL_FISH_MONGERS, FISH_MONGERS_OUTPUT_PATH, FISH_MONGER_PRODUCT_COLUMNS);
+}
+
+// Function for butchers
+async function updateButchersData() {
+    return await processLocationData('butcher', GOOGLE_SHEET_URL_BUTCHERS, BUTCHERS_OUTPUT_PATH, BUTCHER_PRODUCT_COLUMNS);
+}
+
+// Function for antique shops
+async function updateAntiqueShopsData() {
+    return await processLocationData('antique_shop', GOOGLE_SHEET_URL_ANTIQUE_SHOPS, ANTIQUE_SHOPS_OUTPUT_PATH, ANTIQUE_SHOP_PRODUCT_COLUMNS);
+}
+
 // Function to update all location types
 async function updateAllLocationData() {
     console.log('[Processor] Starting update for all location types...');
+
+    // Always update farm stands
     await updateFarmStandsData();
+
+    // Update cheese shops if configured
     if (GOOGLE_SHEET_URL_CHEESE_SHOPS && !GOOGLE_SHEET_URL_CHEESE_SHOPS.includes("YOUR_") && !GOOGLE_SHEET_URL_CHEESE_SHOPS.includes("SPREADSHEET_ID")) {
         await updateCheeseShopsData();
     } else {
         console.log('[Processor] Cheese shops sheet URL not configured, skipping...');
     }
+
+    // Update fish mongers if configured
+    if (GOOGLE_SHEET_URL_FISH_MONGERS && !GOOGLE_SHEET_URL_FISH_MONGERS.includes("YOUR_") && !GOOGLE_SHEET_URL_FISH_MONGERS.includes("SPREADSHEET_ID")) {
+        await updateFishMongersData();
+    } else {
+        console.log('[Processor] Fish mongers sheet URL not configured, skipping...');
+    }
+
+    // Update butchers if configured
+    if (GOOGLE_SHEET_URL_BUTCHERS && !GOOGLE_SHEET_URL_BUTCHERS.includes("YOUR_") && !GOOGLE_SHEET_URL_BUTCHERS.includes("SPREADSHEET_ID")) {
+        await updateButchersData();
+    } else {
+        console.log('[Processor] Butchers sheet URL not configured, skipping...');
+    }
+
+    // Update antique shops if configured
+    if (GOOGLE_SHEET_URL_ANTIQUE_SHOPS && !GOOGLE_SHEET_URL_ANTIQUE_SHOPS.includes("YOUR_") && !GOOGLE_SHEET_URL_ANTIQUE_SHOPS.includes("SPREADSHEET_ID")) {
+        await updateAntiqueShopsData();
+    } else {
+        console.log('[Processor] Antique shops sheet URL not configured, skipping...');
+    }
+
     console.log('[Processor] All location data updated.');
 }
 

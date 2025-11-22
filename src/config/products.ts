@@ -22,4 +22,7 @@ export { FARM_CATEGORY_DISPLAY_ORDER as CATEGORY_DISPLAY_ORDER } from './farmPro
 // Export all new modules for convenience
 export * from './farmProducts';
 export * from './cheeseProducts';
+export * from './fishProducts';
+export * from './butcherProducts';
+export * from './antiqueProducts';
 export * from './productRegistry';

@@ -47,6 +47,13 @@ export function filterAndSortShops(
   shops: Shop[],
   options: FilterOptions
 ): ShopWithDistance[] {
+  console.log('filterAndSortShops called with:', {
+    shopCount: shops?.length,
+    productFilters: options.productFilters,
+    locationTypes: Array.from(options.locationTypes),
+    radius: options.radius
+  });
+
   if (!shops || shops.length === 0) {
     return [];
   }
@@ -55,7 +62,13 @@ export function filterAndSortShops(
 
   // 1. Filter by Location Type (if not all types selected)
   if (options.locationTypes.size < 2) { // Not "all types"
-    filteredShops = filteredShops.filter(shop => options.locationTypes.has(shop.type));
+    filteredShops = filteredShops.filter(shop => {
+      // Support both single type and types array
+      if (Array.isArray(shop.types)) {
+        return shop.types.some(t => options.locationTypes.has(t));
+      }
+      return options.locationTypes.has(shop.type);
+    });
   }
 
   // 2. Apply Product Filters (now works with nested products object)

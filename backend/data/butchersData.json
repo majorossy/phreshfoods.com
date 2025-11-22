@@ -1,0 +1,287 @@
+[
+  {
+    "type": "butcher",
+    "Name": "55 Portland St",
+    "Address": "55 Portland St, Portland, ME 04101, USA",
+    "City": "Portland",
+    "Zip": "4101",
+    "Rating": "4.8",
+    "Phone": "207-747-4111",
+    "Website": "https://thebutchershoppdx.com",
+    "GoogleProfileID": "ChIJ4cPi5hKcskwRgQoVVOQfRLI",
+    "slug": "@butchershoppdx",
+    "XHandle": "butchershopportland",
+    "FacebookPageID": "butchershopportland",
+    "InstagramUsername": "https://instagram.com/butchershopportland",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "TRUE",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "butcher-shop-portland",
+    "products": {
+      "beef": true,
+      "pork": true,
+      "lamb": true,
+      "chicken": true,
+      "turkey": true,
+      "duck": true,
+      "veal": true,
+      "sausages": true,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": true,
+      "roasts": false
+    },
+    "lat": 43.65829919999999,
+    "lng": -70.26423539999999,
+    "placeDetails": {
+      "name": "55 Portland St",
+      "formatted_address": "55 Portland St, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=12845427102691166849",
+      "geometry": {
+        "location": {
+          "lat": 43.65829919999999,
+          "lng": -70.26423539999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.65961567561614,
+            "lng": -70.26288360124852
+          },
+          "southwest": {
+            "lat": 43.65691771503315,
+            "lng": -70.26558156183152
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "580 Brighton Ave",
+    "Address": "580 Brighton Ave, Portland, ME 04102, USA",
+    "City": "Portland",
+    "Zip": "4102",
+    "Rating": "4.7",
+    "Phone": "207-774-8129",
+    "Website": "https://rosemontmarket.com",
+    "GoogleProfileID": "ChIJceIgtb-bskwRzkgLxs8kfX0",
+    "slug": "@rosemontmkt",
+    "XHandle": "rosemontmarket",
+    "FacebookPageID": "rosemontmarket",
+    "InstagramUsername": "https://instagram.com/rosemontmarket",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "TRUE",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "rosemont-market",
+    "products": {
+      "beef": true,
+      "pork": true,
+      "lamb": true,
+      "chicken": true,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": true,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": true,
+      "roasts": false
+    },
+    "lat": 43.6687023,
+    "lng": -70.3022069,
+    "placeDetails": {
+      "name": "580 Brighton Ave",
+      "formatted_address": "580 Brighton Ave, Portland, ME 04102, USA",
+      "url": "https://maps.google.com/?cid=9042424101629282510",
+      "geometry": {
+        "location": {
+          "lat": 43.6687023,
+          "lng": -70.3022069
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.67010516194417,
+            "lng": -70.30085478040297
+          },
+          "southwest": {
+            "lat": 43.66740720136117,
+            "lng": -70.30355274098599
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "132 Washington Ave",
+    "Address": "132 Washington Ave, Portland, ME 04101, USA",
+    "City": "Portland",
+    "Zip": "4101",
+    "Rating": "4.6",
+    "Phone": "207-805-9990",
+    "Website": "https://provisionsportland.com",
+    "GoogleProfileID": "ChIJcw58_WWcskwRrLuyagp6Ylo",
+    "slug": "@provisionsmaine",
+    "XHandle": "provisionsmaine",
+    "FacebookPageID": "provisionsmaine",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "TRUE",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "provisions-portland",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": true,
+      "sausages": true,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": true,
+      "roasts": false
+    },
+    "lat": 43.6676097,
+    "lng": -70.2535621,
+    "placeDetails": {
+      "name": "132 Washington Ave",
+      "formatted_address": "132 Washington Ave, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=6512902196289518508",
+      "geometry": {
+        "location": {
+          "lat": 43.6676097,
+          "lng": -70.2535621
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6689902302915,
+            "lng": -70.25211926970849
+          },
+          "southwest": {
+            "lat": 43.6662922697085,
+            "lng": -70.25481723029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "88 Market St",
+    "Address": "88 Market St, Portland, ME 04101, USA",
+    "City": "Portland",
+    "Zip": "4101",
+    "Rating": "4.9",
+    "Phone": "207-878-9990",
+    "Website": "https://blacktiecompany.com",
+    "GoogleProfileID": "EiU4OCBNYXJrZXQgU3QsIFBvcnRsYW5kLCBNRSAwNDEwMSwgVVNBIjASLgoUChIJpanMs2qcskwRHnxwHQW6oJUQWCoUChIJ_4KuQiOcskwR72sBs3PJSI8",
+    "slug": "@blacktiecompany",
+    "XHandle": "blacktiecompany",
+    "FacebookPageID": "blacktiecompany",
+    "InstagramUsername": "https://instagram.com/blacktiecompany",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "TRUE",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "black-tie-company",
+    "products": {
+      "beef": true,
+      "pork": true,
+      "lamb": true,
+      "chicken": true,
+      "turkey": true,
+      "duck": true,
+      "veal": true,
+      "sausages": true,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": true,
+      "roasts": false
+    },
+    "lat": 43.6582689,
+    "lng": -70.25487199999999,
+    "placeDetails": {
+      "name": "88 Market St",
+      "formatted_address": "88 Market St, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?q=88+Market+St,+Portland,+ME+04101,+USA&ftid=0x4cb29c6ab3cca9a5:0xae3f80e87c2d293b",
+      "geometry": {
+        "location": {
+          "lat": 43.6582689,
+          "lng": -70.25487199999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6596178802915,
+            "lng": -70.2535230197085
+          },
+          "southwest": {
+            "lat": 43.65691991970851,
+            "lng": -70.2562209802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "134 Washington Ave",
+    "Address": "134 Washington Ave, Portland, ME 04101, USA",
+    "City": "Portland",
+    "Zip": "4101",
+    "Rating": "4.5",
+    "Phone": "207-761-3885",
+    "Website": "https://foleysbakery.com",
+    "GoogleProfileID": "ChIJPw_M4mWcskwRdhY2jwqCWZY",
+    "slug": "@foleysbakery",
+    "XHandle": "foleysbakery",
+    "FacebookPageID": "foleysbakery",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "TRUE",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "foleys-bakery",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": true,
+      "turkey": false,
+      "duck": false,
+      "veal": true,
+      "sausages": true,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": true,
+      "roasts": false
+    },
+    "lat": 43.6677991,
+    "lng": -70.25369429999999,
+    "placeDetails": {
+      "name": "134 Washington Ave",
+      "formatted_address": "134 Washington Ave, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=10833833360480409206",
+      "geometry": {
+        "location": {
+          "lat": 43.6677991,
+          "lng": -70.25369429999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.66915320025482,
+            "lng": -70.25232448167144
+          },
+          "southwest": {
+            "lat": 43.66645523967182,
+            "lng": -70.25502244225446
+          }
+        }
+      }
+    }
+  }
+]

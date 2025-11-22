@@ -19,9 +19,9 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [activeProductFilters, setActiveProductFilters] = useState<Record<string, boolean>>({});
 
-  // Default: both location types selected
+  // Default: all location types selected
   const [activeLocationTypes, setActiveLocationTypes] = useState<Set<LocationType>>(
-    new Set<LocationType>(['farm_stand', 'cheese_shop'])
+    new Set<LocationType>(['farm_stand', 'cheese_shop', 'fish_monger', 'butcher', 'antique_shop'])
   );
 
   // Get valid product keys based on active location types

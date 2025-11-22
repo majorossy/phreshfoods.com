@@ -1,5 +1,6 @@
 // src/components/UI/EmptyState.tsx
 import React from 'react';
+import { LocationType } from '../../types';
 
 interface EmptyStateProps {
   icon?: React.ReactNode;
@@ -44,21 +45,59 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, actio
 export default EmptyState;
 
 // Preset empty states for common scenarios
-export const NoResultsState: React.FC<{ onClearFilters?: () => void }> = ({ onClearFilters }) => (
-  <EmptyState
-    icon={
-      <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
+export const NoResultsState: React.FC<{
+  onClearFilters?: () => void;
+  activeLocationTypes?: Set<LocationType>;
+}> = ({ onClearFilters, activeLocationTypes }) => {
+  // Generate context-aware message based on selected location types
+  const getEmptyMessage = () => {
+    const typesArray = Array.from(activeLocationTypes || []);
+    const hasOnlyFarms = typesArray.length === 1 && typesArray[0] === 'farm_stand';
+    const hasOnlyCheese = typesArray.length === 1 && typesArray[0] === 'cheese_shop';
+    const hasBoth = typesArray.length === 2;
+
+    if (hasOnlyFarms) {
+      return {
+        title: "No farm stands found",
+        description: "We couldn't find any farm stands matching your filters. Try expanding your search radius or selecting cheese shops."
+      };
+    } else if (hasOnlyCheese) {
+      return {
+        title: "No cheese shops found",
+        description: "We couldn't find any cheese shops matching your filters. Try expanding your search radius or selecting farm stands."
+      };
+    } else if (hasBoth || typesArray.length === 0) {
+      return {
+        title: "No locations found",
+        description: "We couldn't find any locations matching your filters. Try adjusting your product filters or expanding your search radius."
+      };
     }
-    title="No farm stands found"
-    description="We couldn't find any farm stands matching your search. Try adjusting your location, expanding the search radius, or clearing some filters."
-    action={onClearFilters ? {
-      label: "Clear All Filters",
-      onClick: onClearFilters
-    } : undefined}
-  />
-);
+
+    // Fallback
+    return {
+      title: "No locations found",
+      description: "We couldn't find any locations in this area. Try expanding your search radius."
+    };
+  };
+
+  const { title, description } = getEmptyMessage();
+
+  return (
+    <EmptyState
+      icon={
+        <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      }
+      title={title}
+      description={description}
+      action={onClearFilters ? {
+        label: "Clear All Filters",
+        onClick: onClearFilters
+      } : undefined}
+    />
+  );
+};
 
 export const NoLocationState: React.FC<{ onSetLocation?: () => void }> = ({ onSetLocation }) => (
   <EmptyState

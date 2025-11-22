@@ -15,8 +15,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const GOOGLE_API_KEY_BACKEND = process.env.GOOGLE_API_KEY_BACKEND; // Still needed for on-demand calls
 const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL; // Used by processSheetData.js
-const FARM_STANDS_DATA_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
-const CHEESE_SHOPS_DATA_PATH = path.join(__dirname, 'data', 'cheeseShopsData.json');
+
+// Data file paths for all location types
+const LOCATION_DATA_PATHS = {
+    farm_stand: path.join(__dirname, 'data', 'farmStandsData.json'),
+    cheese_shop: path.join(__dirname, 'data', 'cheeseShopsData.json'),
+    fish_monger: path.join(__dirname, 'data', 'fishMongersData.json'),
+    butcher: path.join(__dirname, 'data', 'butchersData.json'),
+    antique_shop: path.join(__dirname, 'data', 'antiqueShopsData.json')
+};
+
+// Backward compatibility
+const FARM_STANDS_DATA_PATH = LOCATION_DATA_PATHS.farm_stand;
+const CHEESE_SHOPS_DATA_PATH = LOCATION_DATA_PATHS.cheese_shop;
+
+// Product field definitions for each location type
+const PRODUCT_FIELDS = {
+    farm_stand: ['beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'eggs', 'corn', 'carrots', 'potatoes', 'lettus', 'spinach', 'squash', 'tomatoes', 'peppers', 'cucumbers', 'zucchini', 'garlic', 'onions', 'strawberries', 'blueberries'],
+    cheese_shop: ['cheddar', 'brie', 'gouda', 'mozzarella', 'feta', 'blue_cheese', 'parmesan', 'swiss', 'provolone', 'cow_milk', 'goat_milk', 'sheep_milk'],
+    fish_monger: ['salmon', 'cod', 'haddock', 'tuna', 'lobster', 'shrimp', 'crab', 'oysters', 'clams', 'mussels', 'scallops', 'halibut'],
+    butcher: ['beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'veal', 'sausages', 'bacon', 'ground_meat', 'steaks', 'roasts'],
+    antique_shop: ['furniture', 'jewelry', 'art', 'books', 'ceramics', 'glassware', 'silverware', 'textiles', 'collectibles', 'vintage_clothing']
+};
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
 
@@ -227,18 +247,14 @@ app.get('/health', async (req, res) => {
     res.status(isHealthy ? 200 : 503).json(health);
 });
 
-// In-memory cache for farm stands data (survives across requests)
-const farmStandsCache = {
-    data: null,
-    lastModified: null,
-    etag: null
-};
-
-// In-memory cache for unified locations data (farm stands + cheese shops)
+// In-memory cache for unified locations data (all location types)
 const locationsCache = {
     data: null,
     lastModifiedFarms: null,
     lastModifiedCheese: null,
+    lastModifiedFish: null,
+    lastModifiedButchers: null,
+    lastModifiedAntiques: null,
     etag: null
 };
 
@@ -267,113 +283,6 @@ async function ensureDataUpdate() {
     return updateTracker.promise;
 }
 
-// Endpoint to get farm stands data with ETag caching
-app.get('/api/farm-stands', async (req, res) => {
-    try {
-        console.log('[Farm Stands API] Request received');
-
-        // If an update is in progress, wait for it to complete
-        if (updateTracker.isUpdating && updateTracker.promise) {
-            console.log('[Farm Stands API] Waiting for ongoing data update to complete...');
-            try {
-                await updateTracker.promise;
-            } catch (err) {
-                console.error('[Farm Stands API] Ongoing update failed:', err);
-            }
-        }
-
-        // Check if file exists
-        if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
-            console.warn(`[Farm Stands API] Data file not found. Generating...`);
-            await ensureDataUpdate();
-
-            if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
-                console.error(`[Farm Stands API] Failed to generate data file`);
-                return res.status(503).json({
-                    error: "Farm stand data is currently unavailable. Please try again shortly."
-                });
-            }
-        }
-
-        // Get file stats for cache validation
-        const stats = await fs.stat(FARM_STANDS_DATA_PATH);
-        const fileModTime = stats.mtime.getTime();
-
-        // Check if browser has current version (ETag validation)
-        const clientETag = req.headers['if-none-match'];
-
-        // Check memory cache first
-        if (farmStandsCache.lastModified === fileModTime && farmStandsCache.data) {
-            console.log('[Farm Stands API] Memory cache HIT');
-
-            // Browser has current version - send 304 Not Modified
-            if (clientETag && clientETag === farmStandsCache.etag) {
-                console.log('[Farm Stands API] Client cache valid - 304 Not Modified');
-                return res.status(304).end();
-            }
-
-            // Send from memory cache with proper headers
-            res.set({
-                'ETag': farmStandsCache.etag,
-                'Cache-Control': 'public, max-age=3600, must-revalidate',
-                'Last-Modified': new Date(fileModTime).toUTCString(),
-                'X-Cache': 'HIT'
-            });
-            return res.json(farmStandsCache.data);
-        }
-
-        // Memory cache miss - read from disk
-        console.log('[Farm Stands API] Cache MISS - reading from disk');
-        const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
-        const etag = `"${fileModTime}-${farmStands.length}"`;
-
-        // Update memory cache
-        farmStandsCache.data = farmStands;
-        farmStandsCache.lastModified = fileModTime;
-        farmStandsCache.etag = etag;
-
-        console.log(`[Farm Stands API] Serving ${farmStands.length} farm stands (cache updated)`);
-
-        // Send with cache headers
-        res.set({
-            'ETag': etag,
-            'Cache-Control': 'public, max-age=3600, must-revalidate',
-            'Last-Modified': new Date(fileModTime).toUTCString(),
-            'X-Cache': 'MISS'
-        });
-        res.json(farmStands);
-
-    } catch (error) {
-        console.error('[Farm Stands API] ERROR:', error);
-        if (!res.headersSent) {
-            // Differentiate between error types
-            if (error.code === 'ENOENT') {
-                // File not found - service unavailable
-                res.status(503).json({
-                    error: "Farm stand data is temporarily unavailable. Please try again in a few moments."
-                });
-            } else if (error instanceof SyntaxError) {
-                // JSON parsing error - data corruption, internal server error
-                console.error('[Farm Stands API] Data file corrupted');
-                res.status(500).json({
-                    error: "Data file is corrupted. Please contact support."
-                });
-            } else if (error.code === 'EACCES' || error.code === 'EPERM') {
-                // Permission error - server misconfiguration
-                console.error('[Farm Stands API] Permission denied');
-                res.status(500).json({
-                    error: "Server configuration error. Please contact support."
-                });
-            } else {
-                // Unknown error - generic 500
-                res.status(500).json({
-                    error: "An unexpected error occurred while fetching farm stands."
-                });
-            }
-        }
-    }
-});
-
 // Unified endpoint to get all locations (farm stands + cheese shops) with ETag caching
 app.get('/api/locations', async (req, res) => {
     try {
@@ -389,9 +298,12 @@ app.get('/api/locations', async (req, res) => {
             }
         }
 
-        // Check if both data files exist
+        // Check if all data files exist
         const farmStandsExist = await fs.pathExists(FARM_STANDS_DATA_PATH);
         const cheeseShopsExist = await fs.pathExists(CHEESE_SHOPS_DATA_PATH);
+        const fishMongersExist = await fs.pathExists(LOCATION_DATA_PATHS.fish_monger);
+        const butchersExist = await fs.pathExists(LOCATION_DATA_PATHS.butcher);
+        const antiqueShopsExist = await fs.pathExists(LOCATION_DATA_PATHS.antique_shop);
 
         if (!farmStandsExist) {
             console.warn(`[Locations API] Farm stands data file not found. Generating...`);
@@ -405,7 +317,7 @@ app.get('/api/locations', async (req, res) => {
             }
         }
 
-        // Get file stats for both files for cache validation
+        // Get file stats for all files for cache validation
         const farmStats = await fs.stat(FARM_STANDS_DATA_PATH);
         const farmModTime = farmStats.mtime.getTime();
 
@@ -415,12 +327,33 @@ app.get('/api/locations', async (req, res) => {
             cheeseModTime = cheeseStats.mtime.getTime();
         }
 
+        let fishModTime = null;
+        if (fishMongersExist) {
+            const fishStats = await fs.stat(LOCATION_DATA_PATHS.fish_monger);
+            fishModTime = fishStats.mtime.getTime();
+        }
+
+        let butchersModTime = null;
+        if (butchersExist) {
+            const butchersStats = await fs.stat(LOCATION_DATA_PATHS.butcher);
+            butchersModTime = butchersStats.mtime.getTime();
+        }
+
+        let antiquesModTime = null;
+        if (antiqueShopsExist) {
+            const antiquesStats = await fs.stat(LOCATION_DATA_PATHS.antique_shop);
+            antiquesModTime = antiquesStats.mtime.getTime();
+        }
+
         // Check if browser has current version (ETag validation)
         const clientETag = req.headers['if-none-match'];
 
         // Check memory cache first
         const cacheValid = locationsCache.lastModifiedFarms === farmModTime &&
                            locationsCache.lastModifiedCheese === cheeseModTime &&
+                           locationsCache.lastModifiedFish === fishModTime &&
+                           locationsCache.lastModifiedButchers === butchersModTime &&
+                           locationsCache.lastModifiedAntiques === antiquesModTime &&
                            locationsCache.data;
 
         if (cacheValid) {
@@ -444,12 +377,70 @@ app.get('/api/locations', async (req, res) => {
 
         // Memory cache miss - read from disk and merge
         console.log('[Locations API] Cache MISS - reading from disk');
-        const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
+        const farmStandsRaw = await fs.readJson(FARM_STANDS_DATA_PATH);
+
+        // Farm stand product fields
+        const farmProductFields = ['beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'eggs', 'corn', 'carrots', 'potatoes', 'lettus', 'spinach', 'squash', 'tomatoes', 'peppers', 'cucumbers', 'zucchini', 'garlic', 'onions', 'strawberries', 'blueberries'];
+
+        // Add type field and restructure products for farm stands
+        const farmStands = farmStandsRaw.map(location => {
+            // Check if products are already nested (new format from processSheetData.js)
+            let products;
+            if (location.products && typeof location.products === 'object') {
+                // Products already in nested format
+                products = location.products;
+            } else {
+                // Old format: products at top level
+                products = {};
+                farmProductFields.forEach(field => {
+                    if (location[field] !== undefined) {
+                        products[field] = location[field];
+                    }
+                });
+            }
+
+            return {
+                ...location,
+                type: 'farm_stand',
+                products
+            };
+        });
+        console.log(`[Locations API] Loaded ${farmStands.length} farm stands`);
+        console.log(`[Locations API] DEBUG: First farm stand type=${farmStands[0]?.type}, has products=${!!farmStands[0]?.products}`);
+
         let cheeseShops = [];
 
         if (cheeseShopsExist) {
             try {
-                cheeseShops = await fs.readJson(CHEESE_SHOPS_DATA_PATH);
+                const cheeseShopsRaw = await fs.readJson(CHEESE_SHOPS_DATA_PATH);
+
+                // Cheese shop product fields
+                const cheeseProductFields = ['cheddar', 'brie', 'gouda', 'mozzarella', 'feta', 'blue_cheese', 'parmesan', 'swiss', 'provolone', 'cow_milk', 'goat_milk', 'sheep_milk'];
+
+                // Add type field and restructure products for cheese shops
+                cheeseShops = cheeseShopsRaw.map(location => {
+                    // Check if products are already nested (new format from processSheetData.js)
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        // Products already in nested format
+                        products = location.products;
+                    } else {
+                        // Old format: products at top level
+                        products = {};
+                        cheeseProductFields.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+
+                    return {
+                        ...location,
+                        type: 'cheese_shop',
+                        products
+                    };
+                });
+
                 console.log(`[Locations API] Loaded ${cheeseShops.length} cheese shops`);
             } catch (err) {
                 console.warn('[Locations API] Failed to load cheese shops, continuing with farms only:', err.message);
@@ -458,23 +449,206 @@ app.get('/api/locations', async (req, res) => {
             console.log('[Locations API] Cheese shops data file not found, serving farms only');
         }
 
-        // Merge both arrays
-        const allLocations = [...farmStands, ...cheeseShops];
-        const etag = `"${farmModTime}-${cheeseModTime || 0}-${allLocations.length}"`;
+        // Load fish mongers
+        let fishMongers = [];
+        if (fishMongersExist) {
+            try {
+                const fishMongersRaw = await fs.readJson(LOCATION_DATA_PATHS.fish_monger);
+                fishMongers = fishMongersRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.fish_monger.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'fish_monger',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${fishMongers.length} fish mongers`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load fish mongers:', err.message);
+            }
+        }
+
+        // Load butchers
+        let butchers = [];
+        if (butchersExist) {
+            try {
+                const butchersRaw = await fs.readJson(LOCATION_DATA_PATHS.butcher);
+                butchers = butchersRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.butcher.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'butcher',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${butchers.length} butchers`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load butchers:', err.message);
+            }
+        }
+
+        // Load antique shops
+        let antiqueShops = [];
+        if (antiqueShopsExist) {
+            try {
+                const antiqueShopsRaw = await fs.readJson(LOCATION_DATA_PATHS.antique_shop);
+                antiqueShops = antiqueShopsRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.antique_shop.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'antique_shop',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${antiqueShops.length} antique shops`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load antique shops:', err.message);
+            }
+        }
+
+        // Merge all arrays
+        const mergedLocations = [...farmStands, ...cheeseShops, ...fishMongers, ...butchers, ...antiqueShops];
+
+        // Deduplicate by GoogleProfileID or slug and merge types
+        const locationMap = new Map();
+
+        for (const location of mergedLocations) {
+            const key = location.GoogleProfileID || location.slug || location.Name;
+
+            if (!locationMap.has(key)) {
+                // First occurrence - set types array
+                locationMap.set(key, {
+                    ...location,
+                    types: [location.type]
+                });
+            } else {
+                // Duplicate found - merge the data
+                const existing = locationMap.get(key);
+
+                // Add the new type if not already present
+                if (!existing.types.includes(location.type)) {
+                    existing.types.push(location.type);
+                }
+
+                // Merge products from both entries (union of all products)
+                if (location.products && existing.products) {
+                    existing.products = {
+                        ...existing.products,
+                        ...location.products
+                    };
+                }
+
+                // Keep farm_stand data as base (more complete), but preserve cheese-specific data
+                if (location.type === 'cheese_shop' && existing.type === 'farm_stand') {
+                    // Preserve any cheese-specific fields that might exist
+                    existing.products = {
+                        ...existing.products,
+                        ...location.products
+                    };
+                }
+            }
+        }
+
+        // Convert map to array and determine primary type based on product availability
+        const allLocations = Array.from(locationMap.values()).map(location => {
+            // If location has multiple types, determine primary based on which products it actually has
+            if (location.types && location.types.length > 1) {
+                // Count products for each type
+                const productCounts = {
+                    farm_stand: farmProductFields.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    cheese_shop: PRODUCT_FIELDS.cheese_shop.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    fish_monger: PRODUCT_FIELDS.fish_monger.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    butcher: PRODUCT_FIELDS.butcher.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    antique_shop: PRODUCT_FIELDS.antique_shop.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length
+                };
+
+                // Find the type with the most products
+                let maxCount = 0;
+                let primaryType = location.type; // Default to current type
+
+                for (const [type, count] of Object.entries(productCounts)) {
+                    if (count > maxCount && location.types.includes(type)) {
+                        maxCount = count;
+                        primaryType = type;
+                    }
+                }
+
+                location.type = primaryType;
+            }
+
+            return location;
+        });
+
+        const duplicatesRemoved = mergedLocations.length - allLocations.length;
+
+        if (duplicatesRemoved > 0) {
+            console.log(`[Locations API] Removed ${duplicatesRemoved} duplicate locations`);
+        }
+
+        const etag = `"${farmModTime}-${cheeseModTime || 0}-${fishModTime || 0}-${butchersModTime || 0}-${antiquesModTime || 0}-${allLocations.length}"`;
 
         // Update memory cache
         locationsCache.data = allLocations;
         locationsCache.lastModifiedFarms = farmModTime;
         locationsCache.lastModifiedCheese = cheeseModTime;
+        locationsCache.lastModifiedFish = fishModTime;
+        locationsCache.lastModifiedButchers = butchersModTime;
+        locationsCache.lastModifiedAntiques = antiquesModTime;
         locationsCache.etag = etag;
 
-        console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops = ${allLocations.length} total locations (cache updated)`);
+        console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops + ${fishMongers.length} fish mongers + ${butchers.length} butchers + ${antiqueShops.length} antique shops = ${allLocations.length} total locations (cache updated)`);
 
         // Send with cache headers
         res.set({
             'ETag': etag,
             'Cache-Control': 'public, max-age=3600, must-revalidate',
-            'Last-Modified': new Date(Math.max(farmModTime, cheeseModTime || 0)).toUTCString(),
+            'Last-Modified': new Date(Math.max(
+                farmModTime,
+                cheeseModTime || 0,
+                fishModTime || 0,
+                butchersModTime || 0,
+                antiquesModTime || 0
+            )).toUTCString(),
             'X-Cache': 'MISS'
         });
         res.json(allLocations);

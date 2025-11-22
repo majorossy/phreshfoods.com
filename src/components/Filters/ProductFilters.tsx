@@ -77,6 +77,33 @@ const ProductFilters: React.FC = () => {
             />
             <span className="font-medium">Cheese Shops</span>
           </label>
+          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={activeLocationTypes.has('fish_monger')}
+              onChange={() => toggleLocationType('fish_monger' as LocationType)}
+              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+            />
+            <span className="font-medium">Fish Mongers</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={activeLocationTypes.has('butcher')}
+              onChange={() => toggleLocationType('butcher' as LocationType)}
+              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+            />
+            <span className="font-medium">Butchers</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={activeLocationTypes.has('antique_shop')}
+              onChange={() => toggleLocationType('antique_shop' as LocationType)}
+              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+            />
+            <span className="font-medium">Antique Shops</span>
+          </label>
         </div>
       </fieldset>
 

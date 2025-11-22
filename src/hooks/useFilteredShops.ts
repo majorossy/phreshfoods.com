@@ -1,11 +1,12 @@
 // src/hooks/useFilteredShops.ts
 import { useMemo } from 'react';
-import { Shop, ShopWithDistance, AutocompletePlace } from '../types';
+import { Shop, ShopWithDistance, AutocompletePlace, LocationType } from '../types';
 import { filterAndSortShops } from '../utils/shopFilters';
 
 interface UseFilteredShopsOptions {
   allFarmStands: Shop[] | undefined;
   activeProductFilters: Record<string, boolean> | undefined;
+  activeLocationTypes: Set<LocationType> | undefined;
   searchLocation: AutocompletePlace | null;
   currentRadius: number;
   mapsApiReady: boolean;
@@ -24,6 +25,7 @@ export function useFilteredShops(options: UseFilteredShopsOptions): ShopWithDist
   const {
     allFarmStands,
     activeProductFilters,
+    activeLocationTypes,
     searchLocation,
     currentRadius,
     mapsApiReady,
@@ -36,9 +38,10 @@ export function useFilteredShops(options: UseFilteredShopsOptions): ShopWithDist
 
     return filterAndSortShops(allFarmStands, {
       productFilters: activeProductFilters || {},
+      locationTypes: activeLocationTypes || new Set(['farm_stand', 'cheese_shop']),
       location: searchLocation,
       radius: currentRadius,
       mapsApiReady,
     });
-  }, [allFarmStands, activeProductFilters, searchLocation, currentRadius, mapsApiReady]);
+  }, [allFarmStands, activeProductFilters, activeLocationTypes, searchLocation, currentRadius, mapsApiReady]);
 }

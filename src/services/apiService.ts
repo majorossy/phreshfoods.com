@@ -5,8 +5,6 @@ import { Shop, PlaceDetails, GeoLocation } from '../types'; // Assuming your typ
 import { retryAsync } from '../utils/retry';
 import { cachedFetch } from '../utils/requestCache';
 import {
-  API_RETRY_FARM_STANDS_MAX,
-  API_RETRY_FARM_STANDS_DELAY_MS,
   API_RETRY_GEOCODE_MAX,
   API_RETRY_GEOCODE_DELAY_MS,
 } from '../config/appConfig';
@@ -104,40 +102,6 @@ export async function fetchAndProcessLocations(signal?: AbortSignal): Promise<Sh
       '/api/locations',
       { signal }, // Pass abort signal to fetch
       300000 // 5 minutes cache (locations update hourly)
-    );
-
-    // Process the data
-    let processedData: Shop[] = [];
-    if (Array.isArray(rawData)) {
-      processedData = rawData as Shop[];
-    }
-
-    return processedData;
-
-  } catch (error) {
-    // Don't log errors for aborted requests
-    if (error instanceof Error && error.name === 'AbortError') {
-      return [];
-    }
-    return []; // ALWAYS return an array, even on error
-  }
-}
-
-/**
- * Fetches and processes farm stand data from the server backend (backward compatibility).
- * Uses request caching to prevent duplicate calls and improve performance.
- *
- * @param {AbortSignal} [signal] - Optional abort signal for request cancellation
- * @returns {Promise<Shop[]>} A promise that resolves to an array of shop objects.
- */
-export async function fetchAndProcessFarmStands(signal?: AbortSignal): Promise<Shop[]> {
-  try {
-    // Use cachedFetch with 5-minute cache duration
-    // This prevents duplicate requests during React Strict Mode and hot reloading
-    const rawData = await cachedFetch<Shop[]>(
-      '/api/farm-stands',
-      { signal }, // Pass abort signal to fetch
-      300000 // 5 minutes cache (farm stands update hourly)
     );
 
     // Process the data

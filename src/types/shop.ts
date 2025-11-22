@@ -65,12 +65,14 @@ export interface PlaceDetails {
 }
 
 // Location type discriminator
-export type LocationType = 'farm_stand' | 'cheese_shop';
+export type LocationType = 'farm_stand' | 'cheese_shop' | 'fish_monger' | 'butcher' | 'antique_shop';
 
 // Base interface with common fields shared by all location types
 export interface BaseLocation {
   // Type discriminator
   type: LocationType;
+  // Optional types array for locations that are both farm stand and cheese shop
+  types?: LocationType[];
 
   // Fields primarily from your Google Sheet
   Name: string; // Should always be present

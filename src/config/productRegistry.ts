@@ -5,17 +5,26 @@ import { LocationType } from '../types/shop';
 import { ProductIconsConfig } from './products';
 import { FARM_PRODUCT_ICONS_CONFIG, FARM_CATEGORY_DISPLAY_ORDER } from './farmProducts';
 import { CHEESE_PRODUCT_ICONS_CONFIG, CHEESE_CATEGORY_DISPLAY_ORDER } from './cheeseProducts';
+import { FISH_PRODUCT_ICONS_CONFIG, FISH_CATEGORY_DISPLAY_ORDER } from './fishProducts';
+import { BUTCHER_PRODUCT_ICONS_CONFIG, BUTCHER_CATEGORY_DISPLAY_ORDER } from './butcherProducts';
+import { ANTIQUE_PRODUCT_ICONS_CONFIG, ANTIQUE_CATEGORY_DISPLAY_ORDER } from './antiqueProducts';
 
 // Registry mapping location types to their product configurations
 export const PRODUCT_CONFIGS: Record<LocationType, ProductIconsConfig> = {
   farm_stand: FARM_PRODUCT_ICONS_CONFIG,
   cheese_shop: CHEESE_PRODUCT_ICONS_CONFIG,
+  fish_monger: FISH_PRODUCT_ICONS_CONFIG,
+  butcher: BUTCHER_PRODUCT_ICONS_CONFIG,
+  antique_shop: ANTIQUE_PRODUCT_ICONS_CONFIG,
 };
 
 // Registry mapping location types to their category display order
 export const CATEGORY_DISPLAY_ORDERS: Record<LocationType, string[]> = {
   farm_stand: FARM_CATEGORY_DISPLAY_ORDER,
   cheese_shop: CHEESE_CATEGORY_DISPLAY_ORDER,
+  fish_monger: FISH_CATEGORY_DISPLAY_ORDER,
+  butcher: BUTCHER_CATEGORY_DISPLAY_ORDER,
+  antique_shop: ANTIQUE_CATEGORY_DISPLAY_ORDER,
 };
 
 // Helper function to get product config for a specific location type

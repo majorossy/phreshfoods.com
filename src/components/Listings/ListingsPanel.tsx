@@ -1,7 +1,8 @@
 // src/components/Listings/ListingsPanel.tsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useFarmData } from '../../contexts/FarmDataContext';
+import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
+import { useUI } from '../../contexts/UIContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
@@ -10,10 +11,13 @@ const INITIAL_ITEMS = 20; // Initial number of items to render
 const LOAD_MORE_THRESHOLD = 300; // px from bottom to trigger load more
 
 const ListingsPanel = () => {
-  const { currentlyDisplayedShops, allFarmStands, isLoadingFarmStands, farmStandsError, retryLoadFarmStands } = useFarmData();
-  const { setActiveProductFilters } = useFilters();
+  const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
+  const { setActiveProductFilters, activeLocationTypes } = useFilters();
+  const { selectedShop } = useUI();
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const panelRef = useRef<HTMLElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Track the number of shops to detect meaningful changes (not just re-sorts)
   const prevShopCountRef = useRef<number>(0);
@@ -21,7 +25,7 @@ const ListingsPanel = () => {
   // Reset visible count only when the number of shops significantly changes
   // This prevents reset on distance re-calculations or minor updates
   useEffect(() => {
-    const currentCount = currentlyDisplayedShops.length;
+    const currentCount = currentlyDisplayedLocations.length;
     const prevCount = prevShopCountRef.current;
 
     // Reset if: initial load, or shop count changed significantly (filter/search applied)
@@ -29,24 +33,25 @@ const ListingsPanel = () => {
       setVisibleCount(Math.max(INITIAL_ITEMS, currentCount)); // Show all results immediately
       prevShopCountRef.current = currentCount;
     }
-  }, [currentlyDisplayedShops.length]);
+  }, [currentlyDisplayedLocations.length]);
 
   // Scroll handler for infinite scrolling (throttled with requestAnimationFrame)
   const handleScroll = useCallback(() => {
-    if (!panelRef.current || !currentlyDisplayedShops) return;
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer || !currentlyDisplayedLocations) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = panelRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
     const scrollBottom = scrollHeight - scrollTop - clientHeight;
 
     // Load more when near bottom and more items available
-    if (scrollBottom < LOAD_MORE_THRESHOLD && visibleCount < currentlyDisplayedShops.length) {
-      setVisibleCount(prev => Math.min(prev + INITIAL_ITEMS, currentlyDisplayedShops.length));
+    if (scrollBottom < LOAD_MORE_THRESHOLD && visibleCount < currentlyDisplayedLocations.length) {
+      setVisibleCount(prev => Math.min(prev + INITIAL_ITEMS, currentlyDisplayedLocations.length));
     }
-  }, [visibleCount, currentlyDisplayedShops]);
+  }, [visibleCount, currentlyDisplayedLocations]);
 
   // Attach scroll listener with requestAnimationFrame throttling
   useEffect(() => {
-    const panel = panelRef.current;
+    const panel = scrollContainerRef.current;
     if (!panel) return;
 
     let frameId: number | null = null;
@@ -78,7 +83,7 @@ const ListingsPanel = () => {
   }, [setActiveProductFilters]);
 
   // Show loading state
-  if (isLoadingFarmStands) {
+  if (isLoadingLocations) {
     return (
       <section id="listingsPanel" className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0">
         <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
@@ -92,7 +97,7 @@ const ListingsPanel = () => {
   }
 
   // Show error state
-  if (farmStandsError && allFarmStands.length === 0) {
+  if (locationsError && allLocations.length === 0) {
     return (
       <section id="listingsPanel" className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0">
         <div className="flex flex-col items-center justify-center h-full p-6 text-center">
@@ -101,9 +106,9 @@ const ListingsPanel = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Farm Stands</h3>
-            <p className="text-sm text-gray-600 mb-4">{farmStandsError}</p>
+            <p className="text-sm text-gray-600 mb-4">{locationsError}</p>
             <button
-              onClick={retryLoadFarmStands}
+              onClick={retryLoadLocations}
               className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
             >
               Retry
@@ -115,16 +120,16 @@ const ListingsPanel = () => {
   }
 
   // Get visible shops for windowed rendering
-  const visibleShops = currentlyDisplayedShops.slice(0, visibleCount);
-  const hasMore = visibleCount < currentlyDisplayedShops.length;
+  const visibleShops = currentlyDisplayedLocations.slice(0, visibleCount);
+  const hasMore = visibleCount < currentlyDisplayedLocations.length;
 
   return (
     <section
       id="listingsPanel"
-      ref={panelRef}
+      ref={scrollContainerRef}
       className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
     >
-      {currentlyDisplayedShops.length > 0 ? (
+      {currentlyDisplayedLocations.length > 0 ? (
         <>
           <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {visibleShops.map(shop => (
@@ -138,7 +143,7 @@ const ListingsPanel = () => {
           )}
         </>
       ) : (
-        <NoResultsState onClearFilters={handleClearFilters} />
+        <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
       )}
     </section>
   );
