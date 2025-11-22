@@ -4,7 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PhreshFoods is a farm stand finder application for Maine. It's a React + TypeScript + Vite frontend with a Node.js/Express backend that fetches farm stand data from a Google Sheet, enriches it with Google Maps API data (geocoding, place details), and serves it to the frontend.
+PhreshFoods is a multi-location-type finder application for Maine. It's a React + TypeScript + Vite frontend with a Node.js/Express backend that fetches location data from Google Sheets, enriches it with Google Maps API data (geocoding, place details), and serves it to the frontend.
+
+**Supported Location Types:**
+- Farm Stands (original focus)
+- Cheese Shops
+- Fish Mongers
+- Butchers
+- Antique Shops
+
+Each location type has its own product configuration and filtering system.
 
 ## Development Commands
 
@@ -85,7 +94,13 @@ npm run process-data
 - `src/hooks/` - Custom React hooks
 - `src/services/` - API service layer (apiService.ts)
 - `src/types/` - TypeScript type definitions
-- `src/config/` - App configuration (appConfig.ts)
+- `src/config/` - App configuration and product definitions
+  - `appConfig.ts` - Legacy farm products configuration
+  - `farmProducts.ts` - Farm stand products (22 products)
+  - `cheeseProducts.ts` - Cheese shop products (12 products)
+  - `fishProducts.ts` - Fish monger products (12 products)
+  - `butcherProducts.ts` - Butcher shop products (12 products)
+  - `antiqueProducts.ts` - Antique shop products (10 products)
 - `src/utils/` - Utility functions (cookie helpers, SEO, etc.)
 
 **State Management:**
@@ -141,27 +156,35 @@ npm run process-data
 
 **Key files:**
 - `server.js` - Express server with API endpoints
-- `processSheetData.js` - Data processor that fetches Google Sheet, geocodes, and enriches data
+- `processSheetData.js` - Data processor that fetches Google Sheets, geocodes, and enriches data for all location types
 - `cacheService.js` - In-memory caching (node-cache) for Google API responses
-- `data/farmStandsData.json` - Processed farm stand data (generated file)
+- `data/` - Generated JSON files for each location type (gitignored)
+  - `farmStandsData.json` - Farm stand locations
+  - `cheeseShopsData.json` - Cheese shop locations
+  - `fishMongersData.json` - Fish monger locations
+  - `butchersData.json` - Butcher shop locations
+  - `antiqueShopsData.json` - Antique shop locations
+  - `.gitkeep` - Placeholder to maintain directory structure in git
 
 **Data Flow:**
 1. **Scheduled refresh:** Cron job (default: hourly, configurable via `DATA_REFRESH_SCHEDULE` env var) runs `processSheetData.js`
 2. **processSheetData.js:**
-   - Fetches CSV from Google Sheet (via `GOOGLE_SHEET_URL`)
-   - For each row: geocodes address, fetches Place Details
-   - Saves enriched data to `backend/data/farmStandsData.json`
+   - Fetches CSV from multiple Google Sheet tabs (via `GOOGLE_SHEET_URL`)
+   - Processes 5 location types: farm stands, cheese shops, fish mongers, butchers, antique shops
+   - For each location: geocodes address, fetches Place Details
+   - Saves enriched data to separate JSON files in `backend/data/`
    - Has 500ms delay between API calls (`DELAY_BETWEEN_API_CALLS_MS`)
+   - **Important:** JSON data files are gitignored and must be generated via `npm run process-data`
 3. **server.js:**
    - Serves static files from `public/`
-   - Provides `/api/farm-stands` endpoint (reads from farmStandsData.json)
+   - Provides `/api/farm-stands` endpoint (combines all location types from JSON files)
    - Uses `ongoingUpdate` promise tracking to prevent ECONNRESET errors when data is being processed
    - Proxies Google Maps API calls: `/api/geocode`, `/api/places/details`, `/api/directions`
    - On-demand API calls are cached via `cacheService.js`
 
 **API Endpoints:**
 - `GET /api/config` - Config endpoint (currently returns empty object)
-- `GET /api/farm-stands` - Returns all farm stands
+- `GET /api/farm-stands` - Returns all locations (farm stands, cheese shops, fish mongers, butchers, antique shops)
 - `GET /api/geocode?address=...` - Geocode an address (proxied to Google)
 - `GET /api/places/details?placeId=...&fields=...` - Get Place Details (proxied to Google)
 - `GET /api/directions?origin=...&destination=...` - Get directions (proxied to Google)
@@ -183,12 +206,24 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 ### Data Model
 
 **Shop Type (src/types/shop.ts):**
-- Fields from Google Sheet: Name, Address, City, Zip, Phone, Website, etc.
-- Product booleans: beef, pork, lamb, chicken, turkey, duck, eggs, corn, carrots, potatoes, lettus, spinach, squash, tomatoes, peppers, cucumbers, zucchini, garlic, onions, strawberries, blueberries
+- Fields from Google Sheet: Name, Address, City, Zip, Phone, Website, type, etc.
+- `type` field identifies location type: 'farm_stand', 'cheese_shop', 'fish_monger', 'butcher', 'antique_shop'
+- Product booleans (type-specific):
+  - **Farm Stands:** 22 products (meats, poultry, eggs, vegetables, fruits, aromatics)
+  - **Cheese Shops:** 12 products (cheese types, milk sources)
+  - **Fish Mongers:** 12 products (fish, shellfish)
+  - **Butchers:** 12 products (fresh meats, poultry, prepared meats, cuts)
+  - **Antique Shops:** 10 products (furniture, jewelry, art, books, ceramics, glassware, silverware, textiles, collectibles, vintage clothing)
 - Geocoded data: lat, lng
 - Enriched Google data: placeDetails (rating, opening_hours, photos, reviews, etc.)
 - Social media: TwitterHandle, FacebookPageID, InstagramUsername, InstagramLink, etc.
 - Routing: slug (used for /farm/:slug URLs)
+
+**Product Configuration:**
+- Each product has: `csvHeader`, `name`, `icon_available`, `icon_unavailable`, `category`
+- Icons stored in `/public/images/icons/` with naming pattern: `{product}_1.jpg` (available), `{product}_0.jpg` (unavailable)
+- Total: 58 unique products requiring 116 icon files
+- Some icons are shared between location types (e.g., meats shared between farm stands and butchers)
 
 **ShopWithDistance:**
 - Extends Shop with `distance` (meters) and `distanceText` (formatted string)
@@ -211,9 +246,12 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 - Place Autocomplete for location search (Note: Google deprecated `Autocomplete` in favor of `PlaceAutocompleteElement` - migration recommended but not urgent, 12+ months support guaranteed)
 
 **Overlays:**
-- Shop Details Overlay - Basic shop info
-- Social Overlay - Social media, reviews, directions (tabbed interface)
-- Initial Search Modal - First-time user experience
+- **Shop Details Overlay** - Tabbed interface with:
+  - Info tab: Basic shop information (name, address, phone, website, rating)
+  - Hours tab: Opening hours from Google Place Details
+  - Products tab: Type-specific product availability with icons
+- **Social Overlay** - Tabbed interface for social media, reviews, and directions
+- **Initial Search Modal** - First-time user experience
 
 **State Persistence:**
 - Last searched location saved in cookie (`farmStandFinder_lastLocation`)
@@ -296,12 +334,26 @@ npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @
 ## Documentation Files
 
 - **CLAUDE.md** (this file) - Project overview and development guide
+- **DEPLOYMENT.md** - Comprehensive deployment guide with environment setup, build process, and production deployment instructions
 - **CONTEXTS.md** (`src/contexts/CONTEXTS.md`) - Comprehensive context architecture documentation
 - **ACCESSIBILITY_AUDIT.md** - Accessibility audit report and WCAG compliance status
 - **TESTING_GUIDE.md** - Testing setup instructions and examples
 - **README.md** - Basic project information
 
 ## Recent Architectural Improvements
+
+### Multi-Location Type System (2025-01)
+- **Expanded from single location type to 5 types:** Farm stands, cheese shops, fish mongers, butchers, antique shops
+- **Type-specific product configurations:** Each location type has its own product config file with unique products and icons
+- **Data file separation:** Each location type has its own JSON file in `backend/data/`
+- **Gitignore data files:** All generated JSON files are now gitignored and must be regenerated via `npm run process-data`
+- **Unified API endpoint:** `/api/farm-stands` returns all location types combined
+- **Shop Details Overlay tabs:** Added tabbed interface (Info, Hours, Products) to shop details overlay
+
+### Version Control Improvements (2025-01)
+- **Data files gitignored:** `backend/data/*.json` files are no longer tracked by git
+- **Deployment guide added:** Comprehensive `DEPLOYMENT.md` with setup, build, and deployment instructions
+- **Directory structure maintained:** Added `.gitkeep` to `backend/data/` directory
 
 ### Migrated Components (Using Domain Contexts)
 The following components have been migrated from `AppContext` to specific domain hooks:
@@ -353,12 +405,24 @@ The following components have been migrated from `AppContext` to specific domain
 
 **See:** `src/contexts/CONTEXTS.md` for detailed migration guide
 
-### Adding a New Product Filter
-1. Add column to Google Sheet
-2. Update `PRODUCT_ICONS_CONFIG` in src/config/appConfig.ts
-3. Add boolean field to Shop interface in src/types/shop.ts
-4. Update headerMap in backend/processSheetData.js
-5. Add icon images to public/images/icons/ (available and unavailable states)
+### Adding a New Location Type
+1. Create new Google Sheet tab for the location type
+2. Create product config file in `src/config/` (e.g., `bookstoreProducts.ts`)
+3. Define products with `csvHeader`, `name`, `icon_available`, `icon_unavailable`, `category`
+4. Update `backend/processSheetData.js` to process new location type
+5. Add new data file path (e.g., `backend/data/bookstoresData.json`)
+6. Update `backend/server.js` to load and combine new location type
+7. Create icon images in `public/images/icons/` (2 per product: `{product}_1.jpg` and `{product}_0.jpg`)
+8. Update Shop type in `src/types/shop.ts` if needed
+9. Run `npm run process-data` to generate initial data
+
+### Adding a New Product to Existing Location Type
+1. Add column to appropriate Google Sheet tab
+2. Update corresponding product config file in `src/config/` (e.g., `farmProducts.ts`)
+3. Add boolean field to Shop interface in `src/types/shop.ts`
+4. Update headerMap in `backend/processSheetData.js`
+5. Add icon images to `public/images/icons/` (available and unavailable states)
+6. Run `npm run process-data` to refresh data
 
 ### Modifying Google API Fields
 1. Update `fieldsToFetchFromPlaces` array in processSheetData.js
@@ -367,16 +431,25 @@ The following components have been migrated from `AppContext` to specific domain
 
 ### Debugging Data Issues
 1. Check backend logs for API errors during data processing
-2. Inspect `backend/data/farmStandsData.json` directly
+2. Inspect JSON files in `backend/data/` directory directly
 3. Use `/api/cache/flush-and-refresh` endpoint to force refresh (dev mode)
-4. Check Google Sheet has proper headers and data format
+4. Check Google Sheet tabs have proper headers and data format
+5. Verify all required data files exist: `farmStandsData.json`, `cheeseShopsData.json`, `fishMongersData.json`, `butchersData.json`, `antiqueShopsData.json`
+6. If data files are missing, run `npm run process-data` to regenerate them
 
 ### Production Deployment
-1. Build frontend: `npm run build:frontend`
-2. Copy dist/ contents to backend/public/
-3. Ensure .env is configured on server
-4. Start backend: `npm run start:backend`
-5. Server serves both API and static frontend
+**See DEPLOYMENT.md for comprehensive deployment guide.**
+
+Quick steps:
+1. Clone repository and install dependencies: `npm install`
+2. Configure environment variables in `.env`
+3. Generate data files: `npm run process-data`
+4. Build frontend: `npm run build:frontend`
+5. Copy dist/ contents to backend/public/
+6. Start backend: `npm run start:backend` (or use PM2 for production)
+7. Server serves both API and static frontend
+
+**Important:** Data files (`backend/data/*.json`) are gitignored and must be generated on each deployment.
 
 ## Tech Stack
 
