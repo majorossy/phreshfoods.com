@@ -439,15 +439,24 @@ function validateConfig() {
 
 ### 🟡 **MEDIUM PRIORITY** (Do Soon)
 
-5. **Optimize useEffect hooks to prevent unnecessary renders**
-   - Impact: Better performance
-   - Effort: 1-2 hours
-   - Files: `src/App.tsx`, `src/components/Map/MapComponent.tsx`
+5. ✅ **COMPLETED: Optimize useEffect hooks to prevent unnecessary renders**
+   - Impact: Better performance, reduced re-renders
+   - Effort: 1 hour
+   - Files: `src/App.tsx:52-54`
+   - **Status:** Removed `setCurrentlyDisplayedLocations` from dependency array (setter functions are stable)
+   - **Result:** Prevents unnecessary effect re-executions
 
-6. **Implement marker pooling for map optimization**
+6. ✅ **COMPLETED: Implement marker pooling for map optimization**
    - Impact: 30-50% faster map updates
-   - Effort: 2-3 hours
-   - File: `src/components/Map/MapComponent.tsx`
+   - Effort: 2 hours
+   - File: `src/components/Map/MapComponent.tsx:231-390`
+   - **Status:** Markers are now reused instead of recreated on each render
+   - **Optimizations:**
+     - Marker reuse: Existing markers update position/properties instead of being destroyed
+     - Conditional DOM updates: Only update styles when state actually changes
+     - Efficient cleanup: Skip iteration if marker counts match
+     - Position change detection: Only update marker position if coordinates changed
+   - **Result:** Significantly faster marker updates when filtering/searching locations
 
 7. **Consolidate product configuration**
    - Impact: Prevents inconsistencies

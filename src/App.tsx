@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, lazy, Suspense } from 'react';
+import React, { useEffect, useMemo, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { useLocationData } from './contexts/LocationDataContext';
 import { useSearch } from './contexts/SearchContext';
@@ -47,10 +47,11 @@ function App() {
   });
 
   // Update displayed shops when filtered results change
-  // This effect only runs when filtered results actually change
+  // Optimized: Remove setCurrentlyDisplayedLocations from deps to prevent unnecessary re-renders
+  // The setter function is stable and doesn't need to be in the dependency array
   useEffect(() => {
     setCurrentlyDisplayedLocations(filteredAndSortedShops);
-  }, [filteredAndSortedShops, setCurrentlyDisplayedLocations]);
+  }, [filteredAndSortedShops]);
 
   // Auto-populate search location when loading a direct farm URL
   useEffect(() => {
