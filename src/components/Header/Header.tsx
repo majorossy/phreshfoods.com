@@ -1,12 +1,14 @@
 // src/components/Header/Header.tsx
-import React, { useState, useContext, useRef, useEffect } from 'react';
-import { AppContext, AutocompletePlace } from '../../contexts/AppContext';
-import { MAINE_BOUNDS_LITERAL } from '../../config/appConfig';
+import React, { useState, useRef, useEffect } from 'react';
+import { AutocompletePlace } from '../../types';
+import { MAINE_BOUNDS_LITERAL, DEFAULT_PORTLAND_CENTER } from '../../config/appConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductFilters from '../Filters/ProductFilters'; // Import the filters component
+import { useDebounce } from '../../hooks/useDebounce';
+import { useSearch } from '../../contexts/SearchContext';
+import { useUI } from '../../contexts/UIContext';
 
 const Header: React.FC = () => {
-  const appContext = useContext(AppContext);
   const autocompleteInputRef = useRef<HTMLInputElement>(null);
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [inputValue, setInputValue] = useState<string>('');
@@ -15,14 +17,12 @@ const Header: React.FC = () => {
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null); // For click outside listener
 
-  if (!appContext) {
-    return (
-      <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden">
-        <div className="container mx-auto px-2 sm:px-4"><div>Loading context...</div></div>
-      </header>
-    );
-  }
+  // Local state for radius slider (for immediate UI feedback)
+  const [localRadius, setLocalRadius] = useState<number>(20); // Default 20 miles
+  // Debounced radius value (delays filter computation)
+  const debouncedRadius = useDebounce(localRadius, 300);
 
+  // Get search and UI contexts
   const {
     mapsApiReady,
     setLastPlaceSelectedByAutocompleteAndCookie,
@@ -32,9 +32,24 @@ const Header: React.FC = () => {
     currentRadius,
     setCurrentRadius,
     lastPlaceSelectedByAutocomplete,
+  } = useSearch();
+
+  const {
     setSelectedShop,    // For handleTitleClick
     closeShopOverlays, // For handleTitleClick
-  } = appContext;
+  } = useUI();
+
+  // Effect to initialize local radius from context
+  useEffect(() => {
+    setLocalRadius(currentRadius);
+  }, []); // Only on mount
+
+  // Effect to update context radius when debounced value changes
+  useEffect(() => {
+    if (setCurrentRadius && debouncedRadius !== currentRadius) {
+      setCurrentRadius(debouncedRadius);
+    }
+  }, [debouncedRadius, currentRadius, setCurrentRadius]);
 
   // Effect to initialize/update inputValue
   useEffect(() => {
@@ -49,11 +64,22 @@ const Header: React.FC = () => {
 
   // Effect for Autocomplete Initialization
   useEffect(() => {
-    console.log("[Header] Autocomplete init check - mapsApiReady:", mapsApiReady, "inputRef:", !!autocompleteInputRef.current, "places API:", !!window.google?.maps?.places, "already initialized:", !!autocompleteInstanceRef.current);
-    if (!mapsApiReady || !autocompleteInputRef.current || !window.google?.maps?.places || autocompleteInstanceRef.current) {
+    // Cleanup any existing instance first (handles re-renders and StrictMode)
+    if (autocompleteInstanceRef.current) {
+      google.maps.event.clearInstanceListeners(autocompleteInstanceRef.current);
+      autocompleteInstanceRef.current = null;
+    }
+
+    // Only initialize if Maps API is ready and we have a valid input element
+    if (!mapsApiReady || !autocompleteInputRef.current || !window.google?.maps?.places) {
       return;
     }
-    console.log("[Header] Initializing Google Places Autocomplete...");
+
+    // Verify the input element is still in the DOM
+    if (!document.contains(autocompleteInputRef.current)) {
+      return;
+    }
+
     const autocompleteOptions: google.maps.places.AutocompleteOptions = {
       types: ['geocode', 'establishment'],
       componentRestrictions: { country: 'us' },
@@ -67,44 +93,66 @@ const Header: React.FC = () => {
         autocompleteOptions.bounds = bounds;
         autocompleteOptions.strictBounds = false;
     }
-    const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, autocompleteOptions);
-    autocompleteInstanceRef.current = autocomplete;
-    console.log("[Header] Autocomplete initialized successfully!");
-    autocomplete.addListener('place_changed', () => {
-      console.log("[Header] Autocomplete place_changed event fired");
-      const placeResult = autocomplete.getPlace();
-      if (placeResult.geometry && placeResult.geometry.location) {
-        const adaptedPlace: AutocompletePlace = {
-          name: placeResult.name,
-          formatted_address: placeResult.formatted_address,
-          geometry: {
-            location: { lat: placeResult.geometry.location.lat(), lng: placeResult.geometry.location.lng() },
-            viewport: placeResult.geometry.viewport?.toJSON(),
-          },
-          place_id: placeResult.place_id, address_components: placeResult.address_components, types: placeResult.types,
-        };
-        const term = placeResult.formatted_address || placeResult.name || "";
-        setInputValue(term);
-        setLastPlaceSelectedByAutocompleteAndCookie(adaptedPlace, term);
-        setSearchTerm(term);
-        setMapViewTargetLocation(adaptedPlace);
-      } else {
-        const currentInputVal = autocompleteInputRef.current?.value || "";
-        setSearchTerm(currentInputVal);
-        setLastPlaceSelectedByAutocompleteAndCookie(null, currentInputVal);
-      }
-    });
+
+    try {
+      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, autocompleteOptions);
+      autocompleteInstanceRef.current = autocomplete;
+
+      autocomplete.addListener('place_changed', () => {
+        const placeResult = autocomplete.getPlace();
+        if (placeResult.geometry && placeResult.geometry.location) {
+          const adaptedPlace: AutocompletePlace = {
+            name: placeResult.name,
+            formatted_address: placeResult.formatted_address,
+            geometry: {
+              location: { lat: placeResult.geometry.location.lat(), lng: placeResult.geometry.location.lng() },
+              viewport: placeResult.geometry.viewport?.toJSON(),
+            },
+            place_id: placeResult.place_id, address_components: placeResult.address_components, types: placeResult.types,
+          };
+          const term = placeResult.formatted_address || placeResult.name || "";
+          setInputValue(term);
+          setLastPlaceSelectedByAutocompleteAndCookie(adaptedPlace, term);
+          setSearchTerm(term);
+          setMapViewTargetLocation(adaptedPlace);
+
+          // Navigate to homepage and close all overlays when new address is selected
+          navigate('/', { replace: true });
+          closeShopOverlays();
+        } else {
+          const currentInputVal = autocompleteInputRef.current?.value || "";
+          setSearchTerm(currentInputVal);
+          setLastPlaceSelectedByAutocompleteAndCookie(null, currentInputVal);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to initialize Google Places Autocomplete:', error);
+      autocompleteInstanceRef.current = null;
+    }
+
     return () => {
         if (autocompleteInstanceRef.current) {
-            google.maps.event.clearInstanceListeners(autocompleteInstanceRef.current);
+            try {
+              google.maps.event.clearInstanceListeners(autocompleteInstanceRef.current);
+            } catch (error) {
+              console.error('Error clearing autocomplete listeners:', error);
+            }
+            // Clean up pac-container elements
             const pacContainers = document.getElementsByClassName('pac-container');
-            for (let i = 0; i < pacContainers.length; i++) {
-                if(pacContainers[i].parentNode) pacContainers[i].parentNode.removeChild(pacContainers[i]);
+            for (let i = pacContainers.length - 1; i >= 0; i--) {
+                const container = pacContainers[i];
+                if(container.parentNode) {
+                  try {
+                    container.parentNode.removeChild(container);
+                  } catch (error) {
+                    // Element might already be removed
+                  }
+                }
             }
             autocompleteInstanceRef.current = null;
         }
     };
-  }, [mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, setMapViewTargetLocation]);
+  }, [mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, setMapViewTargetLocation, navigate, closeShopOverlays]);
 
   // Click outside listener for filter dropdown
   useEffect(() => {
@@ -131,22 +179,35 @@ const Header: React.FC = () => {
   const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => { /* ... your existing keydown logic ... */ };
 
   const handleTitleClick = () => {
-    if (setSelectedShop) setSelectedShop(null);
-    if (closeShopOverlays) closeShopOverlays();
-    // Optionally reset other states like search term or map view
-    if (setSearchTerm) setSearchTerm('');
-    if (setLastPlaceSelectedByAutocompleteAndCookie) setLastPlaceSelectedByAutocompleteAndCookie(null, ''); 
-    if (setMapViewTargetLocation) setMapViewTargetLocation(null); 
+    setSelectedShop(null);
+    closeShopOverlays();
+
+    // Reset to Portland default location instead of clearing search
+    const portlandPlace: AutocompletePlace = {
+      name: "Portland, Maine",
+      formatted_address: "Portland, ME, USA",
+      geometry: {
+        location: DEFAULT_PORTLAND_CENTER,
+        viewport: undefined
+      },
+      place_id: undefined,
+      address_components: undefined,
+      types: undefined
+    };
+
+    setSearchTerm('Portland, ME, USA');
+    setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, 'Portland, ME, USA');
+    setMapViewTargetLocation(portlandPlace);
   };
 
   return (
-    <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden">
+    <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden" role="banner">
       <div className="w-full">
         <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full">
           {/* Logo and Title Section */}
           <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
             <img src="/images/flag.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
-            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage">
+            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="Farm Stand Finder - Go to Homepage">
               <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: 'rgb(27, 74, 123)' }}>
                 Farm Stand Finder
               </h1>
@@ -154,7 +215,8 @@ const Header: React.FC = () => {
           </div>
 
           {/* Search, Radius, and Filters Section */}
-          <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2 w-full sm:w-auto"> {/* Use gap-x for horizontal spacing */}
+          <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2 w-full sm:w-auto" role="search"> {/* Use gap-x for horizontal spacing */}
+            <label htmlFor="headerSearchAutocompleteClassic" className="sr-only">Search for farm stands by location</label>
             <input
               ref={autocompleteInputRef}
               id="headerSearchAutocompleteClassic"
@@ -165,7 +227,10 @@ const Header: React.FC = () => {
               onChange={handleInputChange}
               onBlur={handleInputBlur}
               onKeyDown={handleInputKeyDown}
+              aria-label="Search for farm stands by zip code, city, or address"
+              aria-describedby="search-hint"
             />
+            <span id="search-hint" className="sr-only">Start typing to search for farm stands near you</span>
             <div className="flex items-center gap-1">
               <label htmlFor="radiusSliderHeader" className="text-xs sm:text-sm font-medium whitespace-nowrap text-gray-700">Radius:</label>
               <input
@@ -173,13 +238,18 @@ const Header: React.FC = () => {
                 id="radiusSliderHeader"
                 name="radius"
                 min="10" max="100"
-                value={currentRadius}
+                value={localRadius}
                 step="5"
-                onChange={(e) => setCurrentRadius(Number(e.target.value))}
+                onChange={(e) => setLocalRadius(Number(e.target.value))}
                 className="w-20 sm:w-24 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600"
+                aria-label="Search radius"
+                aria-valuemin={10}
+                aria-valuemax={100}
+                aria-valuenow={localRadius}
+                aria-valuetext={`${localRadius} miles`}
               />
-              <span id="radiusValueHeader" className="text-xs sm:text-sm font-semibold w-10 text-right text-red-700">
-                {currentRadius} mi
+              <span id="radiusValueHeader" className="text-xs sm:text-sm font-semibold w-10 text-right text-red-700" aria-live="polite">
+                {localRadius} mi
               </span>
             </div>
 
@@ -191,6 +261,7 @@ const Header: React.FC = () => {
                 className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm"
                 aria-expanded={showFilterDropdown}
                 aria-controls="filter-dropdown-header"
+                aria-label={`Product filters ${showFilterDropdown ? 'expanded' : 'collapsed'}`}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />

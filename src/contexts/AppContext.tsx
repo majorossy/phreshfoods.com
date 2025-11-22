@@ -1,24 +1,43 @@
 // src/contexts/AppContext.tsx
-import React, { createContext, useState, ReactNode, useEffect, useCallback } from 'react';
-import { Shop, ShopWithDistance } from '../types'; // Ensure ShopWithDistance is exported
-import * as apiService from '../services/apiService';
-import { getCookie, setCookie, eraseCookie } from '../utils/cookieHelper';
-import {
-  LAST_SEARCHED_LOCATION_COOKIE_NAME,
-  COOKIE_EXPIRY_DAYS,
-} from '../config/appConfig';
+/**
+ * Legacy AppContext for backward compatibility
+ *
+ * This context now wraps the new domain-specific contexts:
+ * - FarmDataContext
+ * - SearchContext
+ * - FilterContext
+ * - UIContext
+ * - DirectionsContext
+ *
+ * New code should use the specific contexts directly via their hooks:
+ * - useFarmData()
+ * - useSearch()
+ * - useFilters()
+ * - useUI()
+ * - useDirections()
+ *
+ * This file is kept for backward compatibility with existing components.
+ */
+import React, { createContext, useContext, ReactNode, useMemo } from 'react';
+import { Shop, ShopWithDistance, AutocompletePlace, ToastType } from '../types';
+import { AppProviders } from './AppProviders';
+import { useFarmData } from './FarmDataContext';
+import { useSearch } from './SearchContext';
+import { useFilters } from './FilterContext';
+import { useUI } from './UIContext';
+import { useDirections } from './DirectionsContext';
+import { setToastHandler as setFarmDataToastHandler } from './FarmDataContext';
+import { setDirectionsToastHandler } from './DirectionsContext';
 
-export interface AutocompletePlace {
-  name?: string;
-  formatted_address?: string;
-  geometry?: {
-    location: google.maps.LatLng | google.maps.LatLngLiteral; // Can be either
-    viewport?: google.maps.LatLngBounds | google.maps.LatLngBoundsLiteral;
-  };
-  place_id?: string;
-  address_components?: google.maps.GeocoderAddressComponent[];
-  types?: string[];
-}
+// Toast handler for notifications (shared across contexts)
+let toastHandler: ((type: ToastType, message: string) => void) | null = null;
+
+export const setToastHandler = (handler: (type: ToastType, message: string) => void) => {
+  toastHandler = handler;
+  // Also set the handler for the individual contexts
+  setFarmDataToastHandler(handler);
+  setDirectionsToastHandler(handler);
+};
 
 interface AppContextType {
   allFarmStands: Shop[];
@@ -37,13 +56,21 @@ interface AppContextType {
   setSelectedShop: (shop: Shop | null) => void;
   isShopOverlayOpen: boolean;
   isSocialOverlayOpen: boolean;
-  openShopOverlays: (shop: Shop, openTab?: 'shop' | 'social' | 'directions') => void; // --- MODIFIED ---
+  openShopOverlays: (shop: Shop, openTab?: 'shop' | 'social' | 'directions', socialTab?: string) => void; // --- MODIFIED ---
   closeShopOverlays: () => void;
   isInitialModalOpen: boolean;
   setIsInitialModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   mapsApiReady: boolean;
   mapViewTargetLocation: AutocompletePlace | null;
   setMapViewTargetLocation: React.Dispatch<React.SetStateAction<AutocompletePlace | null>>;
+  socialOverlayInitialTab: string;
+  setSocialOverlayActiveTab: (tab: string) => void;
+  tabChangeKey: number;
+
+  // --- API ERROR & LOADING STATES ---
+  isLoadingFarmStands: boolean;
+  farmStandsError: string | null;
+  retryLoadFarmStands: () => void;
 
   // --- ADDED FOR DIRECTIONS ---
   directionsResult: google.maps.DirectionsResult | null;
@@ -59,203 +86,75 @@ interface AppContextType {
 
 export const AppContext = createContext<AppContextType | undefined>(undefined);
 
+/**
+ * AppProvider wraps children with all domain-specific providers
+ * and provides a composite context for backward compatibility
+ */
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [allFarmStands, setAllFarmStands] = useState<Shop[]>([]);
-  const [currentlyDisplayedShops, setCurrentlyDisplayedShops] = useState<ShopWithDistance[]>([]); // --- MODIFIED ---
-  const [activeProductFilters, setActiveProductFilters] = useState<Record<string, boolean>>({});
-  const [lastPlaceSelectedByAutocomplete, _setLastPlaceSelectedByAutocompleteInternal] = useState<AutocompletePlace | null>(null);
-  const [searchTerm, _setSearchTermInternal] = useState<string>('');
-  const [currentRadius, setCurrentRadius] = useState<number>(30);
-  const [selectedShop, _setSelectedShopInternal] = useState<Shop | null>(null);
-  const [isShopOverlayOpen, setIsShopOverlayOpen] = useState<boolean>(false);
-  const [isSocialOverlayOpen, setIsSocialOverlayOpen] = useState<boolean>(false);
-  const [isInitialModalOpen, setIsInitialModalOpen] = useState<boolean>(true); // Default to true
-  const [mapsApiReady, setMapsApiReady] = useState(false);
-  const [mapViewTargetLocation, setMapViewTargetLocation] = useState<AutocompletePlace | null>(null);
+  return (
+    <AppProviders>
+      <AppContextProvider>{children}</AppContextProvider>
+    </AppProviders>
+  );
+};
 
-  // --- ADDED FOR DIRECTIONS ---
-  const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
-  const [directionsError, setDirectionsError] = useState<string | null>(null);
-  const [isFetchingDirections, setIsFetchingDirections] = useState<boolean>(false);
-  // --- END ADDED FOR DIRECTIONS ---
+/**
+ * Internal provider that combines all domain contexts into the legacy AppContext
+ */
+const AppContextProvider = ({ children }: { children: ReactNode }) => {
+  // Get all domain-specific contexts
+  const farmData = useFarmData();
+  const search = useSearch();
+  const filters = useFilters();
+  const ui = useUI();
+  const directions = useDirections();
 
-  useEffect(() => {
-    apiService.fetchAndProcessFarmStands()
-      .then(fetchedStands => {
-        if (fetchedStands && Array.isArray(fetchedStands)) {
-          setAllFarmStands(fetchedStands);
-        } else {
-          setAllFarmStands([]);
-        }
-      })
-      .catch(error => {
-        console.error("[AppContext] Error fetching initial farm stands:", error);
-        setAllFarmStands([]);
-      });
-  }, []);
+  // Combine them into the legacy AppContext shape
+  const value: AppContextType = useMemo(() => ({
+    // FarmData domain
+    allFarmStands: farmData.allFarmStands,
+    setAllFarmStands: farmData.setAllFarmStands,
+    currentlyDisplayedShops: farmData.currentlyDisplayedShops,
+    setCurrentlyDisplayedShops: farmData.setCurrentlyDisplayedShops,
+    isLoadingFarmStands: farmData.isLoadingFarmStands,
+    farmStandsError: farmData.farmStandsError,
+    retryLoadFarmStands: farmData.retryLoadFarmStands,
 
-  useEffect(() => {
-    const checkApi = () => {
-      if ((window as any).googleMapsApiLoaded && window.google?.maps?.DirectionsService) {
-        setMapsApiReady(true);
-        window.removeEventListener('google-maps-api-loaded', checkApi);
-      }
-    };
-    if ((window as any).googleMapsApiLoaded && window.google?.maps?.DirectionsService) {
-      setMapsApiReady(true);
-    } else {
-      window.addEventListener('google-maps-api-loaded', checkApi);
-    }
-    return () => window.removeEventListener('google-maps-api-loaded', checkApi);
-  }, []);
+    // Search domain
+    lastPlaceSelectedByAutocomplete: search.lastPlaceSelectedByAutocomplete,
+    setLastPlaceSelectedByAutocompleteAndCookie: search.setLastPlaceSelectedByAutocompleteAndCookie,
+    searchTerm: search.searchTerm,
+    setSearchTerm: search.setSearchTerm,
+    currentRadius: search.currentRadius,
+    setCurrentRadius: search.setCurrentRadius,
+    mapsApiReady: search.mapsApiReady,
+    mapViewTargetLocation: search.mapViewTargetLocation,
+    setMapViewTargetLocation: search.setMapViewTargetLocation,
 
-  useEffect(() => {
-    const savedLocationCookie = getCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
-    if (savedLocationCookie) {
-      try {
-        const locationData = JSON.parse(savedLocationCookie) as { term: string; place: AutocompletePlace };
-        if (locationData?.place?.geometry) {
-          _setLastPlaceSelectedByAutocompleteInternal(locationData.place);
-          _setSearchTermInternal(locationData.term || '');
-          setMapViewTargetLocation(locationData.place);
-          setIsInitialModalOpen(false);
-        }
-      } catch (e) { setIsInitialModalOpen(true); }
-    } else { setIsInitialModalOpen(true); }
-  }, []);
+    // Filter domain
+    activeProductFilters: filters.activeProductFilters,
+    setActiveProductFilters: filters.setActiveProductFilters,
 
-  const setLastPlaceSelectedByAutocompleteAndCookie = useCallback((place: AutocompletePlace | null, term: string) => {
-    _setLastPlaceSelectedByAutocompleteInternal(place);
-    _setSearchTermInternal(term);
-    if (place?.geometry && term) {
-      setCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME, JSON.stringify({ term, place }), COOKIE_EXPIRY_DAYS);
-    } else {
-      eraseCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
-    }
-  }, []);
+    // UI domain
+    selectedShop: ui.selectedShop,
+    setSelectedShop: ui.setSelectedShop,
+    isShopOverlayOpen: ui.isShopOverlayOpen,
+    isSocialOverlayOpen: ui.isSocialOverlayOpen,
+    openShopOverlays: ui.openShopOverlays,
+    closeShopOverlays: ui.closeShopOverlays,
+    isInitialModalOpen: ui.isInitialModalOpen,
+    setIsInitialModalOpen: ui.setIsInitialModalOpen,
+    socialOverlayInitialTab: ui.socialOverlayInitialTab,
+    setSocialOverlayActiveTab: ui.setSocialOverlayActiveTab,
+    tabChangeKey: ui.tabChangeKey,
 
-  // --- ADDED FOR DIRECTIONS ---
-  const clearDirections = useCallback(() => {
-    // console.log("[AppContext] Clearing directions."); // Optional debug
-    setDirectionsResult(null);
-    setDirectionsError(null);
-    setIsFetchingDirections(false);
-  }, []);
-  // --- END ADDED ---
-
-  const handleSetSelectedShop = useCallback((shop: Shop | null) => {
-    _setSelectedShopInternal(shop);
-    if (!shop) { // If deselecting shop, also clear any active directions
-      clearDirections();
-    }
-  }, [clearDirections]); // Added clearDirections to dependency array
-
-  // --- MODIFIED openShopOverlays ---
-  const openShopOverlays = useCallback((shop: Shop, openTab: 'shop' | 'social' | 'directions' = 'shop') => {
-    handleSetSelectedShop(shop); // This will clear previous directions if shop changes
-
-    // Open both overlays by default to show full shop details
-    if (openTab === 'shop') {
-        // Open BOTH overlays: shop details on right, photos/reviews on left
-        setIsShopOverlayOpen(true);
-        setIsSocialOverlayOpen(true);
-    } else if (openTab === 'directions') {
-        // Just social overlay for directions
-        setIsSocialOverlayOpen(true);
-        setIsShopOverlayOpen(false);
-    } else if (openTab === 'social') {
-        // Just social overlay for photos/reviews
-        setIsSocialOverlayOpen(true);
-        setIsShopOverlayOpen(false);
-    }
-    document.body.classList.add('modal-active');
-  }, [handleSetSelectedShop]);
-  // --- END MODIFIED ---
-
-  const closeShopOverlays = useCallback(() => {
-    setIsShopOverlayOpen(false);
-    setIsSocialOverlayOpen(false);
-    // Don't call setSelectedShop(null) here directly; let the component/action that initiated
-    // the close (e.g., map click, App.tsx navigation effect) handle deselecting the shop.
-    // This prevents potential loops if setSelectedShop(null) itself triggers this.
-    // However, if directions are active, clear them.
-    clearDirections();
-    document.body.classList.remove('modal-active');
-  }, [clearDirections]);
-
-  // --- ADDED FOR DIRECTIONS ---
-  const fetchAndDisplayDirections = useCallback(async (
-    origin: google.maps.LatLngLiteral | string | google.maps.Place,
-    destination: google.maps.LatLngLiteral | string | google.maps.Place
-  ) => {
-    if (!mapsApiReady || !window.google?.maps?.DirectionsService) {
-      console.error("[AppContext] Directions Service not available or Maps API not ready.");
-      setDirectionsError("Directions service is not available right now.");
-      setIsFetchingDirections(false); // Ensure loading state is reset
-      return;
-    }
-
-    setIsFetchingDirections(true);
-    setDirectionsResult(null);
-    setDirectionsError(null);
-
-    const directionsService = new window.google.maps.DirectionsService();
-    const request: google.maps.DirectionsRequest = {
-      origin: origin,
-      destination: destination,
-      travelMode: window.google.maps.TravelMode.DRIVING,
-    };
-
-    // console.log("[AppContext] Requesting directions:", request); // Optional debug
-    try {
-      const response = await directionsService.route(request);
-      if (response.status === 'OK') {
-        setDirectionsResult(response);
-      } else {
-        console.warn('[AppContext] Directions request failed due to ' + response.status);
-        setDirectionsError('Could not retrieve directions: ' + response.status);
-      }
-    } catch (error) {
-      console.error('[AppContext] Error fetching directions:', error);
-      setDirectionsError('An error occurred while fetching directions.');
-    } finally {
-      setIsFetchingDirections(false);
-    }
-  }, [mapsApiReady]);
-  // --- END ADDED FOR DIRECTIONS ---
-
-  const value: AppContextType = {
-    allFarmStands,
-    setAllFarmStands,
-    currentlyDisplayedShops,
-    setCurrentlyDisplayedShops,
-    activeProductFilters,
-    setActiveProductFilters,
-    lastPlaceSelectedByAutocomplete,
-    setLastPlaceSelectedByAutocompleteAndCookie,
-    searchTerm,
-    setSearchTerm: _setSearchTermInternal,
-    currentRadius,
-    setCurrentRadius,
-    selectedShop,
-    setSelectedShop: handleSetSelectedShop,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-    openShopOverlays,
-    closeShopOverlays,
-    isInitialModalOpen,
-    setIsInitialModalOpen,
-    mapsApiReady,
-    mapViewTargetLocation,
-    setMapViewTargetLocation,
-    // --- ADDED FOR DIRECTIONS ---
-    directionsResult,
-    directionsError,
-    isFetchingDirections,
-    fetchAndDisplayDirections,
-    clearDirections,
-    // --- END ADDED FOR DIRECTIONS ---
-  };
+    // Directions domain
+    directionsResult: directions.directionsResult,
+    directionsError: directions.directionsError,
+    isFetchingDirections: directions.isFetchingDirections,
+    fetchAndDisplayDirections: directions.fetchAndDisplayDirections,
+    clearDirections: directions.clearDirections,
+  }), [farmData, search, filters, ui, directions]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

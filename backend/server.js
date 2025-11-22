@@ -4,6 +4,9 @@ const express = require('express');
 const fs = require('fs-extra'); // For reading/writing JSON file
 const path = require('path');
 const cron = require('node-cron'); // For scheduling
+const cors = require('cors'); // CORS middleware
+const compression = require('compression'); // Response compression
+const rateLimit = require('express-rate-limit'); // Rate limiting
 const { Client, Status } = require("@googlemaps/google-maps-services-js");
 const cacheService = require('./cacheService'); // For on-demand API call caching
 const { updateFarmStandsData } = require('./processSheetData'); // Import the processor
@@ -16,10 +19,62 @@ const FARM_STANDS_DATA_PATH = path.join(__dirname, 'data', 'farmStandsData.json'
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
 
+// CORS configuration - restrict to specific origins in production
+const corsOptions = {
+  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+// Compression middleware (gzip/brotli) - add before routes
+app.use(compression({
+  filter: (req, res) => {
+    // Don't compress if client explicitly requests no compression
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter default
+    return compression.filter(req, res);
+  },
+  level: 6, // Balance between speed (1=fastest) and compression (9=best)
+  threshold: 1024 // Only compress responses larger than 1KB
+}));
+
+// Rate limiting for API endpoints
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit in dev for HMR
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for farm-stands endpoint in development to avoid issues with React Strict Mode
+    return process.env.NODE_ENV === 'development' && req.path === '/api/farm-stands';
+  }
+});
+
+// Apply rate limiting to all /api routes
+app.use('/api/', apiLimiter);
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// --- Helper function to parse CSV (Only if not also defined in processSheetData.js, or ensure consistency) ---
+// --- Helper Functions ---
+
+// Input sanitization to prevent XSS and injection attacks
+function sanitizeInput(input) {
+    if (typeof input !== 'string') return input;
+    // Remove dangerous characters while preserving valid address/search input
+    return input
+        .trim()
+        .replace(/[<>]/g, '') // Remove HTML brackets
+        .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
+        .substring(0, 500); // Limit length to prevent DoS
+}
+
+// Helper function to parse CSV (Only if not also defined in processSheetData.js, or ensure consistency) ---
 // If processSheetData.js has its own, you might not need it here unless other parts of server.js use it.
 // For simplicity, I'll assume it's potentially needed here too or keep it for clarity.
 function parseCSVLine(line) {
@@ -130,46 +185,153 @@ app.get('/api/config', (req, res) => {
     res.json({});
 });
 
-// Endpoint to get farm stands data (now reads from JSON file)
-// backend/server.js (snippet)
+// Health check endpoint for monitoring
+app.get('/health', async (req, res) => {
+    const health = {
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+        checks: {
+            farmStandsData: false,
+            farmStandsDataAge: null,
+            googleMapsAPI: false,
+            memoryUsage: process.memoryUsage()
+        }
+    };
+
+    // Check if farm stands data file exists and is recent
+    try {
+        const exists = await fs.pathExists(FARM_STANDS_DATA_PATH);
+        if (exists) {
+            const stats = await fs.stat(FARM_STANDS_DATA_PATH);
+            const ageMs = Date.now() - stats.mtime.getTime();
+            const ageHours = ageMs / (1000 * 60 * 60);
+
+            health.checks.farmStandsData = ageMs < MAX_DATA_AGE_MS;
+            health.checks.farmStandsDataAge = `${ageHours.toFixed(2)} hours`;
+        }
+    } catch (e) {
+        health.checks.farmStandsData = false;
+        health.checks.farmStandsDataAge = 'error';
+    }
+
+    // Check Google API key is configured
+    health.checks.googleMapsAPI = !!GOOGLE_API_KEY_BACKEND;
+
+    // Overall health status
+    const isHealthy = health.checks.farmStandsData && health.checks.googleMapsAPI;
+    health.status = isHealthy ? 'ok' : 'degraded';
+
+    res.status(isHealthy ? 200 : 503).json(health);
+});
+
+// In-memory cache for farm stands data (survives across requests)
+const farmStandsCache = {
+    data: null,
+    lastModified: null,
+    etag: null
+};
+
+// Track ongoing data updates to prevent duplicate updates and allow waiting
+let ongoingUpdate = null;
+
+// Endpoint to get farm stands data with ETag caching
 app.get('/api/farm-stands', async (req, res) => {
     try {
-        console.log('Backend: Received request for /api/farm-stands');
-        if (await fs.pathExists(FARM_STANDS_DATA_PATH)) { // FARM_STANDS_DATA_PATH is 'backend/data/farmStandsData.json'
-            console.log('in if 1');
-            const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
-            console.log('Backend: Data being sent to client:', farmStands.length);            
-            res.json(farmStands); // <--- If this file is empty or contains [], you get 0 stands
-        } else {
-            console.log('Backend: 111111111');
-            console.warn(`Farm stands data file not found at ${FARM_STANDS_DATA_PATH}. Attempting to generate it now...`);
-            await updateFarmStandsData(); // This calls processSheetData.js
-            if (await fs.pathExists(FARM_STANDS_DATA_PATH)) {
-                console.log('Backend: 2222222222');
-                const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
-                console.log(`Serving ${farmStands.length} farm stands from newly generated JSON file.`);
-                res.json(farmStands);
-            } else {
-                console.log('Backend: 3333333333');
-                console.error(`Failed to generate farm stands data file even after an update attempt.`);
-                res.status(503).json({ error: "Farm stand data is currently unavailable. Please try again shortly." });
+        console.log('[Farm Stands API] Request received');
+
+        // If an update is in progress, wait for it to complete
+        if (ongoingUpdate) {
+            console.log('[Farm Stands API] Waiting for ongoing data update to complete...');
+            try {
+                await ongoingUpdate;
+            } catch (err) {
+                console.error('[Farm Stands API] Ongoing update failed:', err);
             }
-            console.log('Backend: 444444444');
         }
-        console.log('Backend: 5555555555');
+
+        // Check if file exists
+        if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
+            console.warn(`[Farm Stands API] Data file not found. Generating...`);
+
+            // Start update and track it
+            if (!ongoingUpdate) {
+                ongoingUpdate = updateFarmStandsData().finally(() => {
+                    ongoingUpdate = null;
+                });
+            }
+            await ongoingUpdate;
+
+            if (!(await fs.pathExists(FARM_STANDS_DATA_PATH))) {
+                console.error(`[Farm Stands API] Failed to generate data file`);
+                return res.status(503).json({
+                    error: "Farm stand data is currently unavailable. Please try again shortly."
+                });
+            }
+        }
+
+        // Get file stats for cache validation
+        const stats = await fs.stat(FARM_STANDS_DATA_PATH);
+        const fileModTime = stats.mtime.getTime();
+
+        // Check if browser has current version (ETag validation)
+        const clientETag = req.headers['if-none-match'];
+
+        // Check memory cache first
+        if (farmStandsCache.lastModified === fileModTime && farmStandsCache.data) {
+            console.log('[Farm Stands API] Memory cache HIT');
+
+            // Browser has current version - send 304 Not Modified
+            if (clientETag && clientETag === farmStandsCache.etag) {
+                console.log('[Farm Stands API] Client cache valid - 304 Not Modified');
+                return res.status(304).end();
+            }
+
+            // Send from memory cache with proper headers
+            res.set({
+                'ETag': farmStandsCache.etag,
+                'Cache-Control': 'public, max-age=3600, must-revalidate',
+                'Last-Modified': new Date(fileModTime).toUTCString(),
+                'X-Cache': 'HIT'
+            });
+            return res.json(farmStandsCache.data);
+        }
+
+        // Memory cache miss - read from disk
+        console.log('[Farm Stands API] Cache MISS - reading from disk');
+        const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
+        const etag = `"${fileModTime}-${farmStands.length}"`;
+
+        // Update memory cache
+        farmStandsCache.data = farmStands;
+        farmStandsCache.lastModified = fileModTime;
+        farmStandsCache.etag = etag;
+
+        console.log(`[Farm Stands API] Serving ${farmStands.length} farm stands (cache updated)`);
+
+        // Send with cache headers
+        res.set({
+            'ETag': etag,
+            'Cache-Control': 'public, max-age=3600, must-revalidate',
+            'Last-Modified': new Date(fileModTime).toUTCString(),
+            'X-Cache': 'MISS'
+        });
+        res.json(farmStands);
+
     } catch (error) {
-      console.error('Backend: CRITICAL ERROR in /api/farm-stands route handler:', error);
-      // It's also good practice to send a generic server error response if not already handled
-       // Check if headers have been sent to avoid 'Error: Can't set headers after they are sent.'
-       if (!res.headersSent) {
-           res.status(500).json({ error: "An unexpected error occurred on the server while fetching farm stands." });
-       }
+        console.error('[Farm Stands API] ERROR:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                error: "An unexpected error occurred while fetching farm stands."
+            });
+        }
     }
 });
 
 // Proxy for on-demand Google Geocoding API calls from client
 app.get('/api/geocode', async (req, res) => {
-    const address = req.query.address;
+    const address = sanitizeInput(req.query.address);
     if (!address) {
         return res.status(400).json({ error: 'Address query parameter is required' });
     }
@@ -183,8 +345,8 @@ app.get('/api/geocode', async (req, res) => {
 
 // Proxy for on-demand Google Place Details API calls from client
 app.get('/api/places/details', async (req, res) => {
-    const placeId = req.query.placeId;
-    const fields = req.query.fields || 'name,formatted_address,website,opening_hours,rating,user_ratings_total,photos,formatted_phone_number,url,icon,business_status,reviews,geometry';
+    const placeId = sanitizeInput(req.query.placeId);
+    const fields = sanitizeInput(req.query.fields) || 'name,formatted_address,website,opening_hours,rating,user_ratings_total,photos,formatted_phone_number,url,icon,business_status,reviews,geometry';
     if (!placeId) {
         return res.status(400).json({ error: 'placeId query parameter is required' });
     }
@@ -198,7 +360,8 @@ app.get('/api/places/details', async (req, res) => {
 
 // Proxy for on-demand Google Directions API calls from client
 app.get('/api/directions', async (req, res) => {
-    const { origin, destination } = req.query;
+    const origin = sanitizeInput(req.query.origin);
+    const destination = sanitizeInput(req.query.destination);
     if (!origin || !destination) {
         return res.status(400).json({ error: 'Origin and destination query parameters are required' });
     }
@@ -315,8 +478,11 @@ setTimeout(async () => {
             console.log('Initial farm stand data file not found. Triggering update...');
         }
 
-        if (needsInitialUpdate) {
-            await updateFarmStandsData();
+        if (needsInitialUpdate && !ongoingUpdate) {
+            ongoingUpdate = updateFarmStandsData().finally(() => {
+                ongoingUpdate = null;
+            });
+            await ongoingUpdate;
         }
     } catch (err) {
         console.error('Error during initial farm stand data check/update:', err);
@@ -324,12 +490,18 @@ setTimeout(async () => {
 }, INITIAL_REFRESH_DELAY_MS);
 
 
-// SPA Fallback Route
-app.get('*', (req, res, next) => {
+// SPA Fallback Route - Using middleware instead of route
+app.use((req, res, next) => {
+    // Only handle GET requests
+    if (req.method !== 'GET') {
+        return next();
+    }
+    // Skip API routes
     if (req.path.startsWith('/api/')) {
         return next();
     }
-    if (path.extname(req.path)) { // If it looks like a file request
+    // Skip file requests (anything with an extension)
+    if (path.extname(req.path)) {
         return next(); // Let express.static handle it or 404 naturally
     }
     // For any other GET request, assume it's an SPA route

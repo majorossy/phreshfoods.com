@@ -46,7 +46,6 @@ const InitialSearchModal = () => {
         );
         autocompleteOptions.bounds = bounds; // Bias results towards these bounds
         autocompleteOptions.strictBounds = false; // Allow results outside bounds but prioritize within
-        console.log("InitialSearchModal: Autocomplete bounds/bias set for Maine.");
     }
 
 
@@ -60,8 +59,6 @@ const InitialSearchModal = () => {
       const placeResult = autocomplete.getPlace(); // google.maps.places.PlaceResult
 
       if (placeResult.geometry && placeResult.geometry.location) {
-        console.log("InitialSearchModal: Place selected via Autocomplete:", placeResult);
-        
         // Adapt PlaceResult to your AutocompletePlace type
         const adaptedPlace: AutocompletePlace = {
           name: placeResult.name,
@@ -120,12 +117,10 @@ const InitialSearchModal = () => {
       const term = selectedPlaceFromModal.formatted_address || selectedPlaceFromModal.name || "Selected Location";
       setSearchTerm(term);
       setLastPlaceSelectedByAutocompleteAndCookie(selectedPlaceFromModal, term);
-      console.log("InitialSearchModal: Search submitted with selected place:", selectedPlaceFromModal);
       setIsInitialModalOpen(false);
     } else if (inputValue.trim()) {
       setSearchTerm(inputValue.trim());
       setLastPlaceSelectedByAutocompleteAndCookie(null, inputValue.trim());
-      console.log("InitialSearchModal: Search submitted with input text:", inputValue.trim());
       setIsInitialModalOpen(false);
     } else {
       console.warn("InitialSearchModal: Search clicked with no input or selection.");
@@ -154,7 +149,6 @@ const InitialSearchModal = () => {
     setSearchTerm(portlandTerm);
     setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, portlandTerm);
     setIsInitialModalOpen(false);
-    console.log("InitialSearchModal: Skipped, default to Portland.");
   };
 
   return (

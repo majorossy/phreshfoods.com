@@ -1,15 +1,21 @@
 // src/components/Overlays/SocialOverlay.tsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { Shop, PlacePhoto as PlacePhotoData } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
-import { AppContext } from '../../contexts/AppContext';
+import { useDirections } from '../../contexts/DirectionsContext';
+import { useSearch } from '../../contexts/SearchContext';
+import { useUI } from '../../contexts/UIContext';
+import { RATE_LIMIT_CACHE_DURATION_MS } from '../../config/appConfig';
 import {
   getInstagramUrl,
   getInstagramDisplayName,
+  getInstagramProfileEmbed,
   getFacebookUrl,
   getFacebookDisplayName,
-  getTwitterUrl,
-  getTwitterDisplayName
+  getXUrl,
+  getXDisplayName,
+  getXTimelineEmbed
 } from '../../utils/socialMediaHelpers';
 
 interface SocialOverlayProps {
@@ -18,42 +24,69 @@ interface SocialOverlayProps {
 }
 
 const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
-  const [activeTab, setActiveTab] = useState('photos');
-  const appContext = useContext(AppContext);
-
+  const { socialOverlayInitialTab, tabChangeKey } = useUI();
+  const [activeTab, setActiveTab] = useState(socialOverlayInitialTab);
   const [manualOrigin, setManualOrigin] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(true);
 
+  // Get directions and search contexts
   const {
     fetchAndDisplayDirections,
     directionsResult,
     directionsError,
     isFetchingDirections,
     clearDirections,
+  } = useDirections();
+
+  const {
     lastPlaceSelectedByAutocomplete,
-  } = appContext || {};
-  
-  // When the overlay opens for a new shop, reset directions and potentially default to a specific tab
+  } = useSearch();
+
+  // When the overlay opens for a new shop, reset directions and set initial tab
   useEffect(() => {
-    if (clearDirections) clearDirections();
-    // If you always want it to default to photos when a new shop is selected:
-    // setActiveTab('photos');
+    clearDirections();
   }, [shop, clearDirections]);
+
+  // Watch for external tab changes (e.g., from clicking rating stars)
+  // tabChangeKey ensures this triggers even if the same tab is clicked multiple times
+  useEffect(() => {
+    if (socialOverlayInitialTab) {
+      setActiveTab(socialOverlayInitialTab);
+    }
+  }, [socialOverlayInitialTab, tabChangeKey]);
 
   // Process Instagram embeds after they're rendered in the DOM
   useEffect(() => {
-    if (activeTab === 'instagram' && shop.InstagramRecentPostEmbedCode?.trim()) {
+    if (activeTab === 'instagram') {
       // Instagram embed script needs to process the embed after rendering
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
-      }
+      // Use setTimeout to ensure DOM is ready
+      const timer = setTimeout(() => {
+        if (window.instgrm) {
+          window.instgrm.Embeds.process();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [activeTab, shop.InstagramRecentPostEmbedCode]);
+  }, [activeTab]);
+
+  // Process Twitter widgets after they're rendered in the DOM
+  useEffect(() => {
+    if (activeTab === 'x') {
+      const timer = setTimeout(() => {
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.load();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab]);
 
 
   if (!shop) return null;
 
   const googlePhotosData: PlacePhotoData[] | undefined = shop.placeDetails?.photos;
+  // Google Place Details data is already safe, only escape our own data
+  const shopNameForDisplay = shop.placeDetails?.name || shop.Name;
   const shopAddressForDisplay = shop.placeDetails?.formatted_address || shop.Address;
   const shopLatLngForDisplay = shop.lat && shop.lng ? `${shop.lat.toFixed(5)}, ${shop.lng.toFixed(5)}` : null;
   const shopDestinationForApi = 
@@ -71,7 +104,6 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
     let originRequest: google.maps.LatLngLiteral | string | google.maps.Place;
     if (useCurrentLocation) {
       if (navigator.geolocation) {
-        if(appContext?.setIsFetchingDirections) appContext.setIsFetchingDirections(true); // Manually set loading
         navigator.geolocation.getCurrentPosition(
           (position) => {
             originRequest = { lat: position.coords.latitude, lng: position.coords.longitude };
@@ -80,7 +112,6 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
           (error) => {
             console.error("Error getting current location:", error);
             alert("Could not get current location. Please enter an address or use a previously searched location.");
-            if (appContext?.setIsFetchingDirections) appContext.setIsFetchingDirections(false);
           },
           { timeout: 10000 }
         );
@@ -102,15 +133,58 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   };
   
   const handleClearDirectionsClick = () => {
-    if(clearDirections) clearDirections();
+    clearDirections();
     setManualOrigin('');
   };
 
   const handleTabClick = (tabName: string) => {
-    if (tabName !== 'directions' && directionsResult && clearDirections) {
+    if (tabName !== 'directions' && directionsResult) {
         clearDirections();
     }
     setActiveTab(tabName);
+  };
+
+  // Helper functions to check tab availability
+  const hasInstagram = !!(getInstagramUrl(shop) && getInstagramDisplayName(shop));
+  const hasFacebook = !!(getFacebookUrl(shop) && getFacebookDisplayName(shop));
+  const hasX = !!(getXUrl(shop) && getXDisplayName(shop));
+
+  // Helper function to get tab classes (3-state system)
+  const getTabClasses = (tabName: string, isAvailable: boolean = true) => {
+    const isActive = activeTab === tabName;
+
+    if (isActive) {
+      // Active state - border with brand color, no background
+      return 'border-b-2 border-current';
+    } else if (!isAvailable) {
+      // Unavailable state - no background, subtle styling
+      return 'border-b-2 border-transparent cursor-not-allowed opacity-40';
+    } else {
+      // Available state - no background, just brand colors on icon
+      return 'border-b-2 border-transparent cursor-pointer hover:opacity-80';
+    }
+  };
+
+  // Helper function to get SVG icon classes
+  const getIconClasses = (tabName: string, brandColor: string, isAvailable: boolean = true) => {
+    const isActive = activeTab === tabName;
+
+    if (isActive) {
+      return brandColor; // Use brand color when active
+    } else if (!isAvailable) {
+      return 'text-red-300 dark:text-red-400'; // Very light red when unavailable
+    } else {
+      // Available state - use brand color (lighter shade already applied by tab background)
+      const brandIconClasses: Record<string, string> = {
+        photos: 'text-blue-600 dark:text-blue-400',
+        reviews: 'text-amber-600 dark:text-amber-400',
+        directions: 'text-indigo-600 dark:text-indigo-400',
+        instagram: 'text-pink-600 dark:text-pink-500',
+        facebook: 'text-blue-600 dark:text-blue-500',
+        x: 'text-gray-800 dark:text-gray-200',
+      };
+      return brandIconClasses[tabName] || 'text-gray-600 dark:text-gray-400';
+    }
   };
 
   return (
@@ -121,28 +195,78 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
 
       <div className="pt-10 sm:pt-12 shrink-0">
         <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4">
-          <nav id="socialOverlayTabs" className="flex flex-wrap -mb-px" aria-label="Tabs">
-            <button onClick={() => handleTabClick('photos')} title="Photos" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ${activeTab === 'photos' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'photos' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <nav id="socialOverlayTabs" className="flex flex-wrap -mb-px gap-1" aria-label="Tabs">
+            {/* Photos Tab - Always Available */}
+            <button
+              onClick={() => handleTabClick('photos')}
+              title="Photos"
+              aria-label="View photos tab"
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('photos', true)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('photos', 'text-blue-500 dark:text-blue-400', true)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
             </button>
-            <button onClick={() => handleTabClick('reviews')} title="Reviews" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4 ${activeTab === 'reviews' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-             <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'reviews' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+
+            {/* Reviews Tab - Always Available */}
+            <button
+              onClick={() => handleTabClick('reviews')}
+              title="Reviews"
+              aria-label="View reviews tab"
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('reviews', true)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('reviews', 'text-amber-500 dark:text-amber-400', true)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+              </svg>
             </button>
-            <button onClick={() => handleTabClick('directions')} title="Directions" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4 ${activeTab === 'directions' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'directions' ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 group-hover:text-gray-500 dark:text-gray-500 dark:group-hover:text-gray-300'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M12.95 4.05a.75.75 0 010 1.06l-4.2 4.2a.75.75 0 000 1.06l4.2 4.2a.75.75 0 11-1.06 1.06l-4.2-4.2a2.25 2.25 0 010-3.18l4.2-4.2a.75.75 0 011.06 0zM6.22 3.22a.75.75 0 011.06 0l2.25 2.25a.75.75 0 01-1.06 1.06L6.22 4.28a.75.75 0 010-1.06zM4 8.75A.75.75 0 014.75 8h.5a.75.75 0 010 1.5h-.5A.75.75 0 014 8.75zM4.75 11a.75.75 0 000 1.5H7a.75.75 0 000-1.5H4.75zM6.22 14.22a.75.75 0 011.06 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l2.25-2.25z" clipRule="evenodd" /> </svg>
+
+            {/* Directions Tab - Always Available */}
+            <button
+              onClick={() => handleTabClick('directions')}
+              title="Directions"
+              aria-label="View directions tab"
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('directions', true)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('directions', 'text-indigo-500 dark:text-indigo-400', true)}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fillRule="evenodd" d="M12.95 4.05a.75.75 0 010 1.06l-4.2 4.2a.75.75 0 000 1.06l4.2 4.2a.75.75 0 11-1.06 1.06l-4.2-4.2a2.25 2.25 0 010-3.18l4.2-4.2a.75.75 0 011.06 0zM6.22 3.22a.75.75 0 011.06 0l2.25 2.25a.75.75 0 01-1.06 1.06L6.22 4.28a.75.75 0 010-1.06zM4 8.75A.75.75 0 014.75 8h.5a.75.75 0 010 1.5h-.5A.75.75 0 014 8.75zM4.75 11a.75.75 0 000 1.5H7a.75.75 0 000-1.5H4.75zM6.22 14.22a.75.75 0 011.06 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l2.25-2.25z" clipRule="evenodd" />
+              </svg>
             </button>
-            <button onClick={() => handleTabClick('instagram')} title="Instagram" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4 ${activeTab === 'instagram' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'instagram' ? 'text-pink-500 dark:text-pink-400' : 'text-gray-400 group-hover:text-pink-500 dark:text-gray-500 dark:group-hover:text-pink-400'}`} fill="currentColor" viewBox="0 0 24 24">
+
+            {/* Instagram Tab - Conditional */}
+            <button
+              onClick={() => hasInstagram && handleTabClick('instagram')}
+              title={hasInstagram ? "Instagram" : "Instagram not available"}
+              aria-label="View Instagram tab"
+              disabled={!hasInstagram}
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('instagram', hasInstagram)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('instagram', 'text-pink-600 dark:text-pink-500', hasInstagram)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </button>
-            <button onClick={() => handleTabClick('facebook')} title="Facebook" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4 ${activeTab === 'facebook' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'facebook' ? 'text-blue-600 dark:text-blue-500' : 'text-gray-400 group-hover:text-blue-600 dark:text-gray-500 dark:group-hover:text-blue-500'}`} fill="currentColor" viewBox="0 0 24 24">
+
+            {/* Facebook Tab - Conditional */}
+            <button
+              onClick={() => hasFacebook && handleTabClick('facebook')}
+              title={hasFacebook ? "Facebook" : "Facebook not available"}
+              aria-label="View Facebook tab"
+              disabled={!hasFacebook}
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('facebook', hasFacebook)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('facebook', 'text-[#1877F2] dark:text-[#1877F2]', hasFacebook)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </button>
-            <button onClick={() => handleTabClick('twitter')} title="X (Twitter)" className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 border-b-2 font-medium text-xs sm:text-sm ml-2 sm:ml-4 ${activeTab === 'twitter' ? 'active-social-tab' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'}`}>
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${activeTab === 'twitter' ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400 group-hover:text-gray-900 dark:text-gray-500 dark:group-hover:text-gray-100'}`} fill="currentColor" viewBox="0 0 24 24">
+
+            {/* X Tab - Conditional */}
+            <button
+              onClick={() => hasX && handleTabClick('x')}
+              title={hasX ? "X" : "X not available"}
+              aria-label="View X tab"
+              disabled={!hasX}
+              className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('x', hasX)}`}
+            >
+              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('x', 'text-black dark:text-white', hasX)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
             </button>
@@ -212,12 +336,12 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         {activeTab === 'directions' && (
           <div id="social-directions-panel" className="p-2 sm:p-4">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
-              Directions to {escapeHTMLSafe(shop.Name)}
+              Directions to {shopNameForDisplay}
             </h3>
             {shopAddressForDisplay ? (
               <div className="mb-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong className="font-medium">Address:</strong> {escapeHTMLSafe(shopAddressForDisplay)}
+                  <strong className="font-medium">Address:</strong> {shopAddressForDisplay}
                 </p>
                 {shopLatLngForDisplay && ( <p className="text-xs text-gray-500 dark:text-gray-400">Coordinates: {shopLatLngForDisplay}</p> )}
               </div>
@@ -241,17 +365,35 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             </div>
             
             <div className="flex space-x-2 mb-4">
-                <button onClick={handleGetDirectionsClick} disabled={isFetchingDirections || !shopDestinationForApi} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                  {isFetchingDirections ? 'Getting...' : 'Get Directions'}
+                <button onClick={handleGetDirectionsClick} disabled={isFetchingDirections || !shopDestinationForApi} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                  {isFetchingDirections ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Calculating...
+                    </>
+                  ) : 'Get Directions'}
                 </button>
-                {directionsResult && clearDirections && (
-                     <button onClick={handleClearDirectionsClick} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                {directionsResult && (
+                     <button onClick={handleClearDirectionsClick} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                         Clear Route
                     </button>
                 )}
             </div>
 
             {directionsError && <p className="text-sm text-red-500 dark:text-red-400 mb-2">{directionsError}</p>}
+
+            {isFetchingDirections && !directionsResult && !directionsError && (
+              <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400" role="status" aria-live="polite">
+                <svg className="animate-spin h-8 w-8 text-blue-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span className="text-sm font-medium">Calculating route...</span>
+              </div>
+            )}
 
             {directionsResult?.routes?.[0]?.legs?.[0]?.steps && (
               <div className="mt-4 text-xs space-y-2 directions-steps custom-scrollbar overflow-y-auto max-h-[200px] sm:max-h-[250px] p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50">
@@ -273,70 +415,18 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         {activeTab === 'instagram' && (
           <div className="py-4">
             {(() => {
-              const instagramUrl = getInstagramUrl(shop);
-              const instagramName = getInstagramDisplayName(shop);
-              const embedCode = shop.InstagramRecentPostEmbedCode;
+              const profileEmbedCode = getInstagramProfileEmbed(shop);
 
-              if (instagramUrl && instagramName) {
-                // If we have embed code, show the embedded post
-                if (embedCode && embedCode.trim()) {
-                  return (
-                    <div className="space-y-4">
-                      {/* Embedded Post */}
-                      <div className="flex justify-center">
-                        <div
-                          className="instagram-embed-container max-w-md w-full"
-                          dangerouslySetInnerHTML={{ __html: embedCode }}
-                        />
-                      </div>
-
-                      {/* Visit Profile Button */}
-                      <div className="flex justify-center pt-2">
-                        <a
-                          href={instagramUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
-                        >
-                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                          </svg>
-                          Visit Full Profile
-                        </a>
-                      </div>
-                    </div>
-                  );
-                } else {
-                  // Fallback to simple profile link if no embed code
-                  return (
-                    <div className="flex flex-col items-center justify-center text-center space-y-4">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center">
-                        <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
-                          @{instagramName}
-                        </h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                          Follow us on Instagram for updates, photos, and more!
-                        </p>
-                      </div>
-                      <a
-                        href={instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-md hover:shadow-lg"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
-                        Visit Instagram Profile
-                      </a>
-                    </div>
-                  );
-                }
+              if (profileEmbedCode) {
+                // Show Instagram profile embed
+                return (
+                  <div className="flex justify-center">
+                    <div
+                      className="instagram-embed-container max-w-md w-full"
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(profileEmbedCode) }}
+                    />
+                  </div>
+                );
               } else {
                 return (
                   <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
@@ -423,99 +513,56 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
           </div>
         )}
 
-        {/* Twitter/X Tab Content */}
-        {activeTab === 'twitter' && (
+        {/* X Tab Content */}
+        {activeTab === 'x' && (
           <div className="py-4">
             {(() => {
-              const twitterUrl = getTwitterUrl(shop);
-              const twitterName = getTwitterDisplayName(shop);
+              const timelineEmbed = getXTimelineEmbed(shop);
+              const xUrl = getXUrl(shop);
+              const xName = getXDisplayName(shop);
 
-              if (twitterUrl && twitterName) {
-                // Check if we've hit rate limit recently (cached in sessionStorage)
-                const rateLimitKey = `twitter_rate_limit_${twitterName}`;
-                const rateLimitExpiry = sessionStorage.getItem(rateLimitKey);
-                const isRateLimited = rateLimitExpiry && Date.now() < parseInt(rateLimitExpiry);
-
+              if (timelineEmbed) {
                 return (
                   <div className="space-y-4">
-                    {/* X/Twitter Timeline Embed */}
-                    {!isRateLimited ? (
-                      <div className="flex justify-center">
-                        <div
-                          className="twitter-timeline-container w-full max-w-md"
-                          ref={(el) => {
-                            if (el && !el.querySelector('.twitter-timeline')) {
-                              const timeline = document.createElement('a');
-                              timeline.className = 'twitter-timeline';
-                              // Remove @ from twitterName for URL construction
-                              const handleWithoutAt = twitterName.replace('@', '');
-                              timeline.href = `https://x.com/${handleWithoutAt}`;
-                              timeline.setAttribute('data-tweet-limit', '5');
-                              timeline.setAttribute('data-chrome', 'noheader nofooter noborders');
-                              timeline.setAttribute('data-theme', 'light');
-                              timeline.setAttribute('data-height', '500');
-                              timeline.textContent = `Loading posts by ${twitterName}...`;
-                              el.appendChild(timeline);
+                    {/* X Timeline Embed - Note: May not load due to X's restrictions */}
+                    <div className="flex justify-center w-full">
+                      <div
+                        className="x-timeline-container max-w-md w-full"
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(timelineEmbed) }}
+                      />
+                    </div>
 
-                              // Detect rate limiting errors
-                              const checkRateLimit = () => {
-                                const errorMsg = el.querySelector('.timeline-error');
-                                if (errorMsg) {
-                                  // Cache rate limit for 15 minutes
-                                  sessionStorage.setItem(rateLimitKey, (Date.now() + 15 * 60 * 1000).toString());
-                                }
-                              };
-
-                              // Load Twitter widgets script if not already loaded
-                              if (!window.twttr) {
-                                const script = document.createElement('script');
-                                script.src = 'https://platform.twitter.com/widgets.js';
-                                script.async = true;
-                                script.charset = 'utf-8';
-                                script.onload = () => {
-                                  setTimeout(checkRateLimit, 3000);
-                                };
-                                document.body.appendChild(script);
-                              } else {
-                                window.twttr.widgets.load(el).then(() => {
-                                  setTimeout(checkRateLimit, 3000);
-                                });
-                              }
-                            }
-                          }}
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center text-center py-8 space-y-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                          <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Timeline Temporarily Unavailable
-                          </h3>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            X's rate limit reached. Please visit the profile directly or try again later.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Visit Profile Button */}
-                    <div className="flex justify-center pt-2">
-                      <a
-                        href={twitterUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    {/* Fallback Message + Profile Card */}
+                    <div className="flex flex-col items-center justify-center text-center space-y-4 mt-8">
+                      <div className="w-20 h-20 rounded-full bg-black dark:bg-white flex items-center justify-center">
+                        <svg className="w-12 h-12 text-white dark:text-black" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
                         </svg>
-                        Visit Full Profile
-                      </a>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                          {xName}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                          {shop.placeDetails?.name || shop.Name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 italic">
+                          Timeline feed may not display due to X restrictions
+                        </p>
+                      </div>
+                      {xUrl && (
+                        <a
+                          href={xUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-6 py-3 bg-black dark:bg-white text-white dark:text-black font-medium rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors shadow-md hover:shadow-lg"
+                        >
+                          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                          Visit X Profile
+                        </a>
+                      )}
                     </div>
                   </div>
                 );
@@ -532,7 +579,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
                         No X Account
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        This farm hasn't linked their X (Twitter) account yet.
+                        This farm hasn't linked their X account yet.
                       </p>
                     </div>
                   </div>

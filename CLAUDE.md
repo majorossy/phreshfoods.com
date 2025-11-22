@@ -72,21 +72,63 @@ npm run process-data
   - `Map/` - Google Maps integration
   - `Overlays/` - Modal overlays for shop details, social info, directions
   - `UI/` - Reusable UI components
-- `src/contexts/` - React Context for global state (AppContext.tsx)
+  - `ErrorBoundary/` - Error boundary for catching component errors
+- `src/contexts/` - React Context for global state (domain-driven architecture)
+  - `AppContext.tsx` - Legacy composite context (backward compatibility)
+  - `AppProviders.tsx` - Composite provider wrapping all domain contexts
+  - `FarmDataContext.tsx` - Farm stand data & loading states
+  - `SearchContext.tsx` - Location search & radius
+  - `FilterContext.tsx` - Product filtering
+  - `UIContext.tsx` - UI state (overlays, modals, selected shop)
+  - `DirectionsContext.tsx` - Google Maps directions
+  - `ToastContext.tsx` - Toast notifications
+- `src/hooks/` - Custom React hooks
 - `src/services/` - API service layer (apiService.ts)
 - `src/types/` - TypeScript type definitions
 - `src/config/` - App configuration (appConfig.ts)
-- `src/utils/` - Utility functions (cookie helpers, etc.)
+- `src/utils/` - Utility functions (cookie helpers, SEO, etc.)
 
 **State Management:**
-- Global state is managed via `AppContext` (src/contexts/AppContext.tsx)
-- Key state includes:
-  - `allFarmStands` - All farm stands fetched from backend
-  - `currentlyDisplayedShops` - Filtered/sorted shops with distance calculations
-  - `selectedShop` - Currently selected shop for detail view
-  - `activeProductFilters` - User's selected product filters
-  - `lastPlaceSelectedByAutocomplete` - Search location from Google Places autocomplete
-  - `directionsResult` - Google Maps directions data
+- **Domain-Driven Context Architecture:** State is split into focused, single-responsibility contexts
+- **Migration Status:** Components are being migrated from legacy `AppContext` to specific domain hooks
+- **See:** `src/contexts/CONTEXTS.md` for comprehensive documentation
+
+**Domain Contexts:**
+
+1. **FarmDataContext** (`useFarmData()`)
+   - `allFarmStands` - All farm stands fetched from backend
+   - `currentlyDisplayedShops` - Filtered/sorted shops with distance calculations
+   - `isLoadingFarmStands` - Loading state
+   - `farmStandsError` - Error message if loading failed
+
+2. **SearchContext** (`useSearch()`)
+   - `lastPlaceSelectedByAutocomplete` - Search location from Google Places autocomplete
+   - `searchTerm` - Current search input
+   - `currentRadius` - Search radius in miles
+   - `mapsApiReady` - Google Maps API loaded state
+   - `mapViewTargetLocation` - Location to center map on
+
+3. **FilterContext** (`useFilters()`)
+   - `activeProductFilters` - User's selected product filters
+
+4. **UIContext** (`useUI()`)
+   - `selectedShop` - Currently selected shop for detail view
+   - `isShopOverlayOpen` - Shop details overlay state
+   - `isSocialOverlayOpen` - Social/directions overlay state
+   - `isInitialModalOpen` - Initial search modal state
+
+5. **DirectionsContext** (`useDirections()`)
+   - `directionsResult` - Google Maps directions data
+   - `directionsError` - Error message
+   - `isFetchingDirections` - Loading state
+
+6. **ToastContext** (`useToast()`)
+   - `showToast()` - Display toast notifications
+
+**Performance Benefits:**
+- Components using specific hooks only re-render when their domain changes
+- Reduces unnecessary re-renders compared to monolithic AppContext
+- Better code organization and maintainability
 
 **Routing:**
 - Uses React Router v6
@@ -175,6 +217,52 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 
 ## Important Implementation Details
 
+### Error Boundaries
+- **ErrorBoundary component** (`src/components/ErrorBoundary/ErrorBoundary.tsx`)
+- Catches JavaScript errors in child components to prevent entire app crashes
+- Provides fallback UI with "Try Again" functionality
+- Wrapped around major sections: Header, MapComponent, ListingsPanel
+- Includes accessibility features (role="alert", aria-live="assertive")
+- Shows error details in development mode
+
+**Usage:**
+```tsx
+<ErrorBoundary fallback={<CustomFallback />} onError={(error, info) => logError(error)}>
+  <MyComponent />
+</ErrorBoundary>
+```
+
+### Accessibility (WCAG 2.1 Compliance)
+- **Current Status:** ~95% WCAG 2.1 Level AA compliant
+- **See:** `ACCESSIBILITY_AUDIT.md` for detailed audit report
+
+**Key Features:**
+- Skip-to-content link for keyboard navigation (App.tsx:172-177)
+- ARIA roles and labels on interactive elements
+- Live regions for dynamic content (alerts, loading states)
+- Semantic HTML (fieldsets for form groups, legends for grouping)
+- Focus management on modals and overlays
+- Screen reader announcements for errors and status changes
+
+**Recent Fixes:**
+- ErrorBoundary: role="alert" for error messages
+- SocialOverlay: aria-label on all tab buttons, role="status" for loading
+- ProductFilters: fieldset/legend for filter groups
+
+### Testing
+- **See:** `TESTING_GUIDE.md` for setup instructions and examples
+- Testing framework: Vitest + React Testing Library
+- Includes examples for:
+  - Testing components with context hooks
+  - Testing context providers directly
+  - Accessibility testing with jest-axe
+  - Error boundary testing
+
+**To set up testing:**
+```bash
+npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
+```
+
 ### Google API Rate Limiting
 - Backend uses 500ms delay between API calls in processSheetData.js
 - On-demand API calls (from user actions) are cached with varying TTLs:
@@ -199,7 +287,55 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 - `tsconfig.app.json` - App-specific (src/)
 - `tsconfig.node.json` - Node-specific (vite.config.ts)
 
+## Documentation Files
+
+- **CLAUDE.md** (this file) - Project overview and development guide
+- **CONTEXTS.md** (`src/contexts/CONTEXTS.md`) - Comprehensive context architecture documentation
+- **ACCESSIBILITY_AUDIT.md** - Accessibility audit report and WCAG compliance status
+- **TESTING_GUIDE.md** - Testing setup instructions and examples
+- **README.md** - Basic project information
+
+## Recent Architectural Improvements
+
+### Migrated Components (Using Domain Contexts)
+The following components have been migrated from `AppContext` to specific domain hooks:
+- ✅ **ProductFilters** - Uses `useFilters()`
+- ✅ **Header** - Uses `useSearch()` + `useUI()`
+- ✅ **SocialOverlay** - Uses `useDirections()` + `useSearch()`
+
+**Performance Impact:** These components now only re-render when their specific domain state changes, reducing unnecessary re-renders.
+
+### Accessibility Improvements
+- Added ErrorBoundary with proper ARIA attributes
+- All interactive elements have proper labels and roles
+- Loading states announce to screen readers
+- Form controls properly grouped with fieldsets
+
+### Error Handling
+- ErrorBoundaries wrapped around major sections (Header, Map, ListingsPanel)
+- Prevents component errors from crashing the entire app
+- User-friendly error messages with retry functionality
+
 ## Common Workflows
+
+### Migrating a Component to Domain Contexts
+1. Identify which domains the component uses (farm data, search, filters, UI, directions)
+2. Replace `import { AppContext } from '../contexts/AppContext'` with specific imports:
+   ```tsx
+   import { useFarmData } from '../contexts/FarmDataContext';
+   import { useSearch } from '../contexts/SearchContext';
+   // etc.
+   ```
+3. Replace `const appContext = useContext(AppContext)` with:
+   ```tsx
+   const { allFarmStands, isLoadingFarmStands } = useFarmData();
+   const { currentRadius, mapsApiReady } = useSearch();
+   ```
+4. Remove null checks (hooks throw errors if used outside providers)
+5. Test the component
+6. **Benefits:** Component now only re-renders when its specific domains change
+
+**See:** `src/contexts/CONTEXTS.md` for detailed migration guide
 
 ### Adding a New Product Filter
 1. Add column to Google Sheet

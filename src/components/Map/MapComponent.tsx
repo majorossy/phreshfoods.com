@@ -1,7 +1,10 @@
 // src/components/Map/MapComponent.tsx
-import React, { useEffect, useRef, useContext, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import { AppContext, AutocompletePlace } from '../../contexts/AppContext.tsx';
+import { useFarmData } from '../../contexts/FarmDataContext.tsx';
+import { useSearch } from '../../contexts/SearchContext.tsx';
+import { useUI } from '../../contexts/UIContext.tsx';
+import { useDirections } from '../../contexts/DirectionsContext.tsx';
 import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
@@ -10,8 +13,10 @@ import {
   USER_LOCATION_MAP_ZOOM,
   markerColor,
   mapStyles, // For custom map styling
-  USE_CUSTOM_MAP_STYLE // Flag to enable/disable custom styles
+  USE_CUSTOM_MAP_STYLE, // Flag to enable/disable custom styles
+  METERS_PER_MILE, // For radius circle conversion
 } from '../../config/appConfig.ts';
+import { panToWithOffsets } from '../../utils/mapPanning';
 import { Shop } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import InfoWindowContent from './InfoWindowContent.tsx';
@@ -23,27 +28,18 @@ const MapComponent: React.FC = () => {
   const googleInfoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const infoWindowReactRootRef = useRef<ReturnType<typeof ReactDOM.createRoot> | null>(null);
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+  const previousSelectedShopSlugRef = useRef<string | null>(null);
+  const previousHoveredShopSlugRef = useRef<string | null>(null);
+  const searchLocationMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const searchRadiusCircleRef = useRef<google.maps.Circle | null>(null);
 
-  const appContext = useContext(AppContext);
   const navigate = useNavigate();
 
-  if (!appContext) {
-    return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">Loading map context...</div>;
-  }
-
-  const {
-    mapsApiReady,
-    currentlyDisplayedShops,
-    mapViewTargetLocation,
-    selectedShop,
-    openShopOverlays,
-    closeShopOverlays,
-    setSelectedShop,
-    directionsResult,
-    clearDirections,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-  } = appContext;
+  // Use domain-specific hooks for better performance (only re-render when relevant state changes)
+  const { currentlyDisplayedShops } = useFarmData();
+  const { mapsApiReady, mapViewTargetLocation, currentRadius } = useSearch();
+  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
+  const { directionsResult, clearDirections } = useDirections();
 
   const closeNativeInfoWindow = useCallback(() => {
     if (googleInfoWindowRef.current?.getMap()) {
@@ -54,10 +50,43 @@ const MapComponent: React.FC = () => {
   const unmountInfoWindowReactRoot = useCallback(() => {
     const rootToUnmount = infoWindowReactRootRef.current;
     if (rootToUnmount) {
-      setTimeout(() => { rootToUnmount.unmount(); }, 0);
+      // Defer unmount to avoid React 18 warning about synchronous unmount during render
+      setTimeout(() => {
+        try {
+          rootToUnmount.unmount();
+        } catch (error) {
+          console.error('Error unmounting InfoWindow root:', error);
+        }
+      }, 0);
       infoWindowReactRootRef.current = null;
     }
   }, []);
+
+  // Memoized helper for creating marker DOM elements
+  const createMarkerElement = useCallback(() => {
+    const markerElement = document.createElement('div');
+    markerElement.style.width = '20px';
+    markerElement.style.height = '20px';
+    markerElement.style.borderRadius = '50%';
+    markerElement.style.border = '2px solid white';
+    markerElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
+    markerElement.style.cursor = 'pointer';
+    markerElement.style.transition = 'transform 0.15s ease-out, background-color 0.15s ease-out';
+    return markerElement;
+  }, []);
+
+  // Memoized marker click handler factory
+  const createMarkerClickHandler = useCallback((shop: Shop) => {
+    return (event: MouseEvent) => {
+      event.domEvent?.stopPropagation();
+      if (setSelectedShop) setSelectedShop(shop);
+      if (openShopOverlays) openShopOverlays(shop, 'shop');
+      if (shop.slug) navigate(`/farm/${shop.slug}`, { replace: true });
+      closeNativeInfoWindow();
+      unmountInfoWindowReactRoot();
+    };
+  }, [setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+
 
   // Initialize Map and its specific listeners
   useEffect(() => {
@@ -71,7 +100,7 @@ const MapComponent: React.FC = () => {
       zoomControl: true,
       streetViewControl: false,
       fullscreenControl: true,
-      restriction: { latLngBounds: MAINE_BOUNDS_LITERAL, strictBounds: false },
+      // No map restrictions - users can pan freely to see surrounding areas
       mapId: MAP_ID,
       styles: USE_CUSTOM_MAP_STYLE ? mapStyles.maineLicensePlate : undefined,
     });
@@ -97,11 +126,9 @@ const MapComponent: React.FC = () => {
 
     const mapClickListener = mapInstance.addListener("click", (e: google.maps.MapMouseEvent | google.maps.IconMouseEvent) => {
       if ((e as google.maps.IconMouseEvent).placeId) {
-        console.log("MapComponent: Clicked on Google POI, ignoring");
         return;
       } // Clicked on a Google POI
 
-      console.log("MapComponent: Map base clicked - navigating to /");
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
 
@@ -109,7 +136,6 @@ const MapComponent: React.FC = () => {
       navigate('/', { replace: true });
 
       if (directionsResult && clearDirections) {
-        console.log("MapComponent: Clearing directions due to map click.");
         clearDirections();
       }
     });
@@ -120,6 +146,14 @@ const MapComponent: React.FC = () => {
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null);
         directionsRendererRef.current = null;
+      }
+      if (searchLocationMarkerRef.current) {
+        searchLocationMarkerRef.current.map = null;
+        searchLocationMarkerRef.current = null;
+      }
+      if (searchRadiusCircleRef.current) {
+        searchRadiusCircleRef.current.setMap(null);
+        searchRadiusCircleRef.current = null;
       }
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
@@ -135,6 +169,12 @@ const MapComponent: React.FC = () => {
     }
     const newMarkersMap = new Map<string, google.maps.marker.AdvancedMarkerElement>();
 
+    const selectedShopSlug = selectedShop?.slug || null;
+    const selectionChanged = selectedShopSlug !== previousSelectedShopSlugRef.current;
+
+    const hoveredShopSlug = hoveredShop?.slug || null;
+    const hoverChanged = hoveredShopSlug !== previousHoveredShopSlugRef.current;
+
     currentlyDisplayedShops.forEach((shop: Shop, index) => {
       if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return;
       const shopId = shop.slug || shop.GoogleProfileID || String(shop.id) || `marker-${index}`;
@@ -142,15 +182,17 @@ const MapComponent: React.FC = () => {
 
       let marker = markersRef.current.get(shopId);
       if (!marker) {
-        const markerElement = document.createElement('div');
-        markerElement.style.width = '20px';
-        markerElement.style.height = '20px';
-        markerElement.style.borderRadius = '50%';
-        markerElement.style.border = '2px solid white';
-        markerElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
-        markerElement.style.cursor = 'pointer';
-        markerElement.style.transition = 'transform 0.15s ease-out, background-color 0.15s ease-out';
-        
+        // Create new marker using memoized helper
+        const markerElement = createMarkerElement();
+
+        // Add hover listeners to marker element
+        markerElement.addEventListener('mouseenter', () => {
+          if (setHoveredShop) setHoveredShop(shop);
+        });
+        markerElement.addEventListener('mouseleave', () => {
+          if (setHoveredShop) setHoveredShop(null);
+        });
+
         marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: { lat: shop.lat, lng: shop.lng },
           map: map,
@@ -158,28 +200,52 @@ const MapComponent: React.FC = () => {
           content: markerElement,
         });
 
-        marker.addListener('gmp-click', (event: MouseEvent) => {
-          event.domEvent?.stopPropagation();
-          // console.log(`MapComponent: Marker clicked for ${shop.Name}`); // Optional debug
-          if (setSelectedShop) setSelectedShop(shop);
-          if (openShopOverlays) openShopOverlays(shop, 'shop'); // Default to 'shop' tab
-          if (shop.slug) navigate(`/farm/${shop.slug}`, { replace: true });
-          
-          // Close small InfoWindow if main overlay is opening
-          closeNativeInfoWindow();
-          unmountInfoWindowReactRoot();
-        });
+        // Use memoized click handler
+        marker.addListener('gmp-click', createMarkerClickHandler(shop));
       } else {
         marker.map = map;
       }
-      
-      const isSelected = selectedShop?.slug === shop.slug;
-      (marker.content as HTMLElement).style.transform = isSelected ? 'scale(1.5)' : 'scale(1.2)';
-      (marker.content as HTMLElement).style.backgroundColor = isSelected ? 'darkred' : markerColor;
-      marker.zIndex = isSelected ? 1001 : index + 1;
+
+      // Check if this marker is hovered or selected
+      const isSelected = selectedShopSlug === shop.slug;
+      const wasSelected = previousSelectedShopSlugRef.current === shop.slug;
+      const isHovered = hoveredShopSlug === shop.slug;
+      const wasHovered = previousHoveredShopSlugRef.current === shop.slug;
+
+      // Determine marker styling based on state (hover takes precedence)
+      let scale = 'scale(1.2)'; // Default
+      let backgroundColor = markerColor; // Default red
+      let zIndex = index + 1; // Default
+
+      if (isHovered) {
+        // Hover state - blue and larger
+        scale = 'scale(1.6)';
+        backgroundColor = '#4285F4'; // Google blue
+        zIndex = 2000; // Highest priority
+      } else if (isSelected) {
+        // Selected state - blue and large (same as hover to keep visual consistency)
+        scale = 'scale(1.5)';
+        backgroundColor = '#4285F4'; // Google blue
+        zIndex = 1001;
+      }
+
+      // Apply styling if state changed or this is a new marker
+      const needsUpdate = selectionChanged && (isSelected || wasSelected) ||
+                          hoverChanged && (isHovered || wasHovered) ||
+                          !marker.zIndex;
+
+      if (needsUpdate) {
+        (marker.content as HTMLElement).style.transform = scale;
+        (marker.content as HTMLElement).style.backgroundColor = backgroundColor;
+        marker.zIndex = zIndex;
+      }
 
       newMarkersMap.set(shopId, marker);
     });
+
+    // Update previous selected and hovered shop references
+    previousSelectedShopSlugRef.current = selectedShopSlug;
+    previousHoveredShopSlugRef.current = hoveredShopSlug;
 
     markersRef.current.forEach((oldMarker, shopId) => {
       if (!newMarkersMap.has(shopId)) {
@@ -187,24 +253,35 @@ const MapComponent: React.FC = () => {
       }
     });
     markersRef.current = newMarkersMap;
-  }, [currentlyDisplayedShops, mapsApiReady, selectedShop, navigate, setSelectedShop, openShopOverlays, markerColor, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [currentlyDisplayedShops, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, markerColor]);
 
-  // Effect to pan map to selectedShop
+  // Effect to pan map to selectedShop with offset to frame info window
+  // Uses single pan operation with calculated offsets for smooth movement
   useEffect(() => {
     const map = googleMapRef.current;
     if (!map || !mapsApiReady || !selectedShop) return;
-    if (selectedShop.lat != null && selectedShop.lng != null && !isNaN(selectedShop.lat) && !isNaN(selectedShop.lng)) {
-      const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
-      map.panTo(shopLatLng);
-      // if(map.getZoom() && map.getZoom() < 13) map.setZoom(13); // Optional zoom
-    }
-  }, [selectedShop, mapsApiReady]);
+    if (!window.google?.maps?.LatLng) return; // Ensure Maps API loaded
+    if (selectedShop.lat == null || selectedShop.lng == null || isNaN(selectedShop.lat) || isNaN(selectedShop.lng)) return;
 
-  // Effect to pan map to mapViewTargetLocation (from Autocomplete or initial cookie load)
+    const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+
+    // Single smooth pan with all offsets calculated upfront
+    panToWithOffsets({
+      map,
+      targetLatLng: shopLatLng,
+      isShopOverlayOpen,
+      isSocialOverlayOpen,
+      includeInfoWindowOffset: true, // Frame info window above marker
+    });
+  }, [selectedShop, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
+
+  // Consolidated effect for search location: pan, marker, circle, and auto-zoom
+  // Handles both initial location selection and radius changes
   useEffect(() => {
     const map = googleMapRef.current;
     if (!map || !mapsApiReady || !mapViewTargetLocation?.geometry?.location) return;
 
+    // Convert location to LatLng
     const location = mapViewTargetLocation.geometry.location;
     let targetLatLng: google.maps.LatLng;
 
@@ -216,16 +293,211 @@ const MapComponent: React.FC = () => {
         (location as google.maps.LatLngLiteral).lng
       );
     } else { return; }
-    
-    map.panTo(targetLatLng);
-    const viewport = mapViewTargetLocation.geometry.viewport;
-    if (viewport) {
-        map.fitBounds(viewport);
-    } else {
-        map.setZoom(USER_LOCATION_MAP_ZOOM);
-    }
-  }, [mapViewTargetLocation, mapsApiReady]);
 
+    // Batch all updates in requestAnimationFrame for smooth rendering
+    requestAnimationFrame(() => {
+      // Create or update search location marker
+      if (!searchLocationMarkerRef.current && window.google?.maps?.marker) {
+        // Create new marker
+        const pinElement = document.createElement('div');
+        pinElement.style.width = '30px';
+        pinElement.style.height = '30px';
+        pinElement.style.backgroundColor = '#4285F4'; // Google blue
+        pinElement.style.borderRadius = '50% 50% 50% 0';
+        pinElement.style.border = '3px solid white';
+        pinElement.style.boxShadow = '0 4px 8px rgba(0,0,0,0.4)';
+        pinElement.style.transform = 'rotate(-45deg)';
+        pinElement.style.cursor = 'pointer';
+
+        // Inner dot
+        const innerDot = document.createElement('div');
+        innerDot.style.width = '10px';
+        innerDot.style.height = '10px';
+        innerDot.style.backgroundColor = 'white';
+        innerDot.style.borderRadius = '50%';
+        innerDot.style.position = 'absolute';
+        innerDot.style.top = '50%';
+        innerDot.style.left = '50%';
+        innerDot.style.transform = 'translate(-50%, -50%)';
+        pinElement.appendChild(innerDot);
+
+        const searchMarker = new window.google.maps.marker.AdvancedMarkerElement({
+          position: targetLatLng,
+          map: map,
+          content: pinElement,
+          title: mapViewTargetLocation.formatted_address || 'Searched Location',
+          zIndex: 9999, // Always on top
+        });
+
+        searchLocationMarkerRef.current = searchMarker;
+      } else if (searchLocationMarkerRef.current) {
+        // Update existing marker position
+        searchLocationMarkerRef.current.position = targetLatLng;
+      }
+
+      // Create or update radius circle (optimized to avoid unnecessary updates)
+      const radiusInMeters = currentRadius * METERS_PER_MILE;
+
+      if (!searchRadiusCircleRef.current && window.google?.maps?.Circle) {
+        // Create new circle
+        const radiusCircle = new window.google.maps.Circle({
+          map: map,
+          center: targetLatLng,
+          radius: radiusInMeters,
+          fillColor: '#4285F4', // Google blue
+          fillOpacity: 0.1,
+          strokeColor: '#4285F4',
+          strokeOpacity: 0.4,
+          strokeWeight: 2,
+          clickable: false,
+          zIndex: 1, // Behind markers but above map
+        });
+
+        searchRadiusCircleRef.current = radiusCircle;
+      } else if (searchRadiusCircleRef.current) {
+        // Only update if values actually changed (prevents unnecessary redraws)
+        const currentCenter = searchRadiusCircleRef.current.getCenter();
+        const currentRadiusValue = searchRadiusCircleRef.current.getRadius();
+
+        if (!currentCenter || currentCenter.lat() !== targetLatLng.lat() || currentCenter.lng() !== targetLatLng.lng()) {
+          searchRadiusCircleRef.current.setCenter(targetLatLng);
+        }
+
+        if (currentRadiusValue !== radiusInMeters) {
+          searchRadiusCircleRef.current.setRadius(radiusInMeters);
+        }
+      }
+
+      // Auto-zoom to fit radius circle with panel offset (single smooth operation)
+      const circle = searchRadiusCircleRef.current;
+      const bounds = circle?.getBounds();
+
+      // Use unified panning utility for consistent behavior
+      panToWithOffsets({
+        map,
+        targetLatLng,
+        isShopOverlayOpen,
+        isSocialOverlayOpen,
+        includeInfoWindowOffset: false,
+        bounds: bounds || undefined, // Use fitBounds if we have bounds, otherwise panTo
+      });
+    });
+  }, [mapViewTargetLocation, currentRadius, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
+
+  // Listings panel width observer - re-pan when panel width changes
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady) return;
+
+    const listingsPanel = document.getElementById('listingsPanel');
+    if (!listingsPanel) return;
+
+    let resizeTimeout: NodeJS.Timeout;
+
+    // Create ResizeObserver to watch for panel width changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      // Debounce to avoid excessive re-panning during animations
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Re-pan to current target with updated panel offset
+        if (selectedShop && selectedShop.lat != null && selectedShop.lng != null) {
+          const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+          panToWithOffsets({
+            map,
+            targetLatLng: shopLatLng,
+            isShopOverlayOpen,
+            isSocialOverlayOpen,
+            includeInfoWindowOffset: true,
+          });
+        } else if (mapViewTargetLocation?.geometry?.location) {
+          const location = mapViewTargetLocation.geometry.location;
+          let targetLatLng: google.maps.LatLng;
+
+          if (typeof (location as google.maps.LatLng).lat === 'function') {
+            targetLatLng = location as google.maps.LatLng;
+          } else if (typeof (location as google.maps.LatLngLiteral).lat === 'number') {
+            targetLatLng = new window.google.maps.LatLng(
+              (location as google.maps.LatLngLiteral).lat,
+              (location as google.maps.LatLngLiteral).lng
+            );
+          } else { return; }
+
+          const bounds = searchRadiusCircleRef.current?.getBounds();
+          panToWithOffsets({
+            map,
+            targetLatLng,
+            isShopOverlayOpen,
+            isSocialOverlayOpen,
+            includeInfoWindowOffset: false,
+            bounds: bounds || undefined,
+          });
+        }
+      }, 150);
+    });
+
+    resizeObserver.observe(listingsPanel);
+
+    return () => {
+      clearTimeout(resizeTimeout);
+      resizeObserver.disconnect();
+    };
+  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopOverlayOpen, isSocialOverlayOpen]);
+
+  // Window resize handler - recalculate offsets and re-pan to maintain proper framing
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady) return;
+
+    let resizeTimeout: NodeJS.Timeout;
+
+    const handleResize = () => {
+      // Debounce resize events (300ms)
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        // Re-pan to current target with updated offsets
+        if (selectedShop && selectedShop.lat != null && selectedShop.lng != null) {
+          // Shop is selected - re-pan to shop with info window offset
+          const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
+          panToWithOffsets({
+            map,
+            targetLatLng: shopLatLng,
+            isShopOverlayOpen,
+            isSocialOverlayOpen,
+            includeInfoWindowOffset: true,
+          });
+        } else if (mapViewTargetLocation?.geometry?.location) {
+          // Search location is set - re-fit bounds with updated panel offset
+          const location = mapViewTargetLocation.geometry.location;
+          let targetLatLng: google.maps.LatLng;
+
+          if (typeof (location as google.maps.LatLng).lat === 'function') {
+            targetLatLng = location as google.maps.LatLng;
+          } else if (typeof (location as google.maps.LatLngLiteral).lat === 'number') {
+            targetLatLng = new window.google.maps.LatLng(
+              (location as google.maps.LatLngLiteral).lat,
+              (location as google.maps.LatLngLiteral).lng
+            );
+          } else { return; }
+
+          const bounds = searchRadiusCircleRef.current?.getBounds();
+          panToWithOffsets({
+            map,
+            targetLatLng,
+            isShopOverlayOpen,
+            isSocialOverlayOpen,
+            includeInfoWindowOffset: false,
+            bounds: bounds || undefined,
+          });
+        }
+      }, 300);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(resizeTimeout);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopOverlayOpen, isSocialOverlayOpen]);
 
   // --- ADDED: Effect to display/clear directions route on map ---
   useEffect(() => {
@@ -268,18 +540,6 @@ const MapComponent: React.FC = () => {
         newReactRoot.render(
           <InfoWindowContent
             shop={selectedShop}
-            onDirectionsClick={(clickedShop) => {
-              // --- MODIFIED: Open SocialOverlay to 'directions' tab ---
-              if (openShopOverlays) openShopOverlays(clickedShop, 'directions');
-              closeNativeInfoWindow();
-              unmountInfoWindowReactRoot();
-              // setSelectedShop(null); // Keep shop selected for SocialOverlay
-            }}
-            onDetailsClick={(clickedShop) => {
-              if (openShopOverlays) openShopOverlays(clickedShop, 'shop');
-              closeNativeInfoWindow();
-              unmountInfoWindowReactRoot();
-            }}
           />
         );
         googleInfoWin.setContent(contentDiv);

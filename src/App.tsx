@@ -1,20 +1,37 @@
 // src/App.tsx
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { AppContext } from './contexts/AppContext.tsx';
-import { Shop, ShopWithDistance } from './types'; // Ensure these types are defined
+import { AppContext, setToastHandler } from './contexts/AppContext.tsx';
+import { useToast } from './contexts/ToastContext.tsx';
+import { useFilteredShops } from './hooks/useFilteredShops';
+import {
+  getHomepageSEO,
+  getFarmStandSEO,
+  generateLocalBusinessSchema,
+  updateMetaTags,
+  addStructuredData
+} from './utils/seo';
 
 import Header from './components/Header/Header.tsx';
 import MapComponent from './components/Map/MapComponent.tsx';
 import ListingsPanel from './components/Listings/ListingsPanel.tsx';
-import ShopDetailsOverlay from './components/Overlays/ShopDetailsOverlay.tsx';
-import SocialOverlay from './components/Overlays/SocialOverlay.tsx';
-import InitialSearchModal from './components/Overlays/InitialSearchModal.tsx';
+import LazyLoadErrorBoundary from './components/LazyLoadErrorBoundary.tsx';
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
+
+// Code splitting: Lazy load overlay components to reduce initial bundle size
+const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsOverlay.tsx'));
+const SocialOverlay = lazy(() => import('./components/Overlays/SocialOverlay.tsx'));
 
 function App() {
   const appContext = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const { showToast } = useToast();
+
+  // Connect toast handler to AppContext
+  useEffect(() => {
+    setToastHandler(showToast);
+  }, [showToast]);
 
   const {
     allFarmStands,
@@ -26,141 +43,59 @@ function App() {
     isSocialOverlayOpen,
     openShopOverlays,
     closeShopOverlays,
-    isInitialModalOpen,
-    setIsInitialModalOpen,
     currentRadius,
     mapsApiReady,
     setSelectedShop,
   } = appContext || {};
 
-  // Unified Search/Filter Logic
+  // Use custom hook for filtering and sorting shops
+  const filteredAndSortedShops = useFilteredShops({
+    allFarmStands,
+    activeProductFilters,
+    searchLocation: lastPlaceSelectedByAutocomplete,
+    currentRadius,
+    mapsApiReady,
+  });
+
+  // Update displayed shops when filtered results change
   useEffect(() => {
-    // console.log("-------------------- FILTERING EFFECT START --------------------"); // Optional: for detailed tracing
-
-    if (!setCurrentlyDisplayedShops) {
-      // console.log("[App.tsx] Effect: setCurrentlyDisplayedShops is not available. Skipping filter.");
-      return;
+    if (setCurrentlyDisplayedShops) {
+      setCurrentlyDisplayedShops(filteredAndSortedShops);
     }
-    if (!allFarmStands) {
-      // console.log("[App.tsx] Effect: allFarmStands is not yet available. Setting displayed to empty.");
-      setCurrentlyDisplayedShops([]);
-      return;
-    }
+  }, [filteredAndSortedShops, setCurrentlyDisplayedShops]);
 
-    // console.log( // Optional: for detailed tracing
-    //   "[App.tsx] Effect: Initial state for this run -> AllFarmStands:", allFarmStands.length,
-    //   "ActiveProducts:", JSON.stringify(activeProductFilters),
-    //   "Location:", lastPlaceSelectedByAutocomplete?.formatted_address,
-    //   "Radius:", currentRadius
-    // );
+  // Auto-populate search location when loading a direct farm URL
+  useEffect(() => {
+    const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
 
-    if (allFarmStands.length === 0) {
-      setCurrentlyDisplayedShops([]);
-      return;
-    }
+    if (slugMatch && selectedShop && lastPlaceSelectedByAutocomplete === null && mapsApiReady) {
+      // User navigated directly to a farm URL and no search location is set
+      // Create a search location based on the shop's address
+      const shopAddress = selectedShop.placeDetails?.formatted_address || selectedShop.Address;
 
-    let tempFilteredStands: Shop[] = [...allFarmStands];
+      if (selectedShop.lat && selectedShop.lng && shopAddress) {
+        const autocompletePlace: AutocompletePlace = {
+          formatted_address: shopAddress,
+          geometry: {
+            location: new google.maps.LatLng(selectedShop.lat, selectedShop.lng)
+          },
+          name: selectedShop.placeDetails?.name || selectedShop.Name
+        };
 
-    // 1. Apply Product Filters
-    const currentActiveProductFilters = activeProductFilters || {};
-    const activeFilterKeys = Object.keys(currentActiveProductFilters).filter(key => currentActiveProductFilters[key]);
-    
-    if (activeFilterKeys.length > 0) {
-      // console.log("[App.tsx] Effect: Active product filter keys:", activeFilterKeys);
-      tempFilteredStands = tempFilteredStands.filter((shop: Shop) => {
-        return activeFilterKeys.every(filterKey => {
-          const productIsAvailable = !!(shop as any)[filterKey]; // Assumes direct boolean properties
-          return productIsAvailable;
-        });
-      });
-      // console.log("[App.tsx] Effect: After product filters, count:", tempFilteredStands.length);
-    }
-
-    // 2. Apply Location/Radius Filter
-    if (mapsApiReady && window.google?.maps?.geometry?.spherical && lastPlaceSelectedByAutocomplete?.geometry?.location && currentRadius > 0) {
-      const placeLocation = lastPlaceSelectedByAutocomplete.geometry.location;
-      let searchCenterLat: number | undefined;
-      let searchCenterLng: number | undefined;
-
-      if (placeLocation && typeof placeLocation.lat === 'function' && typeof placeLocation.lng === 'function') {
-        searchCenterLat = placeLocation.lat();
-        searchCenterLng = placeLocation.lng();
-      } else if (placeLocation && typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
-        searchCenterLat = placeLocation.lat;
-        searchCenterLng = placeLocation.lng;
-      }
-
-      if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
-        const searchCenterLatLng = new window.google.maps.LatLng(searchCenterLat, searchCenterLng);
-        const radiusInMeters = currentRadius * 1609.34;
-
-        tempFilteredStands = tempFilteredStands.filter(shop => {
-          if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return false;
-          const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
-          try {
-            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLatLng);
-            return distance <= radiusInMeters;
-          } catch (e) { return false; }
-        });
-        // console.log("[App.tsx] Effect: After location filter, count:", tempFilteredStands.length);
+        // Set the search location without showing the modal (already hidden by UIContext)
+        if (appContext?.setLastPlaceSelectedByAutocompleteAndCookie) {
+          appContext.setLastPlaceSelectedByAutocompleteAndCookie(autocompletePlace, shopAddress);
+        }
+        if (appContext?.setMapViewTargetLocation) {
+          appContext.setMapViewTargetLocation(autocompletePlace);
+        }
       }
     }
-
-    // 3. Calculate Distances and Format for Display
-    let finalStandsToDisplay: ShopWithDistance[] = [];
-    if (mapsApiReady && window.google?.maps?.geometry?.spherical && lastPlaceSelectedByAutocomplete?.geometry?.location) {
-      const placeLocation = lastPlaceSelectedByAutocomplete.geometry.location;
-      let searchCenterLat: number | undefined;
-      let searchCenterLng: number | undefined;
-
-      if (placeLocation && typeof placeLocation.lat === 'function' && typeof placeLocation.lng === 'function') {
-        searchCenterLat = placeLocation.lat();
-        searchCenterLng = placeLocation.lng();
-      } else if (placeLocation && typeof placeLocation.lat === 'number' && typeof placeLocation.lng === 'number') {
-        searchCenterLat = placeLocation.lat;
-        searchCenterLng = placeLocation.lng;
-      }
-
-      if (searchCenterLat !== undefined && searchCenterLng !== undefined) {
-        const searchCenterLatLng = new window.google.maps.LatLng(searchCenterLat, searchCenterLng);
-        finalStandsToDisplay = tempFilteredStands.map(shop => {
-          if (shop.lat != null && shop.lng != null && !isNaN(shop.lat) && !isNaN(shop.lng)) {
-            const shopLatLng = new window.google.maps.LatLng(shop.lat, shop.lng);
-            try {
-              const distanceInMeters = window.google.maps.geometry.spherical.computeDistanceBetween(searchCenterLatLng, shopLatLng);
-              const distanceInMiles = distanceInMeters / 1609.34;
-              return { ...shop, distance: distanceInMeters, distanceText: `${distanceInMiles.toFixed(1)} mi` };
-            } catch (e) { return { ...shop, distanceText: undefined }; }
-          }
-          return { ...shop, distanceText: undefined };
-        });
-      } else {
-        finalStandsToDisplay = tempFilteredStands.map(shop => ({ ...shop, distanceText: undefined }));
-      }
-    } else {
-      finalStandsToDisplay = tempFilteredStands.map(shop => ({ ...shop, distanceText: undefined }));
-    }
-    
-    if (finalStandsToDisplay.some(shop => shop.distance !== undefined)) {
-      finalStandsToDisplay.sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
-    }
-
-    // console.log("[App.tsx] Effect: END Filtering. Final displayedShops count:", finalStandsToDisplay.length);
-    setCurrentlyDisplayedShops(finalStandsToDisplay);
-    // console.log("-------------------- FILTERING EFFECT END --------------------");
-
-  }, [
-      allFarmStands, activeProductFilters, lastPlaceSelectedByAutocomplete,
-      currentRadius, setCurrentlyDisplayedShops, mapsApiReady
-    ]
-  );
+  }, [location.pathname, selectedShop, lastPlaceSelectedByAutocomplete, mapsApiReady, appContext]);
 
   // Handle direct navigation to /farm/:slug, overlay closure, and map click deselection
   useEffect(() => {
-    // console.log("-------------------- NAV/OVERLAY EFFECT START --------------------"); // Optional debug
-    // console.log("[App.tsx] Nav Effect current state: path=", location.pathname, "selectedShop=", selectedShop ? selectedShop.Name : 'null', "isShopOverlayOpen=", isShopOverlayOpen);
-
-    if (!allFarmStands || !openShopOverlays || !closeShopOverlays || !setSelectedShop) {
+    if (!openShopOverlays || !closeShopOverlays || !setSelectedShop) {
       return;
     }
 
@@ -168,35 +103,43 @@ function App() {
 
     if (slugMatch && slugMatch[1]) {
       const urlIdentifier = slugMatch[1];
+
+      // Wait for farm data to load before attempting to find the shop
+      if (!allFarmStands || allFarmStands.length === 0) {
+        // Data is still loading, don't redirect yet
+        return;
+      }
+
       // Try to find by slug first, then by GoogleProfileID as fallback
       const shopFromUrl = allFarmStands.find(s => s.slug === urlIdentifier)
                        || allFarmStands.find(s => s.GoogleProfileID === urlIdentifier);
 
       if (shopFromUrl) {
-        const shopId = shopFromUrl.slug || shopFromUrl.GoogleProfileID;
         if (!selectedShop || (selectedShop.slug !== shopFromUrl.slug && selectedShop.GoogleProfileID !== shopFromUrl.GoogleProfileID)) {
-          setSelectedShop(shopFromUrl); // Set selected shop first
-          openShopOverlays(shopFromUrl); // Then open overlay
-        } else if (!isShopOverlayOpen && !isSocialOverlayOpen) { // If URL matches but overlays somehow got closed
-             openShopOverlays(selectedShop); // Re-open with the current selectedShop
+          setSelectedShop(shopFromUrl);
+          openShopOverlays(shopFromUrl);
+        } else if (!isShopOverlayOpen && !isSocialOverlayOpen) {
+          openShopOverlays(selectedShop);
         }
       } else {
+        // Shop not found - redirect to homepage
         navigate('/', { replace: true });
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }
     } else if (location.pathname === '/') {
-      console.log("[App.tsx] At home path, checking overlays. isShopOverlayOpen:", isShopOverlayOpen, "isSocialOverlayOpen:", isSocialOverlayOpen, "selectedShop:", selectedShop?.Name);
+      // On homepage - close any open overlays
       if (selectedShop || isShopOverlayOpen || isSocialOverlayOpen) {
-        console.log("[App.tsx] Closing overlays and clearing selected shop");
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }
     } else if (!selectedShop && location.pathname.startsWith('/farm/')) {
-      navigate('/', { replace: true });
-      if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+      // Edge case: farm URL but no selected shop and data is loaded
+      if (allFarmStands && allFarmStands.length > 0) {
+        navigate('/', { replace: true });
+        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+      }
     }
-    // console.log("-------------------- NAV/OVERLAY EFFECT END --------------------"); // Optional debug
   }, [
       location.pathname, allFarmStands, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
       openShopOverlays, closeShopOverlays, setSelectedShop, navigate
@@ -204,12 +147,11 @@ function App() {
   );
 
   // Keyboard listener for Escape key
+  // Escape key handler to close overlays
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        if (isInitialModalOpen && setIsInitialModalOpen) {
-           setIsInitialModalOpen(false);
-        } else if ((isShopOverlayOpen || isSocialOverlayOpen) && closeShopOverlays) {
+        if ((isShopOverlayOpen || isSocialOverlayOpen) && closeShopOverlays) {
           closeShopOverlays();
           if (setSelectedShop) setSelectedShop(null); // Also deselect shop
           navigate('/');
@@ -218,7 +160,32 @@ function App() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isInitialModalOpen, setIsInitialModalOpen, isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, setSelectedShop]);
+  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, setSelectedShop]);
+
+  // SEO: Update meta tags and structured data based on current route
+  useEffect(() => {
+    const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
+
+    if (slugMatch && selectedShop) {
+      // Farm detail page - use shop-specific SEO
+      const seoConfig = getFarmStandSEO(selectedShop);
+      updateMetaTags(seoConfig);
+
+      // Add structured data for LocalBusiness
+      const structuredData = generateLocalBusinessSchema(selectedShop);
+      addStructuredData(structuredData);
+    } else if (location.pathname === '/') {
+      // Homepage - use homepage SEO
+      const seoConfig = getHomepageSEO();
+      updateMetaTags(seoConfig);
+
+      // Remove farm-specific structured data on homepage
+      const existing = document.querySelector('script[type="application/ld+json"]');
+      if (existing) {
+        existing.remove();
+      }
+    }
+  }, [location.pathname, selectedShop]);
 
   if (!appContext) {
     return <div className="flex items-center justify-center h-screen text-xl">Loading application context...</div>;
@@ -226,35 +193,55 @@ function App() {
 
   return (
     <div id="app-container" className="h-screen flex flex-col">
-      <Header />
-      <main className="flex-grow relative overflow-hidden">
-        <div className="w-full h-full">
-          {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
-        </div>
-        <ListingsPanel />
-        
+      {/* Skip to main content link for keyboard navigation */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+      <ErrorBoundary>
+        <Header />
+      </ErrorBoundary>
+      <main id="main-content" className="flex-grow relative overflow-hidden" role="main">
+        <ErrorBoundary>
+          <div className="w-full h-full">
+            {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
+          </div>
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <ListingsPanel />
+        </ErrorBoundary>
+
         {isShopOverlayOpen && selectedShop && (
-          <ShopDetailsOverlay
-            shop={selectedShop}
-            onClose={() => {
-              closeShopOverlays?.();
-              if (setSelectedShop) setSelectedShop(null);
-              navigate('/');
-            }}
-          />
+          <LazyLoadErrorBoundary componentName="shop details">
+            <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
+              <ShopDetailsOverlay
+                shop={selectedShop}
+                onClose={() => {
+                  closeShopOverlays?.();
+                  if (setSelectedShop) setSelectedShop(null);
+                  navigate('/');
+                }}
+              />
+            </Suspense>
+          </LazyLoadErrorBoundary>
         )}
         {isSocialOverlayOpen && selectedShop && (
-          <SocialOverlay
-            shop={selectedShop}
-            onClose={() => { 
-              closeShopOverlays?.(); 
-              if (setSelectedShop) setSelectedShop(null);
-              navigate('/'); 
-            }}
-          />
+          <LazyLoadErrorBoundary componentName="social media">
+            <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
+              <SocialOverlay
+                shop={selectedShop}
+                onClose={() => {
+                  closeShopOverlays?.();
+                  if (setSelectedShop) setSelectedShop(null);
+                  navigate('/');
+                }}
+              />
+            </Suspense>
+          </LazyLoadErrorBoundary>
         )}
       </main>
-      {isInitialModalOpen && <InitialSearchModal />}
       <Routes>
           <Route path="/" element={<React.Fragment />} />
           <Route path="/farm/:slug" element={<React.Fragment />} />

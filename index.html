@@ -39,7 +39,7 @@
       }
     </script>
     <script async
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker,maps,geocoding&callback=initAppMapGlobal"></script>
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCRGp81QHEPMm5l08QK3f2xrxtRBAWLpBY&libraries=places,geometry,marker,maps,geocoding&loading=async&callback=initAppMapGlobal"></script>
     <!--
         IMPORTANT: Replace YOUR_ACTUAL_GOOGLE_API_KEY_FRONTEND with your real Google Maps API key.
         Ensure this key is properly restricted in your Google Cloud Console for security.
@@ -52,12 +52,11 @@
     <script async src="https://www.instagram.com/embed.js"></script>
     <!-- Facebook SDK -->
     <!--
-        IMPORTANT: Replace YOUR_FACEBOOK_APP_ID and YOUR_NONCE_HERE
-        You need a Facebook App ID if you want to use advanced features of the SDK or if required by their terms.
-        The nonce is for Content Security Policy (CSP) if you use one.
+        Facebook Page Plugin works via iframe without requiring the SDK or App ID
+        Commenting out SDK to avoid console errors from placeholder values
     -->
-    <div id="fb-root"></div>
-    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script>
+    <!-- <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v20.0&appId=YOUR_FACEBOOK_APP_ID&autoLogAppEvents=1" nonce="YOUR_NONCE_HERE"></script> -->
 
 </head>
 <body class="bg-white antialiased">

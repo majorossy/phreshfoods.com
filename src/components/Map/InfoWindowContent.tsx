@@ -31,30 +31,19 @@ const StarRating: React.FC<{ rating: number; reviewCount?: number }> = ({ rating
 
 interface InfoWindowContentProps {
   shop: Shop;
-  onDirectionsClick: (shop: Shop) => void;
-  onDetailsClick: (shop: Shop) => void;
 }
 
-const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop, onDirectionsClick, onDetailsClick }) => {
+const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
   if (!shop) {
     return null;
   }
-
-  const handleDirections = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDirectionsClick(shop);
-  };
-
-  const handleDetails = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDetailsClick(shop);
-  };
 
   // Get image URL from shop data - prioritize custom images from sheet, then Google Photos
   let imageUrl = '/images/placeholder-sm.png'; // Default fallback
 
   if (shop.ImageOne) {
-    imageUrl = shop.ImageOne;
+    // Add /images/ prefix if not already present
+    imageUrl = shop.ImageOne.startsWith('/') ? shop.ImageOne : `/images/${shop.ImageOne}`;
   } else if (shop.placeDetails?.photos && shop.placeDetails.photos.length > 0) {
     const photoRef = shop.placeDetails.photos[0].photo_reference;
     // Use backend proxy to fetch photo (keeps API key secure)
@@ -87,23 +76,6 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop, onDirection
             {shop.Address}
           </p>
         )}
-
-        <div className="flex space-x-2 mt-2">
-          <button
-            type="button"
-            onClick={handleDirections}
-            className="text-[0.7rem] bg-blue-500 hover:bg-blue-600 text-white py-1 px-2.5 rounded shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            Directions
-          </button>
-          <button
-            type="button"
-            onClick={handleDetails}
-            className="text-[0.7rem] bg-green-500 hover:bg-green-600 text-white py-1 px-2.5 rounded shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-green-400"
-          >
-            Details
-          </button>
-        </div>
       </div>
     </div>
   );

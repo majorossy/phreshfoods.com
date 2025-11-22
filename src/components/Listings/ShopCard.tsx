@@ -1,21 +1,31 @@
 // src/components/Listings/ShopCard.tsx
-import React, { useContext } from 'react'; // Added useContext
+import React, { useEffect, useRef } from 'react';
 import { ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import StarRating from '../UI/StarRating.tsx';
 import { kmToMiles, escapeHTMLSafe } from '../../utils';
-import { AppContext } from '../../contexts/AppContext.tsx'; // For selectedShop styling
+import { useUI } from '../../contexts/UIContext.tsx'; // For selectedShop styling
 
 interface ShopCardProps {
   shop: ShopWithDistance;
-  onSelect: (shop: ShopWithDistance) => void;
-  isSelected: boolean;
 }
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const navigate = useNavigate();
-  const appContext = useContext(AppContext);
-  const { selectedShop } = appContext || {}; // Get selectedShop from context
+  const { selectedShop, hoveredShop, setHoveredShop } = useUI(); // Get selectedShop and hoveredShop from UI context
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Scroll card into view when hovered from map
+  useEffect(() => {
+    const isHovered = hoveredShop?.slug === shop.slug || hoveredShop?.GoogleProfileID === shop.GoogleProfileID;
+    if (isHovered && cardRef.current) {
+      cardRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [hoveredShop, shop.slug, shop.GoogleProfileID]);
 
   const handleCardClick = () => {
     // Use slug if available, otherwise use GoogleProfileID as fallback
@@ -28,8 +38,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     navigate(`/farm/${urlIdentifier}`);
   };
 
-  const displayName = escapeHTMLSafe(shop.placeDetails?.name || shop.Name || 'Farm Stand');
-  const displayAddress = escapeHTMLSafe(shop.placeDetails?.formatted_address || shop.Address || 'N/A');
+  // Google Place Details data is already safe (comes from Google API), only escape our own data
+  const displayName = shop.placeDetails?.name || escapeHTMLSafe(shop.Name) || 'Farm Stand';
+  const displayAddress = shop.placeDetails?.formatted_address || escapeHTMLSafe(shop.Address) || 'N/A';
   const displayRating = shop.placeDetails?.rating !== undefined ? shop.placeDetails.rating : shop.Rating;
   const displayReviewCount = shop.placeDetails?.user_ratings_total;
 
@@ -47,17 +58,22 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   }
 
   const isSelected = selectedShop?.slug === shop.slug || selectedShop?.GoogleProfileID === shop.GoogleProfileID;
+  const isHovered = hoveredShop?.slug === shop.slug || hoveredShop?.GoogleProfileID === shop.GoogleProfileID;
 
   return (
     <div
+      ref={cardRef}
       id={`shop-card-${shop.slug || shop.GoogleProfileID || shop.Name?.replace(/\W/g, '')}`}
       className={`
-        bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden 
-        hover:shadow-xl focus-within:shadow-xl transition-all duration-300 ease-in-out 
+        bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden
+        hover:shadow-xl focus-within:shadow-xl transition-all duration-200 ease-in-out
         cursor-pointer group w-full flex flex-col h-full border
         ${isSelected ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800' : 'border-gray-200 dark:border-gray-700'}
       `}
+      style={isHovered ? { boxShadow: '0 0 0 6px #4285F4' } : undefined}
       onClick={handleCardClick}
+      onMouseEnter={() => setHoveredShop(shop)}
+      onMouseLeave={() => setHoveredShop(null)}
       role="button"
       tabIndex={0}
       onKeyPress={(e) => (e.key === 'Enter' || e.key === ' ') && handleCardClick()}
@@ -138,4 +154,22 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   );
 };
 
-export default ShopCard;
+// Memoize ShopCard to prevent unnecessary re-renders
+// Only re-render if the shop identity or distance changes
+export default React.memo(ShopCard, (prevProps, nextProps) => {
+  // Return true if props are equal (DON'T re-render)
+  // Return false if props changed (DO re-render)
+  const prevShop = prevProps.shop;
+  const nextShop = nextProps.shop;
+
+  // Compare shop identity
+  const sameIdentity =
+    prevShop.slug === nextShop.slug &&
+    prevShop.GoogleProfileID === nextShop.GoogleProfileID;
+
+  // Compare distance (important for location-based searches)
+  const sameDistance = prevShop.distance === nextShop.distance;
+
+  // Only skip re-render if both identity and distance are the same
+  return sameIdentity && sameDistance;
+});

@@ -535,10 +535,23 @@ body.modal-active {
 }
 /* You might also need to target .gm-style .gm-style-iw-tc if the above isn't enough */
 
-/* Optional: Remove the default close button if your InfoWindowContent has its own,
-   or if you want to rely solely on map clicks or other UI to close.
-   Generally, keeping Google's 'x' is good for accessibility.
+/* Remove the default close button - user can click map or use other UI to close */
 .gm-style .gm-style-iw-c button[title="Close"] {
     display: none !important;
 }
-*/
+
+/* Toast notification animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}

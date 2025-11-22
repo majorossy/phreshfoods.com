@@ -2,6 +2,14 @@
 'use strict';
 
 import { Shop, PlaceDetails, GeoLocation } from '../types'; // Assuming your types are in ../types
+import { retryAsync } from '../utils/retry';
+import { cachedFetch } from '../utils/requestCache';
+import {
+  API_RETRY_FARM_STANDS_MAX,
+  API_RETRY_FARM_STANDS_DELAY_MS,
+  API_RETRY_GEOCODE_MAX,
+  API_RETRY_GEOCODE_DELAY_MS,
+} from '../config/appConfig';
 
 // Define a type for the raw shop data from the backend if it differs slightly before client-side processing
 // For now, we'll assume the backend sends data largely conforming to the Shop type,
@@ -22,7 +30,7 @@ interface RawShopData extends Omit<Shop, 'lat' | 'lng' | 'beef' /* ... other boo
   corn?: string | boolean | number;
   carrots?: string | boolean | number;
   potatoes?: string | boolean | number;
-  lettus?: string | boolean | number;
+  lettuce?: string | boolean | number;
   spinach?: string | boolean | number;
   squash?: string | boolean | number;
   tomatoes?: string | boolean | number;
@@ -50,43 +58,33 @@ const toBoolean = (value: string | boolean | number | undefined | null): boolean
 
 /**
  * Fetches and processes farm stand data from the server backend.
+ * Uses request caching to prevent duplicate calls and improve performance.
+ *
  * @returns {Promise<Shop[]>} A promise that resolves to an array of shop objects.
  */
-// Example structure for apiService.ts
 export async function fetchAndProcessFarmStands(): Promise<Shop[]> {
   try {
-    console.log("apiService: Initiating fetch from /api/farm-stands");
-    const response = await fetch('/api/farm-stands'); // Or your actual endpoint
-    console.log('apiService: Raw response status:', response.status, response.statusText);
+    // Use cachedFetch with 5-minute cache duration
+    // This prevents duplicate requests during React Strict Mode and hot reloading
+    const rawData = await cachedFetch<Shop[]>(
+      '/api/farm-stands',
+      {}, // No special fetch options needed
+      300000 // 5 minutes cache (farm stands update hourly)
+    );
 
-    if (!response.ok) {
-      const errorBody = await response.text();
-      console.error('apiService: Network response was not ok.', response.status, errorBody);
-      throw new Error(`API request failed: ${response.status} ${errorBody}`);
-    }
-
-    const rawData = await response.json();
-    console.log('apiService: Raw JSON data received:', rawData);
-
-    // ---- YOUR DATA PROCESSING LOGIC ----
-    // This is where rawData is transformed into Shop[]
-    // For example, if rawData is an array of the correct shop objects:
+    // Process the data
     let processedData: Shop[] = [];
-    if (Array.isArray(rawData)) { // Or whatever structure your API returns
-        processedData = rawData as Shop[]; // Assuming direct cast or further mapping
-        console.log(`apiService: Processed rawData into ${processedData.length} shops.`);
+    if (Array.isArray(rawData)) {
+      processedData = rawData as Shop[];
     } else {
-        console.warn("apiService: rawData from API was not an array as expected.", rawData);
-        // processedData will remain []
+      console.warn("apiService: rawData from API was not an array as expected.", rawData);
     }
-    // ---- END OF YOUR DATA PROCESSING LOGIC ----
-
 
     if (processedData.length === 0) {
-      // This is where your "Zero farm stands received" log comes from if processedData is empty
       console.warn('apiService: Processed data resulted in zero farm stands.');
     }
-    return processedData; // Return the (possibly empty) array of Shops
+
+    return processedData;
 
   } catch (error) {
     console.error('apiService: Error within fetchAndProcessFarmStands:', error);
@@ -120,15 +118,20 @@ export async function geocodeAddressClient(address: string): Promise<GeocodeResp
     return null;
   }
   try {
-    const response = await fetch(`/api/geocode?address=${encodeURIComponent(address.trim())}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: "Geocoding request failed" }));
-      throw new Error(
-        (errorData as { error?: string }).error ||
-        `Geocoding request failed: ${response.statusText}`
-      );
-    }
-    return await response.json() as GeocodeResponse;
+    return await retryAsync(async () => {
+      const response = await fetch(`/api/geocode?address=${encodeURIComponent(address.trim())}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Geocoding request failed" }));
+        throw new Error(
+          (errorData as { error?: string }).error ||
+          `Geocoding request failed: ${response.statusText}`
+        );
+      }
+      return await response.json() as GeocodeResponse;
+    }, {
+      maxRetries: API_RETRY_GEOCODE_MAX,
+      delayMs: API_RETRY_GEOCODE_DELAY_MS,
+    });
   } catch (error) {
     console.error("Error geocoding address on client (via backend):", error instanceof Error ? error.message : String(error));
     // Optionally re-throw or return null based on how you want to handle errors in components
@@ -151,16 +154,21 @@ export async function getPlaceDetailsClient(placeId: string, fields?: string): P
     return null;
   }
   try {
-    const fieldQuery = fields ? `&fields=${encodeURIComponent(fields)}` : '';
-    const response = await fetch(`/api/places/details?placeId=${encodeURIComponent(placeId)}${fieldQuery}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: "Fetching place details failed" }));
-      throw new Error(
-        (errorData as { error?: string }).error ||
-        `Place details request failed: ${response.statusText}`
-      );
-    }
-    return await response.json() as Partial<PlaceDetails>;
+    return await retryAsync(async () => {
+      const fieldQuery = fields ? `&fields=${encodeURIComponent(fields)}` : '';
+      const response = await fetch(`/api/places/details?placeId=${encodeURIComponent(placeId)}${fieldQuery}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Fetching place details failed" }));
+        throw new Error(
+          (errorData as { error?: string }).error ||
+          `Place details request failed: ${response.statusText}`
+        );
+      }
+      return await response.json() as Partial<PlaceDetails>;
+    }, {
+      maxRetries: API_RETRY_GEOCODE_MAX,
+      delayMs: API_RETRY_GEOCODE_DELAY_MS,
+    });
   } catch (error) {
     console.error("Error fetching place details on client (via backend):", error instanceof Error ? error.message : String(error));
     // throw error;
@@ -175,9 +183,9 @@ export async function getPlaceDetailsClient(placeId: string, fields?: string): P
  */
 export interface DirectionsResponse {
   status: string; // e.g., "OK", "ZERO_RESULTS"
-  routes: any[]; // Define more strictly if needed
-  // geocoded_waypoints?: any[];
-  // available_travel_modes?: string[];
+  routes: google.maps.DirectionsRoute[]; // Google Maps DirectionsRoute objects
+  // geocoded_waypoints?: google.maps.GeocoderResult[];
+  // available_travel_modes?: google.maps.TravelMode[];
   error_message?: string; // If status is not OK
 }
 
@@ -207,17 +215,22 @@ export async function getDirectionsClient(
   }
 
   try {
-    const response = await fetch(`/api/directions?origin=${encodeURIComponent(originQuery)}&destination=${encodeURIComponent(destinationQuery)}`);
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: "Fetching directions failed" }));
-      // The backend /api/directions might return different status codes for directions errors (e.g., 400 for bad request)
-      // vs server errors (500). Handle accordingly.
-      const errorMessage = (errorData as { error?: string; details?: string }).error ||
-                           (errorData as { error?: string; details?: string }).details ||
-                           `Directions request failed: ${response.statusText}`;
-      throw new Error(errorMessage);
-    }
-    return await response.json() as DirectionsResponse;
+    return await retryAsync(async () => {
+      const response = await fetch(`/api/directions?origin=${encodeURIComponent(originQuery)}&destination=${encodeURIComponent(destinationQuery)}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Fetching directions failed" }));
+        // The backend /api/directions might return different status codes for directions errors (e.g., 400 for bad request)
+        // vs server errors (500). Handle accordingly.
+        const errorMessage = (errorData as { error?: string; details?: string }).error ||
+                             (errorData as { error?: string; details?: string }).details ||
+                             `Directions request failed: ${response.statusText}`;
+        throw new Error(errorMessage);
+      }
+      return await response.json() as DirectionsResponse;
+    }, {
+      maxRetries: API_RETRY_GEOCODE_MAX,
+      delayMs: API_RETRY_GEOCODE_DELAY_MS,
+    });
   } catch (error) {
     console.error("Error fetching directions on client (via backend):", error instanceof Error ? error.message : String(error));
     // throw error;

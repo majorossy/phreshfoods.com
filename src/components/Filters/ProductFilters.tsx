@@ -1,16 +1,10 @@
 // src/components/Filters/ProductFilters.tsx
-import React, { useContext } from 'react';
-import { AppContext } from '../../contexts/AppContext';
+import React from 'react';
+import { useFilters } from '../../contexts/FilterContext';
 import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
 
 const ProductFilters: React.FC = () => {
-  const appContext = useContext(AppContext);
-
-  if (!appContext) {
-    return <div className="p-2 text-sm text-gray-500">Loading filters...</div>;
-  }
-
-  const { activeProductFilters, setActiveProductFilters } = appContext;
+  const { activeProductFilters, setActiveProductFilters } = useFilters();
 
   const handleFilterChange = (filterId: string) => {
     setActiveProductFilters(prevFilters => ({
@@ -46,8 +40,8 @@ const ProductFilters: React.FC = () => {
         {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(filtersGroupedByCategory).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
           .filter(category => filtersGroupedByCategory[category] && filtersGroupedByCategory[category].length > 0) // Only render if category exists and has items
           .map((category) => (
-            <div key={category}>
-              <h4 className="text-sm font-medium text-gray-600 mb-1.5 capitalize">{category}</h4>
+            <fieldset key={category} className="border-none p-0 m-0">
+              <legend className="text-sm font-medium text-gray-600 mb-1.5 capitalize">{category}</legend>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1.5"> {/* Adjusted grid for dropdown context */}
                 {filtersGroupedByCategory[category].map(filter => {
                   const productConfig = PRODUCT_ICONS_CONFIG[filter.id];
@@ -79,7 +73,7 @@ const ProductFilters: React.FC = () => {
                   );
                 })}
               </div>
-            </div>
+            </fieldset>
         ))}
       </div>
       {Object.keys(activeProductFilters).some(key => activeProductFilters[key]) && ( // Show "Clear All" only if some filters are active

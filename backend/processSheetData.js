@@ -33,6 +33,18 @@ function parseCSVLine(line) {
     return values;
 }
 
+// Decode HTML entities (e.g., &#39; to ')
+function decodeHTMLEntities(text) {
+    if (!text || typeof text !== 'string') return text;
+    return text
+        .replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec))
+        .replace(/&quot;/g, '"')
+        .replace(/&apos;/g, "'")
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&amp;/g, '&'); // Must be last to avoid double-decoding
+}
+
 // Generate a URL-safe slug from a name
 function generateSlug(name) {
     if (!name) return '';
@@ -142,7 +154,7 @@ async function updateFarmStandsData() {
             zip: headers.indexOf("zip"), rating: headers.indexOf("rating"), phone: headers.indexOf("phone"),
             website: headers.indexOf("website"), googleprofileid: headers.indexOf("place id"),
             imageone: headers.indexOf("image_one"), imagetwo: headers.indexOf("image_two"),
-            imagethree: headers.indexOf("image_three"), twitterhandle: headers.indexOf("twitter"),
+            imagethree: headers.indexOf("image_three"), xhandle: headers.indexOf("x"),
             facebookpageid: headers.indexOf("facebook"), instagramusername: headers.indexOf("instagram username"),
             instagramlink: headers.indexOf("instagram"),
             beef: headers.indexOf("beef"), pork: headers.indexOf("pork"), lamb: headers.indexOf("lamb"),
@@ -169,7 +181,8 @@ async function updateFarmStandsData() {
             // Inside the for (const line of lines) loop:
             const getStringValue = (key) => { // REMOVED: : string
                 const index = headerMap[key]; // REMOVED: as keyof typeof headerMap (and simplified)
-                return (index === -1 || typeof index === 'undefined' || index >= rawValues.length) ? "" : (rawValues[index] || "");
+                const value = (index === -1 || typeof index === 'undefined' || index >= rawValues.length) ? "" : (rawValues[index] || "");
+                return decodeHTMLEntities(value);
             };
             const getProductBoolean = (key) => { // REMOVED: : string
                 const val = getStringValue(key).trim().toLowerCase();
@@ -189,8 +202,11 @@ async function updateFarmStandsData() {
                 Website: getStringValue("website"),
                 GoogleProfileID: getStringValue("googleprofileid"),
                 slug: providedSlug || generateSlug(shopName),
-                TwitterHandle: getStringValue("twitterhandle"), FacebookPageID: getStringValue("facebookpageid"),
-                InstagramUsername: getStringValue("instagramusername"), InstagramRecentPostEmbedCode: '', InstagramLink: getStringValue("instagramlink"),
+                XHandle: getStringValue("xhandle"),
+                FacebookPageID: getStringValue("facebookpageid"),
+                InstagramUsername: getStringValue("instagramusername"),
+                InstagramRecentPostEmbedCode: '',
+                InstagramLink: getStringValue("instagramlink"),
                 ImageOne: getStringValue("imageone"), ImageTwo: getStringValue("imagetwo"), ImageThree: getStringValue("imagethree"),
                 beef: getProductBoolean("beef"), pork: getProductBoolean("pork"), lamb: getProductBoolean("lamb"),
                 chicken: getProductBoolean("chicken"), turkey: getProductBoolean("turkey"), duck: getProductBoolean("duck"),

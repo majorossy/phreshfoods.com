@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://phreshfoods.com/</loc>
+    <lastmod>2025-11-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!--
+    Note: This is a base sitemap. For a complete sitemap with all farm stands,
+    use the sitemapGenerator utility in src/utils/sitemapGenerator.ts to generate
+    a dynamic sitemap based on your current farm data.
+
+    You can run the generateSitemap() function with your allFarmStands data
+    to create an updated sitemap with all farm URLs.
+  -->
+</urlset>

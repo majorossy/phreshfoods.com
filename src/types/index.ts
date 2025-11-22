@@ -1,14 +1,17 @@
 // src/types/index.ts
 
-// Re-export all types from shop.ts
+// Re-export all types from domain-specific type files
 export * from './shop';
+export * from './google-maps';
+export * from './ui';
 
-// You can add re-exports from other type definition files here as your project grows
-// For example, if you had types specific to user authentication:
-// export * from './auth';
-
-// Or types for your AppContext state if it becomes very complex and you want to define it here:
-// export * from './appContextState';
+// Window interface extension for custom properties
+declare global {
+  interface Window {
+    googleMapsApiLoaded?: boolean;
+    twttr?: any; // Twitter widgets library - complex third-party type
+  }
+}
 
 // Example of a utility type you might define here or in its own file
 export type FilterableProductKey = keyof Pick<
@@ -23,7 +26,7 @@ export type FilterableProductKey = keyof Pick<
   | 'corn'
   | 'carrots'
   | 'potatoes'
-  | 'lettus'
+  | 'lettuce'
   | 'spinach'
   | 'squash'
   | 'tomatoes'

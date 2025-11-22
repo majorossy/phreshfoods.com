@@ -76,7 +76,7 @@ export interface Shop {
   Website?: string; // Original from sheet
   GoogleProfileID?: string;
   slug: string; // From sheet or generated
-  TwitterHandle?: string;
+  XHandle?: string;
   FacebookPageID?: string;
   InstagramUsername?: string;
   InstagramRecentPostEmbedCode?: string;
@@ -96,7 +96,7 @@ export interface Shop {
   corn?: boolean;
   carrots?: boolean;
   potatoes?: boolean;
-  lettus?: boolean; // As per your CSV header
+  lettuce?: boolean; // Renamed from 'lettus' for consistency
   spinach?: boolean;
   squash?: boolean;
   tomatoes?: boolean;
