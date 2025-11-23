@@ -54,12 +54,10 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
     <div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
       {/* Optional Image Section */}
       {imageUrl && !imageUrl.includes('placeholder-sm.png') && ( // Don't show placeholder if that's all we have
-        <div className="w-full h-24 bg-gray-200 mb-2 rounded-t-md overflow-hidden">
-          <img src={imageUrl} alt={shop.Name} className="w-full h-full object-cover" />
-        </div>
+        <img src={imageUrl} alt={shop.Name} className="w-full h-24 object-cover rounded-t-md block" />
       )}
 
-      <div className={imageUrl && !imageUrl.includes('placeholder-sm.png') ? "p-2 pt-1" : "p-2"}> {/* Adjust padding if no image */}
+      <div className={imageUrl && !imageUrl.includes('placeholder-sm.png') ? "p-2 pt-2" : "p-2"}> {/* Adjust padding if no image */}
         <h3 className="text-sm font-semibold mb-0.5 truncate text-gray-800 leading-tight" title={shop.Name}>
           {shop.Name}
         </h3>

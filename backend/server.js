@@ -840,8 +840,11 @@ app.get('/api/cache/flush-and-refresh', async (req, res) => { // Renamed for cla
 
 
 // --- Cron Job Scheduling ---
-const CRON_SCHEDULE = process.env.DATA_REFRESH_SCHEDULE || '1 * * * *'; // Default to hourly
-if (cron.validate(CRON_SCHEDULE)) {
+// OPTIONAL: Automatic data refresh (disabled by default to reduce API costs)
+// To enable: Set DATA_REFRESH_SCHEDULE in .env (e.g., "0 2 * * 0" for weekly Sunday 2 AM)
+// By default, data refresh is manual via `npm run process-data`
+const CRON_SCHEDULE = process.env.DATA_REFRESH_SCHEDULE;
+if (CRON_SCHEDULE && cron.validate(CRON_SCHEDULE)) {
     console.log(`Scheduling location data update (all types) with cron expression: ${CRON_SCHEDULE}`);
     cron.schedule(CRON_SCHEDULE, () => {
         console.log(`[${new Date().toISOString()}] Running scheduled location data update...`);
@@ -849,8 +852,10 @@ if (cron.validate(CRON_SCHEDULE)) {
             console.error(`[${new Date().toISOString()}] Scheduled location data update FAILED:`, err);
         });
     });
-} else {
+} else if (CRON_SCHEDULE) {
     console.error(`Invalid CRON_SCHEDULE: ${CRON_SCHEDULE}. Scheduled job will not run.`);
+} else {
+    console.log('Automatic data refresh is DISABLED. Run `npm run process-data` manually to update location data.');
 }
 
 // Run once on server startup (after a short delay)

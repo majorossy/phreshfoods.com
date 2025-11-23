@@ -98,10 +98,18 @@ npm run build           # Build both frontend and backend
 
 ### Data Processing
 ```bash
+# Refresh all location types
 npm run process-data
-# Manually refresh location data from Google Sheets
-# Geocodes addresses and enriches with Google Place Details
+
+# Refresh specific location type only (faster)
+npm run process-data:farms      # Farm stands only
+npm run process-data:cheese     # Cheese shops only
+npm run process-data:fish       # Fish mongers only
+npm run process-data:butchers   # Butchers only
+npm run process-data:antiques   # Antique shops only
 ```
+
+See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.
 
 ### Linting
 ```bash
@@ -156,10 +164,14 @@ phreshfoods.com/
 
 ### Backend (.env)
 - `GOOGLE_API_KEY_BACKEND` - Google Maps API key for server-side calls (required)
-- `GOOGLE_SHEET_URL` - Published CSV URL from Google Sheets (required)
+- `GOOGLE_SHEET_URL` - Published CSV URL for farm stands (required)
+- `GOOGLE_SHEET_URL_CHEESE_SHOPS` - Published CSV URL for cheese shops
+- `GOOGLE_SHEET_URL_FISH_MONGERS` - Published CSV URL for fish mongers
+- `GOOGLE_SHEET_URL_BUTCHERS` - Published CSV URL for butchers
+- `GOOGLE_SHEET_URL_ANTIQUE_SHOPS` - Published CSV URL for antique shops
 - `PORT` - Server port (default: 3000)
-- `DATA_REFRESH_SCHEDULE` - Cron expression for data refresh (default: `1 * * * *`)
-- `MAX_DATA_FILE_AGE_HOURS` - Max age before data refresh (default: 4)
+- `DATA_REFRESH_SCHEDULE` - Cron expression for automatic refresh (DISABLED by default to reduce API costs)
+- `MAX_DATA_FILE_AGE_HOURS` - Max age before data refresh (default: 720 hours / 30 days)
 - `NODE_ENV` - Environment (development/production)
 - `ALLOW_CACHE_FLUSH` - Enable cache flush in non-dev (default: false)
 
@@ -168,14 +180,26 @@ Frontend configuration is in `src/config/appConfig.ts` (consider moving API key 
 
 ## Data Processing
 
+**⚠️ IMPORTANT: Automatic refresh is DISABLED by default to reduce API costs by ~95%**
+
 The application fetches location data from Google Sheets, processes it, and enriches it with Google Maps data:
 
 1. **Data Source**: Google Sheets with tabs for each location type
-2. **Processing**: `processSheetData.js` runs on a schedule (default: hourly)
-3. **Geocoding**: Converts addresses to coordinates using Google Geocoding API
-4. **Enrichment**: Fetches place details (ratings, hours, photos) from Google Places API
-5. **Storage**: Saves to JSON files in `backend/data/`
-6. **Caching**: API responses cached to reduce quota usage
+2. **Processing**: `processSheetData.js` runs **manually** (or optionally on a schedule)
+3. **Change Detection**: Smart detection of location vs product changes
+   - ✓ No changes → Reuses all cached data (0 API calls)
+   - 📦 Product changes → Updates products only (0 API calls)
+   - ⚠ Location changes → Fetches from Google APIs (2-3 API calls)
+4. **Geocoding**: Converts addresses to coordinates using Google Geocoding API (only when needed)
+5. **Enrichment**: Fetches place details (ratings, hours, photos) from Google Places API (only when needed)
+6. **Storage**: Saves to JSON files in `backend/data/`
+7. **Caching**: API responses cached to reduce quota usage
+
+### Cost Optimization
+- **Manual refresh only** (run when YOU update Google Sheets)
+- **Intelligent change detection** (only updates what changed)
+- **Product updates are FREE** (no API calls for product availability changes)
+- **Expected monthly cost**: $0.50-$2 (vs $26-30 with hourly refresh)
 
 ### Location Types
 - **Farm Stands**: 22 products (meats, vegetables, fruits, aromatics)
@@ -190,18 +214,24 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for comprehensive deployment instructions.
 
 Quick overview:
 1. Clone repository and install dependencies
-2. Configure environment variables
-3. Generate data files: `npm run process-data`
+2. Configure environment variables (all 5 `GOOGLE_SHEET_URL_*` variables)
+3. **Generate data files**: `npm run process-data` (required on first deployment)
 4. Build frontend: `npm run build:frontend`
 5. Copy `dist/` contents to `backend/public/`
 6. Start server: `npm run start:backend`
+7. **Refresh data manually** when you update Google Sheets (run `npm run process-data` or specific type)
 
-**Important**: Data files in `backend/data/` are gitignored and must be generated on each deployment.
+**Important**:
+- Data files in `backend/data/` are gitignored and must be generated on each deployment
+- Automatic refresh is disabled by default - refresh manually when needed
+- See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete workflow
 
 ## Documentation
 
 - **[CLAUDE.md](./CLAUDE.md)** - Comprehensive project overview and development guide
 - **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Deployment guide with environment setup
+- **[DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md)** - Data refresh workflow and cost optimization
+- **[DATA_REFRESH_QUICK_REFERENCE.md](./DATA_REFRESH_QUICK_REFERENCE.md)** - Quick reference for data refresh commands
 - **[CONTEXTS.md](./src/contexts/CONTEXTS.md)** - Context architecture documentation
 - **[ACCESSIBILITY_AUDIT.md](./ACCESSIBILITY_AUDIT.md)** - WCAG compliance audit
 - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing setup and examples

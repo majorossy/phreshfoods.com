@@ -111,7 +111,7 @@ export const MAP_PAN_DELAY_MS: number = 100;            // Delay before applying
 
 // Marker Styling
 export const MARKER_SIZE_PX: number = 20;              // Size of regular farm stand markers
-export const MARKER_BORDER_WIDTH_PX: number = 1;       // Border width for markers
+export const MARKER_BORDER_WIDTH_PX: number = 0.67;    // Border width for markers
 export const MARKER_TRANSITION_DURATION_S: string = '0.15s'; // Transition duration for marker animations
 export const MARKER_DEFAULT_SCALE: string = 'scale(1.2)';    // Default marker scale
 export const MARKER_HOVER_SCALE: string = 'scale(1.6)';      // Hovered marker scale
@@ -123,9 +123,9 @@ export const MARKER_HOVER_DEBOUNCE_MS: number = 50;          // Debounce time fo
 export const MARKER_HOVER_COLOR: string = '#4285F4';         // Google blue for hover/selected state
 
 // Search Location Marker Styling
-export const SEARCH_MARKER_SIZE_PX: number = 30;             // Size of search location marker
-export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 2;      // Border width for search marker
-export const SEARCH_MARKER_INNER_DOT_SIZE_PX: number = 10;   // Size of inner dot in search marker
+export const SEARCH_MARKER_SIZE_PX: number = 20;             // Size of search location marker
+export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 1.5;    // Border width for search marker
+export const SEARCH_MARKER_INNER_DOT_SIZE_PX: number = 6;    // Size of inner dot in search marker
 export const SEARCH_MARKER_Z_INDEX: number = 9999;           // Z-index for search marker (always on top)
 export const SEARCH_MARKER_COLOR: string = '#4285F4';        // Google blue for search marker
 

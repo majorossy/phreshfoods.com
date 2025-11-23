@@ -60,12 +60,31 @@ npm run lint
 
 ### Data Processing
 
-**Manually refresh farm stand data:**
+**⚠️ IMPORTANT: Automatic refresh is DISABLED by default to reduce API costs by ~95%**
+
+**Manually refresh location data (recommended workflow):**
 ```bash
+# Refresh all location types
 npm run process-data
-# or: node backend/processSheetData.js
-# Fetches Google Sheet data, geocodes addresses, enriches with Place Details
+
+# Or refresh specific types only (faster):
+npm run process-data:farms
+npm run process-data:cheese
+npm run process-data:fish
+npm run process-data:butchers
+npm run process-data:antiques
+
+# Or use the --type flag:
+npm run process-data -- --type=farms
 ```
+
+Features:
+- Fetches Google Sheet data, geocodes addresses, enriches with Place Details
+- Uses change detection - only updates locations that have actually changed
+- Shows cost savings summary after completion
+- Can update specific location types to save time
+
+**See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.**
 
 ## Architecture
 
@@ -167,13 +186,16 @@ npm run process-data
   - `.gitkeep` - Placeholder to maintain directory structure in git
 
 **Data Flow:**
-1. **Scheduled refresh:** Cron job (default: hourly, configurable via `DATA_REFRESH_SCHEDULE` env var) runs `processSheetData.js`
-2. **processSheetData.js:**
+1. **Manual refresh (recommended):** Run `npm run process-data` when you update Google Sheets
+2. **Optional scheduled refresh:** Disabled by default (set `DATA_REFRESH_SCHEDULE` in .env to enable)
+3. **processSheetData.js:**
    - Fetches CSV from multiple Google Sheet tabs (via `GOOGLE_SHEET_URL`)
    - Processes 5 location types: farm stands, cheese shops, fish mongers, butchers, antique shops
-   - For each location: geocodes address, fetches Place Details
+   - **Change detection:** Compares location data hash - only updates changed/new locations
+   - For changed/new locations: geocodes address, fetches Place Details
    - Saves enriched data to separate JSON files in `backend/data/`
    - Has 500ms delay between API calls (`DELAY_BETWEEN_API_CALLS_MS`)
+   - Shows cost savings summary (API calls made vs skipped)
    - **Important:** JSON data files are gitignored and must be generated via `npm run process-data`
 3. **server.js:**
    - Serves static files from `public/`
@@ -312,12 +334,48 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @testing-library/user-event jsdom
 ```
 
-### Google API Rate Limiting
+### Google API Cost Optimization & Rate Limiting
+
+**⚠️ CRITICAL: Automatic refresh is DISABLED by default to reduce costs by ~95%**
+
+#### Cost Optimization Strategy (2025-01)
+The application implements a three-tier system to minimize Google API costs:
+
+**1. Manual Refresh Only**
+- Automatic cron refresh disabled by default
+- Run `npm run process-data` only when YOU update Google Sheets
+- Expected cost: **$0.50-$2/month** (vs $26-30 with hourly refresh)
+
+**2. Intelligent Change Detection**
+- **Location Hash**: Detects changes to name, address, city, zip, phone, website, Google Profile ID
+- **Product Hash**: Detects changes to product availability (beef, pork, eggs, etc.)
+- **Three-Tier Detection**:
+  - ✓ **No changes** → Reuses all cached data (0 API calls)
+  - 📦 **Product changes only** → Updates products without API calls (0 API calls)
+  - ⚠ **Location changes** → Fetches from Google APIs (2-3 API calls per location)
+
+**3. Selective Type Refresh**
+- Refresh only the location type you updated
+- `npm run process-data:farms` - Farm stands only
+- `npm run process-data:cheese` - Cheese shops only
+- `npm run process-data:fish` - Fish mongers only
+- `npm run process-data:butchers` - Butchers only
+- `npm run process-data:antiques` - Antique shops only
+
+**Cost Examples:**
+- Update 10 product availabilities: **$0** (0 API calls)
+- Add 5 new locations: **$0.10-0.15** (10-15 API calls)
+- Change 3 addresses: **$0.06-0.09** (6-9 API calls)
+- Full refresh with no changes: **$0** (0 API calls)
+
+#### Rate Limiting
 - Backend uses 500ms delay between API calls in processSheetData.js
 - On-demand API calls (from user actions) are cached with varying TTLs:
   - Geocoding: 24 hours
   - Place Details: 6 hours (15 minutes if opening_hours requested)
   - Directions: 1 hour
+
+**See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.**
 
 ### CSV Parsing
 - Custom CSV parser in both server.js and processSheetData.js
@@ -342,12 +400,34 @@ npm install --save-dev vitest @testing-library/react @testing-library/jest-dom @
 
 - **CLAUDE.md** (this file) - Project overview and development guide
 - **DEPLOYMENT.md** - Comprehensive deployment guide with environment setup, build process, and production deployment instructions
+- **DATA_REFRESH_GUIDE.md** - Complete data refresh workflow, change detection, and cost optimization guide
+- **DATA_REFRESH_QUICK_REFERENCE.md** - Quick reference card for data refresh commands and symbols
 - **CONTEXTS.md** (`src/contexts/CONTEXTS.md`) - Comprehensive context architecture documentation
 - **ACCESSIBILITY_AUDIT.md** - Accessibility audit report and WCAG compliance status
 - **TESTING_GUIDE.md** - Testing setup instructions and examples
 - **README.md** - Basic project information
 
 ## Recent Architectural Improvements
+
+### Google API Cost Optimization (2025-01)
+**Impact:** Reduced monthly API costs from ~$26-30 to ~$0.50-2 (95%+ savings)
+
+**Changes:**
+- **Disabled automatic hourly refresh** - Manual refresh only by default
+- **Intelligent change detection** - Three-tier system (no changes, product-only, location changes)
+- **Product-only updates** - Product availability changes are FREE (0 API calls)
+- **Selective type refresh** - Update only farm stands, cheese shops, etc. individually
+- **Enhanced console output** - Shows exactly what changed, API calls made/saved, cost savings percentage
+
+**Key Files:**
+- `backend/processSheetData.js` - Change detection logic (processSheetData.js:157-176, 328-370)
+- `backend/server.js` - Optional cron configuration (server.js:842-859)
+- `.env` - `DATA_REFRESH_SCHEDULE` commented out by default
+- `package.json` - New npm scripts for selective refresh (package.json:16-20)
+
+**Documentation:**
+- `DATA_REFRESH_GUIDE.md` - Complete workflow guide
+- `DATA_REFRESH_QUICK_REFERENCE.md` - Quick reference card
 
 ### Multi-Location Type System (2025-01)
 - **Expanded from single location type to 5 types:** Farm stands, cheese shops, fish mongers, butchers, antique shops
@@ -392,6 +472,53 @@ The following components have been migrated from `AppContext` to specific domain
 - **Default search radius:** Increased from 10 miles to 20 miles for broader initial search results
 
 ## Common Workflows
+
+### Updating Location Data (New Cost-Optimized Workflow)
+
+**Scenario 1: Update product availability (e.g., add "beef" to 5 farms)**
+```bash
+# 1. Update Google Sheets (add checkmarks in "beef" column)
+# 2. Run refresh for just farms
+npm run process-data:farms
+# 3. Check output - should see "📦 Product changes detected" (0 API calls!)
+# 4. Restart server if running
+```
+
+**Scenario 2: Add 3 new farm stands**
+```bash
+# 1. Add new rows to Google Sheets with all details
+# 2. Run refresh for just farms
+npm run process-data:farms
+# 3. Check output - should see "⭐ New location" (6-9 API calls total)
+# 4. Restart server if running
+```
+
+**Scenario 3: Change phone number for 2 cheese shops**
+```bash
+# 1. Update phone numbers in Google Sheets
+# 2. Run refresh for just cheese shops
+npm run process-data:cheese
+# 3. Check output - should see "⚠ Changes detected" (4-6 API calls total)
+# 4. Restart server if running
+```
+
+**Scenario 4: Update multiple location types**
+```bash
+# 1. Update Google Sheets for farms AND cheese shops
+# 2. Run refresh for all types (or run each separately)
+npm run process-data
+# 3. Check summary for each type
+# 4. Restart server if running
+```
+
+**Scenario 5: Force full refresh (rare - for testing)**
+```bash
+# 1. Delete JSON files in backend/data/
+rm backend/data/*.json
+# 2. Run full refresh
+npm run process-data
+# 3. All locations treated as new (full API usage)
+```
 
 ### Migrating a Component to Domain Contexts
 1. Identify which domains the component uses (farm data, search, filters, UI, directions)

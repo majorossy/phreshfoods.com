@@ -256,6 +256,116 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
           transition: 'transform 0.3s ease-in-out'
         }}
       >
+        {/* Social Icons - Only visible when collapsed */}
+        {isCollapsed && (
+          <div className="absolute top-1/2 -translate-y-1/2 right-0 translate-x-full z-[59] flex flex-col -bottom-[280px]">
+            {/* Photos Icon - Always available (bottom/first in tabs) */}
+            <button
+              onClick={() => {
+                setActiveTab('photos');
+                setIsCollapsed(false);
+              }}
+              className="w-8 h-8 bg-white shadow-lg border border-gray-300 hover:bg-blue-50 transition-colors flex items-center justify-center"
+              title="Photos"
+              aria-label="View photos"
+            >
+              <svg className="h-4 w-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+              </svg>
+            </button>
+
+            {/* Reviews Icon - Always available */}
+            <button
+              onClick={() => {
+                setActiveTab('reviews');
+                setIsCollapsed(false);
+              }}
+              className="w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 hover:bg-amber-50 transition-colors flex items-center justify-center"
+              title="Reviews"
+              aria-label="View reviews"
+            >
+              <svg className="h-4 w-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+              </svg>
+            </button>
+
+            {/* Directions Icon - Always available */}
+            <button
+              onClick={() => {
+                setActiveTab('directions');
+                setIsCollapsed(false);
+              }}
+              className="w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 hover:bg-indigo-50 transition-colors flex items-center justify-center"
+              title="Directions"
+              aria-label="View directions"
+            >
+              <svg className="h-4 w-4 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.95 4.05a.75.75 0 010 1.06l-4.2 4.2a.75.75 0 000 1.06l4.2 4.2a.75.75 0 11-1.06 1.06l-4.2-4.2a2.25 2.25 0 010-3.18l4.2-4.2a.75.75 0 011.06 0zM6.22 3.22a.75.75 0 011.06 0l2.25 2.25a.75.75 0 01-1.06 1.06L6.22 4.28a.75.75 0 010-1.06zM4 8.75A.75.75 0 014.75 8h.5a.75.75 0 010 1.5h-.5A.75.75 0 014 8.75zM4.75 11a.75.75 0 000 1.5H7a.75.75 0 000-1.5H4.75zM6.22 14.22a.75.75 0 011.06 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l2.25-2.25z" clipRule="evenodd" />
+              </svg>
+            </button>
+
+            {/* Instagram Icon - Show always, but with different styling based on availability */}
+            <button
+              onClick={() => {
+                if (hasInstagram) {
+                  setActiveTab('instagram');
+                  setIsCollapsed(false);
+                }
+              }}
+              className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center ${
+                hasInstagram ? 'hover:bg-pink-50 cursor-pointer' : 'cursor-not-allowed opacity-40'
+              }`}
+              title={hasInstagram ? "Instagram" : "Instagram not available"}
+              aria-label="View Instagram"
+              disabled={!hasInstagram}
+            >
+              <svg className={`h-4 w-4 ${hasInstagram ? 'text-pink-600' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </button>
+
+            {/* Facebook Icon - Show always, but with different styling based on availability */}
+            <button
+              onClick={() => {
+                if (hasFacebook) {
+                  setActiveTab('facebook');
+                  setIsCollapsed(false);
+                }
+              }}
+              className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center ${
+                hasFacebook ? 'hover:bg-blue-50 cursor-pointer' : 'cursor-not-allowed opacity-40'
+              }`}
+              title={hasFacebook ? "Facebook" : "Facebook not available"}
+              aria-label="View Facebook"
+              disabled={!hasFacebook}
+            >
+              <svg className={`h-4 w-4 ${hasFacebook ? 'text-[#1877F2]' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+            </button>
+
+            {/* X Icon - Show always, but with different styling based on availability (top/last in tabs) */}
+            <button
+              onClick={() => {
+                if (hasX) {
+                  setActiveTab('x');
+                  setIsCollapsed(false);
+                }
+              }}
+              className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center rounded-tl-lg ${
+                hasX ? 'hover:bg-gray-100 cursor-pointer' : 'cursor-not-allowed opacity-40'
+              }`}
+              title={hasX ? "X" : "X not available"}
+              aria-label="View X"
+              disabled={!hasX}
+            >
+              <svg className={`h-4 w-4 ${hasX ? 'text-gray-800' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+              </svg>
+            </button>
+          </div>
+        )}
+
         {/* Toggle Button on Right Edge of Overlay */}
         <button
           onClick={(e) => {

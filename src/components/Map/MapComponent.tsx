@@ -431,33 +431,72 @@ const MapComponent: React.FC = () => {
     requestAnimationFrame(() => {
       // Create or update search location marker
       if (!searchLocationMarkerRef.current && window.google?.maps?.marker) {
-        // Create new marker
-        const pinElement = document.createElement('div');
-        pinElement.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
-        pinElement.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
-        pinElement.style.backgroundColor = SEARCH_MARKER_COLOR;
-        pinElement.style.borderRadius = '50% 50% 50% 0';
-        pinElement.style.border = `${SEARCH_MARKER_BORDER_WIDTH_PX}px solid white`;
-        pinElement.style.boxShadow = '0 4px 8px rgba(0,0,0,0.4)';
-        pinElement.style.transform = 'rotate(-45deg)';
-        pinElement.style.cursor = 'pointer';
+        // Create new marker - thin crosshair style with pink pulsating effect
+        const markerContainer = document.createElement('div');
+        markerContainer.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
+        markerContainer.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
+        markerContainer.style.position = 'relative';
+        markerContainer.style.cursor = 'pointer';
 
-        // Inner dot
-        const innerDot = document.createElement('div');
-        innerDot.style.width = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
-        innerDot.style.height = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
-        innerDot.style.backgroundColor = 'white';
-        innerDot.style.borderRadius = '50%';
-        innerDot.style.position = 'absolute';
-        innerDot.style.top = '50%';
-        innerDot.style.left = '50%';
-        innerDot.style.transform = 'translate(-50%, -50%)';
-        pinElement.appendChild(innerDot);
+        // Define pink color
+        const pinkColor = '#ec4899'; // Tailwind pink-500
+
+        // Outer circle (thin ring with pulsating animation)
+        const outerCircle = document.createElement('div');
+        outerCircle.style.width = '100%';
+        outerCircle.style.height = '100%';
+        outerCircle.style.borderRadius = '50%';
+        outerCircle.style.border = `${SEARCH_MARKER_BORDER_WIDTH_PX}px solid ${pinkColor}`;
+        outerCircle.style.backgroundColor = 'rgba(236, 72, 153, 0.15)';
+        outerCircle.style.boxShadow = `0 0 8px rgba(236, 72, 153, 0.6)`;
+        outerCircle.style.position = 'absolute';
+        outerCircle.style.top = '0';
+        outerCircle.style.left = '0';
+        outerCircle.style.animation = 'pulse-pink 2s ease-in-out infinite';
+        markerContainer.appendChild(outerCircle);
+
+        // Center dot with pulsating animation
+        const centerDot = document.createElement('div');
+        centerDot.style.width = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
+        centerDot.style.height = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
+        centerDot.style.borderRadius = '50%';
+        centerDot.style.backgroundColor = pinkColor;
+        centerDot.style.position = 'absolute';
+        centerDot.style.top = '50%';
+        centerDot.style.left = '50%';
+        centerDot.style.transform = 'translate(-50%, -50%)';
+        centerDot.style.boxShadow = `0 0 6px rgba(236, 72, 153, 0.8)`;
+        centerDot.style.animation = 'pulse-pink 2s ease-in-out infinite';
+        markerContainer.appendChild(centerDot);
+
+        // Vertical line
+        const verticalLine = document.createElement('div');
+        verticalLine.style.width = '1px';
+        verticalLine.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
+        verticalLine.style.backgroundColor = pinkColor;
+        verticalLine.style.position = 'absolute';
+        verticalLine.style.top = '0';
+        verticalLine.style.left = '50%';
+        verticalLine.style.transform = 'translateX(-50%)';
+        verticalLine.style.opacity = '0.8';
+        markerContainer.appendChild(verticalLine);
+
+        // Horizontal line
+        const horizontalLine = document.createElement('div');
+        horizontalLine.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
+        horizontalLine.style.height = '1px';
+        horizontalLine.style.backgroundColor = pinkColor;
+        horizontalLine.style.position = 'absolute';
+        horizontalLine.style.top = '50%';
+        horizontalLine.style.left = '0';
+        horizontalLine.style.transform = 'translateY(-50%)';
+        horizontalLine.style.opacity = '0.8';
+        markerContainer.appendChild(horizontalLine);
 
         const searchMarker = new window.google.maps.marker.AdvancedMarkerElement({
           position: targetLatLng,
           map: map,
-          content: pinElement,
+          content: markerContainer,
           title: mapViewTargetLocation.formatted_address || 'Searched Location',
           zIndex: SEARCH_MARKER_Z_INDEX,
         });
@@ -639,8 +678,11 @@ const MapComponent: React.FC = () => {
       return;
     }
 
-    if (selectedShop && selectedShop.lat != null && selectedShop.lng != null) {
-      const shopId = selectedShop.slug || selectedShop.GoogleProfileID || String(selectedShop.id);
+    // Show InfoWindow for either selected or hovered shop (prioritize selected)
+    const shopToShow = selectedShop || hoveredShop;
+
+    if (shopToShow && shopToShow.lat != null && shopToShow.lng != null) {
+      const shopId = shopToShow.slug || shopToShow.GoogleProfileID || String(shopToShow.id);
       const markerInstance = markersRef.current.get(shopId);
 
       if (markerInstance) {
@@ -671,7 +713,7 @@ const MapComponent: React.FC = () => {
 
         newReactRoot.render(
           <InfoWindowContent
-            shop={selectedShop}
+            shop={shopToShow}
           />
         );
         googleInfoWin.setContent(contentDiv);
@@ -688,7 +730,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [selectedShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [selectedShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
 
   return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>;
 };

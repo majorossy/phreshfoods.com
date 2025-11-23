@@ -154,6 +154,27 @@ const ANTIQUE_SHOP_PRODUCT_COLUMNS = [
     'silverware', 'textiles', 'collectibles', 'vintage_clothing'
 ];
 
+// Helper function to create a hash of location data to detect changes
+function createLocationHash(shopData) {
+    // Hash key fields that indicate a location has changed (requires Google API calls)
+    const hashData = {
+        name: shopData.Name,
+        address: shopData.Address,
+        city: shopData.City,
+        zip: shopData.Zip,
+        phone: shopData.Phone,
+        website: shopData.Website,
+        googleProfileId: shopData.GoogleProfileID
+    };
+    return JSON.stringify(hashData);
+}
+
+// Helper function to create a hash of product data to detect product changes
+function createProductHash(shopData) {
+    // Products don't require API calls, just need to update JSON
+    return JSON.stringify(shopData.products || {});
+}
+
 // Generic function to process location data of any type
 async function processLocationData(locationType, sheetUrl, outputPath, productColumns) {
     console.log(`[Processor] Starting ${locationType} data update process...`);
@@ -167,6 +188,24 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
     }
 
     try {
+        // Load existing data for change detection
+        let existingData = {};
+        if (await fs.pathExists(outputPath)) {
+            try {
+                const existingArray = await fs.readJson(outputPath);
+                existingArray.forEach(location => {
+                    const key = location.GoogleProfileID || location.slug || location.Name;
+                    existingData[key] = {
+                        hash: createLocationHash(location),
+                        data: location
+                    };
+                });
+                console.log(`[Processor] Loaded ${existingArray.length} existing ${locationType} locations for change detection`);
+            } catch (err) {
+                console.warn(`[Processor] Could not load existing data for change detection:`, err.message);
+            }
+        }
+
         // Fetch directly from Google Sheets (follows redirects automatically)
         console.log(`[Processor] Fetching CSV from ${locationType} sheet...`);
         console.log(`[Processor] DEBUG: Sheet URL = ${sheetUrl}`);
@@ -231,6 +270,9 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
             'opening_hours', 'photos', 'reviews', 'url'
         ];
 
+        let apiCallsSkipped = 0;
+        let apiCallsMade = 0;
+
         for (const line of lines) {
             if (!line.trim()) continue;
             // ... (your shop object creation logic) ...
@@ -289,10 +331,47 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
                 continue;
             }
 
+            // Check if this location has changed since last run
+            const locationKey = shop.GoogleProfileID || finalSlug || shop.Name;
+            const newHash = createLocationHash(shop);
+            const newProductHash = createProductHash(shop);
+            const existingLocation = existingData[locationKey];
+
             let googlePlaceAPIData = null;
+
+            // Check for location changes (requires API calls) vs product changes (no API needed)
+            if (existingLocation && existingLocation.hash === newHash && existingLocation.data.lat && existingLocation.data.lng) {
+                // Location data hasn't changed - check if products changed
+                const oldProductHash = createProductHash(existingLocation.data);
+
+                if (oldProductHash === newProductHash) {
+                    // Nothing changed at all - reuse everything
+                    console.log(`[Processor] ✓ No changes detected for "${shop.Name}" - reusing cached data (SAVED ~2-3 API CALLS)`);
+                    processedShops.push(existingLocation.data);
+                    apiCallsSkipped += 2; // Estimated: geocoding + place details
+                    continue;
+                } else {
+                    // Only products changed - update products without API calls
+                    console.log(`[Processor] 📦 Product changes detected for "${shop.Name}" - updating products only (SAVED ~2-3 API CALLS)`);
+                    const updatedShop = {
+                        ...existingLocation.data,
+                        products: shop.products // Update with new product data
+                    };
+                    processedShops.push(updatedShop);
+                    apiCallsSkipped += 2; // Still saved API calls
+                    continue;
+                }
+            }
+
+            if (existingLocation && existingLocation.hash !== newHash) {
+                console.log(`[Processor] ⚠ Changes detected for "${shop.Name}" - will update from Google APIs`);
+            } else if (!existingLocation) {
+                console.log(`[Processor] ⭐ New location "${shop.Name}" - will fetch from Google APIs`);
+            }
 
             if (shop.GoogleProfileID) {
                 googlePlaceAPIData = await getPlaceDetailsWithDelay(shop.GoogleProfileID, fieldsToFetchFromPlaces);
+                apiCallsMade++;
             }
 
             // This logic ensures that if Place Details didn't give geometry,
@@ -300,6 +379,7 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
             if ((!googlePlaceAPIData || !googlePlaceAPIData.geometry) && shop.Address && shop.Address !== "N/A") {
                 const fullAddress = `${shop.Address}, ${shop.City || ''} ${shop.Zip || ''}, Maine`.replace(/,\s*,/, ',').trim();
                 const geocodedData = await geocodeAddressWithDelay(fullAddress);
+                apiCallsMade++;
 
                 if (geocodedData && geocodedData.place_id) {
                     // If we got a place_id from geocoding, and we didn't have one before, or if the initial Place Details call failed,
@@ -309,6 +389,7 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
                     // Only refetch place details if the first attempt (if any) failed or if we just got a new place_id
                     if (!googlePlaceAPIData || shop.GoogleProfileID === geocodedData.place_id) {
                          googlePlaceAPIData = await getPlaceDetailsWithDelay(geocodedData.place_id, fieldsToFetchFromPlaces);
+                         apiCallsMade++;
                     }
                 } else if (geocodedData) {
                     // Geocoded successfully but didn't get a place_id (e.g., street address, not a POI)
@@ -330,8 +411,12 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
                     shop.lat = googlePlaceAPIData.geometry.location.lat;
                     shop.lng = googlePlaceAPIData.geometry.location.lng;
                 }
-                // Prioritize Google's name and address if available
-                shop.Name = googlePlaceAPIData.name || shop.Name;
+                // Keep sheet's name (don't overwrite with Google's data)
+                // Only use Google's name as fallback if sheet doesn't have one
+                if (!shop.Name || shop.Name.includes("(Name Missing)") || shop.Name.trim() === "N/A") {
+                    shop.Name = googlePlaceAPIData.name || shop.Name;
+                }
+                // Update address with Google's formatted address
                 shop.Address = googlePlaceAPIData.formatted_address || shop.Address;
 
                 shop.placeDetails = {
@@ -363,7 +448,13 @@ async function processLocationData(locationType, sheetUrl, outputPath, productCo
 
         await fs.ensureDir(path.dirname(outputPath));
         await fs.writeJson(outputPath, processedShops, { spaces: 2 });
-        console.log(`[Processor] Successfully processed ${processedShops.length} ${locationType} locations and saved to ${outputPath}`);
+        console.log(`\n========================================`);
+        console.log(`[Processor] ✅ Successfully processed ${processedShops.length} ${locationType} locations`);
+        console.log(`[Processor] 💰 API Calls Made: ${apiCallsMade}`);
+        console.log(`[Processor] 💚 API Calls Skipped (cached): ${apiCallsSkipped}`);
+        console.log(`[Processor] 📊 Cost Savings: ${Math.round((apiCallsSkipped / (apiCallsMade + apiCallsSkipped)) * 100)}%`);
+        console.log(`[Processor] 📁 Saved to: ${outputPath}`);
+        console.log(`========================================\n`);
 
     } catch (error) {
         console.error(`[Processor] Error during ${locationType} data update process:`, error);
@@ -442,11 +533,48 @@ module.exports = {
 // if require.main === module block
 if (require.main === module) {
     console.log('Running processor directly...');
-    updateAllLocationData().then(() => {
-        console.log('Direct run finished.');
+
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    const typeArg = args.find(arg => arg.startsWith('--type='));
+    const typeFilter = typeArg ? typeArg.split('=')[1] : null;
+
+    // Map of valid types
+    const typeMap = {
+        'farms': updateFarmStandsData,
+        'farm-stands': updateFarmStandsData,
+        'cheese': updateCheeseShopsData,
+        'cheese-shops': updateCheeseShopsData,
+        'fish': updateFishMongersData,
+        'fish-mongers': updateFishMongersData,
+        'butchers': updateButchersData,
+        'antiques': updateAntiqueShopsData,
+        'antique-shops': updateAntiqueShopsData
+    };
+
+    let updatePromise;
+
+    if (typeFilter) {
+        const updateFn = typeMap[typeFilter.toLowerCase()];
+        if (updateFn) {
+            console.log(`\n🎯 Updating only: ${typeFilter}\n`);
+            updatePromise = updateFn();
+        } else {
+            console.error(`\n❌ Invalid type: ${typeFilter}`);
+            console.error('Valid types: farms, cheese, fish, butchers, antiques\n');
+            console.error('Example: npm run process-data -- --type=farms\n');
+            process.exit(1);
+        }
+    } else {
+        console.log('\n🌐 Updating all location types\n');
+        updatePromise = updateAllLocationData();
+    }
+
+    updatePromise.then(() => {
+        console.log('\n✅ Direct run finished.\n');
         process.exit(0);
     }).catch(err => {
-        console.error('Direct run failed:', err);
+        console.error('\n❌ Direct run failed:', err);
         process.exit(1);
     });
 }
