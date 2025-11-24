@@ -1,10 +1,10 @@
 # PhreshFoods - Multi-Location Finder for Maine
 
-PhreshFoods is a comprehensive location finder application for Maine, helping users discover local farm stands, cheese shops, fish mongers, butchers, and antique shops. The application features Google Maps integration, product filtering, and real-time location search.
+PhreshFoods is a comprehensive location finder application for Maine, helping users discover local farm stands, cheesemongers, fishmongers, butchers, and antiques. The application features Google Maps integration, product filtering, and real-time location search.
 
 ## Features
 
-- **Multi-Location Type Support**: Farm stands, cheese shops, fish mongers, butchers, and antique shops
+- **Multi-Location Type Support**: Farm stands, cheesemongers, fishmongers, butchers, and antiques
 - **Product Filtering**: Filter locations by specific products (58 unique products across all location types)
 - **Location-Based Search**: Find locations near you with customizable radius
 - **Google Maps Integration**: Interactive map with custom markers, directions, and place details

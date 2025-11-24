@@ -70,9 +70,9 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
         <div className="p-3">
           {sortedCategories.map((category) => (
             <div key={category} className="mb-4 last:mb-0">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2 capitalize border-b border-gray-200 pb-1">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2 capitalize border-b border-gray-200 pb-1">
                 {category}
-              </h4>
+              </h3>
               <div className="grid grid-cols-6 gap-1.5">
                 {productsByCategory[category].map(([productId, config]) => {
                   const isActive = !!activeFilters[productId];
@@ -254,9 +254,9 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
             .filter(category => allProducts[category]?.length > 0)
             .map((category) => (
               <div key={category}>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
                   {category}
-                </h4>
+                </h3>
                 <div className="flex flex-wrap gap-2">
                   {allProducts[category].map(product => (
                     <div

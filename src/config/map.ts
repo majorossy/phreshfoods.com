@@ -112,7 +112,7 @@ export const mapStyles: MapStyles = {
 };
 
 // Distance and Location Settings
-export const DEFAULT_SEARCH_RADIUS_MILES: number = 50;
+export const DEFAULT_SEARCH_RADIUS_MILES: number = 25;
 export const RADIUS_SLIDER_MIN_MILES: number = 5;
 export const RADIUS_SLIDER_MAX_MILES: number = 100;
 export const RADIUS_SLIDER_STEP_MILES: number = 5;
@@ -123,7 +123,7 @@ export const MILES_PER_METER: number = 1 / 1609.34;
 // Map Panning and Offset Settings
 export const SELECTED_SHOP_PAN_OFFSET_X: number = 40; // Pixels to pan right when shop selected (moves marker left in view)
 export const SELECTED_SHOP_PAN_OFFSET_Y: number = 20;  // Pixels to pan down when shop selected (frames info window)
-export const AUTO_ZOOM_PADDING_PERCENT: number = 0.1;  // 10% padding around radius circle when auto-zooming
+export const AUTO_ZOOM_PADDING_PERCENT: number = 0.05;  // 5% padding around radius circle when auto-zooming
 export const DESKTOP_BREAKPOINT_PX: number = 768;       // Min width to apply panel offset (tablet/desktop)
 export const MAP_PAN_DELAY_MS: number = 100;            // Delay before applying offset after pan operation
 

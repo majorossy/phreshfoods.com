@@ -1,11 +1,13 @@
 // src/App.tsx
 import React, { useEffect, useMemo, lazy, Suspense } from 'react';
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useLocationData } from './contexts/LocationDataContext';
 import { useSearch } from './contexts/SearchContext';
 import { useFilters } from './contexts/FilterContext';
 import { useUI } from './contexts/UIContext';
 import { useFilteredShops } from './hooks/useFilteredShops';
+import { useURLSync } from './hooks/useURLSync';
+import { isTypeFilterPage } from './utils/typeUrlMappings';
 import type { AutocompletePlace } from './types';
 import {
   getHomepageSEO,
@@ -35,6 +37,9 @@ function App() {
   const { lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation } = useSearch();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { selectedShop, isShopOverlayOpen, isSocialOverlayOpen, openShopOverlays, closeShopOverlays, setSelectedShop } = useUI();
+
+  // Sync filter/search state to URL parameters (with debouncing)
+  useURLSync();
 
   // Use custom hook for filtering and sorting shops
   const filteredAndSortedShops = useFilteredShops({
@@ -108,8 +113,8 @@ function App() {
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }
-    } else if (location.pathname === '/') {
-      // On homepage - close any open overlays
+    } else if (location.pathname === '/' || isTypeFilterPage(location.pathname)) {
+      // On homepage or type filter page - close any open overlays
       if (selectedShop || isShopOverlayOpen || isSocialOverlayOpen) {
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
@@ -153,8 +158,8 @@ function App() {
       // Add structured data for LocalBusiness
       const structuredData = generateLocalBusinessSchema(selectedShop);
       addStructuredData(structuredData);
-    } else if (location.pathname === '/') {
-      // Homepage - use homepage SEO
+    } else if (location.pathname === '/' || isTypeFilterPage(location.pathname)) {
+      // Homepage or type filter page - use homepage SEO
       const seoConfig = getHomepageSEO();
       updateMetaTags(seoConfig);
 
@@ -224,12 +229,32 @@ function App() {
         )}
       </main>
       <Routes>
-          <Route path="/" element={<React.Fragment />} />
+          {/* Homepage redirect to /all */}
+          <Route path="/" element={<Navigate to="/all" replace />} />
+
+          {/* Type filter pages - MUST come before detail pages to avoid conflicts */}
+          <Route path="/all" element={<React.Fragment />} />
+          <Route path="/farms" element={<React.Fragment />} />
+          <Route path="/cheese" element={<React.Fragment />} />
+          <Route path="/fish" element={<React.Fragment />} />
+          <Route path="/butchers" element={<React.Fragment />} />
+          <Route path="/antiques" element={<React.Fragment />} />
+          <Route path="/breweries" element={<React.Fragment />} />
+          <Route path="/wineries" element={<React.Fragment />} />
+          <Route path="/sugar-shacks" element={<React.Fragment />} />
+
+          {/* Multi-type combinations (e.g., /farms+cheese) */}
+          <Route path="/:types" element={<React.Fragment />} />
+
+          {/* Shop detail pages */}
           <Route path="/farm/:slug" element={<React.Fragment />} />
           <Route path="/cheese/:slug" element={<React.Fragment />} />
           <Route path="/fish/:slug" element={<React.Fragment />} />
           <Route path="/butcher/:slug" element={<React.Fragment />} />
           <Route path="/antique/:slug" element={<React.Fragment />} />
+          <Route path="/brewery/:slug" element={<React.Fragment />} />
+          <Route path="/winery/:slug" element={<React.Fragment />} />
+          <Route path="/sugar-shack/:slug" element={<React.Fragment />} />
       </Routes>
     </div>
   );

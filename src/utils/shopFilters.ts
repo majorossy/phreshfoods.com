@@ -1,5 +1,5 @@
 // src/utils/shopFilters.ts
-import { Shop, ShopWithDistance, AutocompletePlace, LocationType } from '../types';
+import { Shop, ShopWithDistance, AutocompletePlace, LocationType, LOCATION_TYPE_COUNT } from '../types';
 import { METERS_PER_MILE, MILES_PER_METER } from '../config/appConfig';
 
 export interface FilterOptions {
@@ -54,8 +54,7 @@ export function filterAndSortShops(
   let filteredShops: Shop[] = [...shops];
 
   // 1. Filter by Location Type (if not all types selected)
-  // Total location types: farm_stand, cheese_shop, fish_monger, butcher, antique_shop, brewery, winery, sugar_shack = 8
-  if (options.locationTypes.size < 8) { // Not "all types"
+  if (options.locationTypes.size < LOCATION_TYPE_COUNT) { // Not "all types"
     filteredShops = filteredShops.filter(shop => {
       // Support both single type and types array
       if (Array.isArray(shop.types)) {
@@ -72,6 +71,9 @@ export function filterAndSortShops(
 
   if (activeFilterKeys.length > 0) {
     filteredShops = filteredShops.filter((shop: Shop) => {
+      // Guard against missing products object
+      if (!shop.products) return false;
+
       return activeFilterKeys.every(filterKey => {
         // Access products from the nested products object
         const productIsAvailable = !!(shop.products[filterKey as keyof typeof shop.products]);

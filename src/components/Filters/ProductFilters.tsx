@@ -75,9 +75,9 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('cheese_shop')}
               onChange={() => toggleLocationType('cheese_shop' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show cheese shops"
+              aria-label="Show cheesemongers"
             />
-            <span className="font-medium">Cheese Shops</span>
+            <span className="font-medium">Cheesemongers</span>
           </label>
           <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
             <input
@@ -85,9 +85,9 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('fish_monger')}
               onChange={() => toggleLocationType('fish_monger' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show fish mongers"
+              aria-label="Show fishmongers"
             />
-            <span className="font-medium">Fish Mongers</span>
+            <span className="font-medium">Fishmongers</span>
           </label>
           <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
             <input
@@ -105,9 +105,9 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('antique_shop')}
               onChange={() => toggleLocationType('antique_shop' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show antique shops"
+              aria-label="Show antiques"
             />
-            <span className="font-medium">Antique Shops</span>
+            <span className="font-medium">Antiques</span>
           </label>
         </div>
       </fieldset>

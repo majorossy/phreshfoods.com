@@ -1,5 +1,6 @@
 // src/utils/seo.ts
 import { Shop } from '../types';
+import { getDisplayName } from './typeUrlMappings';
 
 export interface SEOConfig {
   title: string;
@@ -20,11 +21,11 @@ export function getHomepageSEO(): SEOConfig {
   const baseUrl = window.location.origin;
 
   return {
-    title: 'Farm Stand Finder - Find Local Farm Stands Near You',
-    description: 'Discover fresh, local produce from farm stands across Maine. Search by location, filter by products, and support local farmers in your community.',
-    keywords: 'farm stands, local produce, farmers market, fresh vegetables, Maine farms, local food, organic produce',
-    ogTitle: 'Farm Stand Finder - Support Local Farms',
-    ogDescription: 'Find the freshest local produce from farm stands near you. Search by location and discover what\'s in season.',
+    title: 'PhreshFoods - Find Local Farms, Cheesemongers, Fishmongers & More',
+    description: 'Discover fresh, local products from farm stands, cheesemongers, fishmongers, butchers, and antique shops across Maine. Search by location, filter by products, and support local businesses in your community.',
+    keywords: 'farm stands, cheesemongers, fishmongers, butchers, antique shops, local produce, farmers market, fresh vegetables, Maine farms, local food, organic produce, artisan cheese, fresh seafood, local meat',
+    ogTitle: 'PhreshFoods - Support Local Maine Businesses',
+    ogDescription: 'Find the freshest local products from farm stands, cheesemongers, fishmongers, and more near you. Search by location and discover what\'s available.',
     ogImage: `${baseUrl}/images/og-image.jpg`,
     ogUrl: baseUrl,
     twitterCard: 'summary_large_image',
@@ -33,11 +34,11 @@ export function getHomepageSEO(): SEOConfig {
 }
 
 /**
- * Generate SEO meta tags for individual farm stand pages
+ * Generate SEO meta tags for individual shop pages
  */
 export function getFarmStandSEO(shop: Shop): SEOConfig {
   const baseUrl = window.location.origin;
-  const farmName = shop.placeDetails?.name || shop.Name || 'Farm Stand';
+  const farmName = shop.placeDetails?.name || shop.Name || 'Shop';
   const address = shop.placeDetails?.formatted_address || shop.Address || '';
   const rating = shop.placeDetails?.rating || shop.Rating;
 
@@ -68,9 +69,12 @@ export function getFarmStandSEO(shop: Shop): SEOConfig {
 
   const description = `${farmName} in ${city}${state ? `, ${state}` : ''}. ${productsText}${ratingText} Find directions, hours, and contact information.`;
 
+  // Get display name for shop type
+  const shopTypeDisplay = getDisplayName(shop.type);
+
   const keywords = [
     farmName,
-    'farm stand',
+    shopTypeDisplay.toLowerCase(),
     city,
     state,
     'local produce',
@@ -85,10 +89,10 @@ export function getFarmStandSEO(shop: Shop): SEOConfig {
   const farmUrl = `${baseUrl}/farm/${shop.slug || shop.GoogleProfileID}`;
 
   return {
-    title: `${farmName} - Farm Stand in ${city}${state ? `, ${state}` : ''}`,
+    title: `${farmName} - ${shopTypeDisplay} in ${city}${state ? `, ${state}` : ''}`,
     description,
     keywords,
-    ogTitle: `${farmName} - Local Farm Stand`,
+    ogTitle: `${farmName} - Local ${shopTypeDisplay}`,
     ogDescription: description,
     ogImage: imageUrl,
     ogUrl: farmUrl,
@@ -102,17 +106,18 @@ export function getFarmStandSEO(shop: Shop): SEOConfig {
  */
 export function generateLocalBusinessSchema(shop: Shop): string {
   const baseUrl = window.location.origin;
-  const farmName = shop.placeDetails?.name || shop.Name || 'Farm Stand';
+  const farmName = shop.placeDetails?.name || shop.Name || 'Shop';
   const address = shop.placeDetails?.formatted_address || shop.Address || '';
   const rating = shop.placeDetails?.rating;
   const reviewCount = shop.placeDetails?.user_ratings_total;
+  const shopTypeDisplay = getDisplayName(shop.type).toLowerCase();
 
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
     '@id': `${baseUrl}/farm/${shop.slug || shop.GoogleProfileID}`,
     name: farmName,
-    description: `Local farm stand offering fresh produce${address ? ` in ${address}` : ''}`,
+    description: `Local ${shopTypeDisplay} offering fresh products${address ? ` in ${address}` : ''}`,
     url: `${baseUrl}/farm/${shop.slug || shop.GoogleProfileID}`,
     ...(shop.ImageOne && {
       image: `${baseUrl}/images/${shop.ImageOne}`,

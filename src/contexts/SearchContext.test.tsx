@@ -44,6 +44,7 @@ import { AutocompletePlace } from '../types';
 import { DEFAULT_SEARCH_RADIUS_MILES, LAST_SEARCHED_LOCATION_COOKIE_NAME } from '../config/appConfig';
 import * as cookieHelper from '../utils/cookieHelper';
 import * as loadGoogleMapsScript from '../utils/loadGoogleMapsScript';
+import { MemoryRouter } from 'react-router-dom';
 import React from 'react';
 
 /**
@@ -61,15 +62,17 @@ vi.mock('../utils/loadGoogleMapsScript', () => ({
 
 /**
  * HELPER: Create a wrapper with all required providers
- * SearchContext depends on ToastContext
+ * SearchContext depends on ToastContext and uses React Router hooks
  */
 function AllProviders({ children }: { children: React.ReactNode }) {
   return (
-    <ToastProvider>
-      <SearchProvider>
-        {children}
-      </SearchProvider>
-    </ToastProvider>
+    <MemoryRouter>
+      <ToastProvider>
+        <SearchProvider>
+          {children}
+        </SearchProvider>
+      </ToastProvider>
+    </MemoryRouter>
   );
 }
 

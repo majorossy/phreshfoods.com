@@ -23,7 +23,10 @@ const LOCATION_DATA_PATHS = {
     cheese_shop: path.join(__dirname, 'data', 'cheeseShopsData.json'),
     fish_monger: path.join(__dirname, 'data', 'fishMongersData.json'),
     butcher: path.join(__dirname, 'data', 'butchersData.json'),
-    antique_shop: path.join(__dirname, 'data', 'antiqueShopsData.json')
+    antique_shop: path.join(__dirname, 'data', 'antiqueShopsData.json'),
+    brewery: path.join(__dirname, 'data', 'breweriesData.json'),
+    winery: path.join(__dirname, 'data', 'wineriesData.json'),
+    sugar_shack: path.join(__dirname, 'data', 'sugarShacksData.json')
 };
 
 // Backward compatibility

@@ -1,7 +1,10 @@
 // src/contexts/FilterContext.tsx
-import React, { createContext, useState, useContext, ReactNode, useMemo, useCallback } from 'react';
-import { LocationType } from '../types/shop';
+import React, { createContext, useState, useContext, ReactNode, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams, useParams, useLocation } from 'react-router-dom';
+import { LocationType, ALL_LOCATION_TYPES } from '../types/shop';
 import { PRODUCT_CONFIGS } from '../config/products';
+import { parseFiltersFromURL } from '../utils/urlSync';
+import { parseTypesFromPath } from '../utils/typeUrlMappings';
 
 interface FilterContextType {
   activeProductFilters: Record<string, boolean>;
@@ -16,22 +19,62 @@ interface FilterContextType {
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
+// Default active location types (all types selected)
+const DEFAULT_ACTIVE_LOCATION_TYPES = new Set<LocationType>(ALL_LOCATION_TYPES);
+
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
+  const [searchParams] = useSearchParams();
+  const { types } = useParams<{ types?: string }>();
+  const location = useLocation();
   const [activeProductFilters, setActiveProductFilters] = useState<Record<string, boolean>>({});
 
   // Default: all location types selected
   const [activeLocationTypes, setActiveLocationTypes] = useState<Set<LocationType>>(
-    new Set<LocationType>([
-      'farm_stand',
-      'cheese_shop',
-      'fish_monger',
-      'butcher',
-      'antique_shop',
-      'brewery',
-      'winery',
-      'sugar_shack'
-    ])
+    new Set(DEFAULT_ACTIVE_LOCATION_TYPES)
   );
+
+  // Initialize from URL on mount
+  // Priority: Path params > Query params > Default (all types)
+  useEffect(() => {
+    // 1. Parse location types from URL path (highest priority)
+    let locationTypesFromUrl: Set<LocationType>;
+
+    if (types) {
+      // Types from path param (e.g., /farms or /farms+cheese)
+      locationTypesFromUrl = parseTypesFromPath(types);
+    } else if (location.pathname === '/all') {
+      // Explicit /all route - use all types
+      locationTypesFromUrl = new Set<LocationType>(ALL_LOCATION_TYPES);
+    } else {
+      // Fallback: Try to parse from query params (backward compatibility)
+      const urlState = parseFiltersFromURL(searchParams);
+      locationTypesFromUrl = urlState.locationTypes;
+    }
+
+    setActiveLocationTypes(locationTypesFromUrl);
+
+    // 2. Initialize product filters from URL query params
+    const urlState = parseFiltersFromURL(searchParams);
+    const validProducts = Object.keys(urlState.productFilters).filter(key => {
+      // Check if product key exists in any of the active location types
+      let isValid = false;
+      locationTypesFromUrl.forEach(type => {
+        if (PRODUCT_CONFIGS[type]?.[key]) {
+          isValid = true;
+        }
+      });
+      return isValid && urlState.productFilters[key];
+    });
+
+    const validProductFilters: Record<string, boolean> = {};
+    validProducts.forEach(key => {
+      validProductFilters[key] = true;
+    });
+
+    setActiveProductFilters(validProductFilters);
+
+    // Note: Search location and radius are handled by SearchContext
+  }, []); // Empty dependency array = run only on mount
 
   // Get valid product keys based on active location types
   const validProductKeys = useMemo(() => {
@@ -72,20 +115,11 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
    */
   const clearAllFilters = useCallback(() => {
     setActiveProductFilters({});
-    setActiveLocationTypes(new Set<LocationType>([
-      'farm_stand',
-      'cheese_shop',
-      'fish_monger',
-      'butcher',
-      'antique_shop',
-      'brewery',
-      'winery',
-      'sugar_shack'
-    ]));
+    setActiveLocationTypes(new Set(DEFAULT_ACTIVE_LOCATION_TYPES));
   }, []);
 
   // Helper function to toggle a location type on/off
-  const toggleLocationType = useMemo(() => (type: LocationType) => {
+  const toggleLocationType = useCallback((type: LocationType) => {
     setActiveLocationTypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(type)) {

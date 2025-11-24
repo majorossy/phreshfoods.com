@@ -41,16 +41,29 @@
 import { describe, it, expect } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { FilterProvider, useFilters } from './FilterContext';
+import { MemoryRouter } from 'react-router-dom';
+import React from 'react';
 
 /**
  * HELPER: Render the useFilters hook with its provider
  * This makes our tests cleaner and more readable
  *
+ * Note: FilterProvider uses React Router hooks, so we need to wrap it in a Router
+ *
  * @returns The rendered hook result
  */
 function renderUseFilters() {
+  // Create a wrapper that includes both Router and FilterProvider
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <MemoryRouter>
+      <FilterProvider>
+        {children}
+      </FilterProvider>
+    </MemoryRouter>
+  );
+
   return renderHook(() => useFilters(), {
-    wrapper: FilterProvider, // Wrap the hook in its provider
+    wrapper: Wrapper,
   });
 }
 

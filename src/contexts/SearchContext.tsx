@@ -1,10 +1,12 @@
 // src/contexts/SearchContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useCallback, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AutocompletePlace } from '../types';
 import { getCookie, setCookie, eraseCookie } from '../utils/cookieHelper';
 import { getLoadError } from '../utils/loadGoogleMapsScript';
 import { useToast } from './ToastContext';
 import { parseGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
+import { parseFiltersFromURL } from '../utils/urlSync';
 import {
   LAST_SEARCHED_LOCATION_COOKIE_NAME,
   COOKIE_EXPIRY_DAYS,
@@ -28,6 +30,7 @@ const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
 export const SearchProvider = ({ children }: { children: ReactNode }) => {
   const { showError } = useToast();
+  const [searchParams] = useSearchParams();
   const [lastPlaceSelectedByAutocomplete, _setLastPlaceSelectedByAutocompleteInternal] = useState<AutocompletePlace | null>(null);
   const [searchTerm, _setSearchTermInternal] = useState<string>('');
   const [currentRadius, setCurrentRadius] = useState<number>(DEFAULT_SEARCH_RADIUS_MILES);
@@ -72,11 +75,25 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [showError]);
 
-  // Load saved location from cookie, or default to Portland, Maine
+  // Load saved location from URL, cookie, or default to Portland, Maine
+  // Priority: URL params > Cookie > Default
   useEffect(() => {
     const isDirectFarmUrl = window.location.pathname.startsWith('/farm/');
     if (isDirectFarmUrl) return;
 
+    // Parse URL params first (highest priority)
+    const urlState = parseFiltersFromURL(searchParams);
+
+    // Check if URL has search location
+    if (urlState.searchLocation?.geometry) {
+      _setLastPlaceSelectedByAutocompleteInternal(urlState.searchLocation);
+      _setSearchTermInternal(urlState.searchLocation.formatted_address || urlState.searchLocation.name || '');
+      setMapViewTargetLocation(urlState.searchLocation);
+      setCurrentRadius(urlState.searchRadius);
+      return; // URL params loaded successfully
+    }
+
+    // No URL params - check cookie (second priority)
     const savedLocationCookie = getCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
     if (savedLocationCookie) {
       try {
@@ -85,6 +102,8 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
           _setLastPlaceSelectedByAutocompleteInternal(locationData.place);
           _setSearchTermInternal(locationData.term || '');
           setMapViewTargetLocation(locationData.place);
+          // Use radius from URL if specified, otherwise default
+          setCurrentRadius(urlState.searchRadius);
           return; // Cookie loaded successfully, don't set default
         }
       } catch (e) {
@@ -92,7 +111,7 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    // No cookie or invalid cookie - set Portland, Maine as default
+    // No URL or cookie - set Portland, Maine as default (lowest priority)
     const portlandPlace: AutocompletePlace = {
       name: "Portland, Maine",
       formatted_address: "Portland, ME, USA",
@@ -108,7 +127,8 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     _setLastPlaceSelectedByAutocompleteInternal(portlandPlace);
     _setSearchTermInternal('Portland, ME, USA');
     setMapViewTargetLocation(portlandPlace);
-  }, []);
+    setCurrentRadius(urlState.searchRadius); // Use radius from URL if specified
+  }, []); // Empty dependency - run only on mount
 
   const setLastPlaceSelectedByAutocompleteAndCookie = useCallback((place: AutocompletePlace | null, term: string) => {
     _setLastPlaceSelectedByAutocompleteInternal(place);

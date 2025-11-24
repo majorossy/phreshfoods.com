@@ -138,7 +138,7 @@ const InitialSearchModal = () => {
     >
       <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-11/12 max-w-md transform transition-all duration-300 ease-in-out scale-100 opacity-100">
         <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center">
-          Find Farm Stands Near You
+          Find Local Shops Near You
         </h2>
         {/* Regular HTML input for Google Places Autocomplete */}
         <input

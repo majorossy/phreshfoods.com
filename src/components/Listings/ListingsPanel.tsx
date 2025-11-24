@@ -16,11 +16,41 @@ const ListingsPanel = () => {
   const { selectedShop } = useUI();
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(0);
   const panelRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Track the number of shops to detect meaningful changes (not just re-sorts)
   const prevShopCountRef = useRef<number>(0);
+
+  // Measure header height dynamically
+  useEffect(() => {
+    const measureHeader = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        setHeaderHeight(header.offsetHeight + 8); // Add 8px spacing
+      }
+    };
+
+    measureHeader();
+    window.addEventListener('resize', measureHeader);
+
+    // Use ResizeObserver if available for better accuracy
+    const header = document.querySelector('header');
+    let resizeObserver: ResizeObserver | null = null;
+
+    if (header && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(measureHeader);
+      resizeObserver.observe(header);
+    }
+
+    return () => {
+      window.removeEventListener('resize', measureHeader);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+    };
+  }, []);
 
   // Reset visible count only when the number of shops significantly changes
   // This prevents reset on distance re-calculations or minor updates
@@ -85,7 +115,11 @@ const ListingsPanel = () => {
   // Show loading state
   if (isLoadingLocations) {
     return (
-      <section id="listingsPanel" className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0">
+      <section
+        id="listingsPanel"
+        className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+      >
         <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           {/* Show 6 skeleton cards while loading */}
           {Array(6).fill(0).map((_, index) => (
@@ -99,7 +133,11 @@ const ListingsPanel = () => {
   // Show error state
   if (locationsError && allLocations.length === 0) {
     return (
-      <section id="listingsPanel" className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0">
+      <section
+        id="listingsPanel"
+        className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+      >
         <div className="flex flex-col items-center justify-center h-full p-6 text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
             <svg className="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,6 +166,7 @@ const ListingsPanel = () => {
       id="listingsPanel"
       ref={scrollContainerRef}
       className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+      style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
       {currentlyDisplayedLocations.length > 0 ? (
         <>

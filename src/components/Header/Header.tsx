@@ -18,17 +18,19 @@ import { useUI } from '../../contexts/UIContext';
 import { useFilters } from '../../contexts/FilterContext';
 import { LocationType } from '../../types/shop';
 import { getProductConfig } from '../../config/productRegistry';
+import { getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 
-// Location type configurations
-const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string; color: string }> = {
-  farm_stand: { emoji: '🚜', label: 'Farm Stand', color: 'green' },
-  fish_monger: { emoji: '🐟', label: 'Fishmonger', color: 'blue' },
-  cheese_shop: { emoji: '🧀', label: 'Cheesemonger', color: 'yellow' },
-  butcher: { emoji: '🥩', label: 'Butcher', color: 'red' },
-  brewery: { emoji: '🍺', label: 'Brewery', color: 'amber' },
-  winery: { emoji: '🍷', label: 'Winery', color: 'purple' },
-  antique_shop: { emoji: '🏺', label: 'Antiques', color: 'gray' },
-  sugar_shack: { emoji: '🍁', label: 'Sugar Shack', color: 'orange' },
+// Location type UI configurations (color and disabled state)
+// Display names and emojis come from centralized config
+const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string; color: string; disabled?: boolean }> = {
+  farm_stand: { emoji: getEmoji('farm_stand'), label: getDisplayName('farm_stand'), color: 'green' },
+  fish_monger: { emoji: getEmoji('fish_monger'), label: getDisplayName('fish_monger'), color: 'blue' },
+  cheese_shop: { emoji: getEmoji('cheese_shop'), label: getDisplayName('cheese_shop'), color: 'yellow' },
+  butcher: { emoji: getEmoji('butcher'), label: getDisplayName('butcher'), color: 'red' },
+  brewery: { emoji: getEmoji('brewery'), label: getDisplayName('brewery'), color: 'amber', disabled: true },
+  winery: { emoji: getEmoji('winery'), label: getDisplayName('winery'), color: 'purple', disabled: true },
+  antique_shop: { emoji: getEmoji('antique_shop'), label: getDisplayName('antique_shop'), color: 'gray' },
+  sugar_shack: { emoji: getEmoji('sugar_shack'), label: getDisplayName('sugar_shack'), color: 'orange', disabled: true },
 };
 
 const Header: React.FC = () => {
@@ -206,24 +208,8 @@ const Header: React.FC = () => {
     setSelectedShop(null);
     closeShopOverlays();
     clearAllFilters(); // Reset all filters
-
-    // Reset to Portland default location instead of clearing search
-    const portlandPlace: AutocompletePlace = {
-      name: "Portland, Maine",
-      formatted_address: "Portland, ME, USA",
-      geometry: {
-        location: DEFAULT_PORTLAND_CENTER,
-        viewport: undefined
-      },
-      place_id: undefined,
-      address_components: undefined,
-      types: undefined
-    };
-
-    setSearchTerm('Portland, ME, USA');
-    setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, 'Portland, ME, USA');
-    setMapViewTargetLocation(portlandPlace);
-  }, [setSelectedShop, closeShopOverlays, clearAllFilters, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
+    // Keep current search location/radius - don't reset
+  }, [setSelectedShop, closeShopOverlays, clearAllFilters]);
 
   return (
     <header className="absolute top-0 left-0 right-0 z-30 print:hidden" role="banner">
@@ -251,6 +237,7 @@ const Header: React.FC = () => {
               {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
                 const isActive = activeLocationTypes.has(type);
                 const isOpen = openLocationTypeDropdown === type;
+                const isDisabled = config.disabled === true;
 
                 // Create ref if it doesn't exist
                 if (!locationTypeButtonRefs.current[type]) {
@@ -259,54 +246,61 @@ const Header: React.FC = () => {
 
                 const colorClasses = {
                   green: isActive
-                    ? 'bg-green-100 text-green-700 hover:bg-green-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-green-200 hover:text-green-600 border border-green-400',
+                    ? 'bg-green-100 text-green-700 hover:bg-green-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-green-200 hover:text-black border border-green-400',
                   yellow: isActive
-                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-yellow-200 hover:text-yellow-600 border border-yellow-400',
+                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-yellow-200 hover:text-black border border-yellow-400',
                   blue: isActive
-                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-blue-600 border border-blue-400',
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-black border border-blue-400',
                   red: isActive
-                    ? 'bg-red-100 text-red-700 hover:bg-red-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-red-200 hover:text-red-600 border border-red-400',
+                    ? 'bg-red-100 text-red-700 hover:bg-red-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-red-200 hover:text-black border border-red-400',
                   purple: isActive
-                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-purple-200 hover:text-purple-600 border border-purple-400',
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-purple-200 hover:text-black border border-purple-400',
                   amber: isActive
-                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-amber-200 hover:text-amber-600 border border-amber-400',
+                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-amber-200 hover:text-black border border-amber-400',
                   rose: isActive
-                    ? 'bg-rose-100 text-rose-700 hover:bg-rose-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-rose-200 hover:text-rose-600 border border-rose-400',
+                    ? 'bg-rose-100 text-rose-700 hover:bg-rose-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-rose-200 hover:text-black border border-rose-400',
                   orange: isActive
-                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-orange-200 hover:text-orange-600 border border-orange-400',
+                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-orange-200 hover:text-black border border-orange-400',
                   teal: isActive
-                    ? 'bg-teal-100 text-teal-700 hover:bg-teal-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-teal-200 hover:text-teal-600 border border-teal-400',
+                    ? 'bg-teal-100 text-teal-700 hover:bg-teal-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-teal-200 hover:text-black border border-teal-400',
                   gray: isActive
-                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-400 hover:text-white'
-                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 border border-gray-400',
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-400 hover:text-black'
+                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-black border border-gray-400',
                 };
+
+                // Disabled styling - gray, low opacity, no hover effects
+                const buttonClasses = isDisabled
+                  ? 'bg-gray-200 text-gray-500 opacity-50 cursor-not-allowed'
+                  : colorClasses[config.color];
 
                 return (
                   <div key={type} className="relative">
-                    <div className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${colorClasses[config.color]}`}>
+                    <div className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${buttonClasses}`}>
                       {/* Main button - toggles location type filter */}
                       <button
                         type="button"
-                        onClick={() => toggleLocationType(type)}
+                        onClick={() => !isDisabled && toggleLocationType(type)}
+                        disabled={isDisabled}
                         className="text-xs pl-2 pr-1 py-0.5 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-all duration-200"
-                        title={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
-                        aria-label={`${isActive ? 'Hide' : 'Show'} ${config.label} locations`}
+                        title={isDisabled ? `${config.label} (Coming Soon)` : `${isActive ? 'Hide' : 'Show'} ${config.label}`}
+                        aria-label={isDisabled ? `${config.label} (Coming Soon)` : `${isActive ? 'Hide' : 'Show'} ${config.label} locations`}
                         aria-pressed={isActive}
+                        aria-disabled={isDisabled}
                       >
                         {config.emoji} {config.label}
                       </button>
 
                       {/* Arrow button - opens product filter dropdown (only when type is active) */}
-                      {isActive && (
+                      {isActive && !isDisabled && (
                         <button
                           ref={locationTypeButtonRefs.current[type]}
                           type="button"
@@ -333,7 +327,7 @@ const Header: React.FC = () => {
                       )}
                     </div>
 
-                    {isActive && (
+                    {isActive && !isDisabled && (
                       <ProductFilterDropdown
                         category={config.label}
                         products={getProductConfig(type)}

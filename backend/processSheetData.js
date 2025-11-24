@@ -11,12 +11,18 @@ const GOOGLE_SHEET_URL_CHEESE_SHOPS = process.env.GOOGLE_SHEET_URL_CHEESE_SHOPS;
 const GOOGLE_SHEET_URL_FISH_MONGERS = process.env.GOOGLE_SHEET_URL_FISH_MONGERS;
 const GOOGLE_SHEET_URL_BUTCHERS = process.env.GOOGLE_SHEET_URL_BUTCHERS;
 const GOOGLE_SHEET_URL_ANTIQUE_SHOPS = process.env.GOOGLE_SHEET_URL_ANTIQUE_SHOPS;
+const GOOGLE_SHEET_URL_BREWERIES = process.env.GOOGLE_SHEET_URL_BREWERIES;
+const GOOGLE_SHEET_URL_WINERIES = process.env.GOOGLE_SHEET_URL_WINERIES;
+const GOOGLE_SHEET_URL_SUGAR_SHACKS = process.env.GOOGLE_SHEET_URL_SUGAR_SHACKS;
 
 const FARM_STANDS_OUTPUT_PATH = path.join(__dirname, 'data', 'farmStandsData.json');
 const CHEESE_SHOPS_OUTPUT_PATH = path.join(__dirname, 'data', 'cheeseShopsData.json');
 const FISH_MONGERS_OUTPUT_PATH = path.join(__dirname, 'data', 'fishMongersData.json');
 const BUTCHERS_OUTPUT_PATH = path.join(__dirname, 'data', 'butchersData.json');
 const ANTIQUE_SHOPS_OUTPUT_PATH = path.join(__dirname, 'data', 'antiqueShopsData.json');
+const BREWERIES_OUTPUT_PATH = path.join(__dirname, 'data', 'breweriesData.json');
+const WINERIES_OUTPUT_PATH = path.join(__dirname, 'data', 'wineriesData.json');
+const SUGAR_SHACKS_OUTPUT_PATH = path.join(__dirname, 'data', 'sugarShacksData.json');
 
 // Backward compatibility
 const OUTPUT_JSON_PATH = FARM_STANDS_OUTPUT_PATH;
@@ -152,6 +158,21 @@ const BUTCHER_PRODUCT_COLUMNS = [
 const ANTIQUE_SHOP_PRODUCT_COLUMNS = [
     'furniture', 'jewelry', 'art', 'books', 'ceramics', 'glassware',
     'silverware', 'textiles', 'collectibles', 'vintage_clothing'
+];
+
+const BREWERY_PRODUCT_COLUMNS = [
+    'ipa', 'lager', 'stout', 'ale', 'pilsner', 'wheat_beer',
+    'tours', 'tastings', 'food', 'outdoor_seating'
+];
+
+const WINERY_PRODUCT_COLUMNS = [
+    'red_wine', 'white_wine', 'rose', 'sparkling', 'dessert_wine',
+    'tours', 'tastings', 'food', 'vineyard_views', 'events'
+];
+
+const SUGAR_SHACK_PRODUCT_COLUMNS = [
+    'maple_syrup', 'maple_candy', 'maple_cream', 'maple_sugar',
+    'tours', 'tastings', 'pancake_breakfast', 'seasonal_events'
 ];
 
 // Helper function to create a hash of location data to detect changes
@@ -486,6 +507,21 @@ async function updateAntiqueShopsData() {
     return await processLocationData('antique_shop', GOOGLE_SHEET_URL_ANTIQUE_SHOPS, ANTIQUE_SHOPS_OUTPUT_PATH, ANTIQUE_SHOP_PRODUCT_COLUMNS);
 }
 
+// Function for breweries
+async function updateBreweriesData() {
+    return await processLocationData('brewery', GOOGLE_SHEET_URL_BREWERIES, BREWERIES_OUTPUT_PATH, BREWERY_PRODUCT_COLUMNS);
+}
+
+// Function for wineries
+async function updateWineriesData() {
+    return await processLocationData('winery', GOOGLE_SHEET_URL_WINERIES, WINERIES_OUTPUT_PATH, WINERY_PRODUCT_COLUMNS);
+}
+
+// Function for sugar shacks
+async function updateSugarShacksData() {
+    return await processLocationData('sugar_shack', GOOGLE_SHEET_URL_SUGAR_SHACKS, SUGAR_SHACKS_OUTPUT_PATH, SUGAR_SHACK_PRODUCT_COLUMNS);
+}
+
 // Function to update all location types
 async function updateAllLocationData() {
     console.log('[Processor] Starting update for all location types...');
@@ -521,12 +557,39 @@ async function updateAllLocationData() {
         console.log('[Processor] Antique shops sheet URL not configured, skipping...');
     }
 
+    // Update breweries if configured
+    if (GOOGLE_SHEET_URL_BREWERIES && !GOOGLE_SHEET_URL_BREWERIES.includes("YOUR_") && !GOOGLE_SHEET_URL_BREWERIES.includes("SPREADSHEET_ID")) {
+        await updateBreweriesData();
+    } else {
+        console.log('[Processor] Breweries sheet URL not configured, skipping...');
+    }
+
+    // Update wineries if configured
+    if (GOOGLE_SHEET_URL_WINERIES && !GOOGLE_SHEET_URL_WINERIES.includes("YOUR_") && !GOOGLE_SHEET_URL_WINERIES.includes("SPREADSHEET_ID")) {
+        await updateWineriesData();
+    } else {
+        console.log('[Processor] Wineries sheet URL not configured, skipping...');
+    }
+
+    // Update sugar shacks if configured
+    if (GOOGLE_SHEET_URL_SUGAR_SHACKS && !GOOGLE_SHEET_URL_SUGAR_SHACKS.includes("YOUR_") && !GOOGLE_SHEET_URL_SUGAR_SHACKS.includes("SPREADSHEET_ID")) {
+        await updateSugarShacksData();
+    } else {
+        console.log('[Processor] Sugar shacks sheet URL not configured, skipping...');
+    }
+
     console.log('[Processor] All location data updated.');
 }
 
 module.exports = {
     updateFarmStandsData,
     updateCheeseShopsData,
+    updateFishMongersData,
+    updateButchersData,
+    updateAntiqueShopsData,
+    updateBreweriesData,
+    updateWineriesData,
+    updateSugarShacksData,
     updateAllLocationData
 };
 
@@ -549,7 +612,11 @@ if (require.main === module) {
         'fish-mongers': updateFishMongersData,
         'butchers': updateButchersData,
         'antiques': updateAntiqueShopsData,
-        'antique-shops': updateAntiqueShopsData
+        'antique-shops': updateAntiqueShopsData,
+        'breweries': updateBreweriesData,
+        'wineries': updateWineriesData,
+        'sugar-shacks': updateSugarShacksData,
+        'sugarshacks': updateSugarShacksData
     };
 
     let updatePromise;

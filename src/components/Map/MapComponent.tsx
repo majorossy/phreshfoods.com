@@ -5,6 +5,7 @@ import { useLocationData } from '../../contexts/LocationDataContext.tsx';
 import { useSearch } from '../../contexts/SearchContext.tsx';
 import { useUI } from '../../contexts/UIContext.tsx';
 import { useDirections } from '../../contexts/DirectionsContext.tsx';
+import { useFilters } from '../../contexts/FilterContext.tsx';
 import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
@@ -45,6 +46,8 @@ import {
 import { panToWithOffsets, extractLatLngFromPlace } from '../../utils/mapPanning';
 import { Shop } from '../../types';
 import { useNavigate } from 'react-router-dom';
+import { getShopDetailBasePath } from '../../utils/typeUrlMappings';
+import { encodeFiltersToURL } from '../../utils/urlSync';
 import InfoWindowContent from './InfoWindowContent.tsx';
 
 const MapComponent: React.FC = () => {
@@ -67,9 +70,10 @@ const MapComponent: React.FC = () => {
 
   // Use domain-specific hooks for better performance (only re-render when relevant state changes)
   const { currentlyDisplayedLocations } = useLocationData();
-  const { mapsApiReady, mapViewTargetLocation, currentRadius } = useSearch();
+  const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
   const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
   const { directionsResult, clearDirections } = useDirections();
+  const { activeProductFilters, activeLocationTypes } = useFilters();
 
   const closeNativeInfoWindow = useCallback(() => {
     if (googleInfoWindowRef.current?.getMap()) {
@@ -153,11 +157,28 @@ const MapComponent: React.FC = () => {
       event.domEvent?.stopPropagation();
       setSelectedShop(shop);
       openShopOverlays(shop, 'shop');
-      if (shop.slug) navigate(`/farm/${shop.slug}`, { replace: true });
+      // Navigate to type-specific detail page with filters preserved
+      if (shop.slug) {
+        const basePath = getShopDetailBasePath(shop.type);
+
+        // Build query params with current filter state for shareable URLs
+        const filterState = {
+          locationTypes: activeLocationTypes,
+          productFilters: activeProductFilters,
+          searchLocation: lastPlaceSelectedByAutocomplete,
+          searchRadius: currentRadius,
+        };
+        const queryParams = encodeFiltersToURL(filterState);
+        const queryString = queryParams.toString();
+
+        // Navigate with filters preserved in URL
+        const url = queryString ? `${basePath}/${shop.slug}?${queryString}` : `${basePath}/${shop.slug}`;
+        navigate(url, { replace: true });
+      }
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius]);
 
 
   // Initialize Map and its specific listeners
@@ -169,9 +190,11 @@ const MapComponent: React.FC = () => {
       zoom: DEFAULT_MAP_ZOOM,
       mapTypeControl: false,
       gestureHandling: "greedy",
-      zoomControl: true,
+      zoomControl: false,
       streetViewControl: false,
-      fullscreenControl: true,
+      fullscreenControl: false,
+      rotateControl: false,
+      cameraControl: false,
       // No map restrictions - users can pan freely to see surrounding areas
       mapId: MAP_ID,
       styles: USE_CUSTOM_MAP_STYLE ? mapStyles.maineLicensePlate : undefined,
@@ -229,6 +252,13 @@ const MapComponent: React.FC = () => {
         clearTimeout(unmountTimeoutRef.current);
         unmountTimeoutRef.current = null;
       }
+      // Clear hover timeout on cleanup
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+      isMarkerHovered.current = false;
+      isInfoWindowHovered.current = false;
       closeNativeInfoWindow();
       // Synchronously unmount root on cleanup to prevent leaks
       if (infoWindowReactRootRef.current) {

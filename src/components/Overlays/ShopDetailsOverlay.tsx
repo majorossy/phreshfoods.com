@@ -13,12 +13,13 @@ interface ShopDetailsOverlayProps {
 const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
-  const [activeTab, setActiveTab] = useState('info');
+  const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['products'])); // Products open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
 
-  // When the overlay opens for a new shop, reset collapse state
+  // When the overlay opens for a new shop, reset accordion state
   useEffect(() => {
     setIsCollapsed(false); // Reset to expanded state when shop changes
+    setOpenAccordions(new Set(['products'])); // Reset to products open by default
   }, [shop]);
 
   // Focus management: focus close button when overlay opens
@@ -31,40 +32,23 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
     setSocialOverlayActiveTab('reviews');
   };
 
-  // Tab click handler
-  const handleTabClick = (tabName: string) => {
-    setActiveTab(tabName);
-  };
-
-  // Helper function to get tab classes (3-state system)
-  const getTabClasses = (tabName: string) => {
-    const isActive = activeTab === tabName;
-    if (isActive) {
-      return 'border-b-2 border-current';
-    } else {
-      return 'border-b-2 border-transparent cursor-pointer hover:opacity-80';
-    }
-  };
-
-  // Helper function to get SVG icon classes
-  const getIconClasses = (tabName: string, brandColor: string) => {
-    const isActive = activeTab === tabName;
-    if (isActive) {
-      return brandColor;
-    } else {
-      const brandIconClasses: Record<string, string> = {
-        info: 'text-blue-600 dark:text-blue-400',
-        hours: 'text-green-600 dark:text-green-400',
-        products: 'text-purple-600 dark:text-purple-400',
-      };
-      return brandIconClasses[tabName] || 'text-gray-600 dark:text-gray-400';
-    }
+  // Accordion toggle handler
+  const toggleAccordion = (accordionName: string) => {
+    setOpenAccordions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(accordionName)) {
+        newSet.delete(accordionName);
+      } else {
+        newSet.add(accordionName);
+      }
+      return newSet;
+    });
   };
 
   if (!shop) return null;
 
   // Google Place Details data is already safe (comes from Google API), only escape our own data
-  const displayName = shop.placeDetails?.name || escapeHTMLSafe(shop.Name) || 'Farm Stand';
+  const displayName = shop.placeDetails?.name || escapeHTMLSafe(shop.Name) || 'Shop';
   const displayAddress = shop.placeDetails?.formatted_address || escapeHTMLSafe(shop.Address) || 'N/A';
   const displayPhone = shop.placeDetails?.formatted_phone_number || shop.Phone;
   const displayWebsite = shop.placeDetails?.website || shop.Website;
@@ -187,52 +171,40 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700">
-          <nav id="shopDetailsTabs" className="flex flex-wrap -mb-px gap-1" aria-label="Tabs">
-            {/* Info Tab */}
-            <button
-              onClick={() => handleTabClick('info')}
-              title="Information"
-              aria-label="View information tab"
-              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('info')}`}
-            >
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('info', 'text-blue-500 dark:text-blue-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </button>
-
-            {/* Hours Tab */}
-            <button
-              onClick={() => handleTabClick('hours')}
-              title="Hours"
-              aria-label="View hours tab"
-              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('hours')}`}
-            >
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('hours', 'text-green-500 dark:text-green-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </button>
-
-            {/* Products Tab */}
-            <button
-              onClick={() => handleTabClick('products')}
-              title="Products"
-              aria-label="View products tab"
-              className={`group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('products')}`}
-            >
-              <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('products', 'text-purple-500 dark:text-purple-400')}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-              </svg>
-            </button>
-          </nav>
-        </div>
       </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar px-4 sm:px-6 pb-4">
-        {/* Tab Content - Info Tab */}
-        {activeTab === 'info' && (
-          <div id="shop-info-panel">
+        {/* Accordion - Info */}
+        <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => toggleAccordion('info')}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-expanded={openAccordions.has('info')}
+            aria-controls="shop-info-panel"
+            id="info-accordion-button"
+          >
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">Information</span>
+            </div>
+            <svg
+              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('info') ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          {openAccordions.has('info') && (
+            <div
+              id="shop-info-panel"
+              role="region"
+              aria-labelledby="info-accordion-button"
+              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
+            >
             {/* Address */}
             {displayAddress && displayAddress !== 'N/A' && (
               <div className="mb-4">
@@ -303,12 +275,41 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
                 </a>
               </div>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
-        {/* Tab Content - Hours Tab */}
-        {activeTab === 'hours' && (
-          <div id="shop-hours-panel">
+        {/* Accordion - Hours */}
+        <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => toggleAccordion('hours')}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-expanded={openAccordions.has('hours')}
+            aria-controls="shop-hours-panel"
+            id="hours-accordion-button"
+          >
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">Hours</span>
+            </div>
+            <svg
+              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('hours') ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          {openAccordions.has('hours') && (
+            <div
+              id="shop-hours-panel"
+              role="region"
+              aria-labelledby="hours-accordion-button"
+              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
+            >
             {parsedHours.length > 0 ? (
               <>
                 {/* Open/Closed Status */}
@@ -373,22 +374,52 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
                 </div>
               </div>
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
 
-        {/* Tab Content - Products Tab */}
-        {activeTab === 'products' && (
-          <div id="shop-products-panel">
-            <ProductIconGrid
-              shop={shop}
-              displayMode="detailed"
-              showCategories={true}
-              showProductNames={true}
-              showSummary={true}
-              iconSize="sm"
-            />
-          </div>
-        )}
+        {/* Accordion - Products */}
+        <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+          <button
+            onClick={() => toggleAccordion('products')}
+            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            aria-expanded={openAccordions.has('products')}
+            aria-controls="shop-products-panel"
+            id="products-accordion-button"
+          >
+            <div className="flex items-center gap-2">
+              <svg className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+              </svg>
+              <span className="font-semibold text-gray-900 dark:text-gray-100">Products</span>
+            </div>
+            <svg
+              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('products') ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          {openAccordions.has('products') && (
+            <div
+              id="shop-products-panel"
+              role="region"
+              aria-labelledby="products-accordion-button"
+              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
+            >
+              <ProductIconGrid
+                shop={shop}
+                displayMode="detailed"
+                showCategories={true}
+                showProductNames={true}
+                showSummary={true}
+                iconSize="sm"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

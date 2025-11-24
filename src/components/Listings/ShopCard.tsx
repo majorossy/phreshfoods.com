@@ -2,41 +2,64 @@
 import React, { useEffect, useRef } from 'react';
 import { ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
+import { getShopDetailBasePath, getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 import StarRating from '../UI/StarRating.tsx';
 import { kmToMiles, escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext.tsx'; // For selectedShop styling
+import { useFilters } from '../../contexts/FilterContext.tsx';
+import { useSearch } from '../../contexts/SearchContext.tsx';
+import { encodeFiltersToURL } from '../../utils/urlSync';
 
 interface ShopCardProps {
   shop: ShopWithDistance;
 }
 
 // Helper function to get location type display info
+// Display names and emojis come from centralized config
 const getLocationTypeDisplay = (type: string) => {
+  // Get centralized display name and emoji
+  const displayName = getDisplayName(type as any);
+  const emoji = getEmoji(type as any);
+
+  // UI-specific color mappings for badges
+  let color: string;
   switch (type) {
     case 'farm_stand':
-      return { emoji: '🌾', label: 'Farm Stand', title: 'Farm Stand', color: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' };
+      color = 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100';
+      break;
     case 'cheese_shop':
-      return { emoji: '🧀', label: 'Cheesemonger', title: 'Cheesemonger', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100' };
+      color = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100';
+      break;
     case 'fish_monger':
-      return { emoji: '🐟', label: 'Fishmonger', title: 'Fishmonger', color: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100' };
+      color = 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100';
+      break;
     case 'butcher':
-      return { emoji: '🥩', label: 'Butcher', title: 'Butcher', color: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100' };
+      color = 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100';
+      break;
     case 'antique_shop':
-      return { emoji: '🏺', label: 'Antiques', title: 'Antiques', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100' };
+      color = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100';
+      break;
     case 'brewery':
-      return { emoji: '🍺', label: 'Brewery', title: 'Brewery', color: 'bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100' };
+      color = 'bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100';
+      break;
     case 'winery':
-      return { emoji: '🍷', label: 'Winery', title: 'Winery', color: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100' };
+      color = 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100';
+      break;
     case 'sugar_shack':
-      return { emoji: '🍁', label: 'Sugar Shack', title: 'Sugar Shack', color: 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100' };
+      color = 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100';
+      break;
     default:
-      return { emoji: '🏪', label: 'Shop', title: 'Shop', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100' };
+      color = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100';
   }
+
+  return { emoji, label: displayName, title: displayName, color };
 };
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const navigate = useNavigate();
   const { selectedShop, hoveredShop, setHoveredShop } = useUI(); // Get selectedShop and hoveredShop from UI context
+  const { activeProductFilters, activeLocationTypes } = useFilters();
+  const { lastPlaceSelectedByAutocomplete, currentRadius } = useSearch();
   const cardRef = useRef<HTMLDivElement>(null);
   const locationDisplay = getLocationTypeDisplay(shop.type);
 
@@ -56,34 +79,22 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     // Use slug if available, otherwise use GoogleProfileID as fallback
     const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
 
-    // Route based on location type
-    let basePath = '/farm'; // default
-    switch (shop.type) {
-      case 'cheese_shop':
-        basePath = '/cheese';
-        break;
-      case 'fish_monger':
-        basePath = '/fish';
-        break;
-      case 'butcher':
-        basePath = '/butcher';
-        break;
-      case 'antique_shop':
-        basePath = '/antique';
-        break;
-      case 'brewery':
-        basePath = '/brewery';
-        break;
-      case 'winery':
-        basePath = '/winery';
-        break;
-      case 'sugar_shack':
-        basePath = '/sugar-shack';
-        break;
-      default:
-        basePath = '/farm';
-    }
-    navigate(`${basePath}/${urlIdentifier}`);
+    // Get type-specific base path using mapping utility
+    const basePath = getShopDetailBasePath(shop.type);
+
+    // Build query params with current filter state for shareable URLs
+    const filterState = {
+      locationTypes: activeLocationTypes,
+      productFilters: activeProductFilters,
+      searchLocation: lastPlaceSelectedByAutocomplete,
+      searchRadius: currentRadius,
+    };
+    const queryParams = encodeFiltersToURL(filterState);
+    const queryString = queryParams.toString();
+
+    // Navigate with filters preserved in URL
+    const url = queryString ? `${basePath}/${urlIdentifier}?${queryString}` : `${basePath}/${urlIdentifier}`;
+    navigate(url);
   };
 
   // Google Place Details data is already safe (comes from Google API), only escape our own data

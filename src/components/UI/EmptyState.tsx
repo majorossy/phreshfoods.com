@@ -59,12 +59,12 @@ export const NoResultsState: React.FC<{
     if (hasOnlyFarms) {
       return {
         title: "No farm stands found",
-        description: "We couldn't find any farm stands matching your filters. Try expanding your search radius or selecting cheese shops."
+        description: "We couldn't find any farm stands matching your filters. Try expanding your search radius or selecting cheesemongers."
       };
     } else if (hasOnlyCheese) {
       return {
-        title: "No cheese shops found",
-        description: "We couldn't find any cheese shops matching your filters. Try expanding your search radius or selecting farm stands."
+        title: "No cheesemongers found",
+        description: "We couldn't find any cheesemongers matching your filters. Try expanding your search radius or selecting farm stands."
       };
     } else if (hasBoth || typesArray.length === 0) {
       return {

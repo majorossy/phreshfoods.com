@@ -8,10 +8,10 @@ PhreshFoods is a multi-location-type finder application for Maine. It's a React 
 
 **Supported Location Types:**
 - Farm Stands (original focus)
-- Cheese Shops
-- Fish Mongers
+- Cheesemongers
+- Fishmongers
 - Butchers
-- Antique Shops
+- Antiques
 
 Each location type has its own product configuration and filtering system.
 
@@ -292,10 +292,17 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
   - Note: Cloud-based styling overrides all local styles when active
 
 **Overlays:**
-- **Shop Details Overlay** - Tabbed interface with:
-  - Info tab: Basic shop information (name, address, phone, website, rating)
-  - Hours tab: Opening hours from Google Place Details
-  - Products tab: Type-specific product availability with icons
+- **Shop Details Overlay** - Accordion interface with:
+  - **Products accordion** - Type-specific product availability with icons (open by default)
+  - **Information accordion** - Basic shop information (name, address, phone, website, rating)
+  - **Hours accordion** - Opening hours from Google Place Details
+  - Pattern: Multiple accordions can be open simultaneously
+  - State management: Uses `Set<string>` to track open accordions
+  - Accessibility: Full ARIA support (aria-expanded, aria-controls, aria-labelledby, role="region")
+  - Animation: Smooth slide-down animation (`animate-slideDown` class, 200ms ease-out)
+  - Reset behavior: Accordions reset to default state (Products open) when shop changes
+  - Implementation: `src/components/Overlays/ShopDetailsOverlay.tsx`
+  - Tests: `src/components/Overlays/ShopDetailsOverlay.test.tsx` (13 tests covering accordion functionality)
 - **Social Overlay** - Tabbed interface for social media, reviews, and directions
 - **Initial Search Modal** - First-time user experience
 

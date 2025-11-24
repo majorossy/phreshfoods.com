@@ -37,29 +37,39 @@ export function extractLatLngFromPlace(place: AutocompletePlace | null | undefin
 }
 
 /**
- * Calculate the horizontal offset needed to account for visible overlays/panels
- * Returns NEGATIVE offset in pixels to shift map LEFT and center in visible area
+ * Calculate the offsets needed to account for visible overlays/panels and header
+ * Returns object with x and y offsets in pixels
  *
  * UI Layout:
+ * - Header: TOP (overlays map, actual height varies)
  * - ListingsPanel: RIGHT side (actual width varies)
  * - ShopDetailsOverlay: RIGHT side (actual width varies, replaces ListingsPanel)
  * - SocialOverlay: LEFT side (actual width varies, appears in addition to ShopDetailsOverlay)
  *
  * Centering Logic:
- * - Gets actual rendered widths of visible panels
- * - Calculates center of visible map area
- * - Returns negative offset to shift map left into visible area
+ * - X offset: Shifts map LEFT to center in visible area between panels (negative = shift left)
+ * - Y offset: Shifts map DOWN to center in visible area below header (positive = shift down)
  */
 export function calculatePanelOffset(
   isShopOverlayOpen: boolean,
   isSocialOverlayOpen: boolean
-): number {
+): { x: number; y: number } {
   // Only apply offset on desktop/tablet (overlays are full-screen on mobile)
-  if (window.innerWidth < DESKTOP_BREAKPOINT_PX) return 0;
+  if (window.innerWidth < DESKTOP_BREAKPOINT_PX) {
+    return { x: 0, y: 0 };
+  }
 
   const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
   let rightPanelWidth = 0;
   let leftPanelWidth = 0;
+  let headerHeight = 0;
+
+  // Get header height
+  const header = document.querySelector('header');
+  if (header) {
+    headerHeight = header.getBoundingClientRect().height;
+  }
 
   // Get right panel width (ShopDetailsOverlay or ListingsPanel)
   if (isShopOverlayOpen) {
@@ -82,19 +92,19 @@ export function calculatePanelOffset(
     }
   }
 
-  // Calculate visible map area
+  // Calculate horizontal offset (X)
   const visibleMapWidth = viewportWidth - rightPanelWidth - leftPanelWidth;
-
-  // Calculate center of visible area from left edge
   const visibleCenterFromLeft = leftPanelWidth + (visibleMapWidth / 2);
+  const viewportCenterX = viewportWidth / 2;
+  const xOffset = visibleCenterFromLeft - viewportCenterX;
 
-  // Calculate center of viewport
-  const viewportCenter = viewportWidth / 2;
+  // Calculate vertical offset (Y)
+  const visibleMapHeight = viewportHeight - headerHeight;
+  const visibleCenterFromTop = headerHeight + (visibleMapHeight / 2);
+  const viewportCenterY = viewportHeight / 2;
+  const yOffset = visibleCenterFromTop - viewportCenterY;
 
-  // Calculate required shift (negative = shift left)
-  const requiredShift = visibleCenterFromLeft - viewportCenter;
-
-  return requiredShift;
+  return { x: xOffset, y: yOffset };
 }
 
 /**
@@ -184,22 +194,25 @@ export function panToWithOffsets(options: PanToWithOffsetsOptions): void {
     bounds,
   } = options;
 
-  // Calculate panel offset (horizontal)
-  const panelOffsetX = calculatePanelOffset(isShopOverlayOpen, isSocialOverlayOpen);
+  // Calculate panel and header offsets (horizontal and vertical)
+  const { x: panelOffsetX, y: panelOffsetY } = calculatePanelOffset(isShopOverlayOpen, isSocialOverlayOpen);
 
   if (bounds) {
     // For search radius: use asymmetric padding instead of center adjustment
     // This approach works better with zoom changes from radius slider
     const basePadding = calculateBasePadding(map);
 
-    if (panelOffsetX !== 0) {
-      // Convert offset to padding adjustment
-      // Negative offset (shift left) = add extra padding on right
-      const paddingAdjustment = Math.abs(panelOffsetX);
+    if (panelOffsetX !== 0 || panelOffsetY !== 0) {
+      // Convert offsets to padding adjustments
+      // Negative X offset (shift left) = add extra padding on right
+      // Positive Y offset (shift down) = add extra padding on top
+      // Double the offsets because padding shifts center by half its value
+      const paddingAdjustmentX = Math.abs(panelOffsetX) * 2;
+      const paddingAdjustmentY = Math.abs(panelOffsetY) * 2;
 
       const paddingOptions = {
-        top: basePadding,
-        right: basePadding + paddingAdjustment, // Extra padding on right
+        top: basePadding + paddingAdjustmentY, // Extra padding on top for header
+        right: basePadding + paddingAdjustmentX, // Extra padding on right for panels
         bottom: basePadding,
         left: basePadding,
       };
@@ -212,7 +225,7 @@ export function panToWithOffsets(options: PanToWithOffsetsOptions): void {
   } else {
     // Use panTo with calculated offset for shop selections
     let totalOffsetX = panelOffsetX;
-    let totalOffsetY = 0;
+    let totalOffsetY = panelOffsetY;
 
     // Add info window offset if needed
     if (includeInfoWindowOffset) {

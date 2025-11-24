@@ -75,6 +75,21 @@ export type LocationType =
   | 'winery'
   | 'sugar_shack';
 
+// All location types as a constant array (single source of truth)
+export const ALL_LOCATION_TYPES: readonly LocationType[] = [
+  'farm_stand',
+  'cheese_shop',
+  'fish_monger',
+  'butcher',
+  'antique_shop',
+  'brewery',
+  'winery',
+  'sugar_shack'
+] as const;
+
+// Total count of location types (derived from array)
+export const LOCATION_TYPE_COUNT = ALL_LOCATION_TYPES.length;
+
 // Base interface with common fields shared by all location types
 export interface BaseLocation {
   // Type discriminator
@@ -159,6 +174,89 @@ export interface CheeseShopProducts {
   sheep_milk?: boolean;
 }
 
+// Fish monger specific products
+export interface FishMongerProducts {
+  salmon?: boolean;
+  cod?: boolean;
+  haddock?: boolean;
+  tuna?: boolean;
+  halibut?: boolean;
+  scallops?: boolean;
+  shrimp?: boolean;
+  lobster?: boolean;
+  crab?: boolean;
+  clams?: boolean;
+  oysters?: boolean;
+  mussels?: boolean;
+}
+
+// Butcher specific products
+export interface ButcherProducts {
+  beef?: boolean;
+  pork?: boolean;
+  lamb?: boolean;
+  chicken?: boolean;
+  turkey?: boolean;
+  duck?: boolean;
+  sausages?: boolean;
+  bacon?: boolean;
+  ground_meat?: boolean;
+  steaks?: boolean;
+  roasts?: boolean;
+  chops?: boolean;
+}
+
+// Antique shop specific products
+export interface AntiqueShopProducts {
+  furniture?: boolean;
+  jewelry?: boolean;
+  art?: boolean;
+  books?: boolean;
+  ceramics?: boolean;
+  glassware?: boolean;
+  silverware?: boolean;
+  textiles?: boolean;
+  collectibles?: boolean;
+  vintage_clothing?: boolean;
+}
+
+// Brewery specific products
+export interface BreweryProducts {
+  ipa?: boolean;
+  lager?: boolean;
+  stout?: boolean;
+  ale?: boolean;
+  pilsner?: boolean;
+  porter?: boolean;
+  wheat_beer?: boolean;
+  sour?: boolean;
+  cider?: boolean;
+}
+
+// Winery specific products
+export interface WineryProducts {
+  red_wine?: boolean;
+  white_wine?: boolean;
+  rose?: boolean;
+  sparkling?: boolean;
+  dessert_wine?: boolean;
+  ice_wine?: boolean;
+  cabernet?: boolean;
+  chardonnay?: boolean;
+  pinot_noir?: boolean;
+  merlot?: boolean;
+}
+
+// Sugar shack specific products
+export interface SugarShackProducts {
+  maple_syrup?: boolean;
+  maple_sugar?: boolean;
+  maple_candy?: boolean;
+  maple_butter?: boolean;
+  maple_cream?: boolean;
+  pancake_mix?: boolean;
+}
+
 // Farm stand location type
 export interface FarmStand extends BaseLocation {
   type: 'farm_stand';
@@ -171,8 +269,52 @@ export interface CheeseShop extends BaseLocation {
   products: CheeseShopProducts;
 }
 
+// Fish monger location type
+export interface FishMonger extends BaseLocation {
+  type: 'fish_monger';
+  products: FishMongerProducts;
+}
+
+// Butcher location type
+export interface Butcher extends BaseLocation {
+  type: 'butcher';
+  products: ButcherProducts;
+}
+
+// Antique shop location type
+export interface AntiqueShop extends BaseLocation {
+  type: 'antique_shop';
+  products: AntiqueShopProducts;
+}
+
+// Brewery location type
+export interface Brewery extends BaseLocation {
+  type: 'brewery';
+  products: BreweryProducts;
+}
+
+// Winery location type
+export interface Winery extends BaseLocation {
+  type: 'winery';
+  products: WineryProducts;
+}
+
+// Sugar shack location type
+export interface SugarShack extends BaseLocation {
+  type: 'sugar_shack';
+  products: SugarShackProducts;
+}
+
 // Main Shop type as discriminated union
-export type Shop = FarmStand | CheeseShop;
+export type Shop =
+  | FarmStand
+  | CheeseShop
+  | FishMonger
+  | Butcher
+  | AntiqueShop
+  | Brewery
+  | Winery
+  | SugarShack;
 
 // Type guards for runtime checking
 export function isFarmStand(shop: Shop): shop is FarmStand {
@@ -181,6 +323,30 @@ export function isFarmStand(shop: Shop): shop is FarmStand {
 
 export function isCheeseShop(shop: Shop): shop is CheeseShop {
   return shop.type === 'cheese_shop';
+}
+
+export function isFishMonger(shop: Shop): shop is FishMonger {
+  return shop.type === 'fish_monger';
+}
+
+export function isButcher(shop: Shop): shop is Butcher {
+  return shop.type === 'butcher';
+}
+
+export function isAntiqueShop(shop: Shop): shop is AntiqueShop {
+  return shop.type === 'antique_shop';
+}
+
+export function isBrewery(shop: Shop): shop is Brewery {
+  return shop.type === 'brewery';
+}
+
+export function isWinery(shop: Shop): shop is Winery {
+  return shop.type === 'winery';
+}
+
+export function isSugarShack(shop: Shop): shop is SugarShack {
+  return shop.type === 'sugar_shack';
 }
 
 export interface ShopWithDistance extends Shop {
