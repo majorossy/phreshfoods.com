@@ -4,6 +4,7 @@ import { ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath, getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 import StarRating from '../UI/StarRating.tsx';
+import OptimizedImage from '../UI/OptimizedImage.tsx';
 import { escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext.tsx'; // For selectedShop styling
 import { useFilters } from '../../contexts/FilterContext.tsx';
@@ -171,19 +172,14 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
     >
       {/* Image Section */}
       <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700 relative">
-        <img
+        <OptimizedImage
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
           src={actualImageUrl}
           alt={`Image of ${displayName}`}
-          width="400"
-          height="250"
-          decoding="async"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.onerror = null;
-            target.src = fallbackImageUrlCard;
-          }}
+          fallbackSrc={fallbackImageUrlCard}
+          width={400}
+          height={250}
+          loading="lazy"
         />
       </div>
 

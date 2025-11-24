@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc'; // Using SWC for faster compilation
 import { visualizer } from 'rollup-plugin-visualizer';
 import { VitePWA } from 'vite-plugin-pwa';
+import viteImagemin from 'vite-plugin-imagemin';
 // If you chose the standard TypeScript template without SWC, it might be:
 // import react from '@vitejs/plugin-react';
 
@@ -10,6 +11,38 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   plugins: [
     react(),
+    // Image optimization plugin - converts to WebP and optimizes other formats
+    viteImagemin({
+      gifsicle: {
+        optimizationLevel: 7,
+        interlaced: false,
+      },
+      mozjpeg: {
+        quality: 85,
+        progressive: true,
+      },
+      pngquant: {
+        quality: [0.8, 0.9],
+        speed: 4,
+      },
+      svgo: {
+        plugins: [
+          {
+            name: 'removeViewBox',
+            active: false,
+          },
+          {
+            name: 'removeEmptyAttrs',
+            active: false,
+          },
+        ],
+      },
+      webp: {
+        quality: 85,
+        method: 4, // 0-6, higher = slower but better compression
+        lossless: false,
+      },
+    }),
     // Bundle analyzer - generates stats.html after build
     visualizer({
       open: false, // Set to true to auto-open after build
