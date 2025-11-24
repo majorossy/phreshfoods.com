@@ -7,9 +7,8 @@ import { getLoadError } from '../utils/loadGoogleMapsScript';
 import { useToast } from './ToastContext';
 import { parseGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
 import { parseFiltersFromURL } from '../utils/urlSync';
-import {
 import { logger } from '../utils/logger';
-
+import {
   LAST_SEARCHED_LOCATION_COOKIE_NAME,
   COOKIE_EXPIRY_DAYS,
   DEFAULT_SEARCH_RADIUS_MILES,
