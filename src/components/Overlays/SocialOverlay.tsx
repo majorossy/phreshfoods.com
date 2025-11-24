@@ -391,7 +391,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         >
           <svg
             className="w-5 h-5 text-gray-600 transition-transform duration-300"
-            style={{ transform: isCollapsed ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(180deg)' }}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
