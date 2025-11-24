@@ -161,43 +161,43 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">78x</span>
-<span class="cline-any cline-yes">78x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">115x</span>
+<span class="cline-any cline-yes">115x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">78x</span>
+<span class="cline-any cline-yes">115x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">40x</span>
+<span class="cline-any cline-yes">58x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -233,7 +233,7 @@ interface ToastConfig {
 }
 &nbsp;
 interface ToastContextType {
-  showToast: (type: ToastType, message: string, duration?: number) =&gt; void;
+  showToast: (message: string, type: ToastType, duration?: number) =&gt; void;
   showSuccess: (message: string, duration?: number) =&gt; void;
   showError: (message: string, duration?: number) =&gt; void;
   showWarning: (message: string, duration?: number) =&gt; void;
@@ -253,7 +253,7 @@ export const useToast = () =&gt; {
 export const ToastProvider: React.FC&lt;{ children: ReactNode }&gt; = ({ children }) =&gt; {
   const [toasts, setToasts] = useState&lt;ToastConfig[]&gt;([]);
 &nbsp;
-  const showToast = useCallback((type: ToastType, message: string, duration: number = 5000) =&gt; {
+  const showToast = useCallback((message: string, type: ToastType, duration: number = 5000) =&gt; {
     const id = `toast-${Date.now()}-${Math.random()}`;
     const newToast: ToastConfig = { id, type, message, duration };
 &nbsp;
@@ -261,19 +261,19 @@ export const ToastProvider: React.FC&lt;{ children: ReactNode }&gt; = ({ childre
   }, []);
 &nbsp;
   const showSuccess = useCallback(<span class="fstat-no" title="function not covered" >(m</span>essage: string, duration?: number) =&gt; {
-<span class="cstat-no" title="statement not covered" >    showToast('success', message, duration);</span>
+<span class="cstat-no" title="statement not covered" >    showToast(message, 'success', duration);</span>
   }, [showToast]);
 &nbsp;
   const showError = useCallback((message: string, duration?: number) =&gt; {
-    showToast('error', message, duration);
+    showToast(message, 'error', duration);
   }, [showToast]);
 &nbsp;
   const showWarning = useCallback(<span class="fstat-no" title="function not covered" >(m</span>essage: string, duration?: number) =&gt; {
-<span class="cstat-no" title="statement not covered" >    showToast('warning', message, duration);</span>
+<span class="cstat-no" title="statement not covered" >    showToast(message, 'warning', duration);</span>
   }, [showToast]);
 &nbsp;
   const showInfo = useCallback(<span class="fstat-no" title="function not covered" >(m</span>essage: string, duration?: number) =&gt; {
-<span class="cstat-no" title="statement not covered" >    showToast('info', message, duration);</span>
+<span class="cstat-no" title="statement not covered" >    showToast(message, 'info', duration);</span>
   }, [showToast]);
 &nbsp;
   const removeToast = useCallback(<span class="fstat-no" title="function not covered" >(i</span>d: string) =&gt; {
@@ -307,7 +307,7 @@ export const ToastProvider: React.FC&lt;{ children: ReactNode }&gt; = ({ childre
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-22T11:33:38.892Z
+                at 2025-11-24T12:45:57.902Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

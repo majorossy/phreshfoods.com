@@ -25,7 +25,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">100% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>3/3</span>
+                <span class='fraction'>6/6</span>
             </div>
         
             
@@ -91,41 +91,7 @@
 <a name='L26'></a><a href='#L26'>26</a>
 <a name='L27'></a><a href='#L27'>27</a>
 <a name='L28'></a><a href='#L28'>28</a>
-<a name='L29'></a><a href='#L29'>29</a>
-<a name='L30'></a><a href='#L30'>30</a>
-<a name='L31'></a><a href='#L31'>31</a>
-<a name='L32'></a><a href='#L32'>32</a>
-<a name='L33'></a><a href='#L33'>33</a>
-<a name='L34'></a><a href='#L34'>34</a>
-<a name='L35'></a><a href='#L35'>35</a>
-<a name='L36'></a><a href='#L36'>36</a>
-<a name='L37'></a><a href='#L37'>37</a>
-<a name='L38'></a><a href='#L38'>38</a>
-<a name='L39'></a><a href='#L39'>39</a>
-<a name='L40'></a><a href='#L40'>40</a>
-<a name='L41'></a><a href='#L41'>41</a>
-<a name='L42'></a><a href='#L42'>42</a>
-<a name='L43'></a><a href='#L43'>43</a>
-<a name='L44'></a><a href='#L44'>44</a>
-<a name='L45'></a><a href='#L45'>45</a>
-<a name='L46'></a><a href='#L46'>46</a>
-<a name='L47'></a><a href='#L47'>47</a>
-<a name='L48'></a><a href='#L48'>48</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<a name='L29'></a><a href='#L29'>29</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -147,17 +113,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// src/config/products.ts
+// This file now serves as the base type definitions and re-exports for backward compatibility
 'use strict';
 &nbsp;
 export interface ProductConfig {
@@ -172,38 +135,18 @@ export interface ProductIconsConfig {
   [key: string]: ProductConfig;
 }
 &nbsp;
-export const PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
-  // Meats
-  'beef':       { csvHeader: 'beef',       name: 'Beef',       icon_available: 'beef_1.jpg',       icon_unavailable: 'beef_0.jpg',       category: 'Meats' },
-  'pork':       { csvHeader: 'pork',       name: 'Pork',       icon_available: 'pork_1.jpg',       icon_unavailable: 'pork_0.jpg',       category: 'Meats' },
-  'lamb':       { csvHeader: 'lamb',       name: 'Lamb',       icon_available: 'lamb_1.jpg',       icon_unavailable: 'lamb_0.jpg',       category: 'Meats' },
-  // Poultry &amp; Eggs
-  'chicken':    { csvHeader: 'chicken',    name: 'Chicken',    icon_available: 'chicken_1.jpg',    icon_unavailable: 'chicken_0.jpg',    category: 'Poultry &amp; Eggs' },
-  'turkey':     { csvHeader: 'turkey',     name: 'Turkey',     icon_available: 'turkey_1.jpg',     icon_unavailable: 'turkey_0.jpg',    category: 'Poultry &amp; Eggs' },
-  'duck':       { csvHeader: 'duck',       name: 'Duck',       icon_available: 'duck_1.jpg',       icon_unavailable: 'duck_0.jpg',       category: 'Poultry &amp; Eggs' },
-  'eggs':       { csvHeader: 'eggs',       name: 'Eggs',       icon_available: 'eggs_1.jpg',       icon_unavailable: 'eggs_0.jpg',       category: 'Poultry &amp; Eggs' },
-  // Vegetables
-  'corn':       { csvHeader: 'corn',       name: 'Corn',       icon_available: 'corn_1.jpg',       icon_unavailable: 'corn_0.jpg',       category: 'Vegetables' },
-  'carrots':    { csvHeader: 'carrots',    name: 'Carrots',    icon_available: 'carrots_1.jpg',    icon_unavailable: 'carrots_0.jpg',    category: 'Vegetables' },
-  'potatoes':   { csvHeader: 'potatoes',   name: 'Potatoes',   icon_available: 'potatoes_1.jpg',   icon_unavailable: 'potatoes_0.jpg',   category: 'Vegetables' },
-  'lettuce':    { csvHeader: 'lettuce',    name: 'Lettuce',    icon_available: 'lettuce_1.jpg',    icon_unavailable: 'lettuce_0.jpg',    category: 'Vegetables' },
-  'spinach':    { csvHeader: 'spinach',    name: 'Spinach',    icon_available: 'spinach_1.jpg',    icon_unavailable: 'spinach_0.jpg',    category: 'Vegetables' },
-  'squash':     { csvHeader: 'squash',     name: 'Squash',     icon_available: 'squash_1.jpg',     icon_unavailable: 'squash_0.jpg',     category: 'Vegetables' },
-  'tomatoes':   { csvHeader: 'tomatoes',   name: 'Tomatoes',   icon_available: 'tomatoes_1.jpg',   icon_unavailable: 'tomatoes_0.jpg',   category: 'Vegetables' },
-  'peppers':    { csvHeader: 'peppers',    name: 'Peppers',    icon_available: 'peppers_1.jpg',    icon_unavailable: 'peppers_0.jpg',    category: 'Vegetables' },
-  'cucumbers':  { csvHeader: 'cucumbers',  name: 'Cucumbers',  icon_available: 'cucumbers_1.jpg',  icon_unavailable: 'cucumbers_0.jpg',  category: 'Vegetables' },
-  'zucchini':   { csvHeader: 'zucchini',   name: 'Zucchini',   icon_available: 'zucchini_1.jpg',   icon_unavailable: 'zucchini_0.jpg',   category: 'Vegetables' },
-  // Aromatics
-  'garlic':     { csvHeader: 'garlic',     name: 'Garlic',     icon_available: 'garlic_1.jpg',     icon_unavailable: 'garlic_0.jpg',     category: 'Aromatics' },
-  'onions':     { csvHeader: 'onions',     name: 'Onions',     icon_available: 'onions_1.jpg',     icon_unavailable: 'onions_0.jpg',     category: 'Aromatics' },
-  // Fruits
-  'strawberries': { csvHeader: 'strawberries', name: 'Strawberries', icon_available: 'strawberries_1.jpg', icon_unavailable: 'strawberries_0.jpg', category: 'Fruits' },
-  'blueberries':  { csvHeader: 'blueberries',  name: 'Blueberries',  icon_available: 'blueberries_1.jpg',  icon_unavailable: 'blueberries_0.jpg',  category: 'Fruits' },
-};
+// Re-export farm products for backward compatibility
+export { FARM_PRODUCT_ICONS_CONFIG as PRODUCT_ICONS_CONFIG } from './farmProducts';
+export { FILTERABLE_FARM_ATTRIBUTES as FILTERABLE_PRODUCT_ATTRIBUTES } from './farmProducts';
+export { FARM_CATEGORY_DISPLAY_ORDER as CATEGORY_DISPLAY_ORDER } from './farmProducts';
 &nbsp;
-export const FILTERABLE_PRODUCT_ATTRIBUTES: string[] = Object.keys(PRODUCT_ICONS_CONFIG);
-&nbsp;
-export const CATEGORY_DISPLAY_ORDER: string[] = ['Meats', 'Poultry &amp; Eggs', 'Vegetables', 'Fruits', 'Aromatics'];
+// Export all new modules for convenience
+export * from './farmProducts';
+export * from './cheeseProducts';
+export * from './fishProducts';
+export * from './butcherProducts';
+export * from './antiqueProducts';
+export * from './productRegistry';
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -211,7 +154,7 @@ export const CATEGORY_DISPLAY_ORDER: string[] = ['Meats', 'Poultry &amp; Eggs', 
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-22T11:33:38.892Z
+                at 2025-11-24T12:45:57.902Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

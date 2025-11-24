@@ -25,14 +25,14 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/16</span>
+                <span class='fraction'>0/4</span>
             </div>
         
             
@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/13</span>
+                <span class='fraction'>0/7</span>
             </div>
         
             
@@ -137,16 +137,8 @@
 <a name='L72'></a><a href='#L72'>72</a>
 <a name='L73'></a><a href='#L73'>73</a>
 <a name='L74'></a><a href='#L74'>74</a>
-<a name='L75'></a><a href='#L75'>75</a>
-<a name='L76'></a><a href='#L76'>76</a>
-<a name='L77'></a><a href='#L77'>77</a>
-<a name='L78'></a><a href='#L78'>78</a>
-<a name='L79'></a><a href='#L79'>79</a>
-<a name='L80'></a><a href='#L80'>80</a>
-<a name='L81'></a><a href='#L81'>81</a>
-<a name='L82'></a><a href='#L82'>82</a>
-<a name='L83'></a><a href='#L83'>83</a>
-<a name='L84'></a><a href='#L84'>84</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L75'></a><a href='#L75'>75</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -186,16 +178,6 @@
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -232,6 +214,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// src/components/Map/InfoWindowContent.tsx
 import React from 'react';
 import { Shop } from '../../types'; // Assuming your Shop type is here
+import ProductIconGrid from '../UI/ProductIconGrid';
 &nbsp;
 // A simple star rating component (you might have a more complex one)
 const StarRating: React.FC&lt;{ rating: number; reviewCount?: number }&gt; = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> rating, reviewCount }) =&gt; {</span>
@@ -269,28 +252,18 @@ const InfoWindowContent: React.FC&lt;InfoWindowContentProps&gt; = <span class="c
 <span class="cstat-no" title="statement not covered" >    return null;</span>
   }
 &nbsp;
-  // Get image URL from shop data - prioritize custom images from sheet, then Google Photos
-  let imageUrl = <span class="cstat-no" title="statement not covered" >'/images/placeholder-sm.png'; /</span>/ Default fallback
-&nbsp;
-<span class="cstat-no" title="statement not covered" >  if (shop.ImageOne) {</span>
-    // Add /images/ prefix if not already present
-<span class="cstat-no" title="statement not covered" >    imageUrl = shop.ImageOne.startsWith('/') ? shop.ImageOne : `/images/${shop.ImageOne}`;</span>
-  } else <span class="cstat-no" title="statement not covered" >if (shop.placeDetails?.photos &amp;&amp; shop.placeDetails.photos.length &gt; 0) {</span>
-    const photoRef = <span class="cstat-no" title="statement not covered" >shop.placeDetails.photos[0].photo_reference;</span>
-    // Use backend proxy to fetch photo (keeps API key secure)
-<span class="cstat-no" title="statement not covered" >    imageUrl = `/api/photo?photo_reference=${photoRef}&amp;maxwidth=400`;</span>
-  }
-&nbsp;
   return (
     &lt;div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}&gt; {/* Fixed width example */}
-      {/* Optional Image Section */}
-      {imageUrl &amp;&amp; !imageUrl.includes('placeholder-sm.png') &amp;&amp; ( // Don't show placeholder if that's all we have
-        &lt;div className="w-full h-24 bg-gray-200 mb-2 rounded-t-md overflow-hidden"&gt;
-          &lt;img src={imageUrl} alt={shop.Name} className="w-full h-full object-cover" /&gt;
-        &lt;/div&gt;
-      )}
+      {/* Product Icons Grid - Shows ALL products with color/grey icons, grouped by category */}
+      &lt;ProductIconGrid
+        shop={shop}
+        displayMode="compact"
+        showCategories={true}
+        showProductNames={false}
+        iconSize="sm"
+      /&gt;
 &nbsp;
-      &lt;div className={imageUrl &amp;&amp; !imageUrl.includes('placeholder-sm.png') ? "p-2 pt-1" : "p-2"}&gt; {/* Adjust padding if no image */}
+      &lt;div className="p-2"&gt;
         &lt;h3 className="text-sm font-semibold mb-0.5 truncate text-gray-800 leading-tight" title={shop.Name}&gt;
           {shop.Name}
         &lt;/h3&gt;
@@ -319,7 +292,7 @@ export default InfoWindowContent;</pre></td></tr></table></pre>
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-11-22T11:33:38.892Z
+                at 2025-11-24T12:45:57.902Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

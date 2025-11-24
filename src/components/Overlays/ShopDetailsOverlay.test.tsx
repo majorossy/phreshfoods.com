@@ -4,6 +4,9 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ShopDetailsOverlay from './ShopDetailsOverlay';
 import { UIProvider } from '../../contexts/UIContext';
+import { TripPlannerProvider } from '../../contexts/TripPlannerContext';
+import { ToastProvider } from '../../contexts/ToastContext';
+import { LocationDataProvider } from '../../contexts/LocationDataContext';
 import type { Shop } from '../../types';
 
 // Extend Vitest matchers with jest-axe
@@ -52,9 +55,15 @@ const mockShop: Shop = {
 describe('ShopDetailsOverlay - Accordion Functionality', () => {
   const renderComponent = () => {
     return render(
-      <UIProvider>
-        <ShopDetailsOverlay shop={mockShop} onClose={vi.fn()} />
-      </UIProvider>
+      <ToastProvider>
+        <LocationDataProvider>
+          <TripPlannerProvider>
+            <UIProvider>
+              <ShopDetailsOverlay shop={mockShop} onClose={vi.fn()} />
+            </UIProvider>
+          </TripPlannerProvider>
+        </LocationDataProvider>
+      </ToastProvider>
     );
   };
 
@@ -64,17 +73,17 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
 
       // All accordion buttons should show expanded state
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
 
       // All panels should be visible
       expect(screen.getByRole('region', { name: /information/i })).toBeInTheDocument();
-      expect(screen.getByRole('region', { name: /hours/i })).toBeInTheDocument();
       expect(screen.getByRole('region', { name: /products/i })).toBeInTheDocument();
+
+      // Hours should be embedded within the info panel
+      expect(screen.getByText(/currently open/i)).toBeInTheDocument();
     });
   });
 
@@ -94,23 +103,6 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       // Click to open again
       fireEvent.click(infoButton);
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
-    });
-
-    it('should toggle Hours accordion when clicked', () => {
-      renderComponent();
-
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
-
-      // Initially open
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
-
-      // Click to close
-      fireEvent.click(hoursButton);
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'false');
-
-      // Click to open again
-      fireEvent.click(hoursButton);
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('should toggle Products accordion when clicked', () => {
@@ -136,28 +128,24 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       renderComponent();
 
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
       // All are already open by default
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
 
       // Close one accordion
       fireEvent.click(infoButton);
       expect(infoButton).toHaveAttribute('aria-expanded', 'false');
 
-      // Others should still be open
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
+      // Other should still be open
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
 
       // Re-open the closed one
       fireEvent.click(infoButton);
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
 
-      // All should be open again
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
+      // Both should be open again
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
@@ -167,23 +155,11 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       renderComponent();
 
       // Info accordion is open by default
-      // Check for address
-      expect(screen.getByText(/123 Main St, Portland, ME 04101/i)).toBeInTheDocument();
-
       // Check for phone
       expect(screen.getByText(/555-1234/i)).toBeInTheDocument();
 
-      // Check for website link
-      expect(screen.getByText(/Visit Website/i)).toBeInTheDocument();
-    });
-
-    it('should display hours when Hours accordion is open', () => {
-      renderComponent();
-
-      // Hours accordion is open by default
-      // Check for hours
+      // Hours should be embedded within the info accordion
       expect(screen.getByText(/Monday/i)).toBeInTheDocument();
-      expect(screen.getAllByText(/9:00 AM – 5:00 PM/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Currently Open/i)).toBeInTheDocument();
     });
 
@@ -202,9 +178,15 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
   describe('Accordion Reset on Shop Change', () => {
     it('should reset accordions to default state when shop changes', () => {
       const { rerender } = render(
-        <UIProvider>
-          <ShopDetailsOverlay shop={mockShop} onClose={vi.fn()} />
-        </UIProvider>
+        <ToastProvider>
+          <LocationDataProvider>
+            <TripPlannerProvider>
+              <UIProvider>
+                <ShopDetailsOverlay shop={mockShop} onClose={vi.fn()} />
+              </UIProvider>
+            </TripPlannerProvider>
+          </LocationDataProvider>
+        </ToastProvider>
       );
 
       // Close Info accordion
@@ -220,18 +202,22 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       // Change shop (new shop with different slug)
       const newShop = { ...mockShop, slug: 'different-farm', Name: 'Different Farm' };
       rerender(
-        <UIProvider>
-          <ShopDetailsOverlay shop={newShop} onClose={vi.fn()} />
-        </UIProvider>
+        <ToastProvider>
+          <LocationDataProvider>
+            <TripPlannerProvider>
+              <UIProvider>
+                <ShopDetailsOverlay shop={newShop} onClose={vi.fn()} />
+              </UIProvider>
+            </TripPlannerProvider>
+          </LocationDataProvider>
+        </ToastProvider>
       );
 
-      // All should be open again (reset to default)
+      // Both accordions should be open again (reset to default)
       const newInfoButton = screen.getByRole('button', { name: /information/i });
-      const newHoursButton = screen.getByRole('button', { name: /hours/i });
       const newProductsButton = screen.getByRole('button', { name: /products/i });
 
       expect(newInfoButton).toHaveAttribute('aria-expanded', 'true');
-      expect(newHoursButton).toHaveAttribute('aria-expanded', 'true');
       expect(newProductsButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
@@ -241,26 +227,22 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       renderComponent();
 
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
       // All buttons should have aria-expanded
       expect(infoButton).toHaveAttribute('aria-expanded');
-      expect(hoursButton).toHaveAttribute('aria-expanded');
       expect(productsButton).toHaveAttribute('aria-expanded');
 
       // All buttons should have aria-controls
       expect(infoButton).toHaveAttribute('aria-controls', 'shop-info-panel');
-      expect(hoursButton).toHaveAttribute('aria-controls', 'shop-hours-panel');
       expect(productsButton).toHaveAttribute('aria-controls', 'shop-products-panel');
     });
 
     it('should have proper IDs on accordion panels', () => {
       renderComponent();
 
-      // All accordions are open by default, check their IDs
+      // Both accordions are open by default, check their IDs
       expect(screen.getByRole('region', { name: /information/i })).toHaveAttribute('id', 'shop-info-panel');
-      expect(screen.getByRole('region', { name: /hours/i })).toHaveAttribute('id', 'shop-hours-panel');
       expect(screen.getByRole('region', { name: /products/i })).toHaveAttribute('id', 'shop-products-panel');
     });
   });
@@ -270,12 +252,10 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       renderComponent();
 
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
       // All accordion triggers should be native buttons (automatically keyboard accessible)
       expect(infoButton.tagName).toBe('BUTTON');
-      expect(hoursButton.tagName).toBe('BUTTON');
       expect(productsButton.tagName).toBe('BUTTON');
 
       // Native buttons support Enter and Space keys automatically via onClick
@@ -317,37 +297,31 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       renderComponent();
 
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
       // All accordion buttons should be in the tab order
       expect(infoButton.tagName).toBe('BUTTON');
-      expect(hoursButton.tagName).toBe('BUTTON');
       expect(productsButton.tagName).toBe('BUTTON');
 
       // Buttons should not have negative tabIndex
       expect(infoButton).not.toHaveAttribute('tabIndex', '-1');
-      expect(hoursButton).not.toHaveAttribute('tabIndex', '-1');
       expect(productsButton).not.toHaveAttribute('tabIndex', '-1');
     });
   });
 
   describe('Automated Accessibility Tests', () => {
-    it('should have no accessibility violations with default state (Products open)', async () => {
+    it('should have no accessibility violations with default state (all accordions open)', async () => {
       const { container } = renderComponent();
       const results = await axe(container);
       expect(results).toHaveNoViolations();
     });
 
-    it('should have no accessibility violations with all accordions open', async () => {
+    it('should have no accessibility violations with one accordion closed', async () => {
       const { container } = renderComponent();
 
-      // Open all accordions
+      // Close Info accordion
       const infoButton = screen.getByRole('button', { name: /information/i });
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
-
       fireEvent.click(infoButton);
-      fireEvent.click(hoursButton);
 
       const results = await axe(container);
       expect(results).toHaveNoViolations();
@@ -356,8 +330,11 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
     it('should have no accessibility violations with all accordions closed', async () => {
       const { container } = renderComponent();
 
-      // Close Products accordion
+      // Close both accordions
+      const infoButton = screen.getByRole('button', { name: /information/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
+
+      fireEvent.click(infoButton);
       fireEvent.click(productsButton);
 
       const results = await axe(container);

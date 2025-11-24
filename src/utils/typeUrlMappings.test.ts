@@ -221,24 +221,24 @@ describe('typeUrlMappings', () => {
   });
 
   describe('getShopDetailBasePath', () => {
-    it('should return /farm for farm_stand', () => {
-      expect(getShopDetailBasePath('farm_stand')).toBe('/farm');
+    it('should return /farm-stand for farm_stand', () => {
+      expect(getShopDetailBasePath('farm_stand')).toBe('/farm-stand');
     });
 
-    it('should return /cheese for cheese_shop', () => {
-      expect(getShopDetailBasePath('cheese_shop')).toBe('/cheese');
+    it('should return /cheesemonger for cheese_shop', () => {
+      expect(getShopDetailBasePath('cheese_shop')).toBe('/cheesemonger');
     });
 
-    it('should return /fish for fish_monger', () => {
-      expect(getShopDetailBasePath('fish_monger')).toBe('/fish');
+    it('should return /fishmonger for fish_monger', () => {
+      expect(getShopDetailBasePath('fish_monger')).toBe('/fishmonger');
     });
 
     it('should return /butcher for butcher', () => {
       expect(getShopDetailBasePath('butcher')).toBe('/butcher');
     });
 
-    it('should return /antique for antique_shop', () => {
-      expect(getShopDetailBasePath('antique_shop')).toBe('/antique');
+    it('should return /antique-shop for antique_shop', () => {
+      expect(getShopDetailBasePath('antique_shop')).toBe('/antique-shop');
     });
 
     it('should return /brewery for brewery', () => {
@@ -296,12 +296,12 @@ describe('typeUrlMappings', () => {
     });
 
     it('should return false for shop detail paths with two segments', () => {
-      expect(isTypeFilterPage('/farm/happy-acres')).toBe(false);
-      expect(isTypeFilterPage('/cheese/maine-cheese')).toBe(false);
+      expect(isTypeFilterPage('/farm-stand/happy-acres')).toBe(false);
+      expect(isTypeFilterPage('/cheesemonger/maine-cheese')).toBe(false);
     });
 
     it('should return false for paths with multiple segments', () => {
-      expect(isTypeFilterPage('/farm/happy-acres/details')).toBe(false);
+      expect(isTypeFilterPage('/farm-stand/happy-acres/details')).toBe(false);
     });
 
     it('should return false for invalid type slugs', () => {
