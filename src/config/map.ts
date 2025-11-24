@@ -47,6 +47,11 @@ export const USE_CUSTOM_MAP_STYLE: boolean = true;
 // - Backend uses a separate, restricted API key (GOOGLE_API_KEY_BACKEND)
 // - This approach minimizes exposure and allows better rate limiting/monitoring
 
+// Google Maps Cloud-Based Styling (MAP_ID):
+// - MAP_ID is currently DISABLED (commented out in MapComponent.tsx)
+// - Using local custom styles (mapStyles.maineLicensePlate below) instead
+// - To re-enable Cloud-based styling: Uncomment mapId line in MapComponent.tsx:161
+// - Note: When MAP_ID is active, it overrides all local custom styles
 export const MAP_ID: string = '6c1bbba6c5f48ca2beb388ad';
 
 interface MapStyleElement {
@@ -59,6 +64,15 @@ interface MapStyles {
   maineLicensePlate: MapStyleElement[];
 }
 
+// ✅ ACTIVE: These local map styles are currently being applied to the map!
+// MAP_ID is disabled, so these styles control the map appearance.
+// "Maine License Plate" Theme:
+// - Inspired by Maine's state colors and natural landscape
+// - Green tones for land, brown for roads, dark teal for water
+// - Light text with dark strokes for high contrast and readability
+//
+// To change map styling (e.g., water color):
+// → Simply edit the color values below and refresh your browser
 export const mapStyles: MapStyles = {
   maineLicensePlate: [
     { elementType: "geometry", stylers: [{ color: "#ede5d3" }] },
@@ -87,6 +101,7 @@ export const mapStyles: MapStyles = {
     { featureType: "road.highway", elementType: "geometry.fill", stylers: [{ color: "#63493c" }] },
     { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#63493c" }] },
     { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
+    // Water styling - Dark teal color (#356A78) for Maine coastal theme
     { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#356A78" }] },
     { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#F0F0F0" }] },
     { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#356A78" }, { weight: 3 }], },

@@ -274,6 +274,23 @@ Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps 
 - Migration guide: https://developers.google.com/maps/documentation/javascript/places-migration-overview
 - Note: You'll see deprecation warnings in the browser console until migration is complete
 
+**Map Styling & Customization:**
+- **Local Custom Styling:** Map appearance is controlled via local code in `src/config/map.ts`
+- **Active Theme:** "Maine License Plate" theme with Maine-inspired colors
+  - Land: Green tones (#1a6a41, #288b5c, #3c7346)
+  - Roads: Brown tones (#63493c)
+  - Water: Dark teal (#356A78) - Maine coastal theme
+  - Text: Light with dark strokes for high contrast
+- **Changing Map Styles:**
+  1. Edit `src/config/map.ts` → `mapStyles.maineLicensePlate` array
+  2. Modify color values (e.g., change water color from #356A78 to another hex)
+  3. Save the file
+  4. Refresh browser (Cmd+Shift+R on Mac) to see changes
+- **Water Color Specifically:** Lines 105-107 in map.ts control water appearance
+- **Cloud-Based Alternative:** MAP_ID (`6c1bbba6c5f48ca2beb388ad`) is available but currently disabled
+  - To use: Uncomment `mapId: MAP_ID` in MapComponent.tsx:161
+  - Note: Cloud-based styling overrides all local styles when active
+
 **Overlays:**
 - **Shop Details Overlay** - Tabbed interface with:
   - Info tab: Basic shop information (name, address, phone, website, rating)

@@ -241,18 +241,22 @@ const Header: React.FC = () => {
   return (
     <header className="bg-[#F8EAAD] shadow-md z-30 print:hidden" role="banner">
       <div className="w-full">
-        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full">
-          {/* Logo and Title Section */}
-          <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center flex-wrap">
+        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full pr-3 sm:pr-4">
+          {/* Logo and h1 Section */}
+          <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
             <img src="/images/Flag_of_Maine.svg" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
             <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms, Cheese Shops, Fish Mongers, Butchers & Antique Shops">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: '#356A78' }}>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:opacity-80 transition-opacity" style={{ color: '#356A78' }}>
                 PhreshFoods
               </h1>
             </Link>
+          </div>
 
-            {/* Location Type Filter Buttons */}
-            <div className="flex items-center gap-1.5 ml-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: '#356A78' }}>
+          {/* Combined Container: Type Filters, Search, Radius, and Filters */}
+          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search">
+            {/* Type Filter Buttons */}
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5 flex-wrap">
               {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
                 const isActive = activeLocationTypes.has(type);
                 const colorClasses = {
@@ -286,11 +290,14 @@ const Header: React.FC = () => {
                   </button>
                 );
               })}
+              </div>
             </div>
-          </div>
 
-          {/* Search, Radius, and Filters Section */}
-          <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2 w-full sm:w-auto" role="search"> {/* Use gap-x for horizontal spacing */}
+            {/* Spacer to push search to the right */}
+            <div className="flex-1 hidden sm:block"></div>
+
+            {/* Search, Radius, and Filters */}
+            <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2">
             <label htmlFor="headerSearchAutocompleteClassic" className="sr-only">Search for local farms and cheese shops by location</label>
             <input
               ref={autocompleteInputRef}
@@ -307,7 +314,7 @@ const Header: React.FC = () => {
             />
             <span id="search-hint" className="sr-only">Start typing to search for local farms and cheese shops near you</span>
             <div className="flex items-center gap-1">
-              <label htmlFor="radiusSliderHeader" className="text-xs sm:text-sm font-medium whitespace-nowrap text-gray-700">Radius:</label>
+              <label htmlFor="radiusSliderHeader" className="text-xs sm:text-sm font-medium whitespace-nowrap text-white">Radius:</label>
               <input
                 type="range"
                 id="radiusSliderHeader"
@@ -324,7 +331,7 @@ const Header: React.FC = () => {
                 aria-valuenow={localRadius}
                 aria-valuetext={`${localRadius} miles`}
               />
-              <span id="radiusValueHeader" className="text-xs sm:text-sm font-semibold w-10 text-right text-red-700" aria-live="polite">
+              <span id="radiusValueHeader" className="text-xs sm:text-sm font-semibold w-10 text-right text-white" aria-live="polite">
                 {localRadius} mi
               </span>
             </div>
@@ -334,7 +341,7 @@ const Header: React.FC = () => {
               <button
                 id="filterToggleButton" // Added ID for click outside logic
                 onClick={() => setShowFilterDropdown(prev => !prev)}
-                className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm"
+                className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm bg-white"
                 aria-expanded={showFilterDropdown}
                 aria-controls="filter-dropdown-header"
                 aria-label={`Product filters ${showFilterDropdown ? 'expanded' : 'collapsed'}`}
@@ -354,6 +361,7 @@ const Header: React.FC = () => {
                   <ProductFilters />
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>
