@@ -760,11 +760,41 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
 
                 {/* Trip Error */}
                 {tripError && (
-                  <p className="text-sm text-red-500 dark:text-red-400">{tripError}</p>
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                    <p className="text-sm text-red-600 dark:text-red-400 flex items-start">
+                      <svg className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                      {tripError}
+                    </p>
+                  </div>
+                )}
+
+                {/* Trip Loading Skeleton */}
+                {isFetchingTripRoute && !tripDirectionsResult && (
+                  <div className="mt-4 space-y-2 animate-pulse" role="status" aria-live="polite" aria-label="Calculating route">
+                    <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/3"></div>
+                    <div className="p-3 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50 space-y-4">
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className="space-y-2">
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2"></div>
+                          <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                          <div className="space-y-1.5 pl-2">
+                            <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                            <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+                            <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                      {isOptimizedRoute ? 'Optimizing route...' : 'Calculating route...'}
+                    </p>
+                  </div>
                 )}
 
                 {/* Trip Directions Results */}
-                {tripDirectionsResult?.routes?.[0]?.legs && tripDirectionsResult.routes[0].legs.length > 0 && (
+                {!isFetchingTripRoute && tripDirectionsResult?.routes?.[0]?.legs && tripDirectionsResult.routes[0].legs.length > 0 && (
                   <div className="mt-4 space-y-2">
                     <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                       Trip Route ({tripDirectionsResult.routes[0].legs.length} stops)

@@ -9,10 +9,13 @@ import { useFilteredShops } from './hooks/useFilteredShops';
 import { useURLSync } from './hooks/useURLSync';
 import { isTypeFilterPage } from './utils/typeUrlMappings';
 import type { AutocompletePlace } from './types';
+import { getCookie } from './utils/cookieHelper';
+import { LAST_SEARCHED_LOCATION_COOKIE_NAME } from './config/appConfig';
 import {
   getHomepageSEO,
   getFarmStandSEO,
   generateLocalBusinessSchema,
+  generateOrganizationSchema,
   updateMetaTags,
   addStructuredData
 } from './utils/seo';
@@ -63,7 +66,16 @@ function App() {
     const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
 
     if (slugMatch && selectedShop && lastPlaceSelectedByAutocomplete === null && mapsApiReady) {
-      // User navigated directly to a farm URL and no search location is set
+      // Check if there's a saved location in the cookie
+      // If there is, don't overwrite it with the shop's address (user might be refreshing the page)
+      const savedLocationCookie = getCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
+      if (savedLocationCookie) {
+        // There's a saved search location - don't overwrite it
+        // SearchContext will handle loading it
+        return;
+      }
+
+      // User navigated directly to a farm URL and no search location is set anywhere
       // Create a search location based on the shop's address
       const shopAddress = selectedShop.placeDetails?.formatted_address || selectedShop.Address;
 
@@ -168,11 +180,9 @@ function App() {
       const seoConfig = getHomepageSEO();
       updateMetaTags(seoConfig);
 
-      // Remove farm-specific structured data on homepage
-      const existing = document.querySelector('script[type="application/ld+json"]');
-      if (existing) {
-        existing.remove();
-      }
+      // Add Organization structured data for homepage
+      const organizationSchema = generateOrganizationSchema();
+      addStructuredData(organizationSchema);
     }
   }, [location.pathname, selectedShop]);
 

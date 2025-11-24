@@ -761,7 +761,20 @@ const MapComponent: React.FC = () => {
     };
   }, [selectedShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot, checkAndClearHover]);
 
-  return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>;
+  return (
+    <div
+      id="map"
+      ref={mapRef}
+      className="w-full h-full bg-gray-200"
+      role="application"
+      aria-label="Interactive map showing farm stands, cheesemongers, fishmongers, butchers, and antique shops in Maine"
+      aria-describedby="map-description"
+    >
+      <div id="map-description" className="sr-only">
+        An interactive Google Map displaying locations of local businesses. Click on map markers to view details. Use shop cards in the left panel for keyboard navigation.
+      </div>
+    </div>
+  );
 };
 
 export default MapComponent;

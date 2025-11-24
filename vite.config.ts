@@ -131,6 +131,11 @@ export default defineConfig({
         //   console.error(`[Vite Proxy] Error: ${err.message} for ${req.method} ${req.originalUrl}`);
         // }
       },
+      // Proxy sitemap.xml to backend
+      '/sitemap.xml': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
       // You can add more proxy rules if needed for other paths or targets
       // '/another-api': {
       //   target: 'http://some-other-service.com',

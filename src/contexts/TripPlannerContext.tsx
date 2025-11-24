@@ -184,8 +184,25 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [isOptimizedRoute, showToast]);
 
   const calculateTripRoute = useCallback(async (origin: string | google.maps.LatLngLiteral) => {
+    // Validation: Check if there are stops
     if (tripStops.length === 0) {
       showToast('Add at least one stop to calculate route', 'error');
+      return;
+    }
+
+    // Validation: Check for missing coordinates
+    const invalidStops = tripStops.filter(stop => !stop.shop.lat || !stop.shop.lng);
+    if (invalidStops.length > 0) {
+      const invalidNames = invalidStops.map(s => s.shop.Name).join(', ');
+      showToast(`Cannot calculate route: Missing coordinates for ${invalidNames}`, 'error');
+      return;
+    }
+
+    // Validation: Google Directions API limit is 25 waypoints + origin + destination = 27 total
+    // We have: origin + (n-1) waypoints + 1 destination
+    // So max n stops = 25 + 1 = 26, but we already limit to 10 in addStopToTrip
+    if (tripStops.length > 25) {
+      showToast('Too many stops. Google Maps allows a maximum of 25 waypoints.', 'error');
       return;
     }
 
@@ -228,9 +245,12 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         params.set('optimizeWaypoints', 'true');
       }
 
-      console.log('[Trip Planner] Calculating route with', waypoints.length, 'waypoints');
+      console.log('[Trip Planner] Calculating route with', waypoints.length, 'waypoints', isOptimizedRoute ? '(optimized)' : '(in order)');
 
-      const response = await fetch(`/api/directions?${params.toString()}`);
+      const response = await fetch(`/api/directions?${params.toString()}`, {
+        // Add timeout to prevent hanging requests
+        signal: AbortSignal.timeout(30000) // 30 second timeout
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Failed to calculate route' }));
@@ -239,14 +259,43 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
       const result = await response.json();
 
+      // Handle different Google Directions API response statuses
       if (result.status === 'OK' && result.routes && result.routes.length > 0) {
         setTripDirectionsResult(result);
-        showToast('Route calculated successfully', 'success');
+        const routeInfo = result.routes[0];
+        const totalDistance = routeInfo.legs?.reduce((sum: number, leg: any) => sum + (leg.distance?.value || 0), 0) || 0;
+        const totalTime = routeInfo.legs?.reduce((sum: number, leg: any) => sum + (leg.duration?.value || 0), 0) || 0;
+
+        const distanceMiles = (totalDistance / 1609.34).toFixed(1);
+        const timeMinutes = Math.round(totalTime / 60);
+
+        showToast(`Route calculated: ${distanceMiles} miles, ${timeMinutes} min`, 'success');
+      } else if (result.status === 'ZERO_RESULTS') {
+        throw new Error('No route found between these locations. Try reordering stops or checking addresses.');
+      } else if (result.status === 'MAX_WAYPOINTS_EXCEEDED') {
+        throw new Error('Too many waypoints. Please reduce the number of stops in your trip.');
+      } else if (result.status === 'INVALID_REQUEST') {
+        throw new Error('Invalid route request. Please check your starting location and stops.');
+      } else if (result.status === 'REQUEST_DENIED') {
+        throw new Error('Route request was denied. Please contact support.');
+      } else if (result.status === 'OVER_QUERY_LIMIT') {
+        throw new Error('Too many requests. Please try again in a moment.');
+      } else if (result.status === 'UNKNOWN_ERROR') {
+        throw new Error('Server error calculating route. Please try again.');
       } else {
         throw new Error(result.status || 'No route found');
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to calculate trip route';
+      let errorMessage = 'Failed to calculate trip route';
+
+      if (error instanceof Error) {
+        if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+          errorMessage = 'Route calculation timed out. Please try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
       setTripError(errorMessage);
       showToast(errorMessage, 'error');
       console.error('[Trip Planner] Error calculating route:', error);

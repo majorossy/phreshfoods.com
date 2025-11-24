@@ -102,6 +102,38 @@ export function getFarmStandSEO(shop: Shop): SEOConfig {
 }
 
 /**
+ * Generate JSON-LD structured data for Organization (homepage)
+ */
+export function generateOrganizationSchema(): string {
+  const baseUrl = window.location.origin;
+
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'PhreshFoods',
+    alternateName: 'Phresh Foods Maine',
+    url: baseUrl,
+    logo: `${baseUrl}/images/og-image.jpg`,
+    description: 'Discover fresh, local products from farm stands, cheesemongers, fishmongers, butchers, and antique shops across Maine.',
+    address: {
+      '@type': 'PostalAddress',
+      addressRegion: 'ME',
+      addressCountry: 'US',
+    },
+    sameAs: [
+      // Add social media URLs when available
+    ],
+    areaServed: {
+      '@type': 'State',
+      name: 'Maine',
+    },
+    serviceType: 'Local Business Directory',
+  };
+
+  return JSON.stringify(schema);
+}
+
+/**
  * Generate JSON-LD structured data for LocalBusiness
  */
 export function generateLocalBusinessSchema(shop: Shop): string {

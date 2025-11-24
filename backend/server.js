@@ -256,6 +256,80 @@ app.get('/api/config', (req, res) => {
     res.json({});
 });
 
+// Sitemap endpoint for SEO
+app.get('/sitemap.xml', async (req, res) => {
+    try {
+        const baseUrl = 'https://phreshfoods.com';
+        const now = new Date().toISOString();
+
+        // Load all location data from JSON files
+        const allLocations = [];
+
+        // Load farm stands
+        if (await fs.pathExists(FARM_STANDS_DATA_PATH)) {
+            const farmStands = await fs.readJson(FARM_STANDS_DATA_PATH);
+            allLocations.push(...farmStands);
+        }
+
+        // Load cheese shops
+        if (await fs.pathExists(CHEESE_SHOPS_DATA_PATH)) {
+            const cheeseShops = await fs.readJson(CHEESE_SHOPS_DATA_PATH);
+            allLocations.push(...cheeseShops);
+        }
+
+        // Load fish mongers
+        if (await fs.pathExists(LOCATION_DATA_PATHS.fish_monger)) {
+            const fishMongers = await fs.readJson(LOCATION_DATA_PATHS.fish_monger);
+            allLocations.push(...fishMongers);
+        }
+
+        // Load butchers
+        if (await fs.pathExists(LOCATION_DATA_PATHS.butcher)) {
+            const butchers = await fs.readJson(LOCATION_DATA_PATHS.butcher);
+            allLocations.push(...butchers);
+        }
+
+        // Load antique shops
+        if (await fs.pathExists(LOCATION_DATA_PATHS.antique_shop)) {
+            const antiqueShops = await fs.readJson(LOCATION_DATA_PATHS.antique_shop);
+            allLocations.push(...antiqueShops);
+        }
+
+        // Build sitemap XML
+        let sitemap = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        sitemap += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+        // Homepage
+        sitemap += '  <url>\n';
+        sitemap += `    <loc>${baseUrl}/</loc>\n`;
+        sitemap += `    <lastmod>${now}</lastmod>\n`;
+        sitemap += '    <changefreq>daily</changefreq>\n';
+        sitemap += '    <priority>1.0</priority>\n';
+        sitemap += '  </url>\n';
+
+        // Individual shop pages
+        allLocations.forEach(shop => {
+            const slug = shop.slug || shop.GoogleProfileID;
+            if (slug) {
+                sitemap += '  <url>\n';
+                sitemap += `    <loc>${baseUrl}/farm/${encodeURIComponent(slug)}</loc>\n`;
+                sitemap += `    <lastmod>${now}</lastmod>\n`;
+                sitemap += '    <changefreq>weekly</changefreq>\n';
+                sitemap += '    <priority>0.8</priority>\n';
+                sitemap += '  </url>\n';
+            }
+        });
+
+        sitemap += '</urlset>';
+
+        res.header('Content-Type', 'application/xml');
+        res.send(sitemap);
+    } catch (error) {
+        console.error('[Sitemap] Error generating sitemap:', error);
+        res.status(500).send('Error generating sitemap');
+    }
+});
+
 // Health check endpoint for monitoring
 app.get('/health', async (req, res) => {
     const health = {
