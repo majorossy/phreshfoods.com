@@ -211,7 +211,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
               className={`${iconSizeClasses[iconSize]} rounded overflow-hidden border ${
                 product.available ? 'border-gray-300' : 'border-gray-200 opacity-50'
               }`}
-              title={`${product.name}${product.available ? ' - Available' : ' - Not Available'}`}
+              title={product.name}
             >
               <img
                 src={`/images/icons/${product.icon}`}

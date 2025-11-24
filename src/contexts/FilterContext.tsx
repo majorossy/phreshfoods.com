@@ -21,7 +21,16 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
 
   // Default: all location types selected
   const [activeLocationTypes, setActiveLocationTypes] = useState<Set<LocationType>>(
-    new Set<LocationType>(['farm_stand', 'cheese_shop', 'fish_monger', 'butcher', 'antique_shop'])
+    new Set<LocationType>([
+      'farm_stand',
+      'cheese_shop',
+      'fish_monger',
+      'butcher',
+      'antique_shop',
+      'brewery',
+      'winery',
+      'sugar_shack'
+    ])
   );
 
   // Get valid product keys based on active location types
@@ -59,10 +68,20 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
   }, [isValidProductKey]);
 
   /**
-   * Clears all active filters
+   * Clears all active filters and resets location types to all selected
    */
   const clearAllFilters = useCallback(() => {
     setActiveProductFilters({});
+    setActiveLocationTypes(new Set<LocationType>([
+      'farm_stand',
+      'cheese_shop',
+      'fish_monger',
+      'butcher',
+      'antique_shop',
+      'brewery',
+      'winery',
+      'sugar_shack'
+    ]));
   }, []);
 
   // Helper function to toggle a location type on/off

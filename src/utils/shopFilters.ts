@@ -54,8 +54,8 @@ export function filterAndSortShops(
   let filteredShops: Shop[] = [...shops];
 
   // 1. Filter by Location Type (if not all types selected)
-  // Total location types: farm_stand, cheese_shop, fish_monger, butcher, antique_shop = 5
-  if (options.locationTypes.size < 5) { // Not "all types"
+  // Total location types: farm_stand, cheese_shop, fish_monger, butcher, antique_shop, brewery, winery, sugar_shack = 8
+  if (options.locationTypes.size < 8) { // Not "all types"
     filteredShops = filteredShops.filter(shop => {
       // Support both single type and types array
       if (Array.isArray(shop.types)) {

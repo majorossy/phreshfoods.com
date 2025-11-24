@@ -3,13 +3,16 @@
 
 export const markerColor: string = "#ed411a"; // Default/legacy color
 
-// Location type specific marker colors
+// Location type specific marker colors (Tailwind color-500 values for consistency)
 export const MARKER_COLORS = {
-  farm_stand: "#22c55e",    // Green for farm stands
-  cheese_shop: "#f59e0b",   // Gold/amber for cheese shops
-  fish_monger: "#3b82f6",   // Blue for fish mongers
-  butcher: "#ef4444",       // Red for butchers
-  antique_shop: "#6b7280",  // Grey for antique shops
+  farm_stand: "#22c55e",    // Green-500 for farm stands
+  cheese_shop: "#eab308",   // Yellow-500 for cheese shops
+  fish_monger: "#3b82f6",   // Blue-500 for fish mongers
+  butcher: "#ef4444",       // Red-500 for butchers
+  antique_shop: "#6b7280",  // Gray-500 for antique shops
+  brewery: "#d97706",       // Amber-600 for breweries (darker)
+  winery: "#a855f7",        // Purple-500 for wineries
+  sugar_shack: "#92400e",   // Amber-800 for sugar shacks (brown-orange)
   default: "#ed411a"        // Red fallback
 };
 

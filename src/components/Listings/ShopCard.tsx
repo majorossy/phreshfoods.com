@@ -14,15 +14,21 @@ interface ShopCardProps {
 const getLocationTypeDisplay = (type: string) => {
   switch (type) {
     case 'farm_stand':
-      return { emoji: '🌾', label: 'Farm', title: 'Farm Stand', color: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' };
+      return { emoji: '🌾', label: 'Farm Stand', title: 'Farm Stand', color: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' };
     case 'cheese_shop':
-      return { emoji: '🧀', label: 'Cheese', title: 'Cheese Shop', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100' };
+      return { emoji: '🧀', label: 'Cheesemonger', title: 'Cheesemonger', color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100' };
     case 'fish_monger':
-      return { emoji: '🐟', label: 'Fish', title: 'Fish Monger', color: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100' };
+      return { emoji: '🐟', label: 'Fishmonger', title: 'Fishmonger', color: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100' };
     case 'butcher':
-      return { emoji: '🥩', label: 'Butcher', title: 'Butcher Shop', color: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100' };
+      return { emoji: '🥩', label: 'Butcher', title: 'Butcher', color: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100' };
     case 'antique_shop':
-      return { emoji: '🏺', label: 'Antiques', title: 'Antique Shop', color: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100' };
+      return { emoji: '🏺', label: 'Antiques', title: 'Antiques', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100' };
+    case 'brewery':
+      return { emoji: '🍺', label: 'Brewery', title: 'Brewery', color: 'bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100' };
+    case 'winery':
+      return { emoji: '🍷', label: 'Winery', title: 'Winery', color: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100' };
+    case 'sugar_shack':
+      return { emoji: '🍁', label: 'Sugar Shack', title: 'Sugar Shack', color: 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100' };
     default:
       return { emoji: '🏪', label: 'Shop', title: 'Shop', color: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100' };
   }
@@ -65,6 +71,15 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       case 'antique_shop':
         basePath = '/antique';
         break;
+      case 'brewery':
+        basePath = '/brewery';
+        break;
+      case 'winery':
+        basePath = '/winery';
+        break;
+      case 'sugar_shack':
+        basePath = '/sugar-shack';
+        break;
       default:
         basePath = '/farm';
     }
@@ -92,17 +107,52 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const isSelected = selectedShop?.slug === shop.slug || selectedShop?.GoogleProfileID === shop.GoogleProfileID;
   const isHovered = hoveredShop?.slug === shop.slug || hoveredShop?.GoogleProfileID === shop.GoogleProfileID;
 
+  // Get glow color and border color based on shop type
+  const getGlowColor = (type: string) => {
+    switch (type) {
+      case 'farm_stand':
+        return 'rgba(34, 197, 94, 0.5)'; // green
+      case 'cheese_shop':
+        return 'rgba(234, 179, 8, 0.5)'; // yellow
+      case 'fish_monger':
+        return 'rgba(59, 130, 246, 0.5)'; // blue
+      case 'butcher':
+        return 'rgba(239, 68, 68, 0.5)'; // red
+      case 'antique_shop':
+        return 'rgba(107, 114, 128, 0.5)'; // gray
+      case 'brewery':
+        return 'rgba(217, 119, 6, 0.5)'; // amber-600 (darker)
+      case 'winery':
+        return 'rgba(168, 85, 247, 0.5)'; // purple
+      case 'sugar_shack':
+        return 'rgba(146, 64, 14, 0.5)'; // amber-800 (brown-orange)
+      default:
+        return 'rgba(107, 114, 128, 0.5)'; // gray
+    }
+  };
+
+
   return (
     <div
       ref={cardRef}
       id={`shop-card-${shop.slug || shop.GoogleProfileID || shop.Name?.replace(/\W/g, '')}`}
       className={`
-        bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden
+        bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md
         hover:shadow-xl focus-within:shadow-xl transition-all duration-200 ease-in-out
-        cursor-pointer group w-full flex flex-col h-full border
-        ${isSelected ? 'border-blue-500 ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-gray-800' : 'border-gray-200 dark:border-gray-700'}
+        cursor-pointer group w-full flex flex-col h-full will-change-transform
       `}
-      style={isHovered ? { boxShadow: '0 0 0 6px #4285F4' } : undefined}
+      style={
+        isSelected
+          ? {
+              boxShadow: '0 0 0 3px rgb(59, 130, 246), 0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            }
+          : isHovered
+            ? {
+                boxShadow: `0 0 6px 1px ${getGlowColor(shop.type)}, 0 10px 25px -5px rgba(0, 0, 0, 0.3)`,
+                transform: 'scale(1.05) translateY(-4px)',
+              }
+            : undefined
+      }
       onClick={handleCardClick}
       onMouseEnter={() => setHoveredShop(shop)}
       onMouseLeave={() => setHoveredShop(null)}

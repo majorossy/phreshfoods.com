@@ -11,7 +11,6 @@ import {
   RADIUS_DEBOUNCE_MS,
 } from '../../config/appConfig';
 import { Link, useNavigate } from 'react-router-dom';
-import ProductFilters from '../Filters/ProductFilters'; // Import the filters component
 import ProductFilterDropdown from '../Filters/ProductFilterDropdown';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useSearch } from '../../contexts/SearchContext';
@@ -22,11 +21,14 @@ import { getProductConfig } from '../../config/productRegistry';
 
 // Location type configurations
 const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string; color: string }> = {
-  farm_stand: { emoji: '🚜', label: 'Farms', color: 'green' },
-  cheese_shop: { emoji: '🧀', label: 'Cheese', color: 'yellow' },
-  fish_monger: { emoji: '🐟', label: 'Fish', color: 'blue' },
+  farm_stand: { emoji: '🚜', label: 'Farm Stand', color: 'green' },
+  fish_monger: { emoji: '🐟', label: 'Fishmonger', color: 'blue' },
+  cheese_shop: { emoji: '🧀', label: 'Cheesemonger', color: 'yellow' },
   butcher: { emoji: '🥩', label: 'Butcher', color: 'red' },
-  antique_shop: { emoji: '🏺', label: 'Antiques', color: 'purple' },
+  brewery: { emoji: '🍺', label: 'Brewery', color: 'amber' },
+  winery: { emoji: '🍷', label: 'Winery', color: 'purple' },
+  antique_shop: { emoji: '🏺', label: 'Antiques', color: 'gray' },
+  sugar_shack: { emoji: '🍁', label: 'Sugar Shack', color: 'orange' },
 };
 
 const Header: React.FC = () => {
@@ -34,9 +36,6 @@ const Header: React.FC = () => {
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [inputValue, setInputValue] = useState<string>('');
   const navigate = useNavigate(); // Used by handleTitleClick
-
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-  const filterDropdownRef = useRef<HTMLDivElement>(null); // For click outside listener
 
   // Product filter dropdowns for location types
   const [openLocationTypeDropdown, setOpenLocationTypeDropdown] = useState<LocationType | null>(null);
@@ -68,7 +67,7 @@ const Header: React.FC = () => {
   const {
     activeLocationTypes,
     toggleLocationType,
-    activeProductFilters,
+    clearAllFilters,
   } = useFilters();
 
   // Effect to initialize local radius from context
@@ -191,26 +190,6 @@ const Header: React.FC = () => {
     };
   }, [mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, setMapViewTargetLocation, navigate, closeShopOverlays]);
 
-  // Click outside listener for filter dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target as Node)) {
-        // Check if the click was on the filter button itself to prevent immediate re-close
-        const filterButton = document.getElementById("filterToggleButton");
-        if (filterButton && filterButton.contains(event.target as Node)) {
-            return;
-        }
-        setShowFilterDropdown(false);
-      }
-    };
-    if (showFilterDropdown) { // Only add listener if dropdown is open
-        document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showFilterDropdown]);
-
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   }, []);
@@ -226,6 +205,7 @@ const Header: React.FC = () => {
   const handleTitleClick = useCallback(() => {
     setSelectedShop(null);
     closeShopOverlays();
+    clearAllFilters(); // Reset all filters
 
     // Reset to Portland default location instead of clearing search
     const portlandPlace: AutocompletePlace = {
@@ -243,24 +223,28 @@ const Header: React.FC = () => {
     setSearchTerm('Portland, ME, USA');
     setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, 'Portland, ME, USA');
     setMapViewTargetLocation(portlandPlace);
-  }, [setSelectedShop, closeShopOverlays, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
+  }, [setSelectedShop, closeShopOverlays, clearAllFilters, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
 
   return (
-    <header className="bg-[#F8EAAD] shadow-md z-30 print:hidden" role="banner">
+    <header className="absolute top-0 left-0 right-0 z-30 print:hidden" role="banner">
       <div className="w-full">
-        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full pr-3 sm:pr-4">
-          {/* Logo and h1 Section */}
-          <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
-            <img src="/images/Flag_of_Maine.svg" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
-            <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms, Cheese Shops, Fish Mongers, Butchers & Antique Shops">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:opacity-80 transition-opacity" style={{ color: '#356A78' }}>
-                PhreshFoods
-              </h1>
-            </Link>
-          </div>
-
-          {/* Combined Container: Type Filters, Search, Radius, and Filters */}
+        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full px-3 sm:px-4">
+          {/* Combined Container: Logo, Type Filters, Search, Radius, and Filters */}
           <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
+            {/* Logo Section */}
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Link
+                to="/"
+                onClick={handleTitleClick}
+                className="cursor-pointer transition-all duration-300 hover:scale-110 hover:-rotate-2 hover:drop-shadow-xl"
+                style={{ transformStyle: 'preserve-3d' }}
+                title="Reset Filters"
+                aria-label="Reset Filters"
+              >
+                <img src="/images/Flag_of_Maine.svg" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
+              </Link>
+            </div>
+
             {/* Type Filter Buttons with Dropdowns */}
             <div className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -275,30 +259,45 @@ const Header: React.FC = () => {
 
                 const colorClasses = {
                   green: isActive
-                    ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-green-400',
+                    ? 'bg-green-100 text-green-700 hover:bg-green-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-green-200 hover:text-green-600 border border-green-400',
                   yellow: isActive
-                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-yellow-400',
+                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-yellow-200 hover:text-yellow-600 border border-yellow-400',
                   blue: isActive
-                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-blue-400',
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-blue-600 border border-blue-400',
                   red: isActive
-                    ? 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-red-400',
+                    ? 'bg-red-100 text-red-700 hover:bg-red-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-red-200 hover:text-red-600 border border-red-400',
                   purple: isActive
-                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-purple-400',
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-purple-200 hover:text-purple-600 border border-purple-400',
+                  amber: isActive
+                    ? 'bg-amber-100 text-amber-700 hover:bg-amber-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-amber-200 hover:text-amber-600 border border-amber-400',
+                  rose: isActive
+                    ? 'bg-rose-100 text-rose-700 hover:bg-rose-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-rose-200 hover:text-rose-600 border border-rose-400',
+                  orange: isActive
+                    ? 'bg-orange-100 text-orange-700 hover:bg-orange-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-orange-200 hover:text-orange-600 border border-orange-400',
+                  teal: isActive
+                    ? 'bg-teal-100 text-teal-700 hover:bg-teal-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-teal-200 hover:text-teal-600 border border-teal-400',
+                  gray: isActive
+                    ? 'bg-gray-100 text-gray-700 hover:bg-gray-400 hover:text-white'
+                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600 border border-gray-400',
                 };
 
                 return (
                   <div key={type} className="relative">
-                    <div className={`flex items-center rounded-full overflow-hidden ${colorClasses[config.color]}`}>
+                    <div className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${colorClasses[config.color]}`}>
                       {/* Main button - toggles location type filter */}
                       <button
                         type="button"
                         onClick={() => toggleLocationType(type)}
-                        className="text-xs pl-2 pr-1 py-0.5 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-colors hover:opacity-80"
+                        className="text-xs pl-2 pr-1 py-0.5 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-all duration-200"
                         title={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
                         aria-label={`${isActive ? 'Hide' : 'Show'} ${config.label} locations`}
                         aria-pressed={isActive}
@@ -361,7 +360,7 @@ const Header: React.FC = () => {
               id="headerSearchAutocompleteClassic"
               type="text"
               placeholder="Enter a zip, city, or address"
-              className="flex-grow sm:flex-grow-0 sm:w-80 md:w-96 p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
+              className="flex-grow sm:flex-grow-0 sm:w-56 md:w-64 p-2.5 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
               value={inputValue}
               onChange={handleInputChange}
               onBlur={handleInputBlur}
@@ -391,42 +390,6 @@ const Header: React.FC = () => {
               <span id="radiusValueHeader" className="text-xs sm:text-sm font-semibold w-10 text-right text-white" aria-live="polite">
                 {localRadius} mi
               </span>
-            </div>
-
-            {/* Filter Button and Dropdown */}
-            <div className="relative">
-              <button
-                id="filterToggleButton" // Added ID for click outside logic
-                type="button"
-                onClick={() => setShowFilterDropdown(prev => !prev)}
-                className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm bg-white relative"
-                aria-expanded={showFilterDropdown}
-                aria-controls="filter-dropdown-header"
-                aria-haspopup="true"
-                aria-label={`Product filters${Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length > 0 ? ` (${Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length} active)` : ''} ${showFilterDropdown ? 'expanded' : 'collapsed'}`}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                Filters
-                {Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length > 0 && (
-                  <span className="ml-1 bg-blue-500 text-white text-xs rounded-full px-1.5 py-0.5 font-semibold" aria-hidden="true">
-                    {Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length}
-                  </span>
-                )}
-              </button>
-              {showFilterDropdown && (
-                <div
-                  id="filter-dropdown-header"
-                  ref={filterDropdownRef}
-                  className="absolute right-0 mt-2 w-80 bg-gray-50 border border-gray-200 rounded-md shadow-xl z-40 p-0" // p-0 as ProductFilters has its own padding
-                  onClick={(e) => e.stopPropagation()} // Prevent closing dropdown when clicking inside
-                  role="dialog"
-                  aria-label="Product filter options"
-                >
-                  <ProductFilters />
-                </div>
-              )}
             </div>
             </div>
           </div>

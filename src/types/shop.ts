@@ -65,7 +65,15 @@ export interface PlaceDetails {
 }
 
 // Location type discriminator
-export type LocationType = 'farm_stand' | 'cheese_shop' | 'fish_monger' | 'butcher' | 'antique_shop';
+export type LocationType =
+  | 'farm_stand'
+  | 'cheese_shop'
+  | 'fish_monger'
+  | 'butcher'
+  | 'antique_shop'
+  | 'brewery'
+  | 'winery'
+  | 'sugar_shack';
 
 // Base interface with common fields shared by all location types
 export interface BaseLocation {

@@ -60,6 +60,8 @@ const MapComponent: React.FC = () => {
   const searchLocationMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const searchRadiusCircleRef = useRef<google.maps.Circle | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isMarkerHovered = useRef<boolean>(false);
+  const isInfoWindowHovered = useRef<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -74,6 +76,19 @@ const MapComponent: React.FC = () => {
       googleInfoWindowRef.current.close();
     }
   }, []);
+
+  // Check if hover should be cleared (only clear if neither marker nor InfoWindow is hovered)
+  const checkAndClearHover = useCallback(() => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      // Only clear hover if mouse has left both marker and InfoWindow
+      if (!isMarkerHovered.current && !isInfoWindowHovered.current) {
+        setHoveredShop(null);
+      }
+    }, MARKER_HOVER_DEBOUNCE_MS);
+  }, [setHoveredShop]);
 
   const unmountInfoWindowReactRoot = useCallback(() => {
     // Clear any pending unmount timeout
@@ -261,6 +276,7 @@ const MapComponent: React.FC = () => {
 
         // Add hover listeners to marker element with debouncing
         markerElement.addEventListener('mouseenter', () => {
+          isMarkerHovered.current = true;
           if (hoverTimeoutRef.current) {
             clearTimeout(hoverTimeoutRef.current);
           }
@@ -269,12 +285,8 @@ const MapComponent: React.FC = () => {
           }, MARKER_HOVER_DEBOUNCE_MS);
         });
         markerElement.addEventListener('mouseleave', () => {
-          if (hoverTimeoutRef.current) {
-            clearTimeout(hoverTimeoutRef.current);
-          }
-          hoverTimeoutRef.current = setTimeout(() => {
-            setHoveredShop(null);
-          }, MARKER_HOVER_DEBOUNCE_MS);
+          isMarkerHovered.current = false;
+          checkAndClearHover();
         });
 
         marker = new window.google.maps.marker.AdvancedMarkerElement({
@@ -395,7 +407,7 @@ const MapComponent: React.FC = () => {
     }
 
     markersRef.current = newMarkersMap;
-  }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler]);
+  }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, checkAndClearHover, setHoveredShop]);
 
   // Effect to pan map to selectedShop with offset to frame info window
   // Uses single pan operation with calculated offsets for smooth movement
@@ -653,6 +665,7 @@ const MapComponent: React.FC = () => {
         }
 
         const contentDiv = document.createElement('div');
+
         const newReactRoot = ReactDOM.createRoot(contentDiv);
         infoWindowReactRootRef.current = newReactRoot;
 
@@ -665,6 +678,31 @@ const MapComponent: React.FC = () => {
         if (!googleInfoWin.getMap() || googleInfoWin.getAnchor() !== markerInstance) {
             googleInfoWin.open({ anchor: markerInstance, map });
         }
+
+        // Add hover listeners to the entire InfoWindow container (includes arrow and gap)
+        // Google Maps creates the container after open(), so we need to find it
+        setTimeout(() => {
+          // Find the InfoWindow container element (Google Maps creates this)
+          const infoWindowContainers = document.querySelectorAll('.gm-style-iw-c');
+          // Get the last one (most recently opened)
+          const infoWindowContainer = infoWindowContainers[infoWindowContainers.length - 1] as HTMLElement;
+
+          if (infoWindowContainer) {
+            infoWindowContainer.addEventListener('mouseenter', () => {
+              isInfoWindowHovered.current = true;
+              // Clear any pending hover clear timeout
+              if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+                hoverTimeoutRef.current = null;
+              }
+            });
+
+            infoWindowContainer.addEventListener('mouseleave', () => {
+              isInfoWindowHovered.current = false;
+              checkAndClearHover();
+            });
+          }
+        }, 0);
       } else {
         closeNativeInfoWindow();
       }
@@ -675,7 +713,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [selectedShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot]);
+  }, [selectedShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot, checkAndClearHover]);
 
   return <div id="map" ref={mapRef} className="w-full h-full bg-gray-200"></div>;
 };

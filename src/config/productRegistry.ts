@@ -8,6 +8,9 @@ import { CHEESE_PRODUCT_ICONS_CONFIG, CHEESE_CATEGORY_DISPLAY_ORDER } from './ch
 import { FISH_PRODUCT_ICONS_CONFIG, FISH_CATEGORY_DISPLAY_ORDER } from './fishProducts';
 import { BUTCHER_PRODUCT_ICONS_CONFIG, BUTCHER_CATEGORY_DISPLAY_ORDER } from './butcherProducts';
 import { ANTIQUE_PRODUCT_ICONS_CONFIG, ANTIQUE_CATEGORY_DISPLAY_ORDER } from './antiqueProducts';
+import { BREWERY_PRODUCT_ICONS_CONFIG, BREWERY_CATEGORY_DISPLAY_ORDER } from './breweryProducts';
+import { WINERY_PRODUCT_ICONS_CONFIG, WINERY_CATEGORY_DISPLAY_ORDER } from './wineryProducts';
+import { SUGAR_SHACK_PRODUCT_ICONS_CONFIG, SUGAR_SHACK_CATEGORY_DISPLAY_ORDER } from './sugarShackProducts';
 
 // Registry mapping location types to their product configurations
 export const PRODUCT_CONFIGS: Record<LocationType, ProductIconsConfig> = {
@@ -16,6 +19,9 @@ export const PRODUCT_CONFIGS: Record<LocationType, ProductIconsConfig> = {
   fish_monger: FISH_PRODUCT_ICONS_CONFIG,
   butcher: BUTCHER_PRODUCT_ICONS_CONFIG,
   antique_shop: ANTIQUE_PRODUCT_ICONS_CONFIG,
+  brewery: BREWERY_PRODUCT_ICONS_CONFIG,
+  winery: WINERY_PRODUCT_ICONS_CONFIG,
+  sugar_shack: SUGAR_SHACK_PRODUCT_ICONS_CONFIG,
 };
 
 // Registry mapping location types to their category display order
@@ -25,6 +31,9 @@ export const CATEGORY_DISPLAY_ORDERS: Record<LocationType, string[]> = {
   fish_monger: FISH_CATEGORY_DISPLAY_ORDER,
   butcher: BUTCHER_CATEGORY_DISPLAY_ORDER,
   antique_shop: ANTIQUE_CATEGORY_DISPLAY_ORDER,
+  brewery: BREWERY_CATEGORY_DISPLAY_ORDER,
+  winery: WINERY_CATEGORY_DISPLAY_ORDER,
+  sugar_shack: SUGAR_SHACK_CATEGORY_DISPLAY_ORDER,
 };
 
 // Helper function to get product config for a specific location type
