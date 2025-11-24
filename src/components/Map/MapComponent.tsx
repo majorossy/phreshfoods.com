@@ -1,6 +1,7 @@
 // src/components/Map/MapComponent.tsx
 import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
+import { MarkerClusterer, SuperClusterAlgorithm } from '@googlemaps/markerclusterer';
 import { useLocationData } from '../../contexts/LocationDataContext.tsx';
 import { useSearch } from '../../contexts/SearchContext.tsx';
 import { useUI } from '../../contexts/UIContext.tsx';
@@ -58,6 +59,7 @@ const MapComponent: React.FC = () => {
   const previousHoveredShopSlugRef = useRef<string | null>(null);
   const searchLocationMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const searchRadiusCircleRef = useRef<google.maps.Circle | null>(null);
+  const markerClustererRef = useRef<MarkerClusterer | null>(null);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMarkerHovered = useRef<boolean>(false);
   const isInfoWindowHovered = useRef<boolean>(false);
@@ -207,6 +209,42 @@ const MapComponent: React.FC = () => {
     });
     googleMapRef.current = mapInstance;
 
+    // Initialize marker clusterer for performance with 228+ markers
+    markerClustererRef.current = new MarkerClusterer({
+      map: mapInstance,
+      markers: [],
+      algorithm: new SuperClusterAlgorithm({
+        radius: 60, // Cluster radius in pixels
+        minPoints: 3, // Minimum markers to form a cluster
+      }),
+      renderer: {
+        render: ({ count, position }) => {
+          // Custom cluster marker with Maine theme colors
+          const svg = window.btoa(`
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
+              <circle cx="25" cy="25" r="20" fill="#1a6a41" stroke="#fff" stroke-width="3"/>
+              <text x="25" y="30" font-size="14" font-weight="bold" text-anchor="middle" fill="white">${count}</text>
+            </svg>
+          `);
+
+          return new window.google.maps.marker.AdvancedMarkerElement({
+            position,
+            content: (() => {
+              const div = document.createElement('div');
+              div.style.width = '50px';
+              div.style.height = '50px';
+              div.style.backgroundImage = `url('data:image/svg+xml;base64,${svg}')`;
+              div.style.backgroundSize = 'contain';
+              div.style.cursor = 'pointer';
+              div.style.transform = 'translate(-50%, -50%)';
+              return div;
+            })(),
+            zIndex: 1000,
+          });
+        },
+      },
+    });
+
     googleInfoWindowRef.current = new window.google.maps.InfoWindow({
       pixelOffset: new window.google.maps.Size(INFO_WINDOW_PIXEL_OFFSET_X, INFO_WINDOW_PIXEL_OFFSET_Y),
       disableAutoPan: false,
@@ -244,6 +282,11 @@ const MapComponent: React.FC = () => {
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null);
         directionsRendererRef.current = null;
+      }
+      if (markerClustererRef.current) {
+        markerClustererRef.current.clearMarkers();
+        markerClustererRef.current.setMap(null);
+        markerClustererRef.current = null;
       }
       if (searchLocationMarkerRef.current) {
         searchLocationMarkerRef.current.map = null;
@@ -327,7 +370,8 @@ const MapComponent: React.FC = () => {
 
         marker = new window.google.maps.marker.AdvancedMarkerElement({
           position: { lat: shop.lat, lng: shop.lng },
-          map: map,
+          // Don't add to map directly - will be managed by clusterer
+          map: null,
           title: shop.Name,
           content: markerElement,
         });
@@ -443,6 +487,19 @@ const MapComponent: React.FC = () => {
     }
 
     markersRef.current = newMarkersMap;
+
+    // Update the marker clusterer with new markers
+    if (markerClustererRef.current) {
+      // Clear existing markers from clusterer
+      markerClustererRef.current.clearMarkers();
+
+      // Add all new markers to clusterer
+      const markersArray = Array.from(newMarkersMap.values());
+      markerClustererRef.current.addMarkers(markersArray);
+
+      // Force re-render of clusters
+      markerClustererRef.current.render();
+    }
   }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, checkAndClearHover, setHoveredShop]);
 
   // Effect to pan map to selectedShop with offset to frame info window

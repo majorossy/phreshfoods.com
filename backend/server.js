@@ -341,6 +341,35 @@ app.get('/sitemap.xml', async (req, res) => {
         sitemap += '    <priority>1.0</priority>\n';
         sitemap += '  </url>\n';
 
+        // All locations page
+        sitemap += '  <url>\n';
+        sitemap += `    <loc>${baseUrl}/all</loc>\n`;
+        sitemap += `    <lastmod>${now}</lastmod>\n`;
+        sitemap += '    <changefreq>daily</changefreq>\n';
+        sitemap += '    <priority>0.9</priority>\n';
+        sitemap += '  </url>\n';
+
+        // Type filter pages (using new standardized URLs)
+        const typeFilterPages = [
+            { path: '/farm-stand', name: 'Farm Stands' },
+            { path: '/cheesemonger', name: 'Cheesemongers' },
+            { path: '/fishmonger', name: 'Fishmongers' },
+            { path: '/butcher', name: 'Butchers' },
+            { path: '/antique-shop', name: 'Antique Shops' },
+            { path: '/brewery', name: 'Breweries' },
+            { path: '/winery', name: 'Wineries' },
+            { path: '/sugar-shack', name: 'Sugar Shacks' },
+        ];
+
+        typeFilterPages.forEach(page => {
+            sitemap += '  <url>\n';
+            sitemap += `    <loc>${baseUrl}${page.path}</loc>\n`;
+            sitemap += `    <lastmod>${now}</lastmod>\n`;
+            sitemap += '    <changefreq>daily</changefreq>\n';
+            sitemap += '    <priority>0.9</priority>\n';
+            sitemap += '  </url>\n';
+        });
+
         // Individual shop pages
         allLocations.forEach(shop => {
             const slug = shop.slug || shop.GoogleProfileID;

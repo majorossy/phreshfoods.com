@@ -8,7 +8,7 @@ import viteImagemin from 'vite-plugin-imagemin';
 // import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     // Image optimization plugin - converts to WebP and optimizes other formats
@@ -43,9 +43,9 @@ export default defineConfig({
         lossless: false,
       },
     }),
-    // Bundle analyzer - generates stats.html after build
-    visualizer({
-      open: false, // Set to true to auto-open after build
+    // Bundle analyzer - generates stats.html after build (only in analyze mode)
+    mode === 'analyze' && visualizer({
+      open: true, // Auto-open after build in analyze mode
       filename: 'dist/stats.html',
       gzipSize: true,
       brotliSize: true,
@@ -115,7 +115,7 @@ export default defineConfig({
         ]
       }
     }),
-  ],
+  ].filter(Boolean),
   build: {
     // Enable source maps for better debugging (can disable for production)
     sourcemap: false,
@@ -181,9 +181,4 @@ export default defineConfig({
   //   outDir: 'dist',
   // },
   // Optional: Define global constants available in your client-side code
-  // define: {
-  //   // Example: Make an environment variable available (ensure it's prefixed with VITE_)
-  //   'process.env.VITE_APP_TITLE': JSON.stringify('PhreshPhoods Finder'),
-  //   // You would access this in your code as import.meta.env.VITE_APP_TITLE
-  // },
-});
+}));

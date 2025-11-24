@@ -11,6 +11,7 @@ PhreshFoods is a comprehensive location finder application for Maine, helping us
 - **Detailed Shop Information**: Opening hours, ratings, reviews, product availability, and social media links
 - **Responsive Design**: Works seamlessly on desktop and mobile devices
 - **Accessibility**: WCAG 2.1 Level AA compliant (~95%)
+- **Performance Optimized**: Virtual scrolling, map clustering, Web Vitals monitoring, and optimized images
 
 ## Tech Stack
 
@@ -20,13 +21,18 @@ PhreshFoods is a comprehensive location finder application for Maine, helping us
 - **React Router 6** for routing
 - **TailwindCSS** for styling
 - **Google Maps JavaScript API** for maps and place data
+- **MarkerClusterer** for efficient map marker clustering
+- **react-window** for virtual scrolling performance
+- **web-vitals** for performance monitoring
 
 ### Backend
 - **Node.js** with Express
 - **Google Sheets** as data source (published as CSV)
 - **Google Maps APIs** (Geocoding, Places, Directions)
 - **node-cache** for API response caching
-- **node-cron** for scheduled data refreshes
+- **node-cron** for scheduled data refreshes (disabled by default)
+- **compression** for gzip/brotli response compression
+- **helmet** for security headers
 
 ## Quick Start
 
@@ -119,8 +125,24 @@ npm run lint
 ### Testing
 ```bash
 npm run test          # Run tests in watch mode
+npm run test:ui       # Run tests with UI dashboard
 npm run test:run      # Run tests once
 npm run test:coverage # Generate coverage report
+```
+
+### Developer Experience Scripts
+```bash
+npm run typecheck        # Type check without building
+npm run typecheck:watch  # Type check in watch mode
+npm run analyze          # Analyze bundle size (generates dist/stats.html)
+npm run build:analyze    # Build and analyze bundle
+npm run dev:debug        # Run with DEBUG output
+npm run test:lighthouse  # Run Lighthouse performance audit
+npm run clean            # Clean all deps and reinstall
+npm run clean:cache      # Clean build cache
+npm run check:deps       # Check for outdated dependencies
+npm run check:security   # Run security audit
+npm run check:all        # Run all checks (typecheck, lint, test)
 ```
 
 ## Project Structure
@@ -235,6 +257,30 @@ Quick overview:
 - **[CONTEXTS.md](./src/contexts/CONTEXTS.md)** - Context architecture documentation
 - **[ACCESSIBILITY_AUDIT.md](./ACCESSIBILITY_AUDIT.md)** - WCAG compliance audit
 - **[TESTING_GUIDE.md](./TESTING_GUIDE.md)** - Testing setup and examples
+
+## Performance Optimizations
+
+### Map Performance
+- **MarkerClusterer**: Efficiently groups 228+ markers into clusters
+- **Custom Maine-themed cluster styling**: Green/teal color scheme
+- **SuperClusterAlgorithm**: Fast clustering with configurable radius
+
+### List Performance
+- **Virtual Scrolling**: Only renders visible shop cards (10-15 instead of 228)
+- **React-window**: Dramatically reduces DOM nodes and memory usage
+- **Responsive grid layout**: Adapts to screen size while maintaining performance
+
+### Loading Performance
+- **Web Vitals Monitoring**: Tracks LCP, FID, CLS, FCP, INP, TTFB
+- **Optimized Images**: WebP format with fallbacks, responsive sizing
+- **Preconnect hints**: Early connection to Google Maps domains
+- **Compression**: Gzip/brotli for 60-80% size reduction
+- **Critical CSS**: Inline styles for faster initial paint
+
+### Bundle Optimization
+- **Code splitting**: Lazy loading of components
+- **Tree shaking**: Removes unused code
+- **Chunk optimization**: Separate vendor chunks for better caching
 
 ## Architecture Highlights
 

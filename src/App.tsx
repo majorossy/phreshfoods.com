@@ -11,6 +11,7 @@ import { isTypeFilterPage } from './utils/typeUrlMappings';
 import type { AutocompletePlace } from './types';
 import { getCookie } from './utils/cookieHelper';
 import { LAST_SEARCHED_LOCATION_COOKIE_NAME } from './config/appConfig';
+import { initWebVitals, markPerformance, reportCustomMetric } from './utils/webVitals';
 import {
   getHomepageSEO,
   getFarmStandSEO,
@@ -40,6 +41,20 @@ function App() {
   const { lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation } = useSearch();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { selectedShop, isShopOverlayOpen, isSocialOverlayOpen, openShopOverlays, closeShopOverlays, setSelectedShop } = useUI();
+
+  // Initialize Web Vitals monitoring on mount
+  useEffect(() => {
+    initWebVitals();
+    markPerformance('app-initialized');
+  }, []);
+
+  // Track custom metrics when shops are loaded
+  useEffect(() => {
+    if (allLocations && allLocations.length > 0) {
+      reportCustomMetric('shops-loaded', allLocations.length, ' shops');
+      markPerformance('shops-data-ready');
+    }
+  }, [allLocations]);
 
   // Sync filter/search state to URL parameters (with debouncing)
   useURLSync();

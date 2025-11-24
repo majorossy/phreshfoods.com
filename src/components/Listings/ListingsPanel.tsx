@@ -1,23 +1,56 @@
 // src/components/Listings/ListingsPanel.tsx
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+// import { FixedSizeList as List } from 'react-window';  // Temporarily disabled for debugging
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
+// import { ShopWithDistance } from '../../types';  // Temporarily unused
 
-const INITIAL_ITEMS = 20; // Initial number of items to render
-const LOAD_MORE_THRESHOLD = 300; // px from bottom to trigger load more
+const ITEM_HEIGHT = 180; // Approximate height of each shop card
+const GAP_SIZE = 12; // Gap between cards
+
+// Row renderer for virtual scrolling - temporarily disabled
+// interface RowProps {
+//   index: number;
+//   style: React.CSSProperties;
+//   data: {
+//     shops: ShopWithDistance[];
+//     columnsPerRow: number;
+//   };
+// }
+
+// const Row = ({ index, style, data }: RowProps) => {
+//   const { shops, columnsPerRow } = data;
+//   const startIdx = index * columnsPerRow;
+//   const items = shops.slice(startIdx, startIdx + columnsPerRow);
+
+//   return (
+//     <div style={style} className="px-3 sm:px-4">
+//       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+//         {items.map(shop => (
+//           <ShopCard
+//             key={shop.slug || shop.GoogleProfileID || shop.Name}
+//             shop={shop}
+//           />
+//         ))}
+//         {/* Fill empty cells in the last row */}
+//         {items.length < columnsPerRow &&
+//           Array(columnsPerRow - items.length).fill(0).map((_, i) => (
+//             <div key={`empty-${i}`} />
+//           ))}
+//       </div>
+//     </div>
+//   );
+// };
 
 const ListingsPanel = () => {
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
   const { setActiveProductFilters, activeLocationTypes } = useFilters();
-  const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
   const [headerHeight, setHeaderHeight] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  // Track the number of shops to detect meaningful changes (not just re-sorts)
-  const prevShopCountRef = useRef<number>(0);
+  const [columnsPerRow, setColumnsPerRow] = useState(2);
+  const [listHeight, setListHeight] = useState(600);
 
   // Measure header height dynamically
   useEffect(() => {
@@ -48,60 +81,25 @@ const ListingsPanel = () => {
     };
   }, []);
 
-  // Reset visible count only when the number of shops significantly changes
-  // This prevents reset on distance re-calculations or minor updates
+  // Calculate columns based on window width - must be before early returns (Rules of Hooks)
   useEffect(() => {
-    const currentCount = currentlyDisplayedLocations.length;
-    const prevCount = prevShopCountRef.current;
-
-    // Reset if: initial load, or shop count changed significantly (filter/search applied)
-    if (prevCount === 0 || Math.abs(currentCount - prevCount) > 0) {
-      setVisibleCount(Math.max(INITIAL_ITEMS, currentCount)); // Show all results immediately
-      prevShopCountRef.current = currentCount;
-    }
-  }, [currentlyDisplayedLocations.length]);
-
-  // Scroll handler for infinite scrolling (throttled with requestAnimationFrame)
-  const handleScroll = useCallback(() => {
-    const scrollContainer = scrollContainerRef.current;
-    if (!scrollContainer || !currentlyDisplayedLocations) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
-    const scrollBottom = scrollHeight - scrollTop - clientHeight;
-
-    // Load more when near bottom and more items available
-    if (scrollBottom < LOAD_MORE_THRESHOLD && visibleCount < currentlyDisplayedLocations.length) {
-      setVisibleCount(prev => Math.min(prev + INITIAL_ITEMS, currentlyDisplayedLocations.length));
-    }
-  }, [visibleCount, currentlyDisplayedLocations]);
-
-  // Attach scroll listener with requestAnimationFrame throttling
-  useEffect(() => {
-    const panel = scrollContainerRef.current;
-    if (!panel) return;
-
-    let frameId: number | null = null;
-    let isThrottled = false;
-
-    const onScroll = () => {
-      // Skip if already processing a scroll event
-      if (isThrottled) return;
-
-      isThrottled = true;
-      frameId = requestAnimationFrame(() => {
-        handleScroll();
-        isThrottled = false;
-      });
-    };
-
-    panel.addEventListener('scroll', onScroll, { passive: true });
-    return () => {
-      panel.removeEventListener('scroll', onScroll);
-      if (frameId !== null) {
-        cancelAnimationFrame(frameId);
+    const updateDimensions = () => {
+      const panel = document.getElementById('listingsPanel');
+      if (panel) {
+        const width = panel.clientWidth;
+        // Responsive columns: 1 on small, 2 on large
+        setColumnsPerRow(width < 640 ? 1 : 2);
+        setListHeight(window.innerHeight - (headerHeight || 128));
       }
     };
-  }, [handleScroll]);
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, [headerHeight]);
+
+  // Virtual scrolling replaces the old infinite scroll logic
+  // react-window handles viewport management automatically
 
   // Clear filters handler - must be defined before early returns (Rules of Hooks)
   const handleClearFilters = useCallback(() => {
@@ -153,32 +151,37 @@ const ListingsPanel = () => {
     );
   }
 
-  // Get visible shops for windowed rendering
-  const visibleShops = currentlyDisplayedLocations.slice(0, visibleCount);
-  const hasMore = visibleCount < currentlyDisplayedLocations.length;
+  // Calculate row count
+  const rowCount = Math.ceil(currentlyDisplayedLocations.length / columnsPerRow);
 
+  // Memoize list data to prevent re-renders
+  const listData = useMemo(() => ({
+    shops: currentlyDisplayedLocations,
+    columnsPerRow,
+  }), [currentlyDisplayedLocations, columnsPerRow]);
+
+  // Temporarily disable virtual scrolling to debug
   return (
     <section
       id="listingsPanel"
-      ref={scrollContainerRef}
-      className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+      className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
       style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
       {currentlyDisplayedLocations.length > 0 ? (
-        <>
-          <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {visibleShops.map(shop => (
-              <ShopCard key={shop.slug || shop.GoogleProfileID || shop.Name} shop={shop} />
+        <div className="p-3 sm:p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            {currentlyDisplayedLocations.map(shop => (
+              <ShopCard
+                key={shop.slug || shop.GoogleProfileID || shop.Name}
+                shop={shop}
+              />
             ))}
           </div>
-          {hasMore && (
-            <div className="text-center py-4 text-sm text-gray-500">
-              Scroll for more results...
-            </div>
-          )}
-        </>
+        </div>
       ) : (
-        <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
+        <div className="p-3 sm:p-4">
+          <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
+        </div>
       )}
     </section>
   );
