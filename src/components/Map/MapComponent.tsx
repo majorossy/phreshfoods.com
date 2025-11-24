@@ -495,9 +495,23 @@ const MapComponent: React.FC = () => {
     requestAnimationFrame(() => {
       // Create or update search location marker
       if (!searchLocationMarkerRef.current && window.google?.maps?.marker) {
-        // Create new marker using custom image
+        // Create new marker using optimized image with DPI detection
         const markerImage = document.createElement('img');
-        markerImage.src = '/images/center-pin.png';
+
+        // Use @2x version for Retina displays, @1x for standard
+        const dpr = window.devicePixelRatio || 1;
+        let imageSuffix = '@1x';
+        if (dpr > 2.5) {
+          imageSuffix = '@3x';
+        } else if (dpr > 1.5) {
+          imageSuffix = '@2x';
+        }
+
+        // Try WebP first with PNG fallback
+        const supportsWebP = document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') === 0;
+        const extension = supportsWebP ? 'webp' : 'png';
+
+        markerImage.src = `/images/center-pin${imageSuffix}.${extension}`;
         markerImage.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
         markerImage.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
         markerImage.style.cursor = 'pointer';

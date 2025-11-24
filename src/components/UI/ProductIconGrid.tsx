@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { Shop, LocationType } from '../../types';
 import { getProductConfig, getCategoryDisplayOrder } from '../../config/productRegistry';
+import OptimizedImage from './OptimizedImage';
 
 interface ProductWithAvailability {
   id: string;
@@ -127,13 +128,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                       aria-label={`${isActive ? 'Remove' : 'Add'} ${config.name} filter`}
                       aria-pressed={isActive}
                     >
-                      <img
+                      <OptimizedImage
                         src={`/images/icons/${icon}`}
                         alt={config.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        loading="lazy"
                       />
                     </button>
                   );
@@ -166,13 +165,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                 aria-label={`${isActive ? 'Remove' : 'Add'} ${config.name} filter`}
                 aria-pressed={isActive}
               >
-                <img
+                <OptimizedImage
                   src={`/images/icons/${icon}`}
                   alt={config.name}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
+                  loading="lazy"
                 />
               </button>
             );
@@ -222,13 +219,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                       }`}
                       title={product.name}
                     >
-                      <img
+                      <OptimizedImage
                         src={`/images/icons/${product.icon}`}
                         alt={product.name}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        loading="lazy"
                       />
                     </div>
                   ))}
@@ -256,13 +251,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
               }`}
               title={product.name}
             >
-              <img
+              <OptimizedImage
                 src={`/images/icons/${product.icon}`}
                 alt={product.name}
                 className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+                loading="lazy"
               />
             </div>
           ))}
@@ -310,13 +303,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                           : 'bg-gray-50 dark:bg-gray-800 opacity-50'
                       }`}
                     >
-                      <img
+                      <OptimizedImage
                         src={`/images/icons/${product.icon}`}
                         alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
                         className={`${iconSizeClasses[iconSize]} object-contain`}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        loading="lazy"
                       />
                       {showProductNames && (
                         <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
@@ -340,13 +331,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                   : 'bg-gray-50 dark:bg-gray-800 opacity-50'
               }`}
             >
-              <img
+              <OptimizedImage
                 src={`/images/icons/${product.icon}`}
                 alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
                 className={`${iconSizeClasses[iconSize]} object-contain`}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = 'none';
-                }}
+                loading="lazy"
               />
               {showProductNames && (
                 <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
@@ -361,4 +350,6 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
   );
 };
 
-export default ProductIconGrid;
+// Memoize ProductIconGrid to prevent unnecessary re-renders
+// Only re-render if shop, display settings, or filter state changes
+export default React.memo(ProductIconGrid);

@@ -72,4 +72,20 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
   );
 };
 
-export default InfoWindowContent;
+// Memoize InfoWindowContent to prevent unnecessary re-renders
+// Only re-render if the shop data changes
+export default React.memo(InfoWindowContent, (prevProps, nextProps) => {
+  // Compare shop identity to determine if re-render is needed
+  const prevShop = prevProps.shop;
+  const nextShop = nextProps.shop;
+
+  if (!prevShop && !nextShop) return true; // Both null, no re-render
+  if (!prevShop || !nextShop) return false; // One is null, re-render
+
+  // Check if shop identity is the same
+  return (
+    prevShop.slug === nextShop.slug &&
+    prevShop.GoogleProfileID === nextShop.GoogleProfileID &&
+    prevShop.Name === nextShop.Name
+  );
+});
