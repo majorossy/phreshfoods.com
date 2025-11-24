@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error Check</title>
+</head>
+<body>
+    <h1>Checking for Errors...</h1>
+    <iframe id="app" src="http://localhost:5173" style="width: 100%; height: 600px; border: 1px solid #ccc;"></iframe>
+    <div id="status" style="padding: 20px;">
+        <h2>Status:</h2>
+        <div id="errors" style="color: red;"></div>
+        <div id="success" style="color: green;"></div>
+    </div>
+    <script>
+        const errorsDiv = document.getElementById('errors');
+        const successDiv = document.getElementById('success');
+        const errors = [];
+
+        // Capture console errors
+        const originalError = console.error;
+        console.error = function(...args) {
+            const message = args.join(' ');
+            // Ignore expected React dev warnings
+            if (!message.includes('Warning: React') &&
+                !message.includes('Consider adding an error boundary') &&
+                !message.includes('Download the React DevTools')) {
+                errors.push(message);
+                errorsDiv.innerHTML = '<h3>Errors Found:</h3><pre>' + errors.join('\n') + '</pre>';
+            }
+            originalError.apply(console, args);
+        };
+
+        // Check after a delay
+        setTimeout(() => {
+            if (errors.length === 0) {
+                successDiv.innerHTML = '<h3>✅ No errors detected! Site is loading properly.</h3>';
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

@@ -1,49 +1,50 @@
 // src/components/Listings/ListingsPanel.tsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
-// import { FixedSizeList as List } from 'react-window';  // Temporarily disabled for debugging
+// Temporarily comment out react-window due to import issue
+// import { FixedSizeList as List } from 'react-window';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
-// import { ShopWithDistance } from '../../types';  // Temporarily unused
+import { ShopWithDistance } from '../../types';
 
 const ITEM_HEIGHT = 180; // Approximate height of each shop card
 const GAP_SIZE = 12; // Gap between cards
 
-// Row renderer for virtual scrolling - temporarily disabled
-// interface RowProps {
-//   index: number;
-//   style: React.CSSProperties;
-//   data: {
-//     shops: ShopWithDistance[];
-//     columnsPerRow: number;
-//   };
-// }
+// Row renderer for virtual scrolling
+interface RowProps {
+  index: number;
+  style: React.CSSProperties;
+  data: {
+    shops: ShopWithDistance[];
+    columnsPerRow: number;
+  };
+}
 
-// const Row = ({ index, style, data }: RowProps) => {
-//   const { shops, columnsPerRow } = data;
-//   const startIdx = index * columnsPerRow;
-//   const items = shops.slice(startIdx, startIdx + columnsPerRow);
+const Row = ({ index, style, data }: RowProps) => {
+  const { shops, columnsPerRow } = data;
+  const startIdx = index * columnsPerRow;
+  const items = shops.slice(startIdx, startIdx + columnsPerRow);
 
-//   return (
-//     <div style={style} className="px-3 sm:px-4">
-//       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-//         {items.map(shop => (
-//           <ShopCard
-//             key={shop.slug || shop.GoogleProfileID || shop.Name}
-//             shop={shop}
-//           />
-//         ))}
-//         {/* Fill empty cells in the last row */}
-//         {items.length < columnsPerRow &&
-//           Array(columnsPerRow - items.length).fill(0).map((_, i) => (
-//             <div key={`empty-${i}`} />
-//           ))}
-//       </div>
-//     </div>
-//   );
-// };
+  return (
+    <div style={style} className="px-3 sm:px-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+        {items.map(shop => (
+          <ShopCard
+            key={shop.slug || shop.GoogleProfileID || shop.Name}
+            shop={shop}
+          />
+        ))}
+        {/* Fill empty cells in the last row */}
+        {items.length < columnsPerRow &&
+          Array(columnsPerRow - items.length).fill(0).map((_, i) => (
+            <div key={`empty-${i}`} />
+          ))}
+      </div>
+    </div>
+  );
+};
 
 const ListingsPanel = () => {
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
@@ -158,7 +159,10 @@ const ListingsPanel = () => {
     );
   }
 
-  // Temporarily disable virtual scrolling to debug
+  // Enable virtual scrolling for better performance
+  // const useVirtualScrolling = currentlyDisplayedLocations.length > 20; // Only use for 20+ items
+  const useVirtualScrolling = false; // Temporarily disabled due to import issue
+
   return (
     <section
       id="listingsPanel"
@@ -166,16 +170,31 @@ const ListingsPanel = () => {
       style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
       {currentlyDisplayedLocations.length > 0 ? (
-        <div className="p-3 sm:p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {currentlyDisplayedLocations.map(shop => (
-              <ShopCard
-                key={shop.slug || shop.GoogleProfileID || shop.Name}
-                shop={shop}
-              />
-            ))}
+        /* Virtual scrolling temporarily disabled
+        useVirtualScrolling ? (
+          <List
+            height={listHeight}
+            itemCount={rowCount}
+            itemSize={ITEM_HEIGHT + GAP_SIZE}
+            width="100%"
+            itemData={listData}
+            className="custom-scrollbar"
+          >
+            {Row}
+          </List>
+        ) : ( */
+          // Regular rendering
+          <div className="p-3 sm:p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+              {currentlyDisplayedLocations.map(shop => (
+                <ShopCard
+                  key={shop.slug || shop.GoogleProfileID || shop.Name}
+                  shop={shop}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        /* ) */
       ) : (
         <div className="p-3 sm:p-4">
           <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
