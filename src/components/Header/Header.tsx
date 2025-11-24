@@ -12,11 +12,13 @@ import {
 } from '../../config/appConfig';
 import { Link, useNavigate } from 'react-router-dom';
 import ProductFilters from '../Filters/ProductFilters'; // Import the filters component
+import ProductFilterDropdown from '../Filters/ProductFilterDropdown';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { useFilters } from '../../contexts/FilterContext';
 import { LocationType } from '../../types/shop';
+import { getProductConfig } from '../../config/productRegistry';
 
 // Location type configurations
 const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string; color: string }> = {
@@ -35,6 +37,10 @@ const Header: React.FC = () => {
 
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null); // For click outside listener
+
+  // Product filter dropdowns for location types
+  const [openLocationTypeDropdown, setOpenLocationTypeDropdown] = useState<LocationType | null>(null);
+  const locationTypeButtonRefs = useRef<Record<LocationType, React.RefObject<HTMLButtonElement>>>({});
 
   // Local state for radius slider (for immediate UI feedback)
   const [localRadius, setLocalRadius] = useState<number>(DEFAULT_SEARCH_RADIUS_MILES);
@@ -62,6 +68,7 @@ const Header: React.FC = () => {
   const {
     activeLocationTypes,
     toggleLocationType,
+    activeProductFilters,
   } = useFilters();
 
   // Effect to initialize local radius from context
@@ -253,41 +260,91 @@ const Header: React.FC = () => {
           </div>
 
           {/* Combined Container: Type Filters, Search, Radius, and Filters */}
-          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search">
-            {/* Type Filter Buttons */}
-            <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
+            {/* Type Filter Buttons with Dropdowns */}
+            <div className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
               <div className="flex items-center gap-1.5 flex-wrap">
               {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
                 const isActive = activeLocationTypes.has(type);
+                const isOpen = openLocationTypeDropdown === type;
+
+                // Create ref if it doesn't exist
+                if (!locationTypeButtonRefs.current[type]) {
+                  locationTypeButtonRefs.current[type] = React.createRef<HTMLButtonElement>();
+                }
+
                 const colorClasses = {
                   green: isActive
                     ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-green-400',
                   yellow: isActive
                     ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-yellow-400',
                   blue: isActive
                     ? 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-blue-400',
                   red: isActive
                     ? 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-red-400',
                   purple: isActive
                     ? 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100'
-                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500 border border-purple-400',
                 };
 
                 return (
-                  <button
-                    key={type}
-                    onClick={() => toggleLocationType(type)}
-                    className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 transition-colors hover:opacity-80 ${colorClasses[config.color]}`}
-                    title={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
-                    aria-label={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
-                    aria-pressed={isActive}
-                  >
-                    {config.emoji} {config.label}
-                  </button>
+                  <div key={type} className="relative">
+                    <div className={`flex items-center rounded-full overflow-hidden ${colorClasses[config.color]}`}>
+                      {/* Main button - toggles location type filter */}
+                      <button
+                        type="button"
+                        onClick={() => toggleLocationType(type)}
+                        className="text-xs pl-2 pr-1 py-0.5 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-colors hover:opacity-80"
+                        title={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
+                        aria-label={`${isActive ? 'Hide' : 'Show'} ${config.label} locations`}
+                        aria-pressed={isActive}
+                      >
+                        {config.emoji} {config.label}
+                      </button>
+
+                      {/* Arrow button - opens product filter dropdown (only when type is active) */}
+                      {isActive && (
+                        <button
+                          ref={locationTypeButtonRefs.current[type]}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenLocationTypeDropdown(isOpen ? null : type);
+                          }}
+                          className="text-xs pr-2 pl-0.5 py-0.5 flex items-center transition-colors hover:opacity-80"
+                          title={`${config.label} product filters`}
+                          aria-label={`Open ${config.label} product filters`}
+                          aria-expanded={isOpen}
+                          aria-haspopup="true"
+                        >
+                          <svg
+                            className={`w-2.5 h-2.5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+
+                    {isActive && (
+                      <ProductFilterDropdown
+                        category={config.label}
+                        products={getProductConfig(type)}
+                        locationType={type}
+                        isOpen={isOpen}
+                        onClose={() => setOpenLocationTypeDropdown(null)}
+                        buttonRef={locationTypeButtonRefs.current[type]}
+                      />
+                    )}
+                  </div>
                 );
               })}
               </div>
@@ -340,16 +397,23 @@ const Header: React.FC = () => {
             <div className="relative">
               <button
                 id="filterToggleButton" // Added ID for click outside logic
+                type="button"
                 onClick={() => setShowFilterDropdown(prev => !prev)}
-                className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm bg-white"
+                className="flex items-center gap-1 px-3 py-2.5 border border-gray-300 rounded-md hover:bg-gray-100 active:bg-gray-200 transition-colors text-sm text-gray-700 shadow-sm bg-white relative"
                 aria-expanded={showFilterDropdown}
                 aria-controls="filter-dropdown-header"
-                aria-label={`Product filters ${showFilterDropdown ? 'expanded' : 'collapsed'}`}
+                aria-haspopup="true"
+                aria-label={`Product filters${Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length > 0 ? ` (${Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length} active)` : ''} ${showFilterDropdown ? 'expanded' : 'collapsed'}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                 </svg>
                 Filters
+                {Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length > 0 && (
+                  <span className="ml-1 bg-blue-500 text-white text-xs rounded-full px-1.5 py-0.5 font-semibold" aria-hidden="true">
+                    {Object.keys(activeProductFilters).filter(k => activeProductFilters[k]).length}
+                  </span>
+                )}
               </button>
               {showFilterDropdown && (
                 <div
@@ -357,6 +421,8 @@ const Header: React.FC = () => {
                   ref={filterDropdownRef}
                   className="absolute right-0 mt-2 w-80 bg-gray-50 border border-gray-200 rounded-md shadow-xl z-40 p-0" // p-0 as ProductFilters has its own padding
                   onClick={(e) => e.stopPropagation()} // Prevent closing dropdown when clicking inside
+                  role="dialog"
+                  aria-label="Product filter options"
                 >
                   <ProductFilters />
                 </div>

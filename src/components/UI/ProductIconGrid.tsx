@@ -1,6 +1,6 @@
 // src/components/UI/ProductIconGrid.tsx
 import React, { useMemo } from 'react';
-import { Shop } from '../../types';
+import { Shop, LocationType } from '../../types';
 import { getProductConfig, getCategoryDisplayOrder } from '../../config/productRegistry';
 
 interface ProductWithAvailability {
@@ -11,13 +11,18 @@ interface ProductWithAvailability {
 }
 
 interface ProductIconGridProps {
-  shop: Shop;
-  displayMode: 'compact' | 'detailed';
+  shop?: Shop; // Optional for filter-selector mode
+  displayMode: 'compact' | 'detailed' | 'filter-selector';
   maxProducts?: number;
   showCategories?: boolean;
   showProductNames?: boolean;
   showSummary?: boolean;
   iconSize?: 'sm' | 'md' | 'lg';
+  // For filter-selector mode
+  products?: Record<string, any>; // Product config to display
+  locationType?: LocationType; // Location type to get category order
+  activeFilters?: Record<string, boolean>; // Which products are filtered
+  onProductClick?: (productId: string) => void; // Click handler for toggling
 }
 
 const ProductIconGrid: React.FC<ProductIconGridProps> = ({
@@ -27,9 +32,122 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
   showCategories = false,
   showProductNames = false,
   showSummary = false,
-  iconSize = 'md'
+  iconSize = 'md',
+  products,
+  locationType,
+  activeFilters = {},
+  onProductClick
 }) => {
-  // Get config for shop type
+  // FILTER-SELECTOR MODE: Use provided products instead of shop data
+  if (displayMode === 'filter-selector' && products) {
+    const iconSizeClasses = {
+      sm: 'w-6 h-6',
+      md: 'w-8 h-8',
+      lg: 'w-10 h-10'
+    };
+
+    // Group products by category if showCategories is true
+    if (showCategories && locationType) {
+      const categoryOrder = getCategoryDisplayOrder(locationType);
+      const productsByCategory: Record<string, Array<[string, any]>> = {};
+
+      // Group products by category
+      Object.entries(products).forEach(([productId, config]) => {
+        const category = config.category || 'Other';
+        if (!productsByCategory[category]) {
+          productsByCategory[category] = [];
+        }
+        productsByCategory[category].push([productId, config]);
+      });
+
+      // Sort categories by display order
+      const sortedCategories = [
+        ...categoryOrder.filter(cat => productsByCategory[cat]),
+        ...Object.keys(productsByCategory).filter(cat => !categoryOrder.includes(cat))
+      ];
+
+      return (
+        <div className="p-3">
+          {sortedCategories.map((category) => (
+            <div key={category} className="mb-4 last:mb-0">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 capitalize border-b border-gray-200 pb-1">
+                {category}
+              </h4>
+              <div className="grid grid-cols-6 gap-1.5">
+                {productsByCategory[category].map(([productId, config]) => {
+                  const isActive = !!activeFilters[productId];
+                  const icon = isActive ? config.icon_available : config.icon_unavailable;
+
+                  return (
+                    <button
+                      key={productId}
+                      onClick={() => onProductClick?.(productId)}
+                      className={`${iconSizeClasses[iconSize]} rounded overflow-hidden border-2 transition-all hover:scale-110 ${
+                        isActive
+                          ? 'border-blue-500 ring-2 ring-blue-200'
+                          : 'border-gray-300 hover:border-gray-400 opacity-70'
+                      }`}
+                      title={`${config.name}${isActive ? ' (active filter)' : ' (click to filter)'}`}
+                      aria-label={`${isActive ? 'Remove' : 'Add'} ${config.name} filter`}
+                      aria-pressed={isActive}
+                    >
+                      <img
+                        src={`/images/icons/${icon}`}
+                        alt={config.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    // Simple grid without categories (fallback)
+    return (
+      <div className="p-2">
+        <div className="grid grid-cols-6 gap-1.5">
+          {Object.entries(products).map(([productId, config]: [string, any]) => {
+            const isActive = !!activeFilters[productId];
+            const icon = isActive ? config.icon_available : config.icon_unavailable;
+
+            return (
+              <button
+                key={productId}
+                onClick={() => onProductClick?.(productId)}
+                className={`${iconSizeClasses[iconSize]} rounded overflow-hidden border-2 transition-all hover:scale-110 ${
+                  isActive
+                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    : 'border-gray-300 hover:border-gray-400 opacity-70'
+                }`}
+                title={`${config.name}${isActive ? ' (active filter)' : ' (click to filter)'}`}
+                aria-label={`${isActive ? 'Remove' : 'Add'} ${config.name} filter`}
+                aria-pressed={isActive}
+              >
+                <img
+                  src={`/images/icons/${icon}`}
+                  alt={config.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // Get config for shop type (for shop display modes)
+  if (!shop) return null;
   const productConfig = getProductConfig(shop.type);
   const categoryOrder = getCategoryDisplayOrder(shop.type);
 

@@ -65,6 +65,7 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('farm_stand')}
               onChange={() => toggleLocationType('farm_stand' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+              aria-label="Show farm stands"
             />
             <span className="font-medium">Farm Stands</span>
           </label>
@@ -74,6 +75,7 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('cheese_shop')}
               onChange={() => toggleLocationType('cheese_shop' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+              aria-label="Show cheese shops"
             />
             <span className="font-medium">Cheese Shops</span>
           </label>
@@ -83,6 +85,7 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('fish_monger')}
               onChange={() => toggleLocationType('fish_monger' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+              aria-label="Show fish mongers"
             />
             <span className="font-medium">Fish Mongers</span>
           </label>
@@ -92,6 +95,7 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('butcher')}
               onChange={() => toggleLocationType('butcher' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+              aria-label="Show butchers"
             />
             <span className="font-medium">Butchers</span>
           </label>
@@ -101,6 +105,7 @@ const ProductFilters: React.FC = () => {
               checked={activeLocationTypes.has('antique_shop')}
               onChange={() => toggleLocationType('antique_shop' as LocationType)}
               className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+              aria-label="Show antique shops"
             />
             <span className="font-medium">Antique Shops</span>
           </label>
@@ -130,12 +135,14 @@ const ProductFilters: React.FC = () => {
                         checked={!!activeProductFilters[filter.id]}
                         onChange={() => handleFilterChange(filter.id)}
                         className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+                        aria-label={`Filter by ${filter.name}`}
                       />
                       {iconPath && (
                         <img
                           src={iconPath}
-                          alt={filter.name}
+                          alt=""
                           className="w-6 h-6 object-contain"
+                          aria-hidden="true"
                           onError={(e) => {
                             (e.target as HTMLImageElement).style.display = 'none';
                           }}
@@ -151,8 +158,10 @@ const ProductFilters: React.FC = () => {
       </div>
       {Object.keys(activeProductFilters).some(key => activeProductFilters[key]) && ( // Show "Clear All" only if some filters are active
         <button
+          type="button"
           onClick={clearAllFilters}
           className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"
+          aria-label="Clear all active filters"
         >
           Clear All Filters
         </button>
