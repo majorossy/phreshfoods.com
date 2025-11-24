@@ -43,6 +43,7 @@ import {
   INFO_WINDOW_PIXEL_OFFSET_Y,
   PANEL_RESIZE_DEBOUNCE_MS,
   WINDOW_RESIZE_DEBOUNCE_MS,
+  OVERLAY_RENDER_WAIT_MS,
 } from '../../config/appConfig.ts';
 import { panToWithOffsets, extractLatLngFromPlace, waitForOverlaysToRender } from '../../utils/mapPanning';
 import { Shop } from '../../types';
@@ -465,8 +466,8 @@ const MapComponent: React.FC = () => {
     // If overlays are opening, defer pan until they have valid widths
     const doPan = async () => {
       if (isShopOverlayOpen || isSocialOverlayOpen) {
-        // Wait for overlays to render (max 50ms - quick check)
-        const overlaysReady = await waitForOverlaysToRender(50);
+        // Wait for overlays to render (max OVERLAY_RENDER_WAIT_MS)
+        const overlaysReady = await waitForOverlaysToRender(OVERLAY_RENDER_WAIT_MS);
 
         // Only pan if overlays are ready. If timeout, skip and let ResizeObserver handle it
         if (!overlaysReady) {

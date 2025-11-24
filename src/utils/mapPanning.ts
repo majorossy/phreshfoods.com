@@ -2,6 +2,8 @@
 import {
   AUTO_ZOOM_PADDING_PERCENT,
   DESKTOP_BREAKPOINT_PX,
+  OVERLAY_MIN_WIDTH_PX,
+  OVERLAY_RENDER_WAIT_MS,
 } from '../config/map';
 import type { AutocompletePlace } from '../types';
 
@@ -10,10 +12,10 @@ import type { AutocompletePlace } from '../types';
  * This prevents the "double-pan" issue where the map pans before overlays are rendered,
  * then pans again when they finish rendering.
  *
- * @param maxWaitMs - Maximum time to wait in milliseconds (default: 100ms)
- * @returns Promise that resolves when overlays are ready or timeout occurs
+ * @param maxWaitMs - Maximum time to wait in milliseconds (default: OVERLAY_RENDER_WAIT_MS from config)
+ * @returns Promise that resolves to true if overlays rendered, false if timeout occurred
  */
-export async function waitForOverlaysToRender(maxWaitMs: number = 100): Promise<boolean> {
+export async function waitForOverlaysToRender(maxWaitMs: number = OVERLAY_RENDER_WAIT_MS): Promise<boolean> {
   return new Promise((resolve) => {
     const startTime = Date.now();
 
@@ -25,8 +27,8 @@ export async function waitForOverlaysToRender(maxWaitMs: number = 100): Promise<
       const shopWidth = shopOverlay?.getBoundingClientRect().width || 0;
       const socialWidth = socialOverlay?.getBoundingClientRect().width || 0;
 
-      // Consider overlays ready if they have widths > 50px (arbitrary threshold to filter out rendering artifacts)
-      const overlaysReady = shopWidth > 50 || socialWidth > 50;
+      // Consider overlays ready if they have widths > OVERLAY_MIN_WIDTH_PX (filters out rendering artifacts)
+      const overlaysReady = shopWidth > OVERLAY_MIN_WIDTH_PX || socialWidth > OVERLAY_MIN_WIDTH_PX;
 
       if (overlaysReady) {
         resolve(true);

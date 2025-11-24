@@ -158,6 +158,10 @@ export const RADIUS_CIRCLE_COLOR: string = '#4285F4';        // Google blue for 
 export const INFO_WINDOW_PIXEL_OFFSET_X: number = 0;         // Horizontal offset for InfoWindow
 export const INFO_WINDOW_PIXEL_OFFSET_Y: number = -10;       // Vertical offset for InfoWindow (negative = up)
 
+// Overlay Rendering Detection
+export const OVERLAY_MIN_WIDTH_PX: number = 50;              // Minimum width to consider overlay fully rendered (filters out rendering artifacts)
+export const OVERLAY_RENDER_WAIT_MS: number = 50;            // Maximum time to wait for overlays to render before falling back to ResizeObserver
+
 // Debounce/Throttle Timings
 export const PANEL_RESIZE_DEBOUNCE_MS: number = 100;         // Debounce for listings panel resize events
 export const WINDOW_RESIZE_DEBOUNCE_MS: number = 300;        // Debounce for window resize events
