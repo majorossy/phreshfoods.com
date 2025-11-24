@@ -61,9 +61,9 @@ function App() {
     setCurrentlyDisplayedLocations(filteredAndSortedShops);
   }, [filteredAndSortedShops]);
 
-  // Auto-populate search location when loading a direct farm URL
+  // Auto-populate search location when loading a direct shop URL
   useEffect(() => {
-    const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
+    const slugMatch = location.pathname.match(/^\/(farm-stand|cheesemonger|fishmonger|butcher|antique-shop|brewery|winery|sugar-shack)\/(.+)/);
 
     if (slugMatch && selectedShop && lastPlaceSelectedByAutocomplete === null && mapsApiReady) {
       // Check if there's a saved location in the cookie
@@ -95,12 +95,12 @@ function App() {
     }
   }, [location.pathname, selectedShop, lastPlaceSelectedByAutocomplete, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
 
-  // Handle direct navigation to /farm/:slug, overlay closure, and map click deselection
+  // Handle direct navigation to shop detail pages, overlay closure, and map click deselection
   useEffect(() => {
-    const slugMatch = location.pathname.match(/^\/farm\/(.+)/);
+    const slugMatch = location.pathname.match(/^\/(farm-stand|cheesemonger|fishmonger|butcher|antique-shop|brewery|winery|sugar-shack)\/(.+)/);
 
-    if (slugMatch && slugMatch[1]) {
-      const urlIdentifier = slugMatch[1];
+    if (slugMatch && slugMatch[2]) {
+      const urlIdentifier = slugMatch[2];
 
       // Wait for location data to load before attempting to find the shop
       if (!allLocations || allLocations.length === 0) {
@@ -136,8 +136,8 @@ function App() {
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }
-    } else if (!selectedShop && location.pathname.startsWith('/farm/')) {
-      // Edge case: farm URL but no selected shop and data is loaded
+    } else if (!selectedShop && location.pathname.match(/^\/(farm-stand|cheesemonger|fishmonger|butcher|antique-shop|brewery|winery|sugar-shack)\//)) {
+      // Edge case: shop detail URL but no selected shop and data is loaded
       if (allLocations && allLocations.length > 0) {
         navigate('/', { replace: true });
         if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
@@ -262,11 +262,11 @@ function App() {
           <Route path="/:types" element={<React.Fragment />} />
 
           {/* Shop detail pages */}
-          <Route path="/farm/:slug" element={<React.Fragment />} />
-          <Route path="/cheese/:slug" element={<React.Fragment />} />
-          <Route path="/fish/:slug" element={<React.Fragment />} />
+          <Route path="/farm-stand/:slug" element={<React.Fragment />} />
+          <Route path="/cheesemonger/:slug" element={<React.Fragment />} />
+          <Route path="/fishmonger/:slug" element={<React.Fragment />} />
           <Route path="/butcher/:slug" element={<React.Fragment />} />
-          <Route path="/antique/:slug" element={<React.Fragment />} />
+          <Route path="/antique-shop/:slug" element={<React.Fragment />} />
           <Route path="/brewery/:slug" element={<React.Fragment />} />
           <Route path="/winery/:slug" element={<React.Fragment />} />
           <Route path="/sugar-shack/:slug" element={<React.Fragment />} />

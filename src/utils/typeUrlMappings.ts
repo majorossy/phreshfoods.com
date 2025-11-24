@@ -202,11 +202,11 @@ export function parseTypesFromPath(pathSegment: string | undefined): Set<Locatio
 export function getShopDetailBasePath(type: LocationType): string {
   // Detail page paths (singular/specific forms)
   const detailPaths: Record<LocationType, string> = {
-    farm_stand: '/farm',
-    cheese_shop: '/cheese',
-    fish_monger: '/fish',
+    farm_stand: '/farm-stand',
+    cheese_shop: '/cheesemonger',
+    fish_monger: '/fishmonger',
     butcher: '/butcher',
-    antique_shop: '/antique',
+    antique_shop: '/antique-shop',
     brewery: '/brewery',
     winery: '/winery',
     sugar_shack: '/sugar-shack',

@@ -311,8 +311,21 @@ app.get('/sitemap.xml', async (req, res) => {
         allLocations.forEach(shop => {
             const slug = shop.slug || shop.GoogleProfileID;
             if (slug) {
+                // Map location type to proper detail page URL
+                const typeToDetailPath = {
+                    farm_stand: '/farm-stand',
+                    cheese_shop: '/cheesemonger',
+                    fish_monger: '/fishmonger',
+                    butcher: '/butcher',
+                    antique_shop: '/antique-shop',
+                    brewery: '/brewery',
+                    winery: '/winery',
+                    sugar_shack: '/sugar-shack',
+                };
+                const detailPath = typeToDetailPath[shop.type] || '/farm-stand';
+
                 sitemap += '  <url>\n';
-                sitemap += `    <loc>${baseUrl}/farm/${encodeURIComponent(slug)}</loc>\n`;
+                sitemap += `    <loc>${baseUrl}${detailPath}/${encodeURIComponent(slug)}</loc>\n`;
                 sitemap += `    <lastmod>${now}</lastmod>\n`;
                 sitemap += '    <changefreq>weekly</changefreq>\n';
                 sitemap += '    <priority>0.8</priority>\n';
