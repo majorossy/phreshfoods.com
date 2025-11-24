@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import ErrorBoundary from './ErrorBoundary';
 import React from 'react';
+import { mockGoogleMaps, cleanupGoogleMaps } from '../../test/mocks/googleMaps';
 
 // Extend Vitest matchers with jest-axe
 expect.extend(toHaveNoViolations);
@@ -36,10 +37,13 @@ describe('ErrorBoundary Component', () => {
   const originalError = console.error;
   beforeEach(() => {
     console.error = vi.fn();
+    // Setup Google Maps mock for any components that might need it
+    mockGoogleMaps();
   });
 
   afterEach(() => {
     console.error = originalError;
+    cleanupGoogleMaps();
     vi.clearAllMocks();
   });
 
@@ -170,26 +174,41 @@ describe('ErrorBoundary Component', () => {
 
   describe('Error Reset Functionality', () => {
     it('should reset error state when Try Again is clicked', () => {
+      // Use a stateful component that can control when to throw
+      let shouldThrowError = true;
+
+      const DynamicThrowComponent = () => {
+        if (shouldThrowError) {
+          throw new Error('Test error');
+        }
+        return <div>Child component</div>;
+      };
+
       const { rerender } = render(
         <ErrorBoundary>
-          <ThrowError shouldThrow={true} />
+          <DynamicThrowComponent />
         </ErrorBoundary>
       );
 
+      // Initially should show error
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+      expect(screen.queryByText('Child component')).not.toBeInTheDocument();
 
-      // Click Try Again
+      // Update the error condition
+      shouldThrowError = false;
+
+      // Click Try Again to reset the error boundary
       const tryAgainButton = screen.getByRole('button', { name: /Try Again/i });
       fireEvent.click(tryAgainButton);
 
-      // Re-render with non-throwing component
+      // Force a re-render to let the component re-evaluate
       rerender(
         <ErrorBoundary>
-          <ThrowError shouldThrow={false} />
+          <DynamicThrowComponent />
         </ErrorBoundary>
       );
 
-      // Should show child component again
+      // Should show child component again after reset
       expect(screen.getByText('Child component')).toBeInTheDocument();
       expect(screen.queryByText('Something went wrong')).not.toBeInTheDocument();
     });

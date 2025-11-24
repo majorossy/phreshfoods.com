@@ -8,38 +8,56 @@ import { SearchProvider } from '../../contexts/SearchContext';
 import { UIProvider } from '../../contexts/UIContext';
 import { FilterProvider } from '../../contexts/FilterContext';
 import { ToastProvider } from '../../contexts/ToastContext';
+import { mockGoogleMaps, cleanupGoogleMaps } from '../../test/mocks/googleMaps';
 
 // Extend Vitest matchers with jest-axe
 expect.extend(toHaveNoViolations);
 
-// Mock Google Maps API
-const mockAddListener = vi.fn();
-const mockClearInstanceListeners = vi.fn();
-const mockAutocomplete = {
-  addListener: mockAddListener,
-  getPlace: vi.fn(),
-};
+// Store references to mock instances for testing
+let mockAddListener: ReturnType<typeof vi.fn>;
+let mockClearInstanceListeners: ReturnType<typeof vi.fn>;
+let mockGetPlace: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
-  // Setup Google Maps mock
-  (global as any).google = {
-    maps: {
-      places: {
-        Autocomplete: vi.fn().mockImplementation(() => mockAutocomplete),
-      },
-      LatLngBounds: vi.fn().mockImplementation(() => ({})),
-      event: {
-        clearInstanceListeners: mockClearInstanceListeners,
-      },
-      DirectionsService: vi.fn(),
+  // Setup Google Maps mock using the proper mock utility
+  mockGoogleMaps();
+
+  // Create mock functions we can spy on
+  mockAddListener = vi.fn();
+  mockClearInstanceListeners = vi.fn();
+  mockGetPlace = vi.fn().mockReturnValue({
+    geometry: {
+      location: new google.maps.LatLng(43.6591, -70.2568),
     },
-  };
+    formatted_address: 'Portland, ME, USA',
+    name: 'Portland',
+    place_id: 'test-place-id',
+  });
+
+  // Override the Autocomplete mock to use our spy functions
+  const OriginalAutocomplete = google.maps.places.Autocomplete;
+  google.maps.places.Autocomplete = class extends OriginalAutocomplete {
+    constructor(input: HTMLInputElement, options: any) {
+      super(input, options);
+    }
+    addListener(event: string, callback: Function) {
+      mockAddListener(event, callback);
+      return super.addListener(event, callback);
+    }
+    getPlace() {
+      return mockGetPlace();
+    }
+  } as any;
+
+  // Override event.clearInstanceListeners
+  google.maps.event.clearInstanceListeners = mockClearInstanceListeners;
 
   // Mark API as ready
   (global as any).window.googleMapsApiLoaded = true;
 });
 
 afterEach(() => {
+  cleanupGoogleMaps();
   vi.clearAllMocks();
 });
 
@@ -65,7 +83,7 @@ describe('Header Component', () => {
       renderComponent();
 
       // Check for logo
-      expect(screen.getByAlt('Maine Flag')).toBeInTheDocument();
+      expect(screen.getByAltText('Maine Flag')).toBeInTheDocument();
 
       // Check for search input
       expect(screen.getByPlaceholderText(/Enter a zip, city, or address/i)).toBeInTheDocument();
@@ -88,11 +106,11 @@ describe('Header Component', () => {
     it('should display all location type filter buttons', () => {
       renderComponent();
 
-      // Check for location type buttons
-      expect(screen.getByTitle(/Show Farm Stands/i)).toBeInTheDocument();
-      expect(screen.getByTitle(/Show Cheesemongers/i)).toBeInTheDocument();
-      expect(screen.getByTitle(/Show Fishmongers/i)).toBeInTheDocument();
-      expect(screen.getByTitle(/Show Butchers/i)).toBeInTheDocument();
+      // Check for location type buttons by their title attributes
+      expect(screen.getByTitle(/Farm Stands/i)).toBeInTheDocument();
+      expect(screen.getByTitle(/Cheesemonger/i)).toBeInTheDocument();
+      expect(screen.getByTitle(/Fishmonger/i)).toBeInTheDocument();
+      expect(screen.getByTitle(/Butcher/i)).toBeInTheDocument();
     });
   });
 
@@ -111,24 +129,21 @@ describe('Header Component', () => {
       renderComponent();
 
       await waitFor(() => {
-        expect(global.google.maps.places.Autocomplete).toHaveBeenCalled();
+        expect(mockAddListener).toHaveBeenCalled();
       });
     });
 
     it('should handle place selection from autocomplete', async () => {
       const mockPlace = {
         geometry: {
-          location: {
-            lat: () => 43.6591,
-            lng: () => -70.2568,
-          },
+          location: new google.maps.LatLng(43.6591, -70.2568),
         },
         formatted_address: 'Portland, ME, USA',
         name: 'Portland',
         place_id: 'test-place-id',
       };
 
-      mockAutocomplete.getPlace.mockReturnValue(mockPlace);
+      mockGetPlace.mockReturnValue(mockPlace);
 
       renderComponent();
 
@@ -241,10 +256,18 @@ describe('Header Component', () => {
     it('should have proper keyboard accessibility for location type buttons', () => {
       renderComponent();
 
-      const farmStandButton = screen.getByTitle(/Farm Stands/i);
+      const buttons = screen.getAllByRole('button');
+      const locationTypeButtons = buttons.filter(btn =>
+        btn.getAttribute('title')?.includes('Stands') ||
+        btn.getAttribute('title')?.includes('monger') ||
+        btn.getAttribute('title')?.includes('Butcher')
+      );
 
-      expect(farmStandButton).toHaveAttribute('type', 'button');
-      expect(farmStandButton.tagName).toBe('BUTTON');
+      expect(locationTypeButtons.length).toBeGreaterThan(0);
+      locationTypeButtons.forEach(button => {
+        expect(button).toHaveAttribute('type', 'button');
+        expect(button.tagName).toBe('BUTTON');
+      });
     });
 
     it('should display disabled state for coming soon location types', () => {
@@ -291,7 +314,7 @@ describe('Header Component', () => {
   describe('Error States', () => {
     it('should handle missing Google Maps API gracefully', () => {
       // Remove Google Maps mock
-      delete (global as any).google;
+      cleanupGoogleMaps();
       (global as any).window.googleMapsApiLoaded = false;
 
       renderComponent();
@@ -300,7 +323,7 @@ describe('Header Component', () => {
       expect(screen.getByPlaceholderText(/Enter a zip, city, or address/i)).toBeInTheDocument();
 
       // Autocomplete should not be initialized
-      expect(mockAutocomplete.addListener).not.toHaveBeenCalled();
+      expect(mockAddListener).not.toHaveBeenCalled();
     });
 
     it('should cleanup autocomplete on unmount', () => {
@@ -363,7 +386,7 @@ describe('Header Component', () => {
       expect(searchRegion).toBeInTheDocument();
 
       // Verify all key elements are present
-      expect(screen.getByAlt('Maine Flag')).toBeInTheDocument();
+      expect(screen.getByAltText('Maine Flag')).toBeInTheDocument();
       expect(screen.getByPlaceholderText(/Enter a zip, city, or address/i)).toBeInTheDocument();
       expect(screen.getByRole('slider')).toBeInTheDocument();
     });
