@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Shop } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext';
+import { useTripPlanner } from '../../contexts/TripPlannerContext';
 import ProductIconGrid from '../UI/ProductIconGrid';
 import { getProductConfig } from '../../config/productRegistry';
 
@@ -14,6 +15,7 @@ interface ShopDetailsOverlayProps {
 const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
+  const { addStopToTrip, removeStopFromTrip, isShopInTrip, tripStops } = useTripPlanner();
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['info', 'hours', 'products'])); // All open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
 
@@ -254,8 +256,8 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
             >
             {/* Basic Info */}
             <div className="space-y-2 mb-4">
-              {/* Phone and Website - Side by side */}
-              <div className="flex items-center gap-4">
+              {/* Phone, Website, and Add to Trip - Side by side */}
+              <div className="flex items-center gap-3 flex-wrap">
                 {/* Phone */}
                 {displayPhone && (
                   <div className="flex items-center gap-1.5">
@@ -289,6 +291,51 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
                     <span className="text-xs text-gray-500 dark:text-gray-400">Website: N/A</span>
                   )}
                 </div>
+
+                {/* Add to Trip Button - Small & Compact */}
+                <button
+                  onClick={() => {
+                    if (isShopInTrip(shop.slug)) {
+                      const stop = tripStops.find(s => s.shop.slug === shop.slug);
+                      if (stop) {
+                        removeStopFromTrip(stop.id);
+                      }
+                    } else {
+                      addStopToTrip(shop);
+                    }
+                  }}
+                  className={`
+                    ml-auto flex items-center gap-1 px-2 py-1 rounded text-[0.65rem] font-medium
+                    transition-all duration-150 group
+                    ${isShopInTrip(shop.slug)
+                      ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400'
+                      : 'bg-blue-600 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/30 dark:hover:text-green-400 text-white'
+                    }
+                  `}
+                  aria-label={isShopInTrip(shop.slug) ? `Remove ${displayName} from your trip` : `Add ${displayName} to trip`}
+                  title={isShopInTrip(shop.slug) ? 'Remove from trip' : 'Add to trip'}
+                >
+                  {isShopInTrip(shop.slug) ? (
+                    <>
+                      {/* Check icon - shown by default */}
+                      <svg className="w-3 h-3 group-hover:hidden" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      {/* Minus icon - shown on hover */}
+                      <svg className="w-3 h-3 hidden group-hover:block" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 000 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                      </svg>
+                      <span>In Trip</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span>Trip</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
 

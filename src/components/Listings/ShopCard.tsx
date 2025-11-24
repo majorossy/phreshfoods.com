@@ -8,6 +8,7 @@ import { kmToMiles, escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext.tsx'; // For selectedShop styling
 import { useFilters } from '../../contexts/FilterContext.tsx';
 import { useSearch } from '../../contexts/SearchContext.tsx';
+import { useTripPlanner } from '../../contexts/TripPlannerContext.tsx';
 import { encodeFiltersToURL } from '../../utils/urlSync';
 
 interface ShopCardProps {
@@ -60,6 +61,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const { selectedShop, hoveredShop, setHoveredShop } = useUI(); // Get selectedShop and hoveredShop from UI context
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { lastPlaceSelectedByAutocomplete, currentRadius } = useSearch();
+  const { addStopToTrip, removeStopFromTrip, isShopInTrip, tripStops } = useTripPlanner();
   const cardRef = useRef<HTMLDivElement>(null);
   const locationDisplay = getLocationTypeDisplay(shop.type);
 
@@ -246,12 +248,46 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
         )}
 
         <div className="!mt-auto pt-2"> {/* Pushes button to bottom, !mt-auto overrides space-y for this specific div */}
+          {/* Add to Trip Button */}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); handleCardClick();}} // Stop propagation to prevent double click event if parent also has one
-            className="w-full text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 py-1.5 px-3 rounded-md bg-blue-50 dark:bg-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (isShopInTrip(shop.slug)) {
+                // Find the stop ID and remove it
+                const stop = tripStops.find(s => s.shop.slug === shop.slug);
+                if (stop) {
+                  removeStopFromTrip(stop.id);
+                }
+              } else {
+                addStopToTrip(shop);
+              }
+            }}
+            className={`
+              w-full text-xs font-semibold py-1.5 px-2 rounded-md transition-colors
+              flex items-center justify-center gap-1.5
+              ${isShopInTrip(shop.slug)
+                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-700 dark:hover:text-red-400'
+                : 'bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900 hover:text-blue-800 dark:hover:text-blue-300'
+              }
+            `}
+            title={isShopInTrip(shop.slug) ? 'Remove from trip' : 'Add to trip'}
           >
-            View Details
+            {isShopInTrip(shop.slug) ? (
+              <>
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>In Trip</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Add to Trip</span>
+              </>
+            )}
           </button>
         </div>
       </div>

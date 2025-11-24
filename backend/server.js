@@ -897,27 +897,77 @@ app.get('/api/directions', async (req, res) => {
         return res.status(400).json({ error: 'Origin and destination query parameters are required' });
     }
 
-    const cacheKeyIdentifier = `o=${encodeURIComponent(origin)}_d=${encodeURIComponent(destination)}`; // Ensure key is consistent
+    // Parse optional waypoints parameter (JSON array of {lat, lng} objects)
+    let waypoints = [];
+    if (req.query.waypoints) {
+        try {
+            waypoints = JSON.parse(req.query.waypoints);
+            if (!Array.isArray(waypoints)) {
+                return res.status(400).json({ error: 'Waypoints must be a JSON array' });
+            }
+            // Validate max waypoints (9 for free tier, 25 for premium)
+            if (waypoints.length > 9) {
+                return res.status(400).json({
+                    error: 'Too many waypoints',
+                    details: 'Maximum 9 waypoints allowed (10 total stops including origin and destination)'
+                });
+            }
+        } catch (err) {
+            return res.status(400).json({ error: 'Invalid waypoints JSON format' });
+        }
+    }
+
+    // Parse optional optimize waypoints parameter
+    const optimizeWaypoints = req.query.optimizeWaypoints === 'true';
+
+    // Build cache key including waypoints
+    let cacheKeyIdentifier = `o=${encodeURIComponent(origin)}_d=${encodeURIComponent(destination)}`;
+    if (waypoints.length > 0) {
+        const waypointsStr = waypoints.map(w => `${w.lat},${w.lng}`).join('|');
+        cacheKeyIdentifier += `_w=${encodeURIComponent(waypointsStr)}`;
+    }
+    if (optimizeWaypoints) {
+        cacheKeyIdentifier += '_opt=1';
+    }
+
     const cacheKey = cacheService.getCacheKey(cacheService.CACHE_PREFIXES.DIRECTIONS, cacheKeyIdentifier);
     const cachedResult = cacheService.get(cacheKey);
     if (cachedResult) {
         return res.json(cachedResult);
     }
 
-    console.log(`[Server On-Demand API Call - Directions] From: ${origin}, To: ${destination}`);
+    const waypointCount = waypoints.length;
+    console.log(`[Server On-Demand API Call - Directions] From: ${origin}, To: ${destination}${waypointCount > 0 ? `, Waypoints: ${waypointCount}` : ''}${optimizeWaypoints ? ', Optimized' : ''}`);
+
     try {
+        // Build request params
+        const params = {
+            origin: origin,
+            destination: destination,
+            key: GOOGLE_API_KEY_BACKEND,
+        };
+
+        // Add waypoints if present
+        if (waypoints.length > 0) {
+            params.waypoints = waypoints.map(w => `${w.lat},${w.lng}`);
+            params.optimize = optimizeWaypoints;
+        }
+
         const response = await googleMapsClient.directions({
-            params: {
-                origin: origin,
-                destination: destination,
-                key: GOOGLE_API_KEY_BACKEND,
-            },
+            params: params,
             timeout: 10000,
         });
 
         if (response.data.status === Status.OK) {
             cacheService.set(cacheKey, response.data, 3600); // Cache directions for 1 hour
             res.json(response.data);
+        } else if (response.data.status === 'MAX_WAYPOINTS_EXCEEDED') {
+            console.warn(`[Server On-Demand] Too many waypoints requested`);
+            res.status(400).json({
+                error: 'Too many waypoints',
+                status: 'MAX_WAYPOINTS_EXCEEDED',
+                details: 'Maximum 9 waypoints allowed for standard API tier'
+            });
         } else {
             console.warn(`[Server On-Demand] Directions request failed from "${origin}" to "${destination}": ${response.data.status}`, response.data.error_message || '');
             res.status(400).json({ error: `Could not get directions. Status: ${response.data.status}`, details: response.data.error_message });

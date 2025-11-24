@@ -6,6 +6,7 @@ import { SearchProvider } from './SearchContext';
 import { FilterProvider } from './FilterContext';
 import { UIProvider } from './UIContext';
 import { DirectionsProvider } from './DirectionsContext';
+import { TripPlannerProvider } from './TripPlannerContext';
 
 /**
  * Composite provider that wraps all domain-specific contexts
@@ -23,7 +24,9 @@ export const AppProviders = ({ children }: { children: ReactNode }) => {
           <FilterProvider>
             <UIProvider>
               <DirectionsProvider>
-                {children}
+                <TripPlannerProvider>
+                  {children}
+                </TripPlannerProvider>
               </DirectionsProvider>
             </UIProvider>
           </FilterProvider>

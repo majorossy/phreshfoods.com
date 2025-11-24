@@ -6,7 +6,26 @@ import { escapeHTMLSafe } from '../../utils';
 import { useDirections } from '../../contexts/DirectionsContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
+import { useTripPlanner } from '../../contexts/TripPlannerContext';
 import { RATE_LIMIT_CACHE_DURATION_MS } from '../../config/appConfig';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { TripStopCard } from '../TripPlanner/TripStopCard';
 import {
   getInstagramUrl,
   getInstagramDisplayName,
@@ -42,6 +61,32 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   const {
     lastPlaceSelectedByAutocomplete,
   } = useSearch();
+
+  const {
+    tripStops,
+    isTripMode,
+    tripDirectionsResult,
+    isOptimizedRoute,
+    isFetchingTripRoute,
+    tripError,
+    addStopToTrip,
+    removeStopFromTrip,
+    reorderStops,
+    toggleRouteOptimization,
+    calculateTripRoute,
+    clearTrip,
+    toggleTripMode,
+    isShopInTrip,
+    getTripShareUrl,
+  } = useTripPlanner();
+
+  // Drag and drop sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // When the overlay opens for a new shop, reset directions, collapse state, and set initial tab
   useEffect(() => {
@@ -195,6 +240,54 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   const handleClearDirectionsClick = () => {
     clearDirections();
     setManualOrigin('');
+  };
+
+  // Trip planner handlers
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = tripStops.findIndex(stop => stop.id === active.id);
+      const newIndex = tripStops.findIndex(stop => stop.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        reorderStops(oldIndex, newIndex);
+      }
+    }
+  };
+
+  const handleCalculateTripRoute = () => {
+    if (!lastPlaceSelectedByAutocomplete?.geometry?.location) {
+      showToast('Please set a starting location by searching in the header', 'error');
+      return;
+    }
+
+    const location = lastPlaceSelectedByAutocomplete.geometry.location;
+    const origin = {
+      lat: typeof location.lat === 'function' ? location.lat() : location.lat,
+      lng: typeof location.lng === 'function' ? location.lng() : location.lng
+    };
+
+    calculateTripRoute(origin);
+  };
+
+  const handleShareTrip = () => {
+    const url = getTripShareUrl();
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Trip link copied to clipboard!', 'success');
+    }).catch(() => {
+      showToast('Failed to copy link. Please try again.', 'error');
+    });
+  };
+
+  const handleClearTrip = () => {
+    if (window.confirm('Clear all stops from your trip?')) {
+      clearTrip();
+    }
+  };
+
+  const handleAddCurrentShopToTrip = () => {
+    addStopToTrip(shop);
   };
 
   const handleTabClick = (tabName: string) => {
@@ -545,77 +638,267 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         {/* Directions Tab Panel */}
         {activeTab === 'directions' && (
           <div id="social-directions-panel" className="p-2 sm:p-4">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">
-              Directions to {shopNameForDisplay}
-            </h3>
-            {shopAddressForDisplay ? (
-              <div className="mb-4">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong className="font-medium">Address:</strong> {shopAddressForDisplay}
-                </p>
-                {shopLatLngForDisplay && ( <p className="text-xs text-gray-500 dark:text-gray-400">Coordinates: {shopLatLngForDisplay}</p> )}
-              </div>
-            ) : shopLatLngForDisplay ? (
-                 <div className="mb-4"> <p className="text-sm text-gray-700 dark:text-gray-300"> <strong className="font-medium">Coordinates:</strong> {shopLatLngForDisplay} </p> </div>
-            ) : (
-              <p className="text-sm text-red-600 dark:text-red-400 mb-4">Address and coordinates are not available.</p>
-            )}
-            
-            <div className="mb-4 space-y-3">
-                <div>
-                    <label htmlFor="originInput" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Starting Point
-                    </label>
-                    <input type="text" id="originInput" value={manualOrigin} onChange={(e) => { setManualOrigin(e.target.value); if (e.target.value) setUseCurrentLocation(false); }} placeholder={lastPlaceSelectedByAutocomplete?.formatted_address || "Enter address or city"} className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm dark:bg-gray-700 dark:text-gray-200" />
-                </div>
-                <div className="flex items-center">
-                    <input id="useCurrentLocationCheckbox" type="checkbox" checked={useCurrentLocation} onChange={(e) => { setUseCurrentLocation(e.target.checked); if (e.target.checked) setManualOrigin(''); }} className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2" />
-                    <label htmlFor="useCurrentLocationCheckbox" className="text-xs text-gray-700 dark:text-gray-300">Use my current location</label>
-                </div>
+            {/* Header with Trip Mode Toggle */}
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+                {isTripMode ? 'Trip Planner' : `Directions to ${shopNameForDisplay}`}
+              </h3>
+              <button
+                onClick={toggleTripMode}
+                className="text-xs px-3 py-1 rounded-md border transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
+                title={isTripMode ? 'Switch to single destination' : 'Plan a multi-stop trip'}
+              >
+                {isTripMode ? '📍 Single' : '🗺️ Trip'}
+              </button>
             </div>
-            
-            <div className="flex space-x-2 mb-4">
-                <button onClick={handleGetDirectionsClick} disabled={isFetchingDirections || !shopDestinationForApi} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                  {isFetchingDirections ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Calculating...
-                    </>
-                  ) : 'Get Directions'}
-                </button>
-                {directionsResult && (
-                     <button onClick={handleClearDirectionsClick} className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                        Clear Route
-                    </button>
+
+            {/* TRIP MODE */}
+            {isTripMode ? (
+              <div className="space-y-4">
+                {/* Starting Point Display */}
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+                  <p className="text-xs font-medium text-green-800 dark:text-green-300 mb-1">Starting from:</p>
+                  <p className="text-sm text-green-900 dark:text-green-200">
+                    {lastPlaceSelectedByAutocomplete?.formatted_address || 'Set location in search bar'}
+                  </p>
+                </div>
+
+                {/* Add Current Shop Button */}
+                {!isShopInTrip(shop.slug) && (
+                  <button
+                    onClick={handleAddCurrentShopToTrip}
+                    className="w-full px-3 py-2 border-2 border-dashed border-blue-300 dark:border-blue-700 text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    + Add {shop.Name} to Trip
+                  </button>
                 )}
-            </div>
 
-            {directionsError && <p className="text-sm text-red-500 dark:text-red-400 mb-2">{directionsError}</p>}
+                {/* Trip Stops List */}
+                {tripStops.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Stops ({tripStops.length})
+                      </p>
+                      <label className="flex items-center text-xs text-gray-600 dark:text-gray-400">
+                        <input
+                          type="checkbox"
+                          checked={isOptimizedRoute}
+                          onChange={toggleRouteOptimization}
+                          className="mr-1 h-3 w-3"
+                        />
+                        Optimize
+                      </label>
+                    </div>
 
-            {isFetchingDirections && !directionsResult && !directionsError && (
-              <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400" role="status" aria-live="polite">
-                <svg className="animate-spin h-8 w-8 text-blue-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span className="text-sm font-medium">Calculating route...</span>
-              </div>
-            )}
-
-            {directionsResult?.routes?.[0]?.legs?.[0]?.steps && (
-              <div className="mt-4 text-xs space-y-2 directions-steps custom-scrollbar overflow-y-auto max-h-[200px] sm:max-h-[250px] p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50">
-                <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                    Total: {directionsResult.routes[0].legs[0].distance?.text} - {directionsResult.routes[0].legs[0].duration?.text}
-                </p>
-                {directionsResult.routes[0].legs.flatMap(leg => leg.steps || []).map((step, stepIndex) => (
-                  <div key={`step-${stepIndex}`} className="py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
-                    <span className="text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(step.instructions || '') }} />
-                    {step.distance?.text && ( <span className="text-gray-500 dark:text-gray-400 text-[0.65rem] ml-1"> ({step.distance.text})</span> )}
+                    <DndContext
+                      sensors={sensors}
+                      collisionDetection={closestCenter}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={tripStops.map(s => s.id)}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto custom-scrollbar">
+                          {tripStops.map((stop, index) => (
+                            <TripStopCard
+                              key={stop.id}
+                              stop={stop}
+                              index={index}
+                              onRemove={removeStopFromTrip}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    </DndContext>
                   </div>
-                ))}
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <svg className="w-12 h-12 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <p className="text-sm">Add shops to start planning your trip</p>
+                  </div>
+                )}
+
+                {/* Trip Action Buttons */}
+                {tripStops.length > 0 && (
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleCalculateTripRoute}
+                      disabled={isFetchingTripRoute}
+                      className="w-full px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                    >
+                      {isFetchingTripRoute ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Calculating...
+                        </>
+                      ) : 'Calculate Route'}
+                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleShareTrip}
+                        className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        Share
+                      </button>
+                      <button
+                        onClick={handleClearTrip}
+                        className="flex-1 px-3 py-2 border border-red-300 dark:border-red-800 text-sm font-medium rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Trip Error */}
+                {tripError && (
+                  <p className="text-sm text-red-500 dark:text-red-400">{tripError}</p>
+                )}
+
+                {/* Trip Directions Results */}
+                {tripDirectionsResult?.routes?.[0]?.legs && tripDirectionsResult.routes[0].legs.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Trip Route ({tripDirectionsResult.routes[0].legs.length} stops)
+                    </p>
+                    <div className="text-xs space-y-3 custom-scrollbar overflow-y-auto max-h-[300px] p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50">
+                      {tripDirectionsResult.routes[0].legs.map((leg, legIndex) => (
+                        <div key={`leg-${legIndex}`} className="pb-3 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                          <p className="font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                            Stop {legIndex + 1} → Stop {legIndex + 2}
+                          </p>
+                          <p className="text-gray-600 dark:text-gray-400 mb-2">
+                            {leg.distance?.text} - {leg.duration?.text}
+                          </p>
+                          {leg.steps?.slice(0, 3).map((step, stepIndex) => (
+                            <div key={`step-${stepIndex}`} className="py-1 text-gray-700 dark:text-gray-300">
+                              <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(step.instructions || '') }} />
+                            </div>
+                          ))}
+                          {(leg.steps?.length || 0) > 3 && (
+                            <p className="text-gray-500 dark:text-gray-400 italic mt-1">
+                              + {(leg.steps?.length || 0) - 3} more steps
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* SINGLE DESTINATION MODE */
+              <div>
+                {shopAddressForDisplay ? (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      <strong className="font-medium">Address:</strong> {shopAddressForDisplay}
+                    </p>
+                    {shopLatLngForDisplay && <p className="text-xs text-gray-500 dark:text-gray-400">Coordinates: {shopLatLngForDisplay}</p>}
+                  </div>
+                ) : shopLatLngForDisplay ? (
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
+                      <strong className="font-medium">Coordinates:</strong> {shopLatLngForDisplay}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-600 dark:text-red-400 mb-4">Address and coordinates are not available.</p>
+                )}
+
+                <div className="mb-4 space-y-3">
+                  <div>
+                    <label htmlFor="originInput" className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Starting Point</label>
+                    <input
+                      type="text"
+                      id="originInput"
+                      value={manualOrigin}
+                      onChange={(e) => { setManualOrigin(e.target.value); if (e.target.value) setUseCurrentLocation(false); }}
+                      placeholder={lastPlaceSelectedByAutocomplete?.formatted_address || "Enter address or city"}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm dark:bg-gray-700 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="useCurrentLocationCheckbox"
+                      type="checkbox"
+                      checked={useCurrentLocation}
+                      onChange={(e) => { setUseCurrentLocation(e.target.checked); if (e.target.checked) setManualOrigin(''); }}
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-2"
+                    />
+                    <label htmlFor="useCurrentLocationCheckbox" className="text-xs text-gray-700 dark:text-gray-300">Use my current location</label>
+                  </div>
+                </div>
+
+                <div className="flex space-x-2 mb-4">
+                  <button
+                    onClick={handleGetDirectionsClick}
+                    disabled={isFetchingDirections || !shopDestinationForApi}
+                    className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isFetchingDirections ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Calculating...
+                      </>
+                    ) : 'Get Directions'}
+                  </button>
+                  {directionsResult && (
+                    <button
+                      onClick={handleClearDirectionsClick}
+                      className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                    >
+                      Clear Route
+                    </button>
+                  )}
+                </div>
+
+                {/* Add to Trip Button */}
+                {directionsResult && !isShopInTrip(shop.slug) && (
+                  <button
+                    onClick={handleAddCurrentShopToTrip}
+                    className="w-full mb-4 px-3 py-2 border border-blue-300 dark:border-blue-700 text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                  >
+                    Add to My Trip
+                  </button>
+                )}
+
+                {directionsError && <p className="text-sm text-red-500 dark:text-red-400 mb-2">{directionsError}</p>}
+
+                {isFetchingDirections && !directionsResult && !directionsError && (
+                  <div className="flex items-center justify-center p-8 text-gray-500 dark:text-gray-400" role="status" aria-live="polite">
+                    <svg className="animate-spin h-8 w-8 text-blue-600 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span className="text-sm font-medium">Calculating route...</span>
+                  </div>
+                )}
+
+                {directionsResult?.routes?.[0]?.legs?.[0]?.steps && (
+                  <div className="mt-4 text-xs space-y-2 directions-steps custom-scrollbar overflow-y-auto max-h-[200px] sm:max-h-[250px] p-2 border border-gray-200 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-700/50">
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                      Total: {directionsResult.routes[0].legs[0].distance?.text} - {directionsResult.routes[0].legs[0].duration?.text}
+                    </p>
+                    {directionsResult.routes[0].legs.flatMap(leg => leg.steps || []).map((step, stepIndex) => (
+                      <div key={`step-${stepIndex}`} className="py-1.5 border-b border-gray-200 dark:border-gray-600 last:border-b-0">
+                        <span className="text-gray-800 dark:text-gray-200" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(step.instructions || '') }} />
+                        {step.distance?.text && <span className="text-gray-500 dark:text-gray-400 text-[0.65rem] ml-1">({step.distance.text})</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

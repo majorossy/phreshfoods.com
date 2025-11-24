@@ -10,7 +10,7 @@ interface ToastConfig {
 }
 
 interface ToastContextType {
-  showToast: (type: ToastType, message: string, duration?: number) => void;
+  showToast: (message: string, type: ToastType, duration?: number) => void;
   showSuccess: (message: string, duration?: number) => void;
   showError: (message: string, duration?: number) => void;
   showWarning: (message: string, duration?: number) => void;
@@ -30,7 +30,7 @@ export const useToast = () => {
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastConfig[]>([]);
 
-  const showToast = useCallback((type: ToastType, message: string, duration: number = 5000) => {
+  const showToast = useCallback((message: string, type: ToastType, duration: number = 5000) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
     const newToast: ToastConfig = { id, type, message, duration };
 
@@ -38,19 +38,19 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   }, []);
 
   const showSuccess = useCallback((message: string, duration?: number) => {
-    showToast('success', message, duration);
+    showToast(message, 'success', duration);
   }, [showToast]);
 
   const showError = useCallback((message: string, duration?: number) => {
-    showToast('error', message, duration);
+    showToast(message, 'error', duration);
   }, [showToast]);
 
   const showWarning = useCallback((message: string, duration?: number) => {
-    showToast('warning', message, duration);
+    showToast(message, 'warning', duration);
   }, [showToast]);
 
   const showInfo = useCallback((message: string, duration?: number) => {
-    showToast('info', message, duration);
+    showToast(message, 'info', duration);
   }, [showToast]);
 
   const removeToast = useCallback((id: string) => {

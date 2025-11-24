@@ -6,6 +6,7 @@ import { useSearch } from '../../contexts/SearchContext.tsx';
 import { useUI } from '../../contexts/UIContext.tsx';
 import { useDirections } from '../../contexts/DirectionsContext.tsx';
 import { useFilters } from '../../contexts/FilterContext.tsx';
+import { useTripPlanner } from '../../contexts/TripPlannerContext.tsx';
 import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
@@ -65,6 +66,7 @@ const MapComponent: React.FC = () => {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMarkerHovered = useRef<boolean>(false);
   const isInfoWindowHovered = useRef<boolean>(false);
+  const tripStopMarkersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
 
   const navigate = useNavigate();
 
@@ -74,6 +76,7 @@ const MapComponent: React.FC = () => {
   const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
   const { directionsResult, clearDirections } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
+  const { tripStops, isTripMode, tripDirectionsResult } = useTripPlanner();
 
   const closeNativeInfoWindow = useCallback(() => {
     if (googleInfoWindowRef.current?.getMap()) {
@@ -650,15 +653,19 @@ const MapComponent: React.FC = () => {
   }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopOverlayOpen, isSocialOverlayOpen]);
 
   // --- ADDED: Effect to display/clear directions route on map ---
+  // Priority: tripDirectionsResult takes precedence over single directionsResult
   useEffect(() => {
     if (mapsApiReady && directionsRendererRef.current) {
-      if (directionsResult) {
-        directionsRendererRef.current.setDirections(directionsResult);
+      // Show trip directions if available, otherwise show single destination directions
+      const directionsToShow = tripDirectionsResult || directionsResult;
+
+      if (directionsToShow) {
+        directionsRendererRef.current.setDirections(directionsToShow);
       } else {
         directionsRendererRef.current.setDirections({ routes: [] } as google.maps.DirectionsResult);
       }
     }
-  }, [directionsResult, mapsApiReady]);
+  }, [directionsResult, tripDirectionsResult, mapsApiReady]);
   // --- END ADDED ---
 
   // Effect to handle InfoWindow content rendering
