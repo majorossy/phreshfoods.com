@@ -51,6 +51,8 @@ import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath } from '../../utils/typeUrlMappings';
 import { encodeFiltersToURL } from '../../utils/urlSync';
 import InfoWindowContent from './InfoWindowContent.tsx';
+import { logger } from '../../utils/logger';
+
 
 const MapComponent: React.FC = () => {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -166,7 +168,7 @@ const MapComponent: React.FC = () => {
         s => s.slug === shop.slug || s.GoogleProfileID === shop.GoogleProfileID
       ) || shop;
 
-      console.log('Marker clicked - shop has distance:', (shopWithDistance as any).distance);
+      logger.log('Marker clicked - shop has distance:', (shopWithDistance as any).distance);
 
       setSelectedShop(shopWithDistance);
       openShopOverlays(shopWithDistance, 'shop');

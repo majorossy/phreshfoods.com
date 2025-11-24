@@ -12,6 +12,8 @@ import {
 } from '../types/trip';
 import { useToast } from './ToastContext';
 import { useFarmData } from './LocationDataContext';
+import { logger } from '../utils/logger';
+
 
 interface TripPlannerContextType {
   // State
@@ -104,7 +106,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (stops.length > 0) {
         setTripStops(stops);
         setIsOptimizedRoute(stored.isOptimizedRoute);
-        console.log('[Trip Planner] Loaded trip from localStorage:', stops.length, 'stops');
+        logger.log('[Trip Planner] Loaded trip from localStorage:', stops.length, 'stops');
       }
     }
   }, [allFarmStands, showToast]);
@@ -245,7 +247,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         params.set('optimizeWaypoints', 'true');
       }
 
-      console.log('[Trip Planner] Calculating route with', waypoints.length, 'waypoints', isOptimizedRoute ? '(optimized)' : '(in order)');
+      logger.log('[Trip Planner] Calculating route with', waypoints.length, 'waypoints', isOptimizedRoute ? '(optimized)' : '(in order)');
 
       const response = await fetch(`/api/directions?${params.toString()}`, {
         // Add timeout to prevent hanging requests

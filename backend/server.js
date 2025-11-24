@@ -91,10 +91,44 @@ app.use(helmet({
 }));
 
 // CORS configuration - restrict to specific origins in production
+const getAllowedOrigins = () => {
+  if (process.env.NODE_ENV === 'development') {
+    // In development, use DEV_ALLOWED_ORIGINS or allow all
+    return process.env.DEV_ALLOWED_ORIGINS
+      ? process.env.DEV_ALLOWED_ORIGINS.split(',').map(origin => origin.trim())
+      : true; // Allow all origins in dev if not specified
+  } else {
+    // In production, require ALLOWED_ORIGINS to be set
+    if (!process.env.ALLOWED_ORIGINS) {
+      console.error('⚠️  WARNING: ALLOWED_ORIGINS not set in production! Using restrictive default.');
+      return ['https://phreshfoods.com', 'https://www.phreshfoods.com'];
+    }
+    return process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
+  }
+};
+
 const corsOptions = {
-  origin: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+  origin: (origin, callback) => {
+    const allowedOrigins = getAllowedOrigins();
+
+    // Allow requests with no origin (e.g., mobile apps, Postman)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Check if origin is allowed
+    if (allowedOrigins === true ||
+        (Array.isArray(allowedOrigins) && allowedOrigins.includes(origin))) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked request from origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 app.use(cors(corsOptions));
 
@@ -1095,16 +1129,47 @@ app.get('/api/photo', async (req, res) => {
 });
 
 // Route to manually flush the on-demand cache and trigger data refresh
-app.get('/api/cache/flush-and-refresh', async (req, res) => { // Renamed for clarity
+// Admin authentication middleware
+const authenticateAdmin = (req, res, next) => {
+    // Check for admin token in header or query param
+    const token = req.headers['x-admin-token'] || req.query.token;
+    const expectedToken = process.env.ADMIN_TOKEN;
+
+    if (!expectedToken) {
+        // No admin token configured - only allow in development
+        if (process.env.NODE_ENV === 'development') {
+            return next();
+        }
+        return res.status(403).json({ error: 'Admin access not configured' });
+    }
+
+    if (token !== expectedToken) {
+        console.warn(`Failed admin authentication attempt from IP: ${req.ip}`);
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    next();
+};
+
+app.get('/api/cache/flush-and-refresh', authenticateAdmin, async (req, res) => { // Protected with auth
     if (process.env.NODE_ENV === 'development' || process.env.ALLOW_CACHE_FLUSH === 'true') {
+        console.log(`Cache flush requested by authenticated admin from IP: ${req.ip}`);
         console.log('Flushing on-demand API cache...');
         cacheService.flush();
         console.log('Triggering farm stand data refresh...');
         try {
             await updateFarmStandsData(); // Wait for it to complete
-            res.send('On-demand API cache flushed and farm stand data refresh triggered and completed.');
+            res.json({
+                success: true,
+                message: 'On-demand API cache flushed and farm stand data refresh completed.',
+                timestamp: new Date().toISOString()
+            });
         } catch (e) {
-            res.status(500).send('On-demand API cache flushed, but farm stand data refresh failed.');
+            res.status(500).json({
+                success: false,
+                message: 'On-demand API cache flushed, but farm stand data refresh failed.',
+                error: e.message
+            });
         }
     } else {
         res.status(403).send('Forbidden.');

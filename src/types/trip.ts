@@ -1,5 +1,11 @@
 // src/types/trip.ts
 import { Shop } from './shop';
+import {
+  getTripFromStorage,
+  saveTripToStorage as saveValidatedTrip,
+  clearTripFromStorage,
+  isStorageAvailable
+} from '../utils/storageValidation';
 
 /**
  * Represents a single stop in a trip
@@ -12,11 +18,13 @@ export interface TripStop {
 
 /**
  * Serialized trip data for localStorage persistence
+ * Now includes version for migration support
  */
 export interface TripPersistence {
   stopSlugs: string[]; // Array of shop slugs in order
   isOptimizedRoute: boolean;
   timestamp: number;
+  version?: number; // Added for versioning
 }
 
 /**

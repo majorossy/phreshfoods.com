@@ -146,9 +146,9 @@ class RequestCache {
 // Export singleton instance
 export const requestCache = new RequestCache();
 
-// Expose on window for debugging
+// Expose on window for debugging (with proper typing from global.d.ts)
 if (typeof window !== 'undefined') {
-  (window as any).clearAppCache = () => {
+  window.clearAppCache = () => {
     requestCache.clearAll();
   };
 }
