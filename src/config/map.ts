@@ -159,5 +159,5 @@ export const INFO_WINDOW_PIXEL_OFFSET_X: number = 0;         // Horizontal offse
 export const INFO_WINDOW_PIXEL_OFFSET_Y: number = -10;       // Vertical offset for InfoWindow (negative = up)
 
 // Debounce/Throttle Timings
-export const PANEL_RESIZE_DEBOUNCE_MS: number = 150;         // Debounce for listings panel resize events
+export const PANEL_RESIZE_DEBOUNCE_MS: number = 100;         // Debounce for listings panel resize events
 export const WINDOW_RESIZE_DEBOUNCE_MS: number = 300;        // Debounce for window resize events

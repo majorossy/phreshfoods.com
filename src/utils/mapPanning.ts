@@ -6,6 +6,50 @@ import {
 import type { AutocompletePlace } from '../types';
 
 /**
+ * Wait for overlay elements to be rendered in the DOM with valid widths
+ * This prevents the "double-pan" issue where the map pans before overlays are rendered,
+ * then pans again when they finish rendering.
+ *
+ * @param maxWaitMs - Maximum time to wait in milliseconds (default: 100ms)
+ * @returns Promise that resolves when overlays are ready or timeout occurs
+ */
+export async function waitForOverlaysToRender(maxWaitMs: number = 100): Promise<boolean> {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+
+    const checkOverlays = () => {
+      // Check if overlay elements exist and have valid widths
+      const shopOverlay = document.getElementById('detailsOverlayShop');
+      const socialOverlay = document.getElementById('detailsOverlaySocial');
+
+      const shopWidth = shopOverlay?.getBoundingClientRect().width || 0;
+      const socialWidth = socialOverlay?.getBoundingClientRect().width || 0;
+
+      // Consider overlays ready if they have widths > 50px (arbitrary threshold to filter out rendering artifacts)
+      const overlaysReady = shopWidth > 50 || socialWidth > 50;
+
+      if (overlaysReady) {
+        resolve(true);
+        return;
+      }
+
+      // Check if we've exceeded max wait time
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= maxWaitMs) {
+        resolve(false); // Timeout - let ResizeObserver handle it
+        return;
+      }
+
+      // Schedule next check using requestAnimationFrame for optimal timing
+      requestAnimationFrame(checkOverlays);
+    };
+
+    // Start checking on next animation frame
+    requestAnimationFrame(checkOverlays);
+  });
+}
+
+/**
  * Extract google.maps.LatLng from an AutocompletePlace's geometry.location
  * Handles both LatLng objects and LatLngLiteral objects
  *

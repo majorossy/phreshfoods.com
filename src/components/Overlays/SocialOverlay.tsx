@@ -346,7 +346,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open"
         style={{
           transform: isCollapsed ? 'translateX(-100%)' : 'translateX(0)',
-          transition: 'transform 0.3s ease-in-out'
+          transition: 'transform 0.15s ease-in-out'
         }}
       >
         {/* Social Icons - Only visible when collapsed */}

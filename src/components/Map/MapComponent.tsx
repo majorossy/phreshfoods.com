@@ -44,7 +44,7 @@ import {
   PANEL_RESIZE_DEBOUNCE_MS,
   WINDOW_RESIZE_DEBOUNCE_MS,
 } from '../../config/appConfig.ts';
-import { panToWithOffsets, extractLatLngFromPlace } from '../../utils/mapPanning';
+import { panToWithOffsets, extractLatLngFromPlace, waitForOverlaysToRender } from '../../utils/mapPanning';
 import { Shop } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath } from '../../utils/typeUrlMappings';
@@ -461,14 +461,30 @@ const MapComponent: React.FC = () => {
 
     const shopLatLng = new window.google.maps.LatLng(selectedShop.lat, selectedShop.lng);
 
-    // Single smooth pan with all offsets calculated upfront
-    panToWithOffsets({
-      map,
-      targetLatLng: shopLatLng,
-      isShopOverlayOpen,
-      isSocialOverlayOpen,
-      includeInfoWindowOffset: true, // Frame info window above marker
-    });
+    // Wait for overlays to render before panning to avoid double-pan issue
+    // If overlays are opening, defer pan until they have valid widths
+    const doPan = async () => {
+      if (isShopOverlayOpen || isSocialOverlayOpen) {
+        // Wait for overlays to render (max 50ms - quick check)
+        const overlaysReady = await waitForOverlaysToRender(50);
+
+        // Only pan if overlays are ready. If timeout, skip and let ResizeObserver handle it
+        if (!overlaysReady) {
+          return; // ResizeObserver will trigger pan when overlays finish rendering
+        }
+      }
+
+      // Single smooth pan with all offsets calculated upfront
+      panToWithOffsets({
+        map,
+        targetLatLng: shopLatLng,
+        isShopOverlayOpen,
+        isSocialOverlayOpen,
+        includeInfoWindowOffset: true, // Frame info window above marker
+      });
+    };
+
+    doPan();
   }, [selectedShop, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
 
   // Consolidated effect for search location: pan, marker, circle, and auto-zoom

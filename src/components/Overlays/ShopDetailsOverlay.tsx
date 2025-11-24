@@ -106,7 +106,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
       className="detail-pop-overlay custom-scrollbar is-open"
       style={{
         transform: isCollapsed ? 'translateX(100%)' : 'translateX(0)',
-        transition: 'transform 0.3s ease-in-out'
+        transition: 'transform 0.15s ease-in-out'
       }}
       role="dialog"
       aria-modal="true"
@@ -252,7 +252,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               id="shop-info-panel"
               role="region"
               aria-labelledby="info-accordion-button"
-              className="px-3 py-3 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 animate-slideDown"
+              className="px-3 py-3 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900"
             >
             {/* Basic Info */}
             <div className="space-y-2 mb-4">
@@ -481,7 +481,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               id="shop-products-panel"
               role="region"
               aria-labelledby="products-accordion-button"
-              className="px-3 py-3 bg-white dark:bg-gray-900 animate-slideDown"
+              className="px-3 py-3 bg-white dark:bg-gray-900"
             >
               <ProductIconGrid
                 shop={shop}
