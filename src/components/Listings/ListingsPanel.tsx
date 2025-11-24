@@ -106,6 +106,13 @@ const ListingsPanel = () => {
     setActiveProductFilters({});
   }, [setActiveProductFilters]);
 
+  // Calculate row count and memoize list data - must be before early returns (Rules of Hooks)
+  const rowCount = Math.ceil(currentlyDisplayedLocations.length / columnsPerRow);
+  const listData = useMemo(() => ({
+    shops: currentlyDisplayedLocations,
+    columnsPerRow,
+  }), [currentlyDisplayedLocations, columnsPerRow]);
+
   // Show loading state
   if (isLoadingLocations) {
     return (
@@ -150,15 +157,6 @@ const ListingsPanel = () => {
       </section>
     );
   }
-
-  // Calculate row count
-  const rowCount = Math.ceil(currentlyDisplayedLocations.length / columnsPerRow);
-
-  // Memoize list data to prevent re-renders
-  const listData = useMemo(() => ({
-    shops: currentlyDisplayedLocations,
-    columnsPerRow,
-  }), [currentlyDisplayedLocations, columnsPerRow]);
 
   // Temporarily disable virtual scrolling to debug
   return (
