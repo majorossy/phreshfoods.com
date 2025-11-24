@@ -39,7 +39,10 @@ const PRODUCT_FIELDS = {
     cheese_shop: ['cheddar', 'brie', 'gouda', 'mozzarella', 'feta', 'blue_cheese', 'parmesan', 'swiss', 'provolone', 'cow_milk', 'goat_milk', 'sheep_milk'],
     fish_monger: ['salmon', 'cod', 'haddock', 'tuna', 'lobster', 'shrimp', 'crab', 'oysters', 'clams', 'mussels', 'scallops', 'halibut'],
     butcher: ['beef', 'pork', 'lamb', 'chicken', 'turkey', 'duck', 'veal', 'sausages', 'bacon', 'ground_meat', 'steaks', 'roasts'],
-    antique_shop: ['furniture', 'jewelry', 'art', 'books', 'ceramics', 'glassware', 'silverware', 'textiles', 'collectibles', 'vintage_clothing']
+    antique_shop: ['furniture', 'jewelry', 'art', 'books', 'ceramics', 'glassware', 'silverware', 'textiles', 'collectibles', 'vintage_clothing'],
+    brewery: ['ipa', 'lager', 'stout', 'ale', 'pilsner', 'wheat_beer', 'tours', 'tastings', 'food', 'outdoor_seating'],
+    winery: ['red_wine', 'white_wine', 'rose', 'sparkling', 'dessert_wine', 'tours', 'tastings', 'food', 'vineyard_views', 'events'],
+    sugar_shack: ['maple_syrup', 'maple_candy', 'maple_cream', 'maple_sugar', 'tours', 'tastings', 'pancake_breakfast', 'seasonal_events']
 };
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
@@ -302,6 +305,9 @@ const locationsCache = {
     lastModifiedFish: null,
     lastModifiedButchers: null,
     lastModifiedAntiques: null,
+    lastModifiedBreweries: null,
+    lastModifiedWineries: null,
+    lastModifiedSugarShacks: null,
     etag: null
 };
 
@@ -332,6 +338,7 @@ async function ensureDataUpdate() {
 
 // Unified endpoint to get all locations (farm stands + cheese shops) with ETag caching
 app.get('/api/locations', async (req, res) => {
+    console.log('[Locations API] ===== START REQUEST =====');
     try {
         console.log('[Locations API] Request received');
 
@@ -351,6 +358,9 @@ app.get('/api/locations', async (req, res) => {
         const fishMongersExist = await fs.pathExists(LOCATION_DATA_PATHS.fish_monger);
         const butchersExist = await fs.pathExists(LOCATION_DATA_PATHS.butcher);
         const antiqueShopsExist = await fs.pathExists(LOCATION_DATA_PATHS.antique_shop);
+        const breweriesExist = await fs.pathExists(LOCATION_DATA_PATHS.brewery);
+        const wineriesExist = await fs.pathExists(LOCATION_DATA_PATHS.winery);
+        const sugarShacksExist = await fs.pathExists(LOCATION_DATA_PATHS.sugar_shack);
 
         if (!farmStandsExist) {
             console.warn(`[Locations API] Farm stands data file not found. Generating...`);
@@ -392,6 +402,24 @@ app.get('/api/locations', async (req, res) => {
             antiquesModTime = antiquesStats.mtime.getTime();
         }
 
+        let breweriesModTime = null;
+        if (breweriesExist) {
+            const breweriesStats = await fs.stat(LOCATION_DATA_PATHS.brewery);
+            breweriesModTime = breweriesStats.mtime.getTime();
+        }
+
+        let wineriesModTime = null;
+        if (wineriesExist) {
+            const wineriesStats = await fs.stat(LOCATION_DATA_PATHS.winery);
+            wineriesModTime = wineriesStats.mtime.getTime();
+        }
+
+        let sugarShacksModTime = null;
+        if (sugarShacksExist) {
+            const sugarShacksStats = await fs.stat(LOCATION_DATA_PATHS.sugar_shack);
+            sugarShacksModTime = sugarShacksStats.mtime.getTime();
+        }
+
         // Check if browser has current version (ETag validation)
         const clientETag = req.headers['if-none-match'];
 
@@ -401,6 +429,9 @@ app.get('/api/locations', async (req, res) => {
                            locationsCache.lastModifiedFish === fishModTime &&
                            locationsCache.lastModifiedButchers === butchersModTime &&
                            locationsCache.lastModifiedAntiques === antiquesModTime &&
+                           locationsCache.lastModifiedBreweries === breweriesModTime &&
+                           locationsCache.lastModifiedWineries === wineriesModTime &&
+                           locationsCache.lastModifiedSugarShacks === sugarShacksModTime &&
                            locationsCache.data;
 
         if (cacheValid) {
@@ -583,8 +614,95 @@ app.get('/api/locations', async (req, res) => {
             }
         }
 
+        // Load breweries
+        let breweries = [];
+        if (breweriesExist) {
+            try {
+                const breweriesRaw = await fs.readJson(LOCATION_DATA_PATHS.brewery);
+                breweries = breweriesRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.brewery.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'brewery',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${breweries.length} breweries`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load breweries:', err.message);
+            }
+        }
+
+        // Load wineries
+        let wineries = [];
+        if (wineriesExist) {
+            try {
+                const wineriesRaw = await fs.readJson(LOCATION_DATA_PATHS.winery);
+                wineries = wineriesRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.winery.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'winery',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${wineries.length} wineries`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load wineries:', err.message);
+            }
+        }
+
+        // Load sugar shacks
+        let sugarShacks = [];
+        if (sugarShacksExist) {
+            try {
+                const sugarShacksRaw = await fs.readJson(LOCATION_DATA_PATHS.sugar_shack);
+                sugarShacks = sugarShacksRaw.map(location => {
+                    let products;
+                    if (location.products && typeof location.products === 'object') {
+                        products = location.products;
+                    } else {
+                        products = {};
+                        PRODUCT_FIELDS.sugar_shack.forEach(field => {
+                            if (location[field] !== undefined) {
+                                products[field] = location[field];
+                            }
+                        });
+                    }
+                    return {
+                        ...location,
+                        type: 'sugar_shack',
+                        products
+                    };
+                });
+                console.log(`[Locations API] Loaded ${sugarShacks.length} sugar shacks`);
+            } catch (err) {
+                console.warn('[Locations API] Failed to load sugar shacks:', err.message);
+            }
+        }
+
         // Merge all arrays
-        const mergedLocations = [...farmStands, ...cheeseShops, ...fishMongers, ...butchers, ...antiqueShops];
+        const mergedLocations = [...farmStands, ...cheeseShops, ...fishMongers, ...butchers, ...antiqueShops, ...breweries, ...wineries, ...sugarShacks];
 
         // Deduplicate by GoogleProfileID or slug and merge types
         const locationMap = new Map();
@@ -632,7 +750,7 @@ app.get('/api/locations', async (req, res) => {
             if (location.types && location.types.length > 1) {
                 // Count products for each type
                 const productCounts = {
-                    farm_stand: farmProductFields.filter(field =>
+                    farm_stand: PRODUCT_FIELDS.farm_stand.filter(field =>
                         location.products && location.products[field] === true
                     ).length,
                     cheese_shop: PRODUCT_FIELDS.cheese_shop.filter(field =>
@@ -645,6 +763,15 @@ app.get('/api/locations', async (req, res) => {
                         location.products && location.products[field] === true
                     ).length,
                     antique_shop: PRODUCT_FIELDS.antique_shop.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    brewery: PRODUCT_FIELDS.brewery.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    winery: PRODUCT_FIELDS.winery.filter(field =>
+                        location.products && location.products[field] === true
+                    ).length,
+                    sugar_shack: PRODUCT_FIELDS.sugar_shack.filter(field =>
                         location.products && location.products[field] === true
                     ).length
                 };
@@ -672,7 +799,7 @@ app.get('/api/locations', async (req, res) => {
             console.log(`[Locations API] Removed ${duplicatesRemoved} duplicate locations`);
         }
 
-        const etag = `"${farmModTime}-${cheeseModTime || 0}-${fishModTime || 0}-${butchersModTime || 0}-${antiquesModTime || 0}-${allLocations.length}"`;
+        const etag = `"${farmModTime}-${cheeseModTime || 0}-${fishModTime || 0}-${butchersModTime || 0}-${antiquesModTime || 0}-${breweriesModTime || 0}-${wineriesModTime || 0}-${sugarShacksModTime || 0}-${allLocations.length}"`;
 
         // Update memory cache
         locationsCache.data = allLocations;
@@ -681,9 +808,12 @@ app.get('/api/locations', async (req, res) => {
         locationsCache.lastModifiedFish = fishModTime;
         locationsCache.lastModifiedButchers = butchersModTime;
         locationsCache.lastModifiedAntiques = antiquesModTime;
+        locationsCache.lastModifiedBreweries = breweriesModTime;
+        locationsCache.lastModifiedWineries = wineriesModTime;
+        locationsCache.lastModifiedSugarShacks = sugarShacksModTime;
         locationsCache.etag = etag;
 
-        console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops + ${fishMongers.length} fish mongers + ${butchers.length} butchers + ${antiqueShops.length} antique shops = ${allLocations.length} total locations (cache updated)`);
+        console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops + ${fishMongers.length} fish mongers + ${butchers.length} butchers + ${antiqueShops.length} antique shops + ${breweries.length} breweries + ${wineries.length} wineries + ${sugarShacks.length} sugar shacks = ${allLocations.length} total locations (cache updated)`);
 
         // Send with cache headers
         res.set({
@@ -694,7 +824,10 @@ app.get('/api/locations', async (req, res) => {
                 cheeseModTime || 0,
                 fishModTime || 0,
                 butchersModTime || 0,
-                antiquesModTime || 0
+                antiquesModTime || 0,
+                breweriesModTime || 0,
+                wineriesModTime || 0,
+                sugarShacksModTime || 0
             )).toUTCString(),
             'X-Cache': 'MISS'
         });

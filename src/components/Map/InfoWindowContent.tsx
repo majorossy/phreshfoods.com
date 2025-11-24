@@ -41,12 +41,11 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
 
   return (
     <div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
-      {/* Product Icons Grid - Shows ALL products with color/grey icons */}
+      {/* Product Icons Grid - Shows ALL products with color/grey icons, grouped by category */}
       <ProductIconGrid
         shop={shop}
         displayMode="compact"
-        maxProducts={18}
-        showCategories={false}
+        showCategories={true}
         showProductNames={false}
         iconSize="sm"
       />

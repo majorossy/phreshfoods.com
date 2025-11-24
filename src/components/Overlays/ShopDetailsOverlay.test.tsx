@@ -59,38 +59,22 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
   };
 
   describe('Initial State', () => {
-    it('should render with Products accordion open by default', () => {
+    it('should render with all accordions open by default', () => {
       renderComponent();
 
-      // Products section should be visible
-      const productsPanel = screen.getByRole('region', { name: /products/i });
-      expect(productsPanel).toBeInTheDocument();
-
-      // Check that products accordion button shows expanded state
-      const productsButton = screen.getByRole('button', { name: /products/i });
-      expect(productsButton).toHaveAttribute('aria-expanded', 'true');
-    });
-
-    it('should render with Info accordion closed by default', () => {
-      renderComponent();
-
-      // Info accordion button should show collapsed state
+      // All accordion buttons should show expanded state
       const infoButton = screen.getByRole('button', { name: /information/i });
-      expect(infoButton).toHaveAttribute('aria-expanded', 'false');
-
-      // Info panel should not be visible
-      expect(screen.queryByRole('region', { name: /information/i })).not.toBeInTheDocument();
-    });
-
-    it('should render with Hours accordion closed by default', () => {
-      renderComponent();
-
-      // Hours accordion button should show collapsed state
       const hoursButton = screen.getByRole('button', { name: /hours/i });
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'false');
+      const productsButton = screen.getByRole('button', { name: /products/i });
 
-      // Hours panel should not be visible
-      expect(screen.queryByRole('region', { name: /hours/i })).not.toBeInTheDocument();
+      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
+      expect(productsButton).toHaveAttribute('aria-expanded', 'true');
+
+      // All panels should be visible
+      expect(screen.getByRole('region', { name: /information/i })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: /hours/i })).toBeInTheDocument();
+      expect(screen.getByRole('region', { name: /products/i })).toBeInTheDocument();
     });
   });
 
@@ -100,16 +84,16 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
 
       const infoButton = screen.getByRole('button', { name: /information/i });
 
-      // Initially closed
-      expect(infoButton).toHaveAttribute('aria-expanded', 'false');
-
-      // Click to open
-      fireEvent.click(infoButton);
+      // Initially open
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
 
       // Click to close
       fireEvent.click(infoButton);
       expect(infoButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Click to open again
+      fireEvent.click(infoButton);
+      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('should toggle Hours accordion when clicked', () => {
@@ -117,16 +101,16 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
 
       const hoursButton = screen.getByRole('button', { name: /hours/i });
 
-      // Initially closed
-      expect(hoursButton).toHaveAttribute('aria-expanded', 'false');
-
-      // Click to open
-      fireEvent.click(hoursButton);
+      // Initially open
       expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
 
       // Click to close
       fireEvent.click(hoursButton);
       expect(hoursButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Click to open again
+      fireEvent.click(hoursButton);
+      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
     });
 
     it('should toggle Products accordion when clicked', () => {
@@ -155,33 +139,34 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       const hoursButton = screen.getByRole('button', { name: /hours/i });
       const productsButton = screen.getByRole('button', { name: /products/i });
 
-      // Products is already open by default
+      // All are already open by default
+      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
 
-      // Open Info
+      // Close one accordion
+      fireEvent.click(infoButton);
+      expect(infoButton).toHaveAttribute('aria-expanded', 'false');
+
+      // Others should still be open
+      expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
+      expect(productsButton).toHaveAttribute('aria-expanded', 'true');
+
+      // Re-open the closed one
       fireEvent.click(infoButton);
       expect(infoButton).toHaveAttribute('aria-expanded', 'true');
 
-      // Products should still be open
-      expect(productsButton).toHaveAttribute('aria-expanded', 'true');
-
-      // Open Hours
-      fireEvent.click(hoursButton);
+      // All should be open again
       expect(hoursButton).toHaveAttribute('aria-expanded', 'true');
-
-      // Both Products and Info should still be open
       expect(productsButton).toHaveAttribute('aria-expanded', 'true');
-      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
 
   describe('Accordion Content', () => {
-    it('should display shop information when Info accordion is opened', () => {
+    it('should display shop information when Info accordion is open', () => {
       renderComponent();
 
-      const infoButton = screen.getByRole('button', { name: /information/i });
-      fireEvent.click(infoButton);
-
+      // Info accordion is open by default
       // Check for address
       expect(screen.getByText(/123 Main St, Portland, ME 04101/i)).toBeInTheDocument();
 
@@ -192,19 +177,17 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
       expect(screen.getByText(/Visit Website/i)).toBeInTheDocument();
     });
 
-    it('should display hours when Hours accordion is opened', () => {
+    it('should display hours when Hours accordion is open', () => {
       renderComponent();
 
-      const hoursButton = screen.getByRole('button', { name: /hours/i });
-      fireEvent.click(hoursButton);
-
+      // Hours accordion is open by default
       // Check for hours
       expect(screen.getByText(/Monday/i)).toBeInTheDocument();
       expect(screen.getAllByText(/9:00 AM – 5:00 PM/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Currently Open/i)).toBeInTheDocument();
     });
 
-    it('should display products when Products accordion is opened', () => {
+    it('should display products when Products accordion is open', () => {
       renderComponent();
 
       // Products accordion is open by default
@@ -224,10 +207,10 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
         </UIProvider>
       );
 
-      // Open Info accordion
+      // Close Info accordion
       const infoButton = screen.getByRole('button', { name: /information/i });
       fireEvent.click(infoButton);
-      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+      expect(infoButton).toHaveAttribute('aria-expanded', 'false');
 
       // Close Products accordion
       const productsButton = screen.getByRole('button', { name: /products/i });
@@ -242,13 +225,14 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
         </UIProvider>
       );
 
-      // Products should be open again (reset to default)
-      const newProductsButton = screen.getByRole('button', { name: /products/i });
-      expect(newProductsButton).toHaveAttribute('aria-expanded', 'true');
-
-      // Info should be closed again (reset to default)
+      // All should be open again (reset to default)
       const newInfoButton = screen.getByRole('button', { name: /information/i });
-      expect(newInfoButton).toHaveAttribute('aria-expanded', 'false');
+      const newHoursButton = screen.getByRole('button', { name: /hours/i });
+      const newProductsButton = screen.getByRole('button', { name: /products/i });
+
+      expect(newInfoButton).toHaveAttribute('aria-expanded', 'true');
+      expect(newHoursButton).toHaveAttribute('aria-expanded', 'true');
+      expect(newProductsButton).toHaveAttribute('aria-expanded', 'true');
     });
   });
 
@@ -274,10 +258,7 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
     it('should have proper IDs on accordion panels', () => {
       renderComponent();
 
-      // Open all accordions to check their IDs
-      fireEvent.click(screen.getByRole('button', { name: /information/i }));
-      fireEvent.click(screen.getByRole('button', { name: /hours/i }));
-
+      // All accordions are open by default, check their IDs
       expect(screen.getByRole('region', { name: /information/i })).toHaveAttribute('id', 'shop-info-panel');
       expect(screen.getByRole('region', { name: /hours/i })).toHaveAttribute('id', 'shop-hours-panel');
       expect(screen.getByRole('region', { name: /products/i })).toHaveAttribute('id', 'shop-products-panel');
@@ -299,9 +280,9 @@ describe('ShopDetailsOverlay - Accordion Functionality', () => {
 
       // Native buttons support Enter and Space keys automatically via onClick
       // Testing via click simulates keyboard activation
-      expect(infoButton).toHaveAttribute('aria-expanded', 'false');
+      expect(infoButton).toHaveAttribute('aria-expanded', 'true'); // Initially open
       fireEvent.click(infoButton); // Simulates Enter/Space key
-      expect(infoButton).toHaveAttribute('aria-expanded', 'true');
+      expect(infoButton).toHaveAttribute('aria-expanded', 'false'); // Now closed
     });
 
     it('should support keyboard navigation on rating button', () => {

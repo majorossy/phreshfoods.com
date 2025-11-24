@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hours of Operation - Design Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:wght@400;600;700&family=Space+Mono&family=Playfair+Display:wght@400;600&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 60px 40px;
+        }
+
+        .page-title {
+            font-family: 'Fraunces', serif;
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff 0%, #888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 80px;
+            font-size: 1.1rem;
+        }
+
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+            gap: 50px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .example-card {
+            background: #111;
+            border-radius: 24px;
+            padding: 30px;
+            border: 1px solid #222;
+        }
+
+        .example-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #555;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #222;
+        }
+
+        /* ==================== */
+        /* STYLE 1: Live Status Clock */
+        /* ==================== */
+        .style-clock {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .clock-ring {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: conic-gradient(
+                from 0deg,
+                #1a1a1a 0deg 120deg,
+                #22c55e 120deg 270deg,
+                #1a1a1a 270deg 360deg
+            );
+            margin: 0 auto 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: pulse-ring 3s ease-in-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.3); }
+            50% { box-shadow: 0 0 0 20px rgba(34, 197, 94, 0); }
+        }
+
+        .clock-inner {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: #0a0a0a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clock-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #22c55e;
+            margin-bottom: 5px;
+        }
+
+        .clock-time {
+            font-family: 'Fraunces', serif;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .clock-until {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .clock-today {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* ==================== */
+        /* STYLE 2: Animated Badge */
+        /* ==================== */
+        .style-badge {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 25px;
+            background: linear-gradient(135deg, #0f1f0f 0%, #0a0a0a 100%);
+            border-radius: 16px;
+            border: 1px solid #1a3a1a;
+        }
+
+        .badge-indicator {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4ade80, #16a34a);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: badge-glow 2s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+
+        @keyframes badge-glow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(74, 222, 128, 0.4),
+                            0 0 40px rgba(74, 222, 128, 0.2);
+            }
+            50% { 
+                box-shadow: 0 0 30px rgba(74, 222, 128, 0.6),
+                            0 0 60px rgba(74, 222, 128, 0.3);
+            }
+        }
+
+        .badge-check {
+            font-size: 2rem;
+        }
+
+        .badge-content h3 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        .badge-content p {
+            color: #4ade80;
+            font-size: 0.9rem;
+        }
+
+        .badge-content .next-change {
+            color: #666;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* ==================== */
+        /* STYLE 3: Timeline Progress */
+        /* ==================== */
+        .style-timeline {
+            padding: 20px;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timeline-day {
+            font-family: 'Fraunces', serif;
+            font-size: 1.3rem;
+        }
+
+        .timeline-hours {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .timeline-bar {
+            height: 12px;
+            background: #1a1a1a;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .timeline-fill {
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 60%;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24);
+            border-radius: 6px;
+            animation: timeline-shimmer 2s ease-in-out infinite;
+        }
+
+        @keyframes timeline-shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .timeline-marker {
+            position: absolute;
+            right: 40%;
+            top: -5px;
+            width: 22px;
+            height: 22px;
+            background: #fff;
+            border-radius: 50%;
+            border: 3px solid #f59e0b;
+            box-shadow: 0 2px 10px rgba(245, 158, 11, 0.4);
+        }
+
+        .timeline-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        .timeline-now {
+            position: absolute;
+            left: 60%;
+            transform: translateX(-50%);
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        /* ==================== */
+        /* STYLE 4: Dynamic Status */
+        /* ==================== */
+        .style-dynamic {
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .dynamic-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(34, 197, 94, 0.15);
+            padding: 10px 20px;
+            border-radius: 100px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .dynamic-dot {
+            width: 10px;
+            height: 10px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: dot-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dot-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .dynamic-text {
+            color: #22c55e;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .dynamic-main {
+            font-family: 'Fraunces', serif;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dynamic-sub {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* ==================== */
+        /* STYLE 5: Weekly Grid */
+        /* ==================== */
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+        }
+
+        .grid-day {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 15px 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .grid-day:hover {
+            transform: translateY(-3px);
+            background: #222;
+        }
+
+        .grid-day.today {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            box-shadow: 0 5px 20px rgba(124, 58, 237, 0.3);
+        }
+
+        .grid-day-name {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .grid-day.today .grid-day-name {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .grid-day-hours {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            line-height: 1.6;
+        }
+
+        .grid-day.today .grid-day-hours {
+            color: #fff;
+        }
+
+        .grid-day.closed {
+            opacity: 0.5;
+        }
+
+        .grid-day.closed .grid-day-hours {
+            color: #ef4444;
+        }
+
+        /* ==================== */
+        /* STYLE 6: Minimalist Highlight */
+        /* ==================== */
+        .style-minimal {
+            padding: 20px;
+        }
+
+        .minimal-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #1a1a1a;
+            transition: all 0.2s ease;
+        }
+
+        .minimal-row:last-child {
+            border-bottom: none;
+        }
+
+        .minimal-row.today {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, transparent 100%);
+            margin: 0 -20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border-bottom: none;
+        }
+
+        .minimal-day {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .minimal-row.today .minimal-day {
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        .minimal-hours {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .minimal-row.today .minimal-hours {
+            color: #fff;
+        }
+
+        .minimal-now {
+            font-size: 0.7rem;
+            color: #3b82f6;
+            margin-left: 10px;
+        }
+
+        /* ==================== */
+        /* STYLE 7: Icon Days */
+        /* ==================== */
+        .style-icons {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px 10px;
+        }
+
+        .icon-day {
+            text-align: center;
+            flex: 1;
+        }
+
+        .icon-emoji {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            filter: grayscale(0.3);
+            transition: all 0.3s ease;
+        }
+
+        .icon-day:hover .icon-emoji {
+            filter: grayscale(0);
+            transform: scale(1.1);
+        }
+
+        .icon-day.today .icon-emoji {
+            filter: grayscale(0);
+            transform: scale(1.15);
+        }
+
+        .icon-name {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .icon-day.today .icon-name {
+            color: #fbbf24;
+        }
+
+        .icon-hours {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        /* ==================== */
+        /* STYLE 8: Luxury Card */
+        /* ==================== */
+        .style-luxury {
+            background: linear-gradient(145deg, #1a1510 0%, #0d0a07 100%);
+            border: 1px solid #3d3428;
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .style-luxury::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+        }
+
+        .luxury-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .luxury-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #d4af37;
+            margin-bottom: 10px;
+        }
+
+        .luxury-status {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #f5f0e8;
+        }
+
+        .luxury-divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .luxury-divider span {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #3d3428, transparent);
+        }
+
+        .luxury-divider-icon {
+            color: #d4af37;
+            font-size: 0.8rem;
+        }
+
+        .luxury-schedule {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .luxury-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+        }
+
+        .luxury-day {
+            color: #8a7355;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .luxury-hours {
+            color: #c9b896;
+            letter-spacing: 1px;
+        }
+
+        /* ==================== */
+        /* STYLE 9: Friendly Message */
+        /* ==================== */
+        .style-friendly {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: #1a1a1a;
+            text-align: center;
+        }
+
+        .friendly-emoji {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: friendly-wave 2s ease-in-out infinite;
+        }
+
+        @keyframes friendly-wave {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            75% { transform: rotate(-15deg); }
+        }
+
+        .friendly-message {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #92400e;
+        }
+
+        .friendly-detail {
+            color: #a16207;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .friendly-schedule-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,0,0,0.1);
+            padding: 10px 20px;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: #92400e;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .friendly-schedule-link:hover {
+            background: rgba(0,0,0,0.15);
+        }
+
+        /* ==================== */
+        /* STYLE 10: Accordion */
+        /* ==================== */
+        .style-accordion {
+            padding: 10px;
+        }
+
+        .accordion-today {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-today-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .accordion-today-day {
+            font-family: 'Fraunces', serif;
+            font-size: 1.3rem;
+        }
+
+        .accordion-today-hours {
+            font-family: 'Space Mono', monospace;
+            font-size: 1.1rem;
+            text-align: right;
+        }
+
+        .accordion-toggle {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .accordion-toggle:hover {
+            background: #222;
+        }
+
+        .accordion-toggle-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .accordion-toggle-text {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        .accordion-toggle-icon {
+            color: #555;
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-expanded {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-toggle.open .accordion-expanded {
+            max-height: 300px;
+        }
+
+        .accordion-toggle.open .accordion-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+            font-size: 0.85rem;
+        }
+
+        .accordion-row:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-row-day {
+            color: #666;
+        }
+
+        .accordion-row-hours {
+            font-family: 'Space Mono', monospace;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="page-title">Hours of Operation</h1>
+    <p class="page-subtitle">10 Creative Display Styles</p>
+
+    <div class="showcase-grid">
+
+        <!-- Style 1: Live Status Clock -->
+        <div class="example-card">
+            <div class="example-label">01 — Live Status Clock</div>
+            <div class="style-clock">
+                <div class="clock-ring">
+                    <div class="clock-inner">
+                        <div class="clock-status">● Open Now</div>
+                        <div class="clock-time">2:34 PM</div>
+                        <div class="clock-until">until 6:00 PM</div>
+                    </div>
+                </div>
+                <div class="clock-today">Tuesday · 9 AM – 6 PM</div>
+            </div>
+        </div>
+
+        <!-- Style 2: Animated Badge -->
+        <div class="example-card">
+            <div class="example-label">02 — Glowing Status Badge</div>
+            <div class="style-badge">
+                <div class="badge-indicator">
+                    <span class="badge-check">✓</span>
+                </div>
+                <div class="badge-content">
+                    <h3>We're Open!</h3>
+                    <p>Serving until 6:00 PM today</p>
+                    <div class="next-change">Opens again tomorrow at 9:00 AM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 3: Timeline Progress -->
+        <div class="example-card">
+            <div class="example-label">03 — Timeline Progress Bar</div>
+            <div class="style-timeline">
+                <div class="timeline-header">
+                    <span class="timeline-day">Tuesday</span>
+                    <span class="timeline-hours">9:00 AM – 6:00 PM</span>
+                </div>
+                <div class="timeline-bar">
+                    <div class="timeline-fill"></div>
+                    <div class="timeline-marker"></div>
+                </div>
+                <div class="timeline-labels" style="position: relative;">
+                    <span>9 AM</span>
+                    <span class="timeline-now">NOW</span>
+                    <span>6 PM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 4: Dynamic Status -->
+        <div class="example-card">
+            <div class="example-label">04 — Dynamic Countdown</div>
+            <div class="style-dynamic">
+                <div class="dynamic-status">
+                    <div class="dynamic-dot"></div>
+                    <span class="dynamic-text">Currently Open</span>
+                </div>
+                <div class="dynamic-main">Open for 3h 26m</div>
+                <div class="dynamic-sub">Closing at 6:00 PM · Back tomorrow 9 AM</div>
+            </div>
+        </div>
+
+        <!-- Style 5: Weekly Grid -->
+        <div class="example-card">
+            <div class="example-label">05 — Weekly Calendar Grid</div>
+            <div class="style-grid">
+                <div class="grid-day">
+                    <div class="grid-day-name">Mon</div>
+                    <div class="grid-day-hours">9–6</div>
+                </div>
+                <div class="grid-day today">
+                    <div class="grid-day-name">Tue</div>
+                    <div class="grid-day-hours">9–6</div>
+                </div>
+                <div class="grid-day">
+                    <div class="grid-day-name">Wed</div>
+                    <div class="grid-day-hours">9–6</div>
+                </div>
+                <div class="grid-day">
+                    <div class="grid-day-name">Thu</div>
+                    <div class="grid-day-hours">9–8</div>
+                </div>
+                <div class="grid-day">
+                    <div class="grid-day-name">Fri</div>
+                    <div class="grid-day-hours">9–8</div>
+                </div>
+                <div class="grid-day">
+                    <div class="grid-day-name">Sat</div>
+                    <div class="grid-day-hours">10–4</div>
+                </div>
+                <div class="grid-day closed">
+                    <div class="grid-day-name">Sun</div>
+                    <div class="grid-day-hours">Closed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 6: Minimalist Highlight -->
+        <div class="example-card">
+            <div class="example-label">06 — Minimalist with Highlight</div>
+            <div class="style-minimal">
+                <div class="minimal-row">
+                    <span class="minimal-day">Monday</span>
+                    <span class="minimal-hours">9:00 AM – 6:00 PM</span>
+                </div>
+                <div class="minimal-row today">
+                    <span class="minimal-day">Tuesday</span>
+                    <span class="minimal-hours">9:00 AM – 6:00 PM<span class="minimal-now">● NOW</span></span>
+                </div>
+                <div class="minimal-row">
+                    <span class="minimal-day">Wednesday</span>
+                    <span class="minimal-hours">9:00 AM – 6:00 PM</span>
+                </div>
+                <div class="minimal-row">
+                    <span class="minimal-day">Thursday</span>
+                    <span class="minimal-hours">9:00 AM – 8:00 PM</span>
+                </div>
+                <div class="minimal-row">
+                    <span class="minimal-day">Friday</span>
+                    <span class="minimal-hours">9:00 AM – 8:00 PM</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 7: Icon Days -->
+        <div class="example-card">
+            <div class="example-label">07 — Emoji Day Icons</div>
+            <div class="style-icons">
+                <div class="icon-day">
+                    <div class="icon-emoji">☕</div>
+                    <div class="icon-name">Mon</div>
+                    <div class="icon-hours">9–6</div>
+                </div>
+                <div class="icon-day today">
+                    <div class="icon-emoji">☕</div>
+                    <div class="icon-name">Tue</div>
+                    <div class="icon-hours">9–6</div>
+                </div>
+                <div class="icon-day">
+                    <div class="icon-emoji">☕</div>
+                    <div class="icon-name">Wed</div>
+                    <div class="icon-hours">9–6</div>
+                </div>
+                <div class="icon-day">
+                    <div class="icon-emoji">🌙</div>
+                    <div class="icon-name">Thu</div>
+                    <div class="icon-hours">9–8</div>
+                </div>
+                <div class="icon-day">
+                    <div class="icon-emoji">🌙</div>
+                    <div class="icon-name">Fri</div>
+                    <div class="icon-hours">9–8</div>
+                </div>
+                <div class="icon-day">
+                    <div class="icon-emoji">🌤️</div>
+                    <div class="icon-name">Sat</div>
+                    <div class="icon-hours">10–4</div>
+                </div>
+                <div class="icon-day">
+                    <div class="icon-emoji">😴</div>
+                    <div class="icon-name">Sun</div>
+                    <div class="icon-hours">Closed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 8: Luxury Card -->
+        <div class="example-card">
+            <div class="example-label">08 — Luxury / Editorial</div>
+            <div class="style-luxury">
+                <div class="luxury-header">
+                    <div class="luxury-title">Visiting Hours</div>
+                    <div class="luxury-status">Now Welcoming Guests</div>
+                </div>
+                <div class="luxury-divider">
+                    <span></span>
+                    <div class="luxury-divider-icon">✦</div>
+                    <span></span>
+                </div>
+                <div class="luxury-schedule">
+                    <div class="luxury-row">
+                        <span class="luxury-day">Monday – Friday</span>
+                        <span class="luxury-hours">9 AM – 6 PM</span>
+                    </div>
+                    <div class="luxury-row">
+                        <span class="luxury-day">Saturday</span>
+                        <span class="luxury-hours">10 AM – 4 PM</span>
+                    </div>
+                    <div class="luxury-row">
+                        <span class="luxury-day">Sunday</span>
+                        <span class="luxury-hours">Closed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 9: Friendly Message -->
+        <div class="example-card">
+            <div class="example-label">09 — Friendly / Conversational</div>
+            <div class="style-friendly">
+                <div class="friendly-emoji">👋</div>
+                <div class="friendly-message">We're here for you!</div>
+                <div class="friendly-detail">Open today until 6 PM. Come say hi!</div>
+                <div class="friendly-schedule-link">
+                    <span>📅</span>
+                    <span>See full weekly schedule</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Style 10: Accordion -->
+        <div class="example-card">
+            <div class="example-label">10 — Today First + Accordion</div>
+            <div class="style-accordion">
+                <div class="accordion-today">
+                    <div>
+                        <div class="accordion-today-label">Today</div>
+                        <div class="accordion-today-day">Tuesday</div>
+                    </div>
+                    <div class="accordion-today-hours">9 AM – 6 PM</div>
+                </div>
+                <div class="accordion-toggle" onclick="this.classList.toggle('open')">
+                    <div class="accordion-toggle-header">
+                        <span class="accordion-toggle-text">View full schedule</span>
+                        <span class="accordion-toggle-icon">▼</span>
+                    </div>
+                    <div class="accordion-expanded">
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Monday</span>
+                            <span class="accordion-row-hours">9:00 AM – 6:00 PM</span>
+                        </div>
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Wednesday</span>
+                            <span class="accordion-row-hours">9:00 AM – 6:00 PM</span>
+                        </div>
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Thursday</span>
+                            <span class="accordion-row-hours">9:00 AM – 8:00 PM</span>
+                        </div>
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Friday</span>
+                            <span class="accordion-row-hours">9:00 AM – 8:00 PM</span>
+                        </div>
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Saturday</span>
+                            <span class="accordion-row-hours">10:00 AM – 4:00 PM</span>
+                        </div>
+                        <div class="accordion-row">
+                            <span class="accordion-row-day">Sunday</span>
+                            <span class="accordion-row-hours">Closed</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Simple script to make accordion work
+        document.querySelectorAll('.accordion-toggle').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                this.classList.toggle('open');
+            });
+        });
+    </script>
+</body>
+</html>
+

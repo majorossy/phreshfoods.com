@@ -1,9 +1,10 @@
 // src/components/Overlays/ShopDetailsOverlay.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Shop } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext';
 import ProductIconGrid from '../UI/ProductIconGrid';
+import { getProductConfig } from '../../config/productRegistry';
 
 interface ShopDetailsOverlayProps {
   shop: Shop;
@@ -13,13 +14,13 @@ interface ShopDetailsOverlayProps {
 const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
-  const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['products'])); // Products open by default
+  const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['info', 'hours', 'products'])); // All open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
 
   // When the overlay opens for a new shop, reset accordion state
   useEffect(() => {
     setIsCollapsed(false); // Reset to expanded state when shop changes
-    setOpenAccordions(new Set(['products'])); // Reset to products open by default
+    setOpenAccordions(new Set(['info', 'hours', 'products'])); // Reset to all open by default
   }, [shop]);
 
   // Focus management: focus close button when overlay opens
@@ -71,6 +72,31 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const today = new Date().getDay();
   // Google's weekday_text starts with Monday (index 0), so we need to adjust
   const todayIndex = today === 0 ? 6 : today - 1;
+
+  // Calculate product counts for accordion title
+  const { availableCount, totalCount } = useMemo(() => {
+    const productConfig = getProductConfig(shop.type);
+    let available = 0;
+    let total = 0;
+
+    for (const productId in productConfig) {
+      total++;
+      if (shop.products?.[productId] === true) {
+        available++;
+      }
+    }
+
+    return { availableCount: available, totalCount: total };
+  }, [shop]);
+
+  // Calculate distance in miles for display
+  const distanceInMiles = useMemo(() => {
+    if (shop.distance && shop.distance > 0) {
+      const miles = shop.distance * 0.000621371; // Convert meters to miles
+      return miles.toFixed(1);
+    }
+    return null;
+  }, [shop]);
 
   return (
     <div
@@ -131,7 +157,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
         </svg>
       </button>
 
-      <div className="pt-10 sm:pt-12 shrink-0 px-4 sm:px-6">
+      <div className="pt-4 sm:pt-5 shrink-0 px-4 sm:px-6">
         {/* Shop Name */}
         <h2 id="shop-name-heading" className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">
           {displayName}
@@ -174,23 +200,44 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
       </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar px-4 sm:px-6 pb-4">
-        {/* Accordion - Info */}
+        {/* Accordion - Information & Hours */}
         <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleAccordion('info')}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200"
+            style={{
+              background: 'linear-gradient(to right, #426976, #5a8694)'
+            }}
             aria-expanded={openAccordions.has('info')}
             aria-controls="shop-info-panel"
             id="info-accordion-button"
           >
-            <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <svg className="h-5 w-5 flex-shrink-0" style={{ color: '#F6EBB4' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">Information</span>
+              <span className="font-semibold flex-shrink-0" style={{ color: '#F6EBB4' }}>Information</span>
+              {displayAddress && displayAddress !== 'N/A' && (
+                <div className="flex items-center gap-2 ml-2 text-xs truncate" style={{ fontSize: '0.667em', color: 'white' }}>
+                  <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
+                  </svg>
+                  <span className="truncate">{displayAddress}</span>
+                </div>
+              )}
             </div>
+            {(shop as any).distanceText && (shop as any).distanceText !== "N/A" && (shop as any).distanceText !== "Set location" && (
+              <div className="flex items-center gap-1 mr-2 text-xs font-medium whitespace-nowrap text-orange-400" style={{ fontSize: '0.667em' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M12 1.5a.75.75 0 01.75.75v5.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM12.56 8.22a.75.75 0 00-1.061 0L6.22 13.56a.75.75 0 00.02 1.062l5.024 4.466a.75.75 0 001.042-.021l5.25-6.75a.75.75 0 00-.001-1.042L12.56 8.22zM12 10a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M9.694 3.138a.75.75 0 01.04.04l4.5 4.5a.75.75 0 01-1.06 1.06L10 5.561V15a.75.75 0 01-1.5 0V5.56L5.372 8.738a.75.75 0 01-1.06-1.06l4.5-4.5a.75.75 0 011.062-.04zm0-1.5a2.25 2.25 0 013.182.119l4.5 4.5A2.25 2.25 0 0116.25 9H13V3.75A2.25 2.25 0 0010.75 1.5h-1.5a2.25 2.25 0 00-2.25 2.25V9H3.75a2.25 2.25 0 01-1.122-4.262l4.5-4.5A2.25 2.25 0 019.694 1.638zM4 10.5a.75.75 0 01.75.75v3.045c0 .084.036.162.096.222L8.5 18.179a.75.75 0 001.038.021l5.25-6.75a.75.75 0 10-1.204-.936L10 15.561V11.25a.75.75 0 011.5 0v5.679c0 .084-.036.162-.096.222L4.75 12.48A2.25 2.25 0 014 10.5z" clipRule="evenodd" />
+                </svg>
+                <span>{(shop as any).distanceText}</span>
+              </div>
+            )}
             <svg
-              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('info') ? 'rotate-180' : ''}`}
+              className={`h-5 w-5 transform transition-transform duration-200 flex-shrink-0 ${openAccordions.has('info') ? 'rotate-180' : ''}`}
+              style={{ color: '#F6EBB4' }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -203,177 +250,145 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               id="shop-info-panel"
               role="region"
               aria-labelledby="info-accordion-button"
-              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
+              className="px-3 py-3 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 animate-slideDown"
             >
-            {/* Address */}
-            {displayAddress && displayAddress !== 'N/A' && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Address</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 flex items-start">
-                  <svg className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                  </svg>
-                  {displayAddress}
-                </p>
-              </div>
-            )}
-
-            {/* Phone */}
-            {displayPhone && (
-              <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Phone</h3>
-                <a
-                  href={`tel:${displayPhone}`}
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
-                  </svg>
-                  {displayPhone}
-                </a>
-              </div>
-            )}
-
-            {/* Website */}
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">Website</h3>
-              {displayWebsite ? (
-                <a
-                  href={displayWebsite}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
-                  </svg>
-                  Visit Website
-                </a>
-              ) : (
-                <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center">
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
-                  </svg>
-                  N/A
-                </p>
-              )}
-            </div>
-
-            {/* Google Maps Link */}
-            {shop.placeDetails?.url && (
-              <div className="mt-6">
-                <a
-                  href={shop.placeDetails.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path>
-                  </svg>
-                  View on Google Maps
-                </a>
-              </div>
-            )}
-            </div>
-          )}
-        </div>
-
-        {/* Accordion - Hours */}
-        <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-          <button
-            onClick={() => toggleAccordion('hours')}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            aria-expanded={openAccordions.has('hours')}
-            aria-controls="shop-hours-panel"
-            id="hours-accordion-button"
-          >
-            <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">Hours</span>
-            </div>
-            <svg
-              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('hours') ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </button>
-          {openAccordions.has('hours') && (
-            <div
-              id="shop-hours-panel"
-              role="region"
-              aria-labelledby="hours-accordion-button"
-              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
-            >
-            {parsedHours.length > 0 ? (
-              <>
-                {/* Open/Closed Status */}
-                {openingHours?.open_now !== undefined && (
-                  <div className="mb-4 flex items-center justify-center">
-                    <span className={`px-4 py-2 text-sm font-semibold rounded-full ${
-                      openingHours.open_now
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                    }`}>
-                      {openingHours.open_now ? 'Currently Open' : 'Currently Closed'}
-                    </span>
+            {/* Basic Info */}
+            <div className="space-y-2 mb-4">
+              {/* Phone and Website - Side by side */}
+              <div className="flex items-center gap-4">
+                {/* Phone */}
+                {displayPhone && (
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+                    </svg>
+                    <a
+                      href={`tel:${displayPhone}`}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      {displayPhone}
+                    </a>
                   </div>
                 )}
 
-                {/* Hours List */}
-                <div className="space-y-2">
+                {/* Website */}
+                <div className="flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd"></path>
+                  </svg>
+                  {displayWebsite ? (
+                    <a
+                      href={displayWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline truncate"
+                    >
+                      {displayWebsite.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Website: N/A</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Hours Section */}
+            {parsedHours.length > 0 ? (
+              <>
+                {/* Dynamic Status Card - Maine Coastal Sunset */}
+                <div className="mb-4 rounded-xl p-4 text-center shadow-lg" style={{
+                  background: 'linear-gradient(135deg, #426976, #5a8694)'
+                }}>
+                  {/* Status Badge */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full mb-3" style={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)'
+                  }}>
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        openingHours?.open_now ? 'animate-dotPulse' : ''
+                      }`}
+                      style={{
+                        backgroundColor: openingHours?.open_now ? '#F6EBB4' : '#ef4444',
+                        boxShadow: openingHours?.open_now ? '0 0 8px rgba(246, 235, 180, 0.6)' : 'none'
+                      }}
+                    />
+                    <span className="text-xs font-medium" style={{
+                      color: openingHours?.open_now ? '#F6EBB4' : '#fca5a5'
+                    }}>
+                      {openingHours?.open_now ? 'Currently Open' : 'Currently Closed'}
+                    </span>
+                  </div>
+
+                  {/* Today's Hours */}
+                  {parsedHours[todayIndex] && (
+                    <>
+                      <div className="text-2xl font-bold mb-1" style={{ color: 'white' }}>
+                        {parsedHours[todayIndex].hours}
+                      </div>
+                      <div className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+                        {parsedHours[todayIndex].day}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {/* Weekly Grid - Coastal Theme */}
+                <div className="grid grid-cols-7 gap-1.5">
                   {parsedHours.map((dayHours, index) => {
                     const isToday = index === todayIndex;
+                    const isClosed = dayHours.hours.toLowerCase().includes('closed');
+                    const dayAbbr = dayHours.day.substring(0, 3);
+
+                    // Parse hours to short format (e.g., "9:00 AM – 6:00 PM" -> "9-6")
+                    let shortHours = dayHours.hours;
+                    if (!isClosed) {
+                      const match = dayHours.hours.match(/(\d+):?\d*\s*([AP]M)?\s*[–-]\s*(\d+):?\d*\s*([AP]M)?/i);
+                      if (match) {
+                        const start = match[1];
+                        const end = match[3];
+                        shortHours = `${start}-${end}`;
+                      }
+                    }
+
                     return (
                       <div
                         key={index}
-                        className={`flex justify-between items-center py-3 px-4 rounded-md transition-colors ${
-                          isToday
-                            ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                            : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'
-                        }`}
+                        className="rounded-lg p-2 text-center transition-all duration-200"
+                        style={{
+                          background: isToday
+                            ? '#F6EBB4'
+                            : isClosed
+                              ? '#fef9ec'
+                              : 'white',
+                          border: isToday ? '2px solid #426976' : `1px solid ${isClosed ? '#e8d89f' : '#5a8694'}`,
+                          opacity: isClosed ? 0.5 : 1,
+                          transform: isToday ? 'scale(1.05)' : 'scale(1)',
+                          boxShadow: isToday ? '0 4px 12px rgba(66, 105, 118, 0.3)' : '0 1px 3px rgba(0,0,0,0.1)'
+                        }}
                       >
-                        <span className={`text-sm font-medium ${
-                          isToday
-                            ? 'text-blue-700 dark:text-blue-300'
-                            : 'text-gray-600 dark:text-gray-400'
-                        }`}>
-                          {dayHours.day}
-                        </span>
-                        <span className={`text-sm ${
-                          isToday
-                            ? 'font-semibold text-blue-900 dark:text-blue-100'
-                            : 'text-gray-700 dark:text-gray-300'
-                        }`}>
-                          {dayHours.hours}
-                        </span>
+                        <div className="text-[10px] uppercase tracking-wide mb-1" style={{
+                          color: isToday ? '#2f4d57' : '#426976',
+                          fontWeight: isToday ? 600 : 400
+                        }}>
+                          {dayAbbr}
+                        </div>
+                        <div className="text-[10px] font-mono" style={{
+                          color: isToday
+                            ? '#2f4d57'
+                            : isClosed
+                              ? '#ef4444'
+                              : '#365560',
+                          fontWeight: isToday ? 700 : 400
+                        }}>
+                          {isClosed ? 'Closed' : shortHours}
+                        </div>
                       </div>
                     );
                   })}
                 </div>
               </>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    No Hours Available
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Hours information not available for this location.
-                  </p>
-                </div>
-              </div>
-            )}
+            ) : null}
             </div>
           )}
         </div>
@@ -382,19 +397,31 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
         <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleAccordion('products')}
-            className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200"
+            style={{
+              background: 'linear-gradient(to right, #426976, #5a8694)'
+            }}
             aria-expanded={openAccordions.has('products')}
             aria-controls="shop-products-panel"
             id="products-accordion-button"
           >
             <div className="flex items-center gap-2">
-              <svg className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <svg className="h-5 w-5 flex-shrink-0" style={{ color: '#F6EBB4' }} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
               </svg>
-              <span className="font-semibold text-gray-900 dark:text-gray-100">Products</span>
+              <span className="font-semibold flex-shrink-0" style={{ color: '#F6EBB4' }}>Products</span>
+              <span className="text-xs" style={{ fontSize: '0.667em', color: 'white' }}>
+                <span className="font-semibold text-orange-400">
+                  {availableCount}
+                </span>
+                {' '}available of{' '}
+                <span className="font-semibold">{totalCount}</span>
+                {' '}total products
+              </span>
             </div>
             <svg
-              className={`h-5 w-5 text-gray-500 transform transition-transform duration-200 ${openAccordions.has('products') ? 'rotate-180' : ''}`}
+              className={`h-5 w-5 transform transition-transform duration-200 flex-shrink-0 ${openAccordions.has('products') ? 'rotate-180' : ''}`}
+              style={{ color: '#F6EBB4' }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -407,14 +434,14 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               id="shop-products-panel"
               role="region"
               aria-labelledby="products-accordion-button"
-              className="px-4 py-4 bg-white dark:bg-gray-900 animate-slideDown"
+              className="px-3 py-3 bg-white dark:bg-gray-900 animate-slideDown"
             >
               <ProductIconGrid
                 shop={shop}
                 displayMode="detailed"
                 showCategories={true}
                 showProductNames={true}
-                showSummary={true}
+                showSummary={false}
                 iconSize="sm"
               />
             </div>

@@ -197,6 +197,54 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
 
   // COMPACT MODE - Simple icon grid for InfoWindow
   if (displayMode === 'compact') {
+    // WITH CATEGORIES - Grouped display for InfoWindow
+    if (showCategories) {
+      const allCategorizedProducts = Object.values(allProducts).flat();
+      const totalAvailableCount = allCategorizedProducts.filter(p => p.available).length;
+      const grandTotalCount = allCategorizedProducts.length;
+
+      return (
+        <div className="p-2 pb-1 border-b border-gray-200">
+          {showSummary && (
+            <div className="mb-2 text-xs text-gray-600">
+              {totalAvailableCount} of {grandTotalCount} available
+            </div>
+          )}
+          {/* Render categories in order */}
+          {[...categoryOrder, ...Object.keys(allProducts).filter(cat => !categoryOrder.includes(cat))]
+            .filter(category => allProducts[category]?.length > 0)
+            .map((category) => (
+              <div key={category} className="mb-3 last:mb-0">
+                <h4 className="text-xs font-semibold text-gray-700 mb-1.5 capitalize">
+                  {category}
+                </h4>
+                <div className="grid grid-cols-6 gap-1">
+                  {allProducts[category].map(product => (
+                    <div
+                      key={product.id}
+                      className={`${iconSizeClasses[iconSize]} rounded overflow-hidden border ${
+                        product.available ? 'border-gray-300' : 'border-gray-200 opacity-50'
+                      }`}
+                      title={product.name}
+                    >
+                      <img
+                        src={`/images/icons/${product.icon}`}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+        </div>
+      );
+    }
+
+    // WITHOUT CATEGORIES - Simple flat grid
     return (
       <div className="p-2 pb-1 border-b border-gray-200">
         {showSummary && (
@@ -249,19 +297,19 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
       )}
 
       {showCategories ? (
-        <div className="space-y-4">
+        <div className="space-y-2.5">
           {[...categoryOrder, ...Object.keys(allProducts).filter(cat => !categoryOrder.includes(cat))]
             .filter(category => allProducts[category]?.length > 0)
             .map((category) => (
               <div key={category}>
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
+                <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 capitalize border-b border-gray-200 dark:border-gray-700 pb-0.5">
                   {category}
                 </h3>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {allProducts[category].map(product => (
                     <div
                       key={product.id}
-                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
+                      className={`flex items-center space-x-1.5 px-2 py-1 rounded text-xs transition-all ${
                         product.available
                           ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
                           : 'bg-gray-50 dark:bg-gray-800 opacity-50'
@@ -287,11 +335,11 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
             ))}
         </div>
       ) : (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {flatProducts.map(product => (
             <div
               key={product.id}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
+              className={`flex items-center space-x-1.5 px-2 py-1 rounded text-xs transition-all ${
                 product.available
                   ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
                   : 'bg-gray-50 dark:bg-gray-800 opacity-50'

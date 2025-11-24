@@ -155,8 +155,17 @@ const MapComponent: React.FC = () => {
   const createMarkerClickHandler = useCallback((shop: Shop) => {
     return (event: MouseEvent) => {
       event.domEvent?.stopPropagation();
-      setSelectedShop(shop);
-      openShopOverlays(shop, 'shop');
+
+      // IMPORTANT: Use the shop from currentlyDisplayedLocations to preserve distance
+      // The shop parameter might be from the closure and lack distance if markers were created before search
+      const shopWithDistance = currentlyDisplayedLocations.find(
+        s => s.slug === shop.slug || s.GoogleProfileID === shop.GoogleProfileID
+      ) || shop;
+
+      console.log('Marker clicked - shop has distance:', (shopWithDistance as any).distance);
+
+      setSelectedShop(shopWithDistance);
+      openShopOverlays(shopWithDistance, 'shop');
       // Navigate to type-specific detail page with filters preserved
       if (shop.slug) {
         const basePath = getShopDetailBasePath(shop.type);
@@ -178,7 +187,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius]);
+  }, [currentlyDisplayedLocations, setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius]);
 
 
   // Initialize Map and its specific listeners

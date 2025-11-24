@@ -96,8 +96,13 @@ function App() {
         return;
       }
 
-      // Try to find by slug first, then by GoogleProfileID as fallback
-      const shopFromUrl = allLocations.find(s => s.slug === urlIdentifier)
+      // IMPORTANT: Look up shop from filteredAndSortedShops first (which has distance calculated)
+      // Fall back to allLocations only if not found in filtered results
+      const shopFromFiltered = filteredAndSortedShops.find(s => s.slug === urlIdentifier)
+                            || filteredAndSortedShops.find(s => s.GoogleProfileID === urlIdentifier);
+
+      const shopFromUrl = shopFromFiltered
+                       || allLocations.find(s => s.slug === urlIdentifier)
                        || allLocations.find(s => s.GoogleProfileID === urlIdentifier);
 
       if (shopFromUrl) {
@@ -127,7 +132,7 @@ function App() {
       }
     }
   }, [
-      location.pathname, allLocations, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
+      location.pathname, allLocations, filteredAndSortedShops, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
       openShopOverlays, closeShopOverlays, setSelectedShop, navigate
     ]
   );

@@ -628,7 +628,7 @@ if (require.main === module) {
             updatePromise = updateFn();
         } else {
             console.error(`\n❌ Invalid type: ${typeFilter}`);
-            console.error('Valid types: farms, cheese, fish, butchers, antiques\n');
+            console.error('Valid types: farms, cheese, fish, butchers, antiques, breweries, wineries, sugar-shacks\n');
             console.error('Example: npm run process-data -- --type=farms\n');
             process.exit(1);
         }

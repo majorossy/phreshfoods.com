@@ -27,10 +27,10 @@ const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string;
   fish_monger: { emoji: getEmoji('fish_monger'), label: getDisplayName('fish_monger'), color: 'blue' },
   cheese_shop: { emoji: getEmoji('cheese_shop'), label: getDisplayName('cheese_shop'), color: 'yellow' },
   butcher: { emoji: getEmoji('butcher'), label: getDisplayName('butcher'), color: 'red' },
-  brewery: { emoji: getEmoji('brewery'), label: getDisplayName('brewery'), color: 'amber', disabled: true },
-  winery: { emoji: getEmoji('winery'), label: getDisplayName('winery'), color: 'purple', disabled: true },
+  brewery: { emoji: getEmoji('brewery'), label: getDisplayName('brewery'), color: 'amber' },
+  winery: { emoji: getEmoji('winery'), label: getDisplayName('winery'), color: 'purple' },
   antique_shop: { emoji: getEmoji('antique_shop'), label: getDisplayName('antique_shop'), color: 'gray' },
-  sugar_shack: { emoji: getEmoji('sugar_shack'), label: getDisplayName('sugar_shack'), color: 'orange', disabled: true },
+  sugar_shack: { emoji: getEmoji('sugar_shack'), label: getDisplayName('sugar_shack'), color: 'orange' },
 };
 
 const Header: React.FC = () => {
