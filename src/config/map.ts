@@ -39,7 +39,7 @@ export const DEFAULT_MAP_CENTER: LatLngLiteral = DEFAULT_PORTLAND_CENTER;
 export const DEFAULT_MAP_ZOOM: number = 11;
 export const USER_LOCATION_MAP_ZOOM: number = 10;
 
-export const USE_CUSTOM_MAP_STYLE: boolean = false;
+export const USE_CUSTOM_MAP_STYLE: boolean = true;
 
 // Google Maps API Key Security:
 // - The Maps JavaScript API key is loaded via <script> tag in index.html
@@ -87,15 +87,15 @@ export const mapStyles: MapStyles = {
     { featureType: "road.highway", elementType: "geometry.fill", stylers: [{ color: "#63493c" }] },
     { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#63493c" }] },
     { featureType: "transit", elementType: "all", stylers: [{ visibility: "off" }] },
-    { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#294873" }] },
+    { featureType: "water", elementType: "geometry.fill", stylers: [{ color: "#356A78" }] },
     { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#F0F0F0" }] },
-    { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#294873" }, { weight: 3 }], },
+    { featureType: "water", elementType: "labels.text.stroke", stylers: [{ color: "#356A78" }, { weight: 3 }], },
   ],
 };
 
 // Distance and Location Settings
-export const DEFAULT_SEARCH_RADIUS_MILES: number = 20;
-export const RADIUS_SLIDER_MIN_MILES: number = 10;
+export const DEFAULT_SEARCH_RADIUS_MILES: number = 50;
+export const RADIUS_SLIDER_MIN_MILES: number = 5;
 export const RADIUS_SLIDER_MAX_MILES: number = 100;
 export const RADIUS_SLIDER_STEP_MILES: number = 5;
 export const RADIUS_DEBOUNCE_MS: number = 300;           // Debounce for radius slider changes
@@ -123,7 +123,7 @@ export const MARKER_HOVER_DEBOUNCE_MS: number = 50;          // Debounce time fo
 export const MARKER_HOVER_COLOR: string = '#4285F4';         // Google blue for hover/selected state
 
 // Search Location Marker Styling
-export const SEARCH_MARKER_SIZE_PX: number = 20;             // Size of search location marker
+export const SEARCH_MARKER_SIZE_PX: number = 34;             // Size of search location marker
 export const SEARCH_MARKER_BORDER_WIDTH_PX: number = 1.5;    // Border width for search marker
 export const SEARCH_MARKER_INNER_DOT_SIZE_PX: number = 6;    // Size of inner dot in search marker
 export const SEARCH_MARKER_Z_INDEX: number = 9999;           // Z-index for search marker (always on top)

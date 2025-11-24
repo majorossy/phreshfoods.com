@@ -1,0 +1,203 @@
+// src/components/UI/ProductIconGrid.tsx
+import React, { useMemo } from 'react';
+import { Shop } from '../../types';
+import { getProductConfig, getCategoryDisplayOrder } from '../../config/productRegistry';
+
+interface ProductWithAvailability {
+  id: string;
+  name: string;
+  icon: string;
+  available: boolean;
+}
+
+interface ProductIconGridProps {
+  shop: Shop;
+  displayMode: 'compact' | 'detailed';
+  maxProducts?: number;
+  showCategories?: boolean;
+  showProductNames?: boolean;
+  showSummary?: boolean;
+  iconSize?: 'sm' | 'md' | 'lg';
+}
+
+const ProductIconGrid: React.FC<ProductIconGridProps> = ({
+  shop,
+  displayMode,
+  maxProducts,
+  showCategories = false,
+  showProductNames = false,
+  showSummary = false,
+  iconSize = 'md'
+}) => {
+  // Get config for shop type
+  const productConfig = getProductConfig(shop.type);
+  const categoryOrder = getCategoryDisplayOrder(shop.type);
+
+  // Build product list with availability - shows ALL products
+  const allProducts = useMemo(() => {
+    const products: Record<string, ProductWithAvailability[]> = {};
+
+    for (const productId in productConfig) {
+      const product = productConfig[productId];
+      const category = product.category || 'Other';
+      const isAvailable = shop.products?.[productId] === true;
+
+      if (!products[category]) {
+        products[category] = [];
+      }
+
+      products[category].push({
+        id: productId,
+        name: product.name,
+        // KEY: Choose color icon if available, grey icon if not
+        icon: isAvailable ? product.icon_available : product.icon_unavailable,
+        available: isAvailable
+      });
+    }
+    return products;
+  }, [shop, productConfig]);
+
+  // Flatten and optionally limit products for compact mode
+  const flatProducts = useMemo(() => {
+    let flat = Object.values(allProducts).flat();
+    if (maxProducts && displayMode === 'compact') {
+      flat = flat.slice(0, maxProducts);
+    }
+    return flat;
+  }, [allProducts, maxProducts, displayMode]);
+
+  // Icon size classes
+  const iconSizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10'
+  };
+
+  // Count available products
+  const availableCount = flatProducts.filter(p => p.available).length;
+  const totalCount = flatProducts.length;
+
+  // COMPACT MODE - Simple icon grid for InfoWindow
+  if (displayMode === 'compact') {
+    return (
+      <div className="p-2 pb-1 border-b border-gray-200">
+        {showSummary && (
+          <div className="mb-2 text-xs text-gray-600">
+            {availableCount} of {totalCount} available
+          </div>
+        )}
+        <div className="grid grid-cols-6 gap-1">
+          {flatProducts.map(product => (
+            <div
+              key={product.id}
+              className={`${iconSizeClasses[iconSize]} rounded overflow-hidden border ${
+                product.available ? 'border-gray-300' : 'border-gray-200 opacity-50'
+              }`}
+              title={`${product.name}${product.available ? ' - Available' : ' - Not Available'}`}
+            >
+              <img
+                src={`/images/icons/${product.icon}`}
+                alt={product.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // DETAILED MODE - Category organized for overlay
+  const allCategorizedProducts = Object.values(allProducts).flat();
+  const totalAvailableCount = allCategorizedProducts.filter(p => p.available).length;
+  const grandTotalCount = allCategorizedProducts.length;
+
+  return (
+    <>
+      {showSummary && (
+        <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <p className="text-sm text-gray-700 dark:text-gray-300">
+            <span className="font-semibold text-purple-600 dark:text-purple-400">
+              {totalAvailableCount}
+            </span>
+            {' '}available of{' '}
+            <span className="font-semibold">{grandTotalCount}</span>
+            {' '}total products
+          </p>
+        </div>
+      )}
+
+      {showCategories ? (
+        <div className="space-y-4">
+          {[...categoryOrder, ...Object.keys(allProducts).filter(cat => !categoryOrder.includes(cat))]
+            .filter(category => allProducts[category]?.length > 0)
+            .map((category) => (
+              <div key={category}>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
+                  {category}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {allProducts[category].map(product => (
+                    <div
+                      key={product.id}
+                      className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
+                        product.available
+                          ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
+                          : 'bg-gray-50 dark:bg-gray-800 opacity-50'
+                      }`}
+                    >
+                      <img
+                        src={`/images/icons/${product.icon}`}
+                        alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
+                        className={`${iconSizeClasses[iconSize]} object-contain`}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      {showProductNames && (
+                        <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
+                          {product.name}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          {flatProducts.map(product => (
+            <div
+              key={product.id}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
+                product.available
+                  ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
+                  : 'bg-gray-50 dark:bg-gray-800 opacity-50'
+              }`}
+            >
+              <img
+                src={`/images/icons/${product.icon}`}
+                alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
+                className={`${iconSizeClasses[iconSize]} object-contain`}
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
+              {showProductNames && (
+                <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
+                  {product.name}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+};
+
+export default ProductIconGrid;

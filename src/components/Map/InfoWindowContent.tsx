@@ -1,6 +1,7 @@
 // src/components/Map/InfoWindowContent.tsx
 import React from 'react';
 import { Shop } from '../../types'; // Assuming your Shop type is here
+import ProductIconGrid from '../UI/ProductIconGrid';
 
 // A simple star rating component (you might have a more complex one)
 const StarRating: React.FC<{ rating: number; reviewCount?: number }> = ({ rating, reviewCount }) => {
@@ -38,26 +39,19 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
     return null;
   }
 
-  // Get image URL from shop data - prioritize custom images from sheet, then Google Photos
-  let imageUrl = '/images/placeholder-sm.png'; // Default fallback
-
-  if (shop.ImageOne) {
-    // Add /images/ prefix if not already present
-    imageUrl = shop.ImageOne.startsWith('/') ? shop.ImageOne : `/images/${shop.ImageOne}`;
-  } else if (shop.placeDetails?.photos && shop.placeDetails.photos.length > 0) {
-    const photoRef = shop.placeDetails.photos[0].photo_reference;
-    // Use backend proxy to fetch photo (keeps API key secure)
-    imageUrl = `/api/photo?photo_reference=${photoRef}&maxwidth=400`;
-  }
-
   return (
     <div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
-      {/* Optional Image Section */}
-      {imageUrl && !imageUrl.includes('placeholder-sm.png') && ( // Don't show placeholder if that's all we have
-        <img src={imageUrl} alt={shop.Name} className="w-full h-24 object-cover rounded-t-md block" />
-      )}
+      {/* Product Icons Grid - Shows ALL products with color/grey icons */}
+      <ProductIconGrid
+        shop={shop}
+        displayMode="compact"
+        maxProducts={18}
+        showCategories={false}
+        showProductNames={false}
+        iconSize="sm"
+      />
 
-      <div className={imageUrl && !imageUrl.includes('placeholder-sm.png') ? "p-2 pt-2" : "p-2"}> {/* Adjust padding if no image */}
+      <div className="p-2">
         <h3 className="text-sm font-semibold mb-0.5 truncate text-gray-800 leading-tight" title={shop.Name}>
           {shop.Name}
         </h3>

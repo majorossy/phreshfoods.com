@@ -2,8 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Shop } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
-import { PRODUCT_ICONS_CONFIG, CATEGORY_DISPLAY_ORDER } from '../../config/appConfig';
 import { useUI } from '../../contexts/UIContext';
+import ProductIconGrid from '../UI/ProductIconGrid';
 
 interface ShopDetailsOverlayProps {
   shop: Shop;
@@ -87,27 +87,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const today = new Date().getDay();
   // Google's weekday_text starts with Monday (index 0), so we need to adjust
   const todayIndex = today === 0 ? 6 : today - 1;
-
-  // Group all products by category, showing on/off icons
-  const allProducts: Record<string, Array<{ id: string; name: string; icon: string; available: boolean }>> = {};
-  for (const productId in PRODUCT_ICONS_CONFIG) {
-    const product = PRODUCT_ICONS_CONFIG[productId];
-    const category = product.category || 'Other';
-    const isAvailable = shop[productId as keyof Shop] === true;
-
-    if (!allProducts[category]) {
-      allProducts[category] = [];
-    }
-    allProducts[category].push({
-      id: productId,
-      name: product.name,
-      icon: isAvailable ? product.icon_available : product.icon_unavailable,
-      available: isAvailable
-    });
-  }
-
-  // Check if there are any products to display (should always be true now)
-  const hasProducts = Object.keys(allProducts).length > 0;
 
   return (
     <div
@@ -400,76 +379,14 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
         {/* Tab Content - Products Tab */}
         {activeTab === 'products' && (
           <div id="shop-products-panel">
-            {hasProducts ? (
-              <>
-                {/* Products Summary */}
-                <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    <span className="font-semibold text-purple-600 dark:text-purple-400">
-                      {Object.values(allProducts).flat().filter(p => p.available).length}
-                    </span>
-                    {' '}available of{' '}
-                    <span className="font-semibold">
-                      {Object.values(allProducts).flat().length}
-                    </span>
-                    {' '}total products
-                  </p>
-                </div>
-
-                {/* Products by Category */}
-                <div className="space-y-4">
-                  {[...CATEGORY_DISPLAY_ORDER, ...Object.keys(allProducts).filter(cat => !CATEGORY_DISPLAY_ORDER.includes(cat))]
-                    .filter(category => allProducts[category] && allProducts[category].length > 0)
-                    .map((category) => (
-                      <div key={category}>
-                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 capitalize border-b border-gray-200 dark:border-gray-700 pb-1">
-                          {category}
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {allProducts[category].map(product => (
-                            <div
-                              key={product.id}
-                              className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm transition-all ${
-                                product.available
-                                  ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
-                                  : 'bg-gray-50 dark:bg-gray-800 opacity-50'
-                              }`}
-                            >
-                              <img
-                                src={`/images/icons/${product.icon}`}
-                                alt={`${product.name} - ${product.available ? 'Available' : 'Not available'}`}
-                                className="w-6 h-6 object-contain"
-                                onError={(e) => {
-                                  (e.target as HTMLImageElement).style.display = 'none';
-                                }}
-                              />
-                              <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
-                                {product.name}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center text-center py-12 space-y-4">
-                <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                  <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    No Products Listed
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Product information not available for this location.
-                  </p>
-                </div>
-              </div>
-            )}
+            <ProductIconGrid
+              shop={shop}
+              displayMode="detailed"
+              showCategories={true}
+              showProductNames={true}
+              showSummary={true}
+              iconSize="sm"
+            />
           </div>
         )}
       </div>

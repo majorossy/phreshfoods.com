@@ -77,8 +77,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const displayRating = shop.placeDetails?.rating !== undefined ? shop.placeDetails.rating : shop.Rating;
   const displayReviewCount = shop.placeDetails?.user_ratings_total;
 
-  const placeholderText = encodeURIComponent(displayName.split(' ').slice(0, 2).join(' ') || 'Farm');
-  const fallbackImageUrlCard = `https://placehold.co/400x250/E8DCC3/4A3B2C?text=${placeholderText}&font=inter`; // Adjusted placeholder text
+  const fallbackImageUrlCard = '/images/Flag_of_Maine.svg'; // Maine flag placeholder
 
   const actualImageUrl = (shop.ImageOne && String(shop.ImageOne).trim() !== '')
     ? `/images/${String(shop.ImageOne).trim()}`

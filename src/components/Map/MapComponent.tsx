@@ -431,72 +431,17 @@ const MapComponent: React.FC = () => {
     requestAnimationFrame(() => {
       // Create or update search location marker
       if (!searchLocationMarkerRef.current && window.google?.maps?.marker) {
-        // Create new marker - thin crosshair style with pink pulsating effect
-        const markerContainer = document.createElement('div');
-        markerContainer.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
-        markerContainer.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
-        markerContainer.style.position = 'relative';
-        markerContainer.style.cursor = 'pointer';
-
-        // Define pink color
-        const pinkColor = '#ec4899'; // Tailwind pink-500
-
-        // Outer circle (thin ring with pulsating animation)
-        const outerCircle = document.createElement('div');
-        outerCircle.style.width = '100%';
-        outerCircle.style.height = '100%';
-        outerCircle.style.borderRadius = '50%';
-        outerCircle.style.border = `${SEARCH_MARKER_BORDER_WIDTH_PX}px solid ${pinkColor}`;
-        outerCircle.style.backgroundColor = 'rgba(236, 72, 153, 0.15)';
-        outerCircle.style.boxShadow = `0 0 8px rgba(236, 72, 153, 0.6)`;
-        outerCircle.style.position = 'absolute';
-        outerCircle.style.top = '0';
-        outerCircle.style.left = '0';
-        outerCircle.style.animation = 'pulse-pink 2s ease-in-out infinite';
-        markerContainer.appendChild(outerCircle);
-
-        // Center dot with pulsating animation
-        const centerDot = document.createElement('div');
-        centerDot.style.width = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
-        centerDot.style.height = `${SEARCH_MARKER_INNER_DOT_SIZE_PX}px`;
-        centerDot.style.borderRadius = '50%';
-        centerDot.style.backgroundColor = pinkColor;
-        centerDot.style.position = 'absolute';
-        centerDot.style.top = '50%';
-        centerDot.style.left = '50%';
-        centerDot.style.transform = 'translate(-50%, -50%)';
-        centerDot.style.boxShadow = `0 0 6px rgba(236, 72, 153, 0.8)`;
-        centerDot.style.animation = 'pulse-pink 2s ease-in-out infinite';
-        markerContainer.appendChild(centerDot);
-
-        // Vertical line
-        const verticalLine = document.createElement('div');
-        verticalLine.style.width = '1px';
-        verticalLine.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
-        verticalLine.style.backgroundColor = pinkColor;
-        verticalLine.style.position = 'absolute';
-        verticalLine.style.top = '0';
-        verticalLine.style.left = '50%';
-        verticalLine.style.transform = 'translateX(-50%)';
-        verticalLine.style.opacity = '0.8';
-        markerContainer.appendChild(verticalLine);
-
-        // Horizontal line
-        const horizontalLine = document.createElement('div');
-        horizontalLine.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
-        horizontalLine.style.height = '1px';
-        horizontalLine.style.backgroundColor = pinkColor;
-        horizontalLine.style.position = 'absolute';
-        horizontalLine.style.top = '50%';
-        horizontalLine.style.left = '0';
-        horizontalLine.style.transform = 'translateY(-50%)';
-        horizontalLine.style.opacity = '0.8';
-        markerContainer.appendChild(horizontalLine);
+        // Create new marker using custom image
+        const markerImage = document.createElement('img');
+        markerImage.src = '/images/center-pin.png';
+        markerImage.style.width = `${SEARCH_MARKER_SIZE_PX}px`;
+        markerImage.style.height = `${SEARCH_MARKER_SIZE_PX}px`;
+        markerImage.style.cursor = 'pointer';
 
         const searchMarker = new window.google.maps.marker.AdvancedMarkerElement({
           position: targetLatLng,
           map: map,
-          content: markerContainer,
+          content: markerImage,
           title: mapViewTargetLocation.formatted_address || 'Searched Location',
           zIndex: SEARCH_MARKER_Z_INDEX,
         });

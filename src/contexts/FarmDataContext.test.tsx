@@ -55,7 +55,7 @@ import React from 'react';
  * WHY: We don't want to make real API calls during tests
  */
 vi.mock('../services/apiService', () => ({
-  fetchAndProcessFarmStands: vi.fn(),
+  fetchAndProcessLocations: vi.fn(),
 }));
 
 /**
@@ -130,7 +130,7 @@ describe('FarmDataContext - Initialization', () => {
     // WHY THIS TEST: Users should see a loading indicator immediately
 
     // Mock API call that never resolves (simulates slow network)
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
 
     const { result } = renderUseFarmData();
@@ -144,7 +144,7 @@ describe('FarmDataContext - Initialization', () => {
   it('provides all expected methods and state', () => {
     // WHY THIS TEST: Verify the context exposes all required functionality
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue([]);
 
     const { result } = renderUseFarmData();
@@ -178,7 +178,7 @@ describe('FarmDataContext - Successful Data Loading', () => {
     // WHY THIS TEST: Core functionality - does it fetch data automatically?
 
     const mockFarmStands = createMockFarmStands();
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue(mockFarmStands);
 
     const { result } = renderUseFarmData();
@@ -197,10 +197,10 @@ describe('FarmDataContext - Successful Data Loading', () => {
     expect(result.current.farmStandsError).toBeNull();
   });
 
-  it('calls fetchAndProcessFarmStands with abort signal', async () => {
+  it('calls fetchAndProcessLocations with abort signal', async () => {
     // WHY THIS TEST: Ensure we can cancel requests on unmount
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue([]);
 
     renderUseFarmData();
@@ -216,7 +216,7 @@ describe('FarmDataContext - Successful Data Loading', () => {
   it('sets error to null on successful load', async () => {
     // WHY THIS TEST: Clear any previous errors on successful retry
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue(createMockFarmStands());
 
     const { result } = renderUseFarmData();
@@ -238,7 +238,7 @@ describe('FarmDataContext - Error Handling', () => {
   it('handles fetch errors gracefully', async () => {
     // WHY THIS TEST: Backend might be down, network might fail
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockRejectedValue(new Error('Network error'));
 
     const { result } = renderUseFarmData();
@@ -259,7 +259,7 @@ describe('FarmDataContext - Error Handling', () => {
   it('handles non-array response', async () => {
     // WHY THIS TEST: Backend might return unexpected data format
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue(null as any); // Invalid response
 
     const { result } = renderUseFarmData();
@@ -277,7 +277,7 @@ describe('FarmDataContext - Error Handling', () => {
   it('sets loading to false after error', async () => {
     // WHY THIS TEST: Don't get stuck in loading state on error
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockRejectedValue(new Error('Failed'));
 
     const { result } = renderUseFarmData();
@@ -300,7 +300,7 @@ describe('FarmDataContext - Retry', () => {
   it('retries loading farm stands', async () => {
     // WHY THIS TEST: User clicks "Try Again" button after error
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
 
     // First call fails
     mockFetch.mockRejectedValueOnce(new Error('Network error'));
@@ -333,7 +333,7 @@ describe('FarmDataContext - Retry', () => {
   it('clears error on retry attempt', async () => {
     // WHY THIS TEST: Don't show old error message during retry
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockRejectedValueOnce(new Error('Error'));
 
     const { result } = renderUseFarmData();
@@ -366,7 +366,7 @@ describe('FarmDataContext - Abort Signal', () => {
   it('does not update state when request is aborted', async () => {
     // WHY THIS TEST: Prevent memory leaks and state updates after unmount
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
 
     mockFetch.mockImplementation(async (signal) => {
       // Simulate slow network
@@ -403,7 +403,7 @@ describe('FarmDataContext - State Setters', () => {
   it('allows setting allFarmStands directly', async () => {
     // WHY THIS TEST: Advanced usage - manually set data
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue([]);
 
     const { result } = renderUseFarmData();
@@ -425,7 +425,7 @@ describe('FarmDataContext - State Setters', () => {
   it('allows setting currentlyDisplayedShops', async () => {
     // WHY THIS TEST: App.tsx sets this after filtering
 
-    const mockFetch = vi.mocked(apiService.fetchAndProcessFarmStands);
+    const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
     mockFetch.mockResolvedValue([]);
 
     const { result } = renderUseFarmData();

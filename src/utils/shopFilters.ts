@@ -72,7 +72,7 @@ export function filterAndSortShops(
 
   if (activeFilterKeys.length > 0) {
     filteredShops = filteredShops.filter((shop: Shop) => {
-      return activeFilterKeys.some(filterKey => {
+      return activeFilterKeys.every(filterKey => {
         // Access products from the nested products object
         const productIsAvailable = !!(shop.products[filterKey as keyof typeof shop.products]);
         return productIsAvailable;

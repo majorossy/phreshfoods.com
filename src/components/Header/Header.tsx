@@ -15,6 +15,17 @@ import ProductFilters from '../Filters/ProductFilters'; // Import the filters co
 import { useDebounce } from '../../hooks/useDebounce';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
+import { useFilters } from '../../contexts/FilterContext';
+import { LocationType } from '../../types/shop';
+
+// Location type configurations
+const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string; color: string }> = {
+  farm_stand: { emoji: '🚜', label: 'Farms', color: 'green' },
+  cheese_shop: { emoji: '🧀', label: 'Cheese', color: 'yellow' },
+  fish_monger: { emoji: '🐟', label: 'Fish', color: 'blue' },
+  butcher: { emoji: '🥩', label: 'Butcher', color: 'red' },
+  antique_shop: { emoji: '🏺', label: 'Antiques', color: 'purple' },
+};
 
 const Header: React.FC = () => {
   const autocompleteInputRef = useRef<HTMLInputElement>(null);
@@ -47,6 +58,11 @@ const Header: React.FC = () => {
     setSelectedShop,    // For handleTitleClick
     closeShopOverlays, // For handleTitleClick
   } = useUI();
+
+  const {
+    activeLocationTypes,
+    toggleLocationType,
+  } = useFilters();
 
   // Effect to initialize local radius from context
   useEffect(() => {
@@ -223,17 +239,54 @@ const Header: React.FC = () => {
   }, [setSelectedShop, closeShopOverlays, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation]);
 
   return (
-    <header className="bg-[#e8dcc3] shadow-md z-30 print:hidden" role="banner">
+    <header className="bg-[#F8EAAD] shadow-md z-30 print:hidden" role="banner">
       <div className="w-full">
         <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full">
           {/* Logo and Title Section */}
-          <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center">
-            <img src="/images/flag.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
+          <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-center flex-wrap">
+            <img src="/images/Flag_of_Maine.svg" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
             <Link to="/" onClick={handleTitleClick} className="cursor-pointer" title="Go to Homepage" aria-label="PhreshFoods - Find Local Farms, Cheese Shops, Fish Mongers, Butchers & Antique Shops">
-              <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: 'rgb(27, 74, 123)' }}>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-bold whitespace-nowrap hover:text-blue-800 transition-colors" style={{ color: '#356A78' }}>
                 PhreshFoods
               </h1>
             </Link>
+
+            {/* Location Type Filter Buttons */}
+            <div className="flex items-center gap-1.5 ml-2 px-3 py-1.5 rounded-full" style={{ backgroundColor: '#356A78' }}>
+              {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
+                const isActive = activeLocationTypes.has(type);
+                const colorClasses = {
+                  green: isActive
+                    ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                  yellow: isActive
+                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                  blue: isActive
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                  red: isActive
+                    ? 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                  purple: isActive
+                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100'
+                    : 'bg-gray-100 text-gray-400 dark:bg-gray-700 dark:text-gray-500',
+                };
+
+                return (
+                  <button
+                    key={type}
+                    onClick={() => toggleLocationType(type)}
+                    className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 transition-colors hover:opacity-80 ${colorClasses[config.color]}`}
+                    title={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
+                    aria-label={`${isActive ? 'Hide' : 'Show'} ${config.label}`}
+                    aria-pressed={isActive}
+                  >
+                    {config.emoji} {config.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Search, Radius, and Filters Section */}
