@@ -79,7 +79,7 @@ class RequestCache {
           this.pendingRequests.delete(cacheKey);
         }, cacheDuration);
       })
-      .catch((error) => {
+      .catch((_error) => {
         // Remove failed/aborted requests immediately so they can be retried
         this.pendingRequests.delete(cacheKey);
       });

@@ -1,5 +1,5 @@
 // src/App.tsx
-import React, { useEffect, useMemo, lazy, Suspense } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useLocationData } from './contexts/LocationDataContext';
 import { useSearch } from './contexts/SearchContext';
@@ -55,11 +55,11 @@ function App() {
   });
 
   // Update displayed shops when filtered results change
-  // Optimized: Remove setCurrentlyDisplayedLocations from deps to prevent unnecessary re-renders
-  // The setter function is stable and doesn't need to be in the dependency array
+  // The setter function is stable (React guarantees setter function stability), but we include it
+  // in the dependency array to satisfy the exhaustive-deps rule
   useEffect(() => {
     setCurrentlyDisplayedLocations(filteredAndSortedShops);
-  }, [filteredAndSortedShops]);
+  }, [filteredAndSortedShops, setCurrentlyDisplayedLocations]);
 
   // Auto-populate search location when loading a direct shop URL
   useEffect(() => {

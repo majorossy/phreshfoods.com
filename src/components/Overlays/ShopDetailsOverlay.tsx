@@ -48,6 +48,22 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
     });
   };
 
+  // Calculate product counts for accordion title - MUST be before early return
+  const { availableCount, totalCount } = useMemo(() => {
+    const productConfig = getProductConfig(shop.type);
+    let available = 0;
+    let total = 0;
+
+    for (const productId in productConfig) {
+      total++;
+      if (shop.products?.[productId] === true) {
+        available++;
+      }
+    }
+
+    return { availableCount: available, totalCount: total };
+  }, [shop]);
+
   if (!shop) return null;
 
   // Google Place Details data is already safe (comes from Google API), only escape our own data
@@ -57,7 +73,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const displayWebsite = shop.placeDetails?.website || shop.Website;
   const displayRating = shop.placeDetails?.rating !== undefined ? shop.placeDetails.rating : (shop.Rating !== "N/A" ? parseFloat(shop.Rating) : null);
   const displayReviewCount = shop.placeDetails?.user_ratings_total;
-  const businessStatus = shop.placeDetails?.business_status;
   const openingHours = shop.placeDetails?.opening_hours;
 
   // Parse hours for modern display
@@ -74,31 +89,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   const today = new Date().getDay();
   // Google's weekday_text starts with Monday (index 0), so we need to adjust
   const todayIndex = today === 0 ? 6 : today - 1;
-
-  // Calculate product counts for accordion title
-  const { availableCount, totalCount } = useMemo(() => {
-    const productConfig = getProductConfig(shop.type);
-    let available = 0;
-    let total = 0;
-
-    for (const productId in productConfig) {
-      total++;
-      if (shop.products?.[productId] === true) {
-        available++;
-      }
-    }
-
-    return { availableCount: available, totalCount: total };
-  }, [shop]);
-
-  // Calculate distance in miles for display
-  const distanceInMiles = useMemo(() => {
-    if (shop.distance && shop.distance > 0) {
-      const miles = shop.distance * 0.000621371; // Convert meters to miles
-      return miles.toFixed(1);
-    }
-    return null;
-  }, [shop]);
 
   return (
     <div

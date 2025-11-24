@@ -136,7 +136,9 @@ export function getTripFromStorage(key: string): Shop[] | null {
     // Remove corrupted data
     try {
       localStorage.removeItem(key);
-    } catch {}
+    } catch {
+      // Ignore errors removing corrupted data
+    }
     return null;
   }
 }

@@ -18,8 +18,8 @@
  *
  * This file is kept for backward compatibility with existing components.
  */
-import React, { createContext, useContext, ReactNode, useMemo } from 'react';
-import { Shop, ShopWithDistance, AutocompletePlace, ToastType } from '../types';
+import React, { createContext, ReactNode, useMemo } from 'react';
+import { Shop, ShopWithDistance, AutocompletePlace } from '../types';
 import { AppProviders } from './AppProviders';
 import { useLocationData } from './LocationDataContext';
 import { useSearch } from './SearchContext';

@@ -4,7 +4,7 @@ import { ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath, getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 import StarRating from '../UI/StarRating.tsx';
-import { kmToMiles, escapeHTMLSafe } from '../../utils';
+import { escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext.tsx'; // For selectedShop styling
 import { useFilters } from '../../contexts/FilterContext.tsx';
 import { useSearch } from '../../contexts/SearchContext.tsx';
@@ -110,12 +110,6 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const actualImageUrl = (shop.ImageOne && String(shop.ImageOne).trim() !== '')
     ? `/images/${String(shop.ImageOne).trim()}`
     : fallbackImageUrlCard;
-
-  let distanceString = '';
-  if (shop.distance != null && shop.distance !== Infinity) {
-    const distMiles = kmToMiles(shop.distance / 1000);
-    distanceString = `~${distMiles.toFixed(1)} mi`; // Removed "away" for brevity
-  }
 
   const isSelected = selectedShop?.slug === shop.slug || selectedShop?.GoogleProfileID === shop.GoogleProfileID;
   const isHovered = hoveredShop?.slug === shop.slug || hoveredShop?.GoogleProfileID === shop.GoogleProfileID;

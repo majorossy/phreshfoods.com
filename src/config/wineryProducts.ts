@@ -1,7 +1,7 @@
 // src/config/wineryProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const WINERY_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Wine Types

@@ -25,7 +25,7 @@ const StarRating: React.FC<StarRatingProps> = ({
   const roundedForStarDisplay = Math.round(rating * 2) / 2; // For half stars visual (though we use full for simplicity here)
 
   const starSVGPath = "M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z";
-  let starsHTML: JSX.Element[] = [];
+  const starsHTML: React.ReactElement[] = [];
   for (let i = 1; i <= 5; i++) {
     let starClass = 'text-gray-300'; // Default empty star
     if (i <= roundedForStarDisplay) { // Full star

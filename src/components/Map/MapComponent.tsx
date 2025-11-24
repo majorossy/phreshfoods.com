@@ -10,9 +10,7 @@ import { useTripPlanner } from '../../contexts/TripPlannerContext.tsx';
 import {
   DEFAULT_MAP_CENTER,
   DEFAULT_MAP_ZOOM,
-  MAINE_BOUNDS_LITERAL,
   MAP_ID,
-  USER_LOCATION_MAP_ZOOM,
   markerColor,
   MARKER_COLORS,
   mapStyles, // For custom map styling
@@ -22,18 +20,12 @@ import {
   MARKER_BORDER_WIDTH_PX,
   MARKER_TRANSITION_DURATION_S,
   MARKER_DEFAULT_SCALE,
-  MARKER_HOVER_SCALE,
-  MARKER_SELECTED_SCALE,
   MARKER_DEFAULT_Z_INDEX_OFFSET,
   MARKER_SELECTED_Z_INDEX,
   MARKER_HOVER_Z_INDEX,
   MARKER_HOVER_DEBOUNCE_MS,
-  MARKER_HOVER_COLOR,
   SEARCH_MARKER_SIZE_PX,
-  SEARCH_MARKER_BORDER_WIDTH_PX,
-  SEARCH_MARKER_INNER_DOT_SIZE_PX,
   SEARCH_MARKER_Z_INDEX,
-  SEARCH_MARKER_COLOR,
   RADIUS_CIRCLE_FILL_OPACITY,
   RADIUS_CIRCLE_STROKE_OPACITY,
   RADIUS_CIRCLE_STROKE_WIDTH,
@@ -69,7 +61,6 @@ const MapComponent: React.FC = () => {
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMarkerHovered = useRef<boolean>(false);
   const isInfoWindowHovered = useRef<boolean>(false);
-  const tripStopMarkersRef = useRef<Map<string, google.maps.marker.AdvancedMarkerElement>>(new Map());
 
   const navigate = useNavigate();
 
@@ -79,7 +70,7 @@ const MapComponent: React.FC = () => {
   const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
   const { directionsResult, clearDirections } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
-  const { tripStops, isTripMode, tripDirectionsResult } = useTripPlanner();
+  const { tripDirectionsResult } = useTripPlanner();
 
   const closeNativeInfoWindow = useCallback(() => {
     if (googleInfoWindowRef.current?.getMap()) {
@@ -585,7 +576,7 @@ const MapComponent: React.FC = () => {
     let resizeTimeout: NodeJS.Timeout;
 
     // Create ResizeObserver to watch for panel width changes
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver((_entries) => {
       // Debounce to avoid excessive re-panning during animations
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(() => {

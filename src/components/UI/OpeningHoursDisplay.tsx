@@ -17,18 +17,22 @@ const OpeningHoursDisplay: React.FC<OpeningHoursDisplayProps> = ({
 
   if (businessStatus && businessStatus !== "OPERATIONAL") {
     switch (businessStatus) {
-      case "CLOSED_TEMPORARILY":
+      case "CLOSED_TEMPORARILY": {
         overallStatusText = "Temporarily Closed";
         overallStatusClass = 'text-yellow-600 dark:text-yellow-400 font-semibold';
         break;
-      case "CLOSED_PERMANENTLY":
+      }
+      case "CLOSED_PERMANENTLY": {
         overallStatusText = "Permanently Closed";
         overallStatusClass = 'text-red-600 dark:text-red-400 font-semibold';
         break;
-      default: // For other non-operational statuses
+      }
+      default: {
+        // For other non-operational statuses
         const formattedStatus = String(businessStatus).replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
         overallStatusText = "Status: " + escapeHTMLSafe(formattedStatus);
         overallStatusClass = 'text-orange-600 dark:text-orange-400 font-semibold';
+      }
     }
   } else if (openingHours && typeof openingHours.open_now === 'boolean') {
     overallStatusText = openingHours.open_now ? 'Open Now' : 'Closed Now';

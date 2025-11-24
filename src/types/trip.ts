@@ -1,11 +1,5 @@
 // src/types/trip.ts
 import { Shop } from './shop';
-import {
-  getTripFromStorage,
-  saveTripToStorage as saveValidatedTrip,
-  clearTripFromStorage,
-  isStorageAvailable
-} from '../utils/storageValidation';
 
 /**
  * Represents a single stop in a trip

@@ -13,6 +13,8 @@ import {
 // Define a type for the raw shop data from the backend if it differs slightly before client-side processing
 // For now, we'll assume the backend sends data largely conforming to the Shop type,
 // but we might need to parse numbers or booleans.
+// Currently not used, but kept for future data processing needs
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface RawShopData extends Omit<Shop, 'lat' | 'lng' | 'beef' /* ... other booleans ... */> {
   lat?: string | number | null;
   lng?: string | number | null;
@@ -47,10 +49,11 @@ interface RawShopData extends Omit<Shop, 'lat' | 'lng' | 'beef' /* ... other boo
 /**
  * Converts various truthy/falsy values to boolean with strict validation
  * @param value - The value to convert
- * @param fieldName - Optional field name for error logging
+ * @param _fieldName - Optional field name for error logging (currently unused but kept for future debugging)
  * @returns boolean value
  */
-const toBoolean = (value: string | boolean | number | undefined | null, fieldName?: string): boolean => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const toBoolean = (value: string | boolean | number | undefined | null, _fieldName?: string): boolean => {
   // Handle boolean directly
   if (typeof value === 'boolean') return value;
 
@@ -59,8 +62,8 @@ const toBoolean = (value: string | boolean | number | undefined | null, fieldNam
     if (value === 1) return true;
     if (value === 0) return false;
     // Log unexpected numeric values in development
-    if (import.meta.env.DEV && fieldName) {
-      console.warn(`[apiService] Unexpected numeric value for ${fieldName}: ${value}, treating as false`);
+    if (import.meta.env.DEV && _fieldName) {
+      console.warn(`[apiService] Unexpected numeric value for ${_fieldName}: ${value}, treating as false`);
     }
     return false;
   }
@@ -78,8 +81,8 @@ const toBoolean = (value: string | boolean | number | undefined | null, fieldNam
     if (falsyValues.includes(lower)) return false;
 
     // Log unrecognized string values in development
-    if (import.meta.env.DEV && fieldName) {
-      console.warn(`[apiService] Unrecognized value for ${fieldName}: "${value}", treating as false`);
+    if (import.meta.env.DEV && _fieldName) {
+      console.warn(`[apiService] Unrecognized value for ${_fieldName}: "${value}", treating as false`);
     }
     return false;
   }

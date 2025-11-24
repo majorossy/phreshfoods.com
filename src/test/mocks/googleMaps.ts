@@ -177,7 +177,7 @@ class MockInfoWindow {
   private map: MockMap | null;
   private anchor: MockAdvancedMarkerElement | null;
 
-  constructor(options: any = {}) {
+  constructor(_options: any = {}) {
     this.content = null;
     this.map = null;
     this.anchor = null;

@@ -1,4 +1,6 @@
 /// <reference types="vite/client" />
+/// <reference types="@types/google.maps" />
+/// <reference types="@types/node" />
 
 // Instagram Embed API
 interface Window {

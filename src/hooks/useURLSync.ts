@@ -5,12 +5,9 @@ import { useFilters } from '../contexts/FilterContext';
 import { useSearch } from '../contexts/SearchContext';
 import {
   encodeFiltersToURL,
-  filterStatesEqual,
-  parseFiltersFromURL,
   URLFilterState,
-  isDefaultFilterState,
 } from '../utils/urlSync';
-import { encodeTypesToPath, isTypeFilterPage } from '../utils/typeUrlMappings';
+import { encodeTypesToPath } from '../utils/typeUrlMappings';
 
 /**
  * Custom hook to sync filter/search state to URL parameters

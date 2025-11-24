@@ -1,7 +1,7 @@
 // src/config/farmProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const FARM_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Meats

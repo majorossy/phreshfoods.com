@@ -1,7 +1,7 @@
 // src/config/sugarShackProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const SUGAR_SHACK_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Maple Products

@@ -1,7 +1,7 @@
 // src/config/antiqueProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const ANTIQUE_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Furniture & Decor

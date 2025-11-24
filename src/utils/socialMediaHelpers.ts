@@ -37,7 +37,7 @@ export function getInstagramDisplayName(shop: Shop): string | null {
 
   if (shop.InstagramLink) {
     // Extract username from URL like https://www.instagram.com/username/
-    const match = shop.InstagramLink.match(/instagram\.com\/([^\/\?]+)/);
+    const match = shop.InstagramLink.match(/instagram\.com\/([^/?]+)/);
     if (match && match[1]) {
       return match[1];
     }

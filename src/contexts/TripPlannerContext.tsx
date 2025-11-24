@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import { Shop } from '../types/shop';
 import {
   TripStop,
-  TripPersistence,
   saveTripToLocalStorage,
   loadTripFromLocalStorage,
   clearTripFromLocalStorage,

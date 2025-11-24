@@ -380,7 +380,7 @@ describe('FarmDataContext - Abort Signal', () => {
       return createMockFarmStands();
     });
 
-    const { result, unmount } = renderUseFarmData();
+    const { unmount } = renderUseFarmData();
 
     // Unmount immediately (triggers abort)
     unmount();

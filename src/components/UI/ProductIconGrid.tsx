@@ -38,14 +38,50 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
   activeFilters = {},
   onProductClick
 }) => {
+  // Build product list with availability - MUST be before any early returns
+  const allProducts = useMemo(() => {
+    if (!shop) return {};
+    const productConfig = getProductConfig(shop.type);
+    const products: Record<string, ProductWithAvailability[]> = {};
+
+    for (const productId in productConfig) {
+      const product = productConfig[productId];
+      const category = product.category || 'Other';
+      const isAvailable = shop.products?.[productId] === true;
+
+      if (!products[category]) {
+        products[category] = [];
+      }
+
+      products[category].push({
+        id: productId,
+        name: product.name,
+        // KEY: Choose color icon if available, grey icon if not
+        icon: isAvailable ? product.icon_available : product.icon_unavailable,
+        available: isAvailable
+      });
+    }
+    return products;
+  }, [shop]);
+
+  // Flatten and optionally limit products for compact mode
+  const flatProducts = useMemo(() => {
+    let flat = Object.values(allProducts).flat();
+    if (maxProducts && displayMode === 'compact') {
+      flat = flat.slice(0, maxProducts);
+    }
+    return flat;
+  }, [allProducts, maxProducts, displayMode]);
+
+  // Icon size classes - defined before any conditional logic
+  const iconSizeClasses = {
+    sm: 'w-6 h-6',
+    md: 'w-8 h-8',
+    lg: 'w-10 h-10'
+  };
+
   // FILTER-SELECTOR MODE: Use provided products instead of shop data
   if (displayMode === 'filter-selector' && products) {
-    const iconSizeClasses = {
-      sm: 'w-6 h-6',
-      md: 'w-8 h-8',
-      lg: 'w-10 h-10'
-    };
-
     // Group products by category if showCategories is true
     if (showCategories && locationType) {
       const categoryOrder = getCategoryDisplayOrder(locationType);
@@ -148,48 +184,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
 
   // Get config for shop type (for shop display modes)
   if (!shop) return null;
-  const productConfig = getProductConfig(shop.type);
   const categoryOrder = getCategoryDisplayOrder(shop.type);
-
-  // Build product list with availability - shows ALL products
-  const allProducts = useMemo(() => {
-    const products: Record<string, ProductWithAvailability[]> = {};
-
-    for (const productId in productConfig) {
-      const product = productConfig[productId];
-      const category = product.category || 'Other';
-      const isAvailable = shop.products?.[productId] === true;
-
-      if (!products[category]) {
-        products[category] = [];
-      }
-
-      products[category].push({
-        id: productId,
-        name: product.name,
-        // KEY: Choose color icon if available, grey icon if not
-        icon: isAvailable ? product.icon_available : product.icon_unavailable,
-        available: isAvailable
-      });
-    }
-    return products;
-  }, [shop, productConfig]);
-
-  // Flatten and optionally limit products for compact mode
-  const flatProducts = useMemo(() => {
-    let flat = Object.values(allProducts).flat();
-    if (maxProducts && displayMode === 'compact') {
-      flat = flat.slice(0, maxProducts);
-    }
-    return flat;
-  }, [allProducts, maxProducts, displayMode]);
-
-  // Icon size classes
-  const iconSizeClasses = {
-    sm: 'w-6 h-6',
-    md: 'w-8 h-8',
-    lg: 'w-10 h-10'
-  };
 
   // Count available products
   const availableCount = flatProducts.filter(p => p.available).length;

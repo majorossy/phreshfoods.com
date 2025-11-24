@@ -1,7 +1,7 @@
 // src/config/cheeseProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const CHEESE_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Cheese Types

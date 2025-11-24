@@ -13,6 +13,9 @@ declare global {
   }
 }
 
+// Import Shop type for use in utility types
+import { Shop } from './shop';
+
 // Example of a utility type you might define here or in its own file
 export type FilterableProductKey = keyof Pick<
   Shop,

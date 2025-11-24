@@ -56,7 +56,7 @@ global.fetch = mockFetch as any;
  * Each test should be independent and predictable
  */
 vi.mock('../utils/requestCache', () => ({
-  cachedFetch: vi.fn(async (url, options, ttl) => {
+  cachedFetch: vi.fn(async (url, options, _ttl) => {
     // Just pass through to fetch for testing
     // In real code, this would cache results
     const response = await global.fetch(url, options);
@@ -73,7 +73,7 @@ vi.mock('../utils/requestCache', () => ({
  * Tests should run fast (milliseconds, not seconds)
  */
 vi.mock('../utils/retry', () => ({
-  retryAsync: vi.fn(async (fn, options) => {
+  retryAsync: vi.fn(async (fn, _options) => {
     // For testing, just call the function once without retrying
     // This keeps tests fast and predictable
     return await fn();

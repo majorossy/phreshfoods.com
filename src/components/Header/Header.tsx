@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { AutocompletePlace } from '../../types';
 import {
   MAINE_BOUNDS_LITERAL,
-  DEFAULT_PORTLAND_CENTER,
   DEFAULT_SEARCH_RADIUS_MILES,
   RADIUS_SLIDER_MIN_MILES,
   RADIUS_SLIDER_MAX_MILES,
@@ -73,9 +72,10 @@ const Header: React.FC = () => {
   } = useFilters();
 
   // Effect to initialize local radius from context
+  // We include currentRadius in deps to ensure local state syncs with context changes
   useEffect(() => {
     setLocalRadius(currentRadius);
-  }, []); // Only on mount
+  }, [currentRadius]);
 
   // Effect to update context radius when debounced value changes
   useEffect(() => {
@@ -200,7 +200,7 @@ const Header: React.FC = () => {
     /* ... your existing blur logic ... */
   }, []);
 
-  const handleInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleInputKeyDown = useCallback((_event: React.KeyboardEvent<HTMLInputElement>) => {
     /* ... your existing keydown logic ... */
   }, []);
 

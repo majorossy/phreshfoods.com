@@ -1,7 +1,7 @@
 // src/config/butcherProducts.ts
 'use strict';
 
-import { ProductConfig, ProductIconsConfig } from './products';
+import { ProductIconsConfig } from './products';
 
 export const BUTCHER_PRODUCT_ICONS_CONFIG: ProductIconsConfig = {
   // Fresh Meats

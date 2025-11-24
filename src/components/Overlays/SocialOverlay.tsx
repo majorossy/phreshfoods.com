@@ -2,12 +2,11 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import { Shop, PlacePhoto as PlacePhotoData } from '../../types';
-import { escapeHTMLSafe } from '../../utils';
 import { useDirections } from '../../contexts/DirectionsContext';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { useTripPlanner } from '../../contexts/TripPlannerContext';
-import { RATE_LIMIT_CACHE_DURATION_MS } from '../../config/appConfig';
+import { useToast } from '../../contexts/ToastContext';
 import {
   DndContext,
   closestCenter,
@@ -18,13 +17,10 @@ import {
   DragEndEvent,
 } from '@dnd-kit/core';
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
-  useSortable,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
 import { TripStopCard } from '../TripPlanner/TripStopCard';
 import {
   getInstagramUrl,
@@ -48,6 +44,9 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   const [manualOrigin, setManualOrigin] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
+
+  // Get toast context
+  const { showToast } = useToast();
 
   // Get directions and search contexts
   const {
@@ -115,9 +114,9 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             if (window.instgrm) {
               window.instgrm.Embeds.process();
             }
-          } catch (error) {
+          } catch (_error) {
             if (import.meta.env.DEV) {
-              console.warn('[SocialOverlay] Error processing Instagram embeds:', error);
+              console.warn('[SocialOverlay] Error processing Instagram embeds:', _error);
             }
           }
         };
@@ -132,9 +131,9 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
         const timer = setTimeout(() => {
           try {
             window.instgrm.Embeds.process();
-          } catch (error) {
+          } catch (_error) {
             if (import.meta.env.DEV) {
-              console.warn('[SocialOverlay] Error processing Instagram embeds:', error);
+              console.warn('[SocialOverlay] Error processing Instagram embeds:', _error);
             }
           }
         }, 100);
@@ -157,9 +156,9 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             if (window.twttr && window.twttr.widgets) {
               window.twttr.widgets.load();
             }
-          } catch (error) {
+          } catch (_error) {
             if (import.meta.env.DEV) {
-              console.warn('[SocialOverlay] Error loading Twitter widgets:', error);
+              console.warn('[SocialOverlay] Error loading Twitter widgets:', _error);
             }
           }
         };
@@ -176,9 +175,9 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             if (window.twttr && window.twttr.widgets) {
               window.twttr.widgets.load();
             }
-          } catch (error) {
+          } catch (_error) {
             if (import.meta.env.DEV) {
-              console.warn('[SocialOverlay] Error loading Twitter widgets:', error);
+              console.warn('[SocialOverlay] Error loading Twitter widgets:', _error);
             }
           }
         }, 100);
@@ -215,7 +214,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
             originRequest = { lat: position.coords.latitude, lng: position.coords.longitude };
             fetchAndDisplayDirections(originRequest, shopDestinationForApi);
           },
-          (error) => {
+          (_error) => {
             alert("Could not get current location. Please enter an address or use a previously searched location.");
           },
           { timeout: 10000 }

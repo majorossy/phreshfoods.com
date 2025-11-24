@@ -20,7 +20,6 @@ import {
   mapStyles,
   USE_CUSTOM_MAP_STYLE,
   MARKER_HOVER_DEBOUNCE_MS,
-  PANEL_RESIZE_DEBOUNCE_MS,
   WINDOW_RESIZE_DEBOUNCE_MS,
 } from '../../config/appConfig.ts';
 
@@ -59,7 +58,7 @@ const MapComponentRefactored: React.FC = () => {
   const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
   const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
-  const { directionsResult, clearDirections } = useDirections();
+  const { directionsResult } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { tripStops, isTripMode, tripDirectionsResult } = useTripPlanner();
 

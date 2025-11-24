@@ -1,8 +1,7 @@
 // src/components/Listings/ListingsPanel.tsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
-import { useUI } from '../../contexts/UIContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
@@ -13,11 +12,8 @@ const LOAD_MORE_THRESHOLD = 300; // px from bottom to trigger load more
 const ListingsPanel = () => {
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
   const { setActiveProductFilters, activeLocationTypes } = useFilters();
-  const { selectedShop } = useUI();
   const [visibleCount, setVisibleCount] = useState(INITIAL_ITEMS);
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
-  const panelRef = useRef<HTMLElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Track the number of shops to detect meaningful changes (not just re-sorts)
