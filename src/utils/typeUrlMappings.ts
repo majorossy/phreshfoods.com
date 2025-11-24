@@ -63,37 +63,38 @@ export const LOCATION_TYPE_DISPLAY: Record<LocationType, LocationTypeDisplay> = 
 };
 
 // Internal type → URL slug mapping
+// Now using consistent paths for both type filters and detail pages
 export const TYPE_TO_URL_SLUG: Record<LocationType, string> = {
-  farm_stand: 'farms',
-  cheese_shop: 'cheese',
-  fish_monger: 'fish',
-  butcher: 'butchers',
-  antique_shop: 'antiques',
-  brewery: 'breweries',
-  winery: 'wineries',
-  sugar_shack: 'sugar-shacks',
+  farm_stand: 'farm-stand',
+  cheese_shop: 'cheesemonger',
+  fish_monger: 'fishmonger',
+  butcher: 'butcher',
+  antique_shop: 'antique-shop',
+  brewery: 'brewery',
+  winery: 'winery',
+  sugar_shack: 'sugar-shack',
 };
 
 // URL slug → Internal type mapping (reverse lookup)
 export const URL_SLUG_TO_TYPE: Record<string, LocationType> = {
-  farms: 'farm_stand',
-  cheese: 'cheese_shop',
-  fish: 'fish_monger',
-  butchers: 'butcher',
-  antiques: 'antique_shop',
-  breweries: 'brewery',
-  wineries: 'winery',
-  'sugar-shacks': 'sugar_shack',
+  'farm-stand': 'farm_stand',
+  'cheesemonger': 'cheese_shop',
+  'fishmonger': 'fish_monger',
+  'butcher': 'butcher',
+  'antique-shop': 'antique_shop',
+  'brewery': 'brewery',
+  'winery': 'winery',
+  'sugar-shack': 'sugar_shack',
 };
 
 /**
  * Convert internal location type to URL slug
  * @param type - Internal location type (e.g., 'farm_stand')
- * @returns URL slug (e.g., 'farms')
+ * @returns URL slug (e.g., 'farm-stand')
  *
  * @example
- * typeToUrlSlug('farm_stand') // Returns 'farms'
- * typeToUrlSlug('cheese_shop') // Returns 'cheese'
+ * typeToUrlSlug('farm_stand') // Returns 'farm-stand'
+ * typeToUrlSlug('cheese_shop') // Returns 'cheesemonger'
  */
 export function typeToUrlSlug(type: LocationType): string {
   return TYPE_TO_URL_SLUG[type];
@@ -101,12 +102,12 @@ export function typeToUrlSlug(type: LocationType): string {
 
 /**
  * Convert URL slug to internal location type
- * @param slug - URL slug (e.g., 'farms')
+ * @param slug - URL slug (e.g., 'farm-stand')
  * @returns Internal location type or null if invalid
  *
  * @example
- * urlSlugToType('farms') // Returns 'farm_stand'
- * urlSlugToType('cheese') // Returns 'cheese_shop'
+ * urlSlugToType('farm-stand') // Returns 'farm_stand'
+ * urlSlugToType('cheesemonger') // Returns 'cheese_shop'
  * urlSlugToType('invalid') // Returns null
  */
 export function urlSlugToType(slug: string): LocationType | null {
@@ -116,11 +117,11 @@ export function urlSlugToType(slug: string): LocationType | null {
 /**
  * Encode a set of location types to a URL path segment
  * @param types - Set of location types
- * @returns URL path segment (e.g., 'farms', 'farms+cheese', 'all')
+ * @returns URL path segment (e.g., 'farm-stand', 'farm-stand+cheesemonger', 'all')
  *
  * @example
- * encodeTypesToPath(new Set(['farm_stand'])) // Returns 'farms'
- * encodeTypesToPath(new Set(['farm_stand', 'cheese_shop'])) // Returns 'farms+cheese'
+ * encodeTypesToPath(new Set(['farm_stand'])) // Returns 'farm-stand'
+ * encodeTypesToPath(new Set(['farm_stand', 'cheese_shop'])) // Returns 'farm-stand+cheesemonger'
  * encodeTypesToPath(new Set(ALL_LOCATION_TYPES)) // Returns 'all'
  */
 export function encodeTypesToPath(types: Set<LocationType>): string {
@@ -143,12 +144,12 @@ export function encodeTypesToPath(types: Set<LocationType>): string {
 
 /**
  * Parse location types from a URL path segment
- * @param pathSegment - URL path segment (e.g., 'farms', 'farms+cheese', 'all', '/')
+ * @param pathSegment - URL path segment (e.g., 'farm-stand', 'farm-stand+cheesemonger', 'all', '/')
  * @returns Set of location types (defaults to all types if invalid)
  *
  * @example
- * parseTypesFromPath('farms') // Returns Set(['farm_stand'])
- * parseTypesFromPath('farms+cheese') // Returns Set(['farm_stand', 'cheese_shop'])
+ * parseTypesFromPath('farm-stand') // Returns Set(['farm_stand'])
+ * parseTypesFromPath('farm-stand+cheesemonger') // Returns Set(['farm_stand', 'cheese_shop'])
  * parseTypesFromPath('all') // Returns Set(ALL_LOCATION_TYPES)
  * parseTypesFromPath('/') // Returns Set(ALL_LOCATION_TYPES)
  * parseTypesFromPath('invalid') // Returns Set(ALL_LOCATION_TYPES)
@@ -221,11 +222,11 @@ export function getShopDetailBasePath(type: LocationType): string {
  * @returns True if this is a type filter page
  *
  * @example
- * isTypeFilterPage('/farms') // Returns true
- * isTypeFilterPage('/farms+cheese') // Returns true
+ * isTypeFilterPage('/farm-stand') // Returns true
+ * isTypeFilterPage('/farm-stand+cheesemonger') // Returns true
  * isTypeFilterPage('/all') // Returns true
- * isTypeFilterPage('/farm/happy-acres') // Returns false
- * isTypeFilterPage('/cheese/maine-cheese') // Returns false
+ * isTypeFilterPage('/farm-stand/happy-acres') // Returns false
+ * isTypeFilterPage('/cheesemonger/maine-cheese') // Returns false
  */
 export function isTypeFilterPage(pathname: string): boolean {
   // Remove leading slash

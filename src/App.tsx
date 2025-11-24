@@ -247,16 +247,27 @@ function App() {
           {/* Homepage redirect to /all */}
           <Route path="/" element={<Navigate to="/all" replace />} />
 
+          {/* Redirects from old URLs to new standardized URLs for backward compatibility */}
+          <Route path="/farms" element={<Navigate to="/farm-stand" replace />} />
+          <Route path="/cheese" element={<Navigate to="/cheesemonger" replace />} />
+          <Route path="/fish" element={<Navigate to="/fishmonger" replace />} />
+          <Route path="/butchers" element={<Navigate to="/butcher" replace />} />
+          <Route path="/antiques" element={<Navigate to="/antique-shop" replace />} />
+          <Route path="/breweries" element={<Navigate to="/brewery" replace />} />
+          <Route path="/wineries" element={<Navigate to="/winery" replace />} />
+          <Route path="/sugar-shacks" element={<Navigate to="/sugar-shack" replace />} />
+
           {/* Type filter pages - MUST come before detail pages to avoid conflicts */}
+          {/* Now using consistent paths for both listings and details */}
           <Route path="/all" element={<React.Fragment />} />
-          <Route path="/farms" element={<React.Fragment />} />
-          <Route path="/cheese" element={<React.Fragment />} />
-          <Route path="/fish" element={<React.Fragment />} />
-          <Route path="/butchers" element={<React.Fragment />} />
-          <Route path="/antiques" element={<React.Fragment />} />
-          <Route path="/breweries" element={<React.Fragment />} />
-          <Route path="/wineries" element={<React.Fragment />} />
-          <Route path="/sugar-shacks" element={<React.Fragment />} />
+          <Route path="/farm-stand" element={<React.Fragment />} />
+          <Route path="/cheesemonger" element={<React.Fragment />} />
+          <Route path="/fishmonger" element={<React.Fragment />} />
+          <Route path="/butcher" element={<React.Fragment />} />
+          <Route path="/antique-shop" element={<React.Fragment />} />
+          <Route path="/brewery" element={<React.Fragment />} />
+          <Route path="/winery" element={<React.Fragment />} />
+          <Route path="/sugar-shack" element={<React.Fragment />} />
 
           {/* Multi-type combinations (e.g., /farms+cheese) */}
           <Route path="/:types" element={<React.Fragment />} />
