@@ -35,10 +35,11 @@ import {
 
 interface SocialOverlayProps {
   shop: Shop;
+  isOpen?: boolean; // Controls open/close animation (true = visible, false = animating out)
   onClose: () => void;
 }
 
-const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
+const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onClose }) => {
   const { socialOverlayInitialTab, tabChangeKey } = useUI();
   const [activeTab, setActiveTab] = useState(socialOverlayInitialTab);
   const [manualOrigin, setManualOrigin] = useState('');
@@ -342,11 +343,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, onClose }) => {
   return (
       <div
         id="detailsOverlaySocial"
-        className="detail-pop-overlay detail-pop-overlay-social custom-scrollbar is-open"
-        style={{
-          transform: isCollapsed ? 'translateX(-100%)' : 'translateX(0)',
-          transition: 'transform 0.15s ease-in-out'
-        }}
+        className={`detail-pop-overlay detail-pop-overlay-social custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
       >
         {/* Social Icons - Only visible when collapsed */}
         {isCollapsed && (

@@ -40,7 +40,18 @@ function App() {
   const { allLocations, setCurrentlyDisplayedLocations } = useLocationData();
   const { lastPlaceSelectedByAutocomplete, currentRadius, mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setMapViewTargetLocation } = useSearch();
   const { activeProductFilters, activeLocationTypes } = useFilters();
-  const { selectedShop, isShopOverlayOpen, isSocialOverlayOpen, openShopOverlays, closeShopOverlays, setSelectedShop } = useUI();
+  const {
+    selectedShop,
+    isShopOverlayOpen,
+    isSocialOverlayOpen,
+    shouldRenderShopOverlay,
+    shouldRenderSocialOverlay,
+    isShopOverlayAnimatedOpen,
+    isSocialOverlayAnimatedOpen,
+    openShopOverlays,
+    closeShopOverlays,
+    setSelectedShop
+  } = useUI();
 
   // Initialize Web Vitals monitoring on mount
   useEffect(() => {
@@ -147,9 +158,10 @@ function App() {
       }
     } else if (location.pathname === '/' || isTypeFilterPage(location.pathname)) {
       // On homepage or type filter page - close any open overlays
-      if (selectedShop || isShopOverlayOpen || isSocialOverlayOpen) {
-        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
-        if (selectedShop) setSelectedShop(null);
+      // Note: Don't clear selectedShop here - closeShopOverlays handles the delayed cleanup
+      // This prevents the flicker during close animation
+      if (isShopOverlayOpen || isSocialOverlayOpen) {
+        closeShopOverlays();
       }
     } else if (!selectedShop && location.pathname.match(/^\/(farm-stand|cheesemonger|fishmonger|butcher|antique-shop|brewery|winery|sugar-shack)\//)) {
       // Edge case: shop detail URL but no selected shop and data is loaded
@@ -169,14 +181,14 @@ function App() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && (isShopOverlayOpen || isSocialOverlayOpen)) {
+        // closeShopOverlays handles the delayed cleanup of selectedShop
         closeShopOverlays();
-        setSelectedShop(null); // Also deselect shop
         navigate('/');
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, setSelectedShop]);
+  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate]);
 
   // SEO: Update meta tags and structured data based on current route
   useEffect(() => {
@@ -229,28 +241,32 @@ function App() {
           </Suspense>
         </ErrorBoundary>
 
-        {isShopOverlayOpen && selectedShop && (
+        {shouldRenderShopOverlay && selectedShop && (
           <LazyLoadErrorBoundary componentName="shop details">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
               <ShopDetailsOverlay
                 shop={selectedShop}
+                isOpen={isShopOverlayAnimatedOpen}
                 onClose={() => {
+                  // Start close animation - don't clear selectedShop yet!
+                  // The delayed unmount in UIContext will handle cleanup
                   closeShopOverlays();
-                  setSelectedShop(null);
                   navigate('/');
                 }}
               />
             </Suspense>
           </LazyLoadErrorBoundary>
         )}
-        {isSocialOverlayOpen && selectedShop && (
+        {shouldRenderSocialOverlay && selectedShop && (
           <LazyLoadErrorBoundary componentName="social media">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
               <SocialOverlay
                 shop={selectedShop}
+                isOpen={isSocialOverlayAnimatedOpen}
                 onClose={() => {
+                  // Start close animation - don't clear selectedShop yet!
+                  // The delayed unmount in UIContext will handle cleanup
                   closeShopOverlays();
-                  setSelectedShop(null);
                   navigate('/');
                 }}
               />

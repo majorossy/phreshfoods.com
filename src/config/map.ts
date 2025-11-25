@@ -130,7 +130,7 @@ export const MAP_PAN_DELAY_MS: number = 100;            // Delay before applying
 // Marker Styling
 export const MARKER_SIZE_PX: number = 20;              // Size of regular farm stand markers
 export const MARKER_BORDER_WIDTH_PX: number = 0.67;    // Border width for markers
-export const MARKER_TRANSITION_DURATION_S: string = '0.15s'; // Transition duration for marker animations
+export const MARKER_TRANSITION_DURATION_S: string = '0.25s'; // Transition duration for marker animations (smoother)
 export const MARKER_DEFAULT_SCALE: string = 'scale(0.96)';   // Default marker scale (0.8 * 1.2 = 0.96)
 export const MARKER_HOVER_SCALE: string = 'scale(1.28)';     // Hovered marker scale (1.07 * 1.2 ≈ 1.28)
 export const MARKER_SELECTED_SCALE: string = 'scale(1.2)';   // Selected marker scale (1.0 * 1.2 = 1.2)

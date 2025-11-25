@@ -142,9 +142,11 @@ const MapComponent: React.FC = () => {
     markerElement.style.borderRadius = '50%';
     markerElement.style.border = `${MARKER_BORDER_WIDTH_PX}px solid white`;
     markerElement.style.boxShadow = '0 2px 5px rgba(0,0,0,0.5)';
-    markerElement.style.transition = `transform ${MARKER_TRANSITION_DURATION_S} ease-out, background-color ${MARKER_TRANSITION_DURATION_S} ease-out`;
+    // Smooth cubic-bezier transition for sexy marker animations
+    markerElement.style.transition = `transform ${MARKER_TRANSITION_DURATION_S} cubic-bezier(0.4, 0, 0.2, 1), background-color ${MARKER_TRANSITION_DURATION_S} cubic-bezier(0.4, 0, 0.2, 1), background-image ${MARKER_TRANSITION_DURATION_S} cubic-bezier(0.4, 0, 0.2, 1), border-width ${MARKER_TRANSITION_DURATION_S} cubic-bezier(0.4, 0, 0.2, 1)`;
     markerElement.style.backgroundColor = color;
     markerElement.style.pointerEvents = 'none'; // Let wrapper handle events
+    markerElement.style.willChange = 'transform'; // GPU acceleration hint
 
     wrapper.appendChild(markerElement);
     return wrapper;

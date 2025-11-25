@@ -7,22 +7,170 @@ import { useTripPlanner } from '../../contexts/TripPlannerContext';
 import ProductIconGrid from '../UI/ProductIconGrid';
 import { getProductConfig } from '../../config/productRegistry';
 
+// Fixed dimensions for zero layout shift (CLS optimization)
+const FIXED_HEIGHTS = {
+  header: 'h-[72px]', // Shop name + rating row
+  nameRow: 'h-9',     // 36px - shop name
+  ratingRow: 'h-6',   // 24px - rating stars + text
+  accordionHeader: 'h-[46px]', // Accordion button height
+  hoursCard: 'h-[140px]',      // Hours status card
+  weekGrid: 'h-[52px]',        // Weekly hours grid
+  productGrid: 'h-[180px]',    // Product icons grid (3 rows)
+};
+
+// Enhanced skeleton with shimmer effect
+const Skeleton: React.FC<{
+  className?: string;
+  style?: React.CSSProperties;
+}> = ({ className = '', style }) => (
+  <div
+    className={`relative overflow-hidden rounded ${className}`}
+    style={{
+      backgroundColor: 'rgba(200, 200, 200, 0.3)',
+      ...style,
+    }}
+  >
+    <div
+      className="absolute inset-0"
+      style={{
+        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+        animation: 'shimmer 1.5s infinite',
+      }}
+    />
+  </div>
+);
+
+// Skeleton with EXACT same dimensions as content - zero CLS
+const ShopDetailsSkeleton: React.FC = () => (
+  <>
+    {/* Header - Fixed height container */}
+    <div className={`pt-4 sm:pt-5 shrink-0 px-4 sm:px-6 ${FIXED_HEIGHTS.header}`}>
+      {/* Shop Name - fixed height */}
+      <div className={`${FIXED_HEIGHTS.nameRow} mb-2`}>
+        <Skeleton className="h-full w-4/5" />
+      </div>
+      {/* Rating row - ALWAYS same height whether content exists or not */}
+      <div className={`flex items-center gap-2 ${FIXED_HEIGHTS.ratingRow}`}>
+        <div className="flex gap-0.5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="w-5 h-5" style={{ borderRadius: '2px' }} />
+          ))}
+        </div>
+        <Skeleton className="h-4 w-10" />
+        <Skeleton className="h-4 w-24" />
+      </div>
+    </div>
+
+    {/* Content area */}
+    <div className="flex-grow overflow-y-auto custom-scrollbar px-4 sm:px-6 pb-4">
+      {/* Information Accordion */}
+      <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        {/* Accordion header - fixed height */}
+        <div
+          className={`w-full flex items-center justify-between px-4 ${FIXED_HEIGHTS.accordionHeader}`}
+          style={{ background: 'linear-gradient(to right, #426976, #5a8694)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-5 h-5" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+            <Skeleton className="h-5 w-28" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+          </div>
+          <Skeleton className="w-5 h-5" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+        </div>
+        {/* Accordion content */}
+        <div className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 p-3">
+          {/* Phone/Website row - fixed height */}
+          <div className="flex items-center gap-3 mb-4 h-7">
+            <Skeleton className="h-4 w-28" />
+            <Skeleton className="h-4 w-36" />
+            <Skeleton className="h-7 w-14 ml-auto" style={{ borderRadius: '4px' }} />
+          </div>
+          {/* Hours card - fixed height */}
+          <div
+            className={`mb-4 rounded-xl p-4 shadow-lg ${FIXED_HEIGHTS.hoursCard}`}
+            style={{ background: 'linear-gradient(135deg, #426976, #5a8694)' }}
+          >
+            <div className="flex justify-center mb-3">
+              <Skeleton className="h-7 w-32" style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '9999px' }} />
+            </div>
+            <Skeleton className="h-9 w-36 mx-auto mb-2" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+            <Skeleton className="h-4 w-24 mx-auto" style={{ backgroundColor: 'rgba(255,255,255,0.2)' }} />
+          </div>
+          {/* Weekly grid - fixed height */}
+          <div className={`grid grid-cols-7 gap-1.5 ${FIXED_HEIGHTS.weekGrid}`}>
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="rounded-lg p-2 bg-white border border-gray-200 h-full flex flex-col justify-center">
+                <Skeleton className="h-3 w-7 mx-auto mb-1" />
+                <Skeleton className="h-3 w-9 mx-auto" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Products Accordion */}
+      <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+        {/* Accordion header - fixed height */}
+        <div
+          className={`w-full flex items-center justify-between px-4 ${FIXED_HEIGHTS.accordionHeader}`}
+          style={{ background: 'linear-gradient(to right, #426976, #5a8694)' }}
+        >
+          <div className="flex items-center gap-2">
+            <Skeleton className="w-5 h-5" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+            <Skeleton className="h-5 w-24" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+          </div>
+          <Skeleton className="w-5 h-5" style={{ backgroundColor: 'rgba(255,255,255,0.25)' }} />
+        </div>
+        {/* Product grid - fixed height */}
+        <div className={`bg-white dark:bg-gray-900 p-3 ${FIXED_HEIGHTS.productGrid}`}>
+          <div className="grid grid-cols-4 gap-3">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-1.5">
+                <Skeleton className="w-11 h-11" style={{ borderRadius: '8px' }} />
+                <Skeleton className="h-2.5 w-14" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </>
+);
+
 interface ShopDetailsOverlayProps {
   shop: Shop;
+  isOpen?: boolean; // Controls open/close animation (true = visible, false = animating out)
   onClose: () => void;
 }
 
-const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }) => {
+const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = true, onClose }) => {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
   const { addStopToTrip, removeStopFromTrip, isShopInTrip, tripStops } = useTripPlanner();
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['info', 'hours', 'products'])); // All open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
+  const [isLoading, setIsLoading] = useState(true); // Show skeleton initially
+  const [displayedShop, setDisplayedShop] = useState<Shop | null>(null); // Track which shop is displayed
+  const previousShopRef = useRef<string | null>(null);
 
-  // When the overlay opens for a new shop, reset accordion state
+  // When the overlay opens for a new shop, show skeleton briefly then reveal content
   useEffect(() => {
-    setIsCollapsed(false); // Reset to expanded state when shop changes
-    setOpenAccordions(new Set(['info', 'hours', 'products'])); // Reset to all open by default
+    const shopId = shop?.slug || shop?.GoogleProfileID;
+
+    // If this is a different shop, show loading state
+    if (shopId !== previousShopRef.current) {
+      setIsLoading(true);
+      setIsCollapsed(false); // Reset to expanded state when shop changes
+      setOpenAccordions(new Set(['info', 'hours', 'products'])); // Reset to all open by default
+
+      // Brief delay to allow skeleton to show, then reveal content
+      const timer = setTimeout(() => {
+        setDisplayedShop(shop);
+        setIsLoading(false);
+        previousShopRef.current = shopId;
+      }, 150); // Short delay for smooth transition
+
+      return () => clearTimeout(timer);
+    }
   }, [shop]);
 
   // Focus management: focus close button when overlay opens
@@ -93,11 +241,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
   return (
     <div
       id="detailsOverlayShop"
-      className="detail-pop-overlay custom-scrollbar is-open"
-      style={{
-        transform: isCollapsed ? 'translateX(100%)' : 'translateX(0)',
-        transition: 'transform 0.15s ease-in-out'
-      }}
+      className={`detail-pop-overlay custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="shop-name-heading"
@@ -149,47 +293,59 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
         </svg>
       </button>
 
-      <div className="pt-4 sm:pt-5 shrink-0 px-4 sm:px-6">
-        {/* Shop Name */}
-        <h2 id="shop-name-heading" className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 pr-8">
-          {displayName}
-        </h2>
-
-        {/* Rating */}
-        {displayRating && (
-          <div
-            className="flex items-center gap-2 mb-4 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={handleRatingClick}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRatingClick(); }}}
-            aria-label={`View ${displayReviewCount || ''} reviews for ${displayName}. Rating: ${displayRating.toFixed(1)} out of 5 stars`}
-          >
-            <div className="flex items-center" role="img" aria-hidden="true">
-              {Array.from({ length: 5 }, (_, i) => (
-                <svg
-                  key={i}
-                  className={`w-5 h-5 ${i < Math.floor(displayRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  aria-hidden="true"
-                >
-                  <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
-                </svg>
-              ))}
+      {/* Show skeleton while loading, then fade in content */}
+      {isLoading ? (
+        <ShopDetailsSkeleton />
+      ) : (
+        <div className="animate-contentReveal">
+          {/* Header - Fixed height to match skeleton */}
+          <div className={`pt-4 sm:pt-5 shrink-0 px-4 sm:px-6 ${FIXED_HEIGHTS.header}`}>
+            {/* Shop Name - fixed height */}
+            <div className={`${FIXED_HEIGHTS.nameRow} mb-2 flex items-center`}>
+              <h2 id="shop-name-heading" className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 pr-8 truncate">
+                {displayName}
+              </h2>
             </div>
-            <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-              {displayRating.toFixed(1)}
-            </span>
-            {displayReviewCount && (
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                ({displayReviewCount} reviews)
-              </span>
-            )}
-          </div>
-        )}
 
-      </div>
+            {/* Rating row - ALWAYS render with fixed height to prevent CLS */}
+            <div className={`${FIXED_HEIGHTS.ratingRow} flex items-center`}>
+              {displayRating ? (
+                <div
+                  className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={handleRatingClick}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRatingClick(); }}}
+                  aria-label={`View ${displayReviewCount || ''} reviews for ${displayName}. Rating: ${displayRating.toFixed(1)} out of 5 stars`}
+                >
+                  <div className="flex items-center" role="img" aria-hidden="true">
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <svg
+                        key={i}
+                        className={`w-5 h-5 ${i < Math.floor(displayRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        aria-hidden="true"
+                      >
+                        <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path>
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    {displayRating.toFixed(1)}
+                  </span>
+                  {displayReviewCount && (
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      ({displayReviewCount} reviews)
+                    </span>
+                  )}
+                </div>
+              ) : (
+                /* Empty placeholder to maintain height */
+                <div className="h-full" />
+              )}
+            </div>
+          </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar px-4 sm:px-6 pb-4">
         {/* Accordion - Information & Hours */}
@@ -228,8 +384,12 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               </div>
             )}
             <svg
-              className={`h-5 w-5 transform transition-transform duration-200 flex-shrink-0 ${openAccordions.has('info') ? 'rotate-180' : ''}`}
-              style={{ color: '#F6EBB4' }}
+              className="h-5 w-5 flex-shrink-0"
+              style={{
+                color: '#F6EBB4',
+                transform: openAccordions.has('info') ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -237,13 +397,18 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
-          {openAccordions.has('info') && (
-            <div
-              id="shop-info-panel"
-              role="region"
-              aria-labelledby="info-accordion-button"
-              className="px-3 py-3 bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900"
-            >
+          <div
+            id="shop-info-panel"
+            role="region"
+            aria-labelledby="info-accordion-button"
+            className="bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900 dark:to-gray-900 overflow-hidden"
+            style={{
+              maxHeight: openAccordions.has('info') ? '1000px' : '0',
+              opacity: openAccordions.has('info') ? 1 : 0,
+              padding: openAccordions.has('info') ? '0.75rem' : '0 0.75rem',
+              transition: 'max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
             {/* Basic Info */}
             <div className="space-y-2 mb-4">
               {/* Phone, Website, and Add to Trip - Side by side */}
@@ -426,8 +591,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
                 </div>
               </>
             ) : null}
-            </div>
-          )}
+          </div>
         </div>
 
         {/* Accordion - Products */}
@@ -457,8 +621,12 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               </span>
             </div>
             <svg
-              className={`h-5 w-5 transform transition-transform duration-200 flex-shrink-0 ${openAccordions.has('products') ? 'rotate-180' : ''}`}
-              style={{ color: '#F6EBB4' }}
+              className="h-5 w-5 flex-shrink-0"
+              style={{
+                color: '#F6EBB4',
+                transform: openAccordions.has('products') ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -466,25 +634,31 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, onClose }
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </button>
-          {openAccordions.has('products') && (
-            <div
-              id="shop-products-panel"
-              role="region"
-              aria-labelledby="products-accordion-button"
-              className="px-3 py-3 bg-white dark:bg-gray-900"
-            >
-              <ProductIconGrid
-                shop={shop}
-                displayMode="detailed"
-                showCategories={true}
-                showProductNames={true}
-                showSummary={false}
-                iconSize="sm"
-              />
-            </div>
-          )}
+          <div
+            id="shop-products-panel"
+            role="region"
+            aria-labelledby="products-accordion-button"
+            className="bg-white dark:bg-gray-900 overflow-hidden"
+            style={{
+              maxHeight: openAccordions.has('products') ? '2000px' : '0',
+              opacity: openAccordions.has('products') ? 1 : 0,
+              padding: openAccordions.has('products') ? '0.75rem' : '0 0.75rem',
+              transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
+          >
+            <ProductIconGrid
+              shop={shop}
+              displayMode="detailed"
+              showCategories={true}
+              showProductNames={true}
+              showSummary={false}
+              iconSize="sm"
+            />
+          </div>
         </div>
       </div>
+        </div>
+      )}
     </div>
   );
 };

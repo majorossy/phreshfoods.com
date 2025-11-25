@@ -1,55 +1,23 @@
 // src/components/Listings/ListingsPanel.tsx
-import { useState, useEffect, useCallback, useMemo } from 'react';
-// Using react-window v2 API
-import { List } from 'react-window';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
-import { ShopWithDistance } from '../../types';
 
-const ITEM_HEIGHT = 180; // Approximate height of each shop card
-const GAP_SIZE = 12; // Gap between cards
-
-// Row renderer for virtual scrolling
-interface RowProps {
-  index: number;
-  style: React.CSSProperties;
-  ariaAttributes?: any;
-  shops: ShopWithDistance[];
-  columnsPerRow: number;
-}
-
-const Row = ({ index, style, shops, columnsPerRow }: RowProps) => {
-  const startIdx = index * columnsPerRow;
-  const items = shops.slice(startIdx, startIdx + columnsPerRow);
-
-  return (
-    <div style={style} className="px-3 sm:px-4">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-        {items.map(shop => (
-          <ShopCard
-            key={shop.slug || shop.GoogleProfileID || shop.Name}
-            shop={shop}
-          />
-        ))}
-        {/* Fill empty cells in the last row */}
-        {items.length < columnsPerRow &&
-          Array(columnsPerRow - items.length).fill(0).map((_, i) => (
-            <div key={`empty-${i}`} />
-          ))}
-      </div>
-    </div>
-  );
-};
+// Minimum items before enabling virtualization (small lists don't benefit)
+const VIRTUALIZATION_THRESHOLD = 20;
 
 const ListingsPanel = () => {
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
   const { setActiveProductFilters, activeLocationTypes } = useFilters();
   const [headerHeight, setHeaderHeight] = useState(0);
   const [columnsPerRow, setColumnsPerRow] = useState(2);
-  const [listHeight, setListHeight] = useState(600);
+
+  // Ref for the scrollable container
+  const parentRef = useRef<HTMLElement>(null);
 
   // Measure header height dynamically
   useEffect(() => {
@@ -63,7 +31,6 @@ const ListingsPanel = () => {
     measureHeader();
     window.addEventListener('resize', measureHeader);
 
-    // Use ResizeObserver if available for better accuracy
     const header = document.querySelector('header');
     let resizeObserver: ResizeObserver | null = null;
 
@@ -80,48 +47,62 @@ const ListingsPanel = () => {
     };
   }, []);
 
-  // Calculate columns based on window width - must be before early returns (Rules of Hooks)
+  // Calculate columns based on panel width
   useEffect(() => {
-    const updateDimensions = () => {
-      const panel = document.getElementById('listingsPanel');
+    const updateColumns = () => {
+      const panel = parentRef.current;
       if (panel) {
         const width = panel.clientWidth;
-        // Responsive columns: 1 on small, 2 on large
+        // Match Tailwind breakpoints: 1 column on small, 2 on sm+
+        // md breakpoint goes back to 1, lg+ goes to 2
         setColumnsPerRow(width < 640 ? 1 : 2);
-        setListHeight(window.innerHeight - (headerHeight || 128));
       }
     };
 
-    updateDimensions();
-    window.addEventListener('resize', updateDimensions);
-    return () => window.removeEventListener('resize', updateDimensions);
-  }, [headerHeight]);
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, []);
 
-  // Virtual scrolling replaces the old infinite scroll logic
-  // react-window handles viewport management automatically
-
-  // Clear filters handler - must be defined before early returns (Rules of Hooks)
+  // Clear filters handler
   const handleClearFilters = useCallback(() => {
     setActiveProductFilters({});
   }, [setActiveProductFilters]);
 
-  // Calculate row count and memoize list data - must be before early returns (Rules of Hooks)
+  // Calculate rows from locations based on columns per row
   const rowCount = Math.ceil(currentlyDisplayedLocations.length / columnsPerRow);
-  const listData = useMemo(() => ({
-    shops: currentlyDisplayedLocations,
-    columnsPerRow,
-  }), [currentlyDisplayedLocations, columnsPerRow]);
+
+  // Get shops for a specific row
+  const getRowShops = useCallback((rowIndex: number) => {
+    const startIdx = rowIndex * columnsPerRow;
+    return currentlyDisplayedLocations.slice(startIdx, startIdx + columnsPerRow);
+  }, [currentlyDisplayedLocations, columnsPerRow]);
+
+  // Virtual scrolling setup with dynamic height measurement
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 220, // Estimated row height (will be measured dynamically)
+    overscan: 3, // Render 3 extra rows above/below viewport for smooth scrolling
+    measureElement: (element) => {
+      // Dynamically measure actual row height
+      return element.getBoundingClientRect().height;
+    },
+  });
+
+  // Determine if we should use virtualization
+  const useVirtualScrolling = currentlyDisplayedLocations.length > VIRTUALIZATION_THRESHOLD;
 
   // Show loading state
   if (isLoadingLocations) {
     return (
       <section
         id="listingsPanel"
+        ref={parentRef}
         className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
         style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
       >
-        <div id="listingsContainer" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-          {/* Show 6 skeleton cards while loading */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           {Array(6).fill(0).map((_, index) => (
             <ShopCardSkeleton key={`skeleton-${index}`} />
           ))}
@@ -135,6 +116,7 @@ const ListingsPanel = () => {
     return (
       <section
         id="listingsPanel"
+        ref={parentRef}
         className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
         style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
       >
@@ -143,7 +125,7 @@ const ListingsPanel = () => {
             <svg className="mx-auto h-12 w-12 text-red-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Farm Stands</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to Load Locations</h3>
             <p className="text-sm text-gray-600 mb-4">{locationsError}</p>
             <button
               onClick={retryLoadLocations}
@@ -157,43 +139,79 @@ const ListingsPanel = () => {
     );
   }
 
-  // Virtual scrolling temporarily disabled - fixed row heights don't work well with variable card content
-  // TODO: Re-enable once react-window v2 row height issues are resolved
-  const useVirtualScrolling = false; // Disabled: currentlyDisplayedLocations.length > 20;
+  // No results state
+  if (currentlyDisplayedLocations.length === 0) {
+    return (
+      <section
+        id="listingsPanel"
+        ref={parentRef}
+        className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+      >
+        <div className="p-3 sm:p-4">
+          <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
+        </div>
+      </section>
+    );
+  }
 
+  // Main render with virtual scrolling
   return (
     <section
       id="listingsPanel"
-      className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+      ref={parentRef}
+      className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0 animate-fadeIn"
       style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
-      {currentlyDisplayedLocations.length > 0 ? (
-        useVirtualScrolling ? (
-          <List
-            className="custom-scrollbar"
-            style={{ height: listHeight, width: '100%' }}
-            rowCount={rowCount}
-            rowHeight={ITEM_HEIGHT + GAP_SIZE}
-            rowComponent={Row}
-            rowProps={listData}
-            overscanCount={2}
-          />
-        ) : (
-          // Regular rendering
-          <div className="p-3 sm:p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              {currentlyDisplayedLocations.map(shop => (
-                <ShopCard
-                  key={shop.slug || shop.GoogleProfileID || shop.Name}
-                  shop={shop}
-                />
-              ))}
-            </div>
-          </div>
-        )
+      {useVirtualScrolling ? (
+        // Virtualized rendering for large lists
+        <div
+          className="p-3 sm:p-4"
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualRow) => {
+            const rowShops = getRowShops(virtualRow.index);
+            return (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${virtualRow.start}px)`,
+                  animation: 'fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 pb-3 sm:pb-4">
+                  {rowShops.map(shop => (
+                    <ShopCard
+                      key={shop.slug || shop.GoogleProfileID || shop.Name}
+                      shop={shop}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       ) : (
+        // Regular rendering for small lists
         <div className="p-3 sm:p-4">
-          <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
+            {currentlyDisplayedLocations.map(shop => (
+              <ShopCard
+                key={shop.slug || shop.GoogleProfileID || shop.Name}
+                shop={shop}
+              />
+            ))}
+          </div>
         </div>
       )}
     </section>

@@ -146,21 +146,29 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       id={`shop-card-${shop.slug || shop.GoogleProfileID || shop.Name?.replace(/\W/g, '')}`}
       className={`
         bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md
-        hover:shadow-xl focus-within:shadow-xl transition-all duration-200 ease-in-out
-        cursor-pointer group w-full flex flex-col h-full will-change-transform
+        focus-within:shadow-xl
+        cursor-pointer group w-full flex flex-col h-full
       `}
-      style={
-        isSelected
+      style={{
+        // Smooth cubic-bezier transitions for sexy hover effects
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: isHovered || isSelected ? 'transform, box-shadow' : 'auto',
+        ...(isSelected
           ? {
-              boxShadow: '0 0 0 3px rgb(59, 130, 246), 0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0 0 0 3px rgb(59, 130, 246), 0 8px 20px -4px rgba(59, 130, 246, 0.3)',
+              transform: 'scale(1.02)',
             }
           : isHovered
             ? {
-                boxShadow: `0 0 6px 1px ${getGlowColor(shop.type)}, 0 10px 25px -5px rgba(0, 0, 0, 0.3)`,
-                transform: 'scale(1.05) translateY(-4px)',
+                boxShadow: `0 0 12px 2px ${getGlowColor(shop.type)}, 0 15px 35px -8px rgba(0, 0, 0, 0.25)`,
+                transform: 'scale(1.03) translateY(-6px)',
               }
-            : undefined
-      }
+            : {
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                transform: 'scale(1) translateY(0)',
+              }
+        ),
+      }}
       onClick={handleCardClick}
       onMouseEnter={() => setHoveredShop(shop)}
       onMouseLeave={() => setHoveredShop(null)}
@@ -171,9 +179,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       aria-current={isSelected ? "page" : undefined}
     >
       {/* Image Section */}
-      <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700 relative">
+      <div className="aspect-w-16 aspect-h-9 bg-gray-200 dark:bg-gray-700 relative overflow-hidden">
         <OptimizedImage
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-full object-cover transition-transform duration-350 ease-smooth group-hover:scale-110"
           src={actualImageUrl}
           alt={`Image of ${displayName}`}
           fallbackSrc={fallbackImageUrlCard}
