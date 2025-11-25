@@ -171,9 +171,8 @@ interface CheeseShop {
 
 The backend now provides:
 
-- **`/api/locations`** - Returns ALL locations (farms + cheese shops combined) ✨ NEW
-- **`/api/farm-stands`** - Returns only farm stands (backward compatible)
-- Both endpoints include caching and ETag support
+- **`/api/locations`** - Returns ALL locations (farms + cheese shops + all other types)
+- Includes caching and ETag support
 
 ## Next Steps
 

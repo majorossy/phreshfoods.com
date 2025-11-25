@@ -220,14 +220,14 @@ Features:
    - **Important:** JSON data files are gitignored and must be generated via `npm run process-data`
 3. **server.js:**
    - Serves static files from `public/`
-   - Provides `/api/farm-stands` endpoint (combines all location types from JSON files)
+   - Provides `/api/locations` endpoint (combines all location types from JSON files)
    - Uses `ongoingUpdate` promise tracking to prevent ECONNRESET errors when data is being processed
    - Proxies Google Maps API calls: `/api/geocode`, `/api/places/details`, `/api/directions`
    - On-demand API calls are cached via `cacheService.js`
 
 **API Endpoints:**
 - `GET /api/config` - Config endpoint (currently returns empty object)
-- `GET /api/farm-stands` - Returns all locations (farm stands, cheese shops, fish mongers, butchers, antique shops)
+- `GET /api/locations` - Returns all locations (farm stands, cheese shops, fish mongers, butchers, antique shops)
 - `GET /api/geocode?address=...` - Geocode an address (proxied to Google)
 - `GET /api/places/details?placeId=...&fields=...` - Get Place Details (proxied to Google)
 - `GET /api/directions?origin=...&destination=...` - Get directions (proxied to Google)
@@ -519,7 +519,7 @@ The application implements a three-tier system to minimize Google API costs:
 - **Type-specific product configurations:** Each location type has its own product config file with unique products and icons
 - **Data file separation:** Each location type has its own JSON file in `backend/data/`
 - **Gitignore data files:** All generated JSON files are now gitignored and must be regenerated via `npm run process-data`
-- **Unified API endpoint:** `/api/farm-stands` returns all location types combined
+- **Unified API endpoint:** `/api/locations` returns all location types combined
 - **Shop Details Overlay tabs:** Added tabbed interface (Info, Hours, Products) to shop details overlay
 
 ### Version Control Improvements (2025-01)

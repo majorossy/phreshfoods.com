@@ -74,13 +74,13 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
-        // Cache farm stand data
+        // Cache location data
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/.*\/api\/farm-stands$/,
+            urlPattern: /^https:\/\/.*\/api\/locations$/,
             handler: 'NetworkFirst',
             options: {
-              cacheName: 'farm-data-cache',
+              cacheName: 'location-data-cache',
               expiration: {
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 4, // 4 hours
@@ -147,7 +147,7 @@ export default defineConfig(({ mode }) => ({
         // secure: false, // Set to false if your backend target is HTTP and you encounter SSL issues (usually not needed for localhost)
 
         // Optional: Rewrite the path if your backend API routes don't include '/api'
-        // For example, if frontend calls '/api/farm-stands' but backend listens on '/farm-stands'
+        // For example, if frontend calls '/api/locations' but backend listens on '/locations'
         // rewrite: (path) => path.replace(/^\/api/, ''),
 
         // Optional: Configure WebSocket proxying if your backend uses WebSockets

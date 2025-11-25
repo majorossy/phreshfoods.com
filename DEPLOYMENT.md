@@ -210,7 +210,7 @@ curl http://localhost:3000/api/config
 Check that location data is available:
 
 ```bash
-curl http://localhost:3000/api/farm-stands | jq 'length'
+curl http://localhost:3000/api/locations | jq 'length'
 ```
 
 Should return the total number of locations across all types.

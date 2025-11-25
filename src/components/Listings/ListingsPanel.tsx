@@ -1,7 +1,7 @@
 // src/components/Listings/ListingsPanel.tsx
 import { useState, useEffect, useCallback, useMemo } from 'react';
-// Temporarily comment out react-window due to import issue
-// import { FixedSizeList as List } from 'react-window';
+// Using react-window v2 API
+import { List } from 'react-window';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
 import ShopCard from './ShopCard.tsx';
@@ -16,14 +16,12 @@ const GAP_SIZE = 12; // Gap between cards
 interface RowProps {
   index: number;
   style: React.CSSProperties;
-  data: {
-    shops: ShopWithDistance[];
-    columnsPerRow: number;
-  };
+  ariaAttributes?: any;
+  shops: ShopWithDistance[];
+  columnsPerRow: number;
 }
 
-const Row = ({ index, style, data }: RowProps) => {
-  const { shops, columnsPerRow } = data;
+const Row = ({ index, style, shops, columnsPerRow }: RowProps) => {
   const startIdx = index * columnsPerRow;
   const items = shops.slice(startIdx, startIdx + columnsPerRow);
 
@@ -159,9 +157,9 @@ const ListingsPanel = () => {
     );
   }
 
-  // Enable virtual scrolling for better performance
-  // const useVirtualScrolling = currentlyDisplayedLocations.length > 20; // Only use for 20+ items
-  const useVirtualScrolling = false; // Temporarily disabled due to import issue
+  // Virtual scrolling temporarily disabled - fixed row heights don't work well with variable card content
+  // TODO: Re-enable once react-window v2 row height issues are resolved
+  const useVirtualScrolling = false; // Disabled: currentlyDisplayedLocations.length > 20;
 
   return (
     <section
@@ -170,19 +168,17 @@ const ListingsPanel = () => {
       style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
       {currentlyDisplayedLocations.length > 0 ? (
-        /* Virtual scrolling temporarily disabled
         useVirtualScrolling ? (
           <List
-            height={listHeight}
-            itemCount={rowCount}
-            itemSize={ITEM_HEIGHT + GAP_SIZE}
-            width="100%"
-            itemData={listData}
             className="custom-scrollbar"
-          >
-            {Row}
-          </List>
-        ) : ( */
+            style={{ height: listHeight, width: '100%' }}
+            rowCount={rowCount}
+            rowHeight={ITEM_HEIGHT + GAP_SIZE}
+            rowComponent={Row}
+            rowProps={listData}
+            overscanCount={2}
+          />
+        ) : (
           // Regular rendering
           <div className="p-3 sm:p-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
@@ -194,7 +190,7 @@ const ListingsPanel = () => {
               ))}
             </div>
           </div>
-        /* ) */
+        )
       ) : (
         <div className="p-3 sm:p-4">
           <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />

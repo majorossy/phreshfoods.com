@@ -232,7 +232,7 @@ it('fetches farm stands successfully', async () => {
 
   // Check result
   expect(result).toHaveLength(1);
-  expect(mockFetch).toHaveBeenCalledWith('/api/farm-stands');
+  expect(mockFetch).toHaveBeenCalledWith('/api/locations');
 });
 ```
 

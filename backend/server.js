@@ -154,8 +154,8 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for farm-stands endpoint in development to avoid issues with React Strict Mode
-    return process.env.NODE_ENV === 'development' && req.path === '/api/farm-stands';
+    // Skip rate limiting for locations endpoint in development to avoid issues with React Strict Mode
+    return process.env.NODE_ENV === 'development' && req.path === '/api/locations';
   }
 });
 
@@ -485,6 +485,12 @@ async function ensureDataUpdate() {
 
     return updateTracker.promise;
 }
+
+// Backward compatibility redirect for old endpoint
+app.get('/api/farm-stands', (req, res) => {
+    console.log('[API] Redirecting /api/farm-stands to /api/locations (backward compatibility)');
+    res.redirect(301, '/api/locations');
+});
 
 // Unified endpoint to get all locations (farm stands + cheese shops) with ETag caching
 app.get('/api/locations', async (req, res) => {

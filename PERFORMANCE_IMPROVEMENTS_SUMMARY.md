@@ -93,7 +93,7 @@ Savings:          106,813 bytes (56.7% reduction)
 ```typescript
 // Usage in apiService.ts
 const rawData = await cachedFetch<Shop[]>(
-  '/api/farm-stands',
+  '/api/locations',
   {},
   300000 // 5 minute cache
 );
@@ -231,7 +231,7 @@ Backend:
 
 ### 1. ETag Caching
 ```bash
-$ curl -I http://localhost:3000/api/farm-stands
+$ curl -I http://localhost:3000/api/locations
 HTTP/1.1 200 OK
 ETag: "1763261422239-19"
 Cache-Control: public, max-age=3600, must-revalidate
@@ -241,7 +241,7 @@ X-Cache: HIT ✅
 
 ### 2. 304 Not Modified
 ```bash
-$ curl -I -H 'If-None-Match: "1763261422239-19"' http://localhost:3000/api/farm-stands
+$ curl -I -H 'If-None-Match: "1763261422239-19"' http://localhost:3000/api/locations
 HTTP/1.1 304 Not Modified ✅
 ```
 
@@ -332,7 +332,7 @@ curl http://localhost:3000/health
 
 **3. Monitor Response Times:**
 ```bash
-curl -w "Time: %{time_total}s\n" http://localhost:3000/api/farm-stands -o /dev/null
+curl -w "Time: %{time_total}s\n" http://localhost:3000/api/locations -o /dev/null
 # Should be < 0.01s after first request
 ```
 

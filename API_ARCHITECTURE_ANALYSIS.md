@@ -3,7 +3,7 @@
 ## Current Architecture Overview
 
 ### Backend APIs (Node.js/Express)
-1. **`GET /api/farm-stands`** - Returns all farm stand data (read from JSON file)
+1. **`GET /api/locations`** - Returns all location data (read from JSON files)
 2. **`GET /api/geocode`** - Proxy for Google Geocoding API
 3. **`GET /api/places/details`** - Proxy for Google Place Details API
 4. **`GET /api/directions`** - Proxy for Google Directions API
@@ -22,7 +22,7 @@
 ### Data Flow
 1. **Scheduled Updates:** Cron job (default hourly) runs `processSheetData.js`
 2. **Data Storage:** Results saved to `backend/data/farmStandsData.json`
-3. **Client Requests:** Frontend fetches `/api/farm-stands` which reads from JSON file
+3. **Client Requests:** Frontend fetches `/api/locations` which reads from JSON files
 
 ---
 
@@ -30,8 +30,8 @@
 
 ### 🔴 Critical Issues
 
-1. **No Farm Stands Caching**
-   - Every `/api/farm-stands` request reads from disk
+1. **No Locations Caching**
+   - Every `/api/locations` request reads from disk
    - File I/O is slow compared to memory access
    - No HTTP caching headers (ETags, Last-Modified, Cache-Control)
 
@@ -109,7 +109,7 @@ const farmStandsCache = {
   etag: null
 };
 
-app.get('/api/farm-stands', async (req, res) => {
+app.get('/api/locations', async (req, res) => {
   try {
     const stats = await fs.stat(FARM_STANDS_DATA_PATH);
     const fileModTime = stats.mtime.getTime();
@@ -254,7 +254,7 @@ Use in apiService:
 
 ```typescript
 export async function fetchAndProcessFarmStands(): Promise<Shop[]> {
-  const rawData = await cachedFetch<Shop[]>('/api/farm-stands', {}, 300000); // 5 min
+  const rawData = await cachedFetch<Shop[]>('/api/locations', {}, 300000); // 5 min
   return rawData;
 }
 ```
@@ -535,7 +535,7 @@ res.set({
 ### Current State (Estimated)
 | Metric | Current | Target | Improvement |
 |--------|---------|--------|-------------|
-| `/api/farm-stands` response time | ~50-100ms | ~5-10ms | 10x faster |
+| `/api/locations` response time | ~50-100ms | ~5-10ms | 10x faster |
 | Farm stands payload size | ~150KB | ~30KB | 5x smaller |
 | Cache hit rate | 0% | 90%+ | ∞ |
 | Concurrent request handling | ~100/min | ~10,000/min | 100x |

@@ -158,7 +158,7 @@ if (typeof window !== 'undefined') {
  *
  * Usage:
  * ```typescript
- * const data = await cachedFetch<Shop[]>('/api/farm-stands', {}, 300000); // 5 min cache
+ * const data = await cachedFetch<Shop[]>('/api/locations', {}, 300000); // 5 min cache
  * ```
  */
 export async function cachedFetch<T>(

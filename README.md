@@ -175,7 +175,7 @@ phreshfoods.com/
 
 ## API Endpoints
 
-- `GET /api/farm-stands` - Get all locations (all types combined)
+- `GET /api/locations` - Get all locations (all types combined)
 - `GET /api/config` - Get application configuration
 - `GET /api/geocode?address=...` - Geocode an address
 - `GET /api/places/details?placeId=...` - Get Google Place details
