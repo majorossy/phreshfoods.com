@@ -25,6 +25,10 @@ interface UIContextType {
   socialOverlayInitialTab: string;
   setSocialOverlayActiveTab: (tab: string) => void;
   tabChangeKey: number;
+  // Mobile bottom sheet state (Phase 2)
+  bottomSheetHeight: number; // 0.3 to 0.75 (30vh to 75vh)
+  setBottomSheetHeight: (height: number) => void;
+  bottomSheetExpanded: boolean; // true when height > 0.3
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -47,6 +51,10 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
 
   // Initial modal disabled - users should use header search instead
   const [isInitialModalOpen, setIsInitialModalOpen] = useState<boolean>(false);
+
+  // Mobile bottom sheet state (Phase 2)
+  const [bottomSheetHeight, setBottomSheetHeight] = useState<number>(0.3); // Start at 30vh
+  const bottomSheetExpanded = bottomSheetHeight > 0.3;
 
   // Handle delayed unmount for shop overlay
   useEffect(() => {
@@ -218,6 +226,10 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     socialOverlayInitialTab,
     setSocialOverlayActiveTab,
     tabChangeKey,
+    // Mobile bottom sheet (Phase 2)
+    bottomSheetHeight,
+    setBottomSheetHeight,
+    bottomSheetExpanded,
   }), [
     selectedShop,
     handleSetSelectedShop,
@@ -234,6 +246,9 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     socialOverlayInitialTab,
     setSocialOverlayActiveTab,
     tabChangeKey,
+    // Mobile bottom sheet (Phase 2)
+    bottomSheetHeight,
+    bottomSheetExpanded,
   ]);
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

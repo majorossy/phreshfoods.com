@@ -660,3 +660,147 @@ body.modal-active {
 .animate-contentReveal {
   animation: fadeIn 0.15s ease-out forwards;
 }
+
+/* ========================================
+   Mobile Bottom Sheet Styles (Phase 1)
+   ======================================== */
+
+/* Mobile-only styles - isolated via media query for zero desktop impact */
+@media (max-width: 767px) {
+  /* Bottom Sheet Container */
+  #mobileBottomSheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30vh; /* Initial collapsed state */
+    background: white;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 40; /* Above map (z-10), below overlays (z-50) */
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: height;
+    /* Prevent overscroll behavior on mobile */
+    overscroll-behavior: contain;
+  }
+
+  /* Dark mode support */
+  .dark #mobileBottomSheet {
+    background: rgb(31, 41, 55); /* gray-800 */
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Disable transition during drag (will be added in Phase 2) */
+  #mobileBottomSheet.is-dragging {
+    transition: none;
+  }
+
+  /* Drag Handle */
+  .drag-handle {
+    width: 40px;
+    height: 4px;
+    background: #d1d5db; /* gray-300 */
+    border-radius: 2px;
+    margin: 8px auto;
+    /* Touch target expansion for better UX */
+    cursor: grab;
+  }
+
+  .dark .drag-handle {
+    background: rgb(75, 85, 99); /* gray-600 */
+  }
+
+  .drag-handle:active {
+    cursor: grabbing;
+  }
+
+  /* Horizontal Carousel */
+  .mobile-carousel {
+    overflow-x: scroll;
+    overflow-y: hidden;
+    /* Native scroll-snap for buttery smooth centering */
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    /* iOS momentum scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* GPU acceleration hint */
+    will-change: scroll-position;
+    /* Hide scrollbar (cross-browser) */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    /* Padding creates centered layout for first/last cards */
+    /* 16.5% on each side = (100% - 67%) / 2 */
+    padding-left: 16.5%;
+    padding-right: 16.5%;
+    /* Gap between cards */
+    gap: 12px;
+  }
+
+  /* Hide scrollbar for WebKit browsers */
+  .mobile-carousel::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Carousel Items (individual shop cards) */
+  .mobile-carousel-item {
+    /* Card width: 67% of viewport (1 full + 2×1/6 peek) */
+    flex: 0 0 67%;
+    /* Snap to center of viewport */
+    scroll-snap-align: center;
+    /* Force stop at each card (no accidental skip) */
+    scroll-snap-stop: always;
+  }
+
+  /* Prevent ListingsPanel from showing on mobile */
+  #listingsPanel {
+    display: none !important;
+  }
+
+  /* Mobile Overlay Fullscreen (Phase 4) */
+  #detailsOverlayShop,
+  #detailsOverlaySocial {
+    width: 100% !important;
+    height: 100% !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    /* Slide from bottom instead of right */
+    transform: translateY(100%) !important;
+  }
+
+  #detailsOverlayShop.is-open,
+  #detailsOverlaySocial.is-open {
+    transform: translateY(0%) !important;
+  }
+
+  /* Hide bottom sheet when overlay is open */
+  body.modal-active #mobileBottomSheet {
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* ========================================
+     Mobile Header Drawer Styles
+     ======================================== */
+
+  /* Logo Hamburger Animation */
+  .logo-hamburger {
+    transition: transform 0.3s ease-out;
+  }
+
+  .logo-hamburger.is-open {
+    transform: rotate(90deg);
+  }
+
+  /* Collapsed Header Bar */
+  header {
+    background: transparent;
+  }
+
+  /* Ensure header stays on top of drawer */
+  header > .md\\:hidden {
+    position: relative;
+    z-index: 32;
+  }
+}

@@ -29,6 +29,7 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 const Header = lazy(() => import('./components/Header/Header.tsx'));
 const MapComponent = lazy(() => import('./components/Map/MapComponent.tsx'));
 const ListingsPanel = lazy(() => import('./components/Listings/ListingsPanel.tsx'));
+const MobileBottomSheet = lazy(() => import('./components/Mobile/MobileBottomSheet.tsx'));
 const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsOverlay.tsx'));
 const SocialOverlay = lazy(() => import('./components/Overlays/SocialOverlay.tsx'));
 
@@ -53,10 +54,23 @@ function App() {
     setSelectedShop
   } = useUI();
 
+  // Mobile detection for bottom sheet (Phase 1)
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+
   // Initialize Web Vitals monitoring on mount
   useEffect(() => {
     initWebVitals();
     markPerformance('app-initialized');
+  }, []);
+
+  // Handle window resize for mobile detection (Phase 1)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   // Track custom metrics when shops are loaded
@@ -235,11 +249,23 @@ function App() {
             </div>
           </Suspense>
         </ErrorBoundary>
+        {/* Desktop/Tablet Listings Panel - hidden on mobile */}
         <ErrorBoundary>
-          <Suspense fallback={<div className="w-full md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse z-10" />}>
-            <ListingsPanel />
+          <Suspense fallback={<div className="hidden md:block md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse z-10" />}>
+            <div className="hidden md:block">
+              <ListingsPanel />
+            </div>
           </Suspense>
         </ErrorBoundary>
+
+        {/* Mobile Bottom Sheet - shown only on mobile */}
+        {isMobile && (
+          <ErrorBoundary>
+            <Suspense fallback={null}>
+              <MobileBottomSheet />
+            </Suspense>
+          </ErrorBoundary>
+        )}
 
         {shouldRenderShopOverlay && selectedShop && (
           <LazyLoadErrorBoundary componentName="shop details">

@@ -12,6 +12,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import ProductFilterDropdown from '../Filters/ProductFilterDropdown';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useHeaderCollapse } from '../../hooks/useHeaderCollapse';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { useFilters } from '../../contexts/FilterContext';
@@ -47,6 +48,16 @@ const Header: React.FC = () => {
   // Debounced radius value (delays filter computation)
   const debouncedRadius = useDebounce(localRadius, RADIUS_DEBOUNCE_MS);
 
+  // Header collapse on mobile (Phase 3)
+  const { isCollapsed, sentinelRef } = useHeaderCollapse();
+
+  // Mobile drawer state (hamburger menu)
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [shouldRenderDrawer, setShouldRenderDrawer] = useState(false);
+  const [isDrawerAnimatedOpen, setIsDrawerAnimatedOpen] = useState(false);
+  const [openDrawerAccordions, setOpenDrawerAccordions] = useState<Set<LocationType>>(new Set());
+  const drawerTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Get search and UI contexts
   const {
     mapsApiReady,
@@ -68,6 +79,8 @@ const Header: React.FC = () => {
   const {
     activeLocationTypes,
     toggleLocationType,
+    activeProductFilters,
+    toggleFilter,
     clearAllFilters,
   } = useFilters();
 
@@ -192,6 +205,38 @@ const Header: React.FC = () => {
     };
   }, [mapsApiReady, setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, setMapViewTargetLocation, navigate, closeShopOverlays]);
 
+  // Drawer animation effects (delayed mount/unmount pattern)
+  useEffect(() => {
+    if (isDrawerOpen) {
+      if (drawerTimeoutRef.current) {
+        clearTimeout(drawerTimeoutRef.current);
+      }
+      setShouldRenderDrawer(true);
+    } else if (shouldRenderDrawer) {
+      drawerTimeoutRef.current = setTimeout(() => {
+        setShouldRenderDrawer(false);
+      }, 350);
+    }
+
+    return () => {
+      if (drawerTimeoutRef.current) {
+        clearTimeout(drawerTimeoutRef.current);
+      }
+    };
+  }, [isDrawerOpen, shouldRenderDrawer]);
+
+  // Delayed enter animation (RAF pattern)
+  useEffect(() => {
+    if (isDrawerOpen && shouldRenderDrawer) {
+      const rafId = requestAnimationFrame(() => {
+        setIsDrawerAnimatedOpen(true);
+      });
+      return () => cancelAnimationFrame(rafId);
+    } else {
+      setIsDrawerAnimatedOpen(false);
+    }
+  }, [isDrawerOpen, shouldRenderDrawer]);
+
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
   }, []);
@@ -211,10 +256,101 @@ const Header: React.FC = () => {
     // Keep current search location/radius - don't reset
   }, [setSelectedShop, closeShopOverlays, clearAllFilters]);
 
+  // Mobile drawer toggle handlers
+  const toggleDrawer = useCallback(() => {
+    setIsDrawerOpen(prev => !prev);
+  }, []);
+
+  const closeDrawer = useCallback(() => {
+    setIsDrawerOpen(false);
+  }, []);
+
+  // Escape key closes drawer
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isDrawerOpen) {
+        closeDrawer();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isDrawerOpen, closeDrawer]);
+
+  // Toggle accordion in drawer
+  const toggleDrawerAccordion = useCallback((type: LocationType) => {
+    setOpenDrawerAccordions(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
+  }, []);
+
   return (
-    <header className="absolute top-0 left-0 right-0 z-30 print:hidden" role="banner">
-      <div className="w-full">
-        <div className="flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full px-3 sm:px-4">
+    <header
+      className={`
+        absolute top-0 left-0 right-0 z-30 print:hidden
+        transition-all duration-300 ease-out
+        ${isCollapsed ? 'md:py-2' : ''}
+      `}
+      style={{
+        // Mobile-only collapsible behavior
+        height: isCollapsed ? '3.5rem' : 'auto', // 56px collapsed on mobile
+      }}
+      role="banner"
+    >
+      {/* Sentinel for IntersectionObserver */}
+      <div ref={sentinelRef} className="absolute top-0 h-0 w-0 pointer-events-none" aria-hidden="true" />
+
+      {/* ========== MOBILE COLLAPSED BAR ========== */}
+      <div className="md:hidden w-full px-3 py-2 rounded-lg" style={{ backgroundColor: '#356A78' }}>
+        <div className="flex items-center gap-3">
+          {/* Logo as Hamburger Menu */}
+          <button
+            onClick={toggleDrawer}
+            className="cursor-pointer transition-transform duration-300 hover:scale-110 flex-shrink-0"
+            aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isDrawerOpen}
+          >
+            <img
+              src="/images/logo.png"
+              alt="Maine Flag"
+              className="h-8 w-auto object-contain logo-hamburger"
+              style={{
+                transform: isDrawerOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                transition: 'transform 0.3s ease-out'
+              }}
+            />
+          </button>
+
+          {/* Search Input (always visible) */}
+          <label htmlFor="headerSearchMobile" className="sr-only">Search for locations</label>
+          <input
+            ref={autocompleteInputRef}
+            id="headerSearchMobile"
+            type="text"
+            placeholder="Search location..."
+            className="flex-1 px-3 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-800 dark:text-white"
+            value={inputValue}
+            onChange={handleInputChange}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            aria-label="Search by zip, city, or address"
+          />
+        </div>
+      </div>
+
+      {/* ========== DESKTOP HEADER (UNCHANGED) ========== */}
+      <div className="hidden md:block w-full">
+        <div className={`
+          flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full px-3 sm:px-4
+          transition-opacity duration-300
+          ${isCollapsed ? 'opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto' : 'opacity-100'}
+        `}>
           {/* Combined Container: Logo, Type Filters, Search, Radius, and Filters */}
           <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
             {/* Logo Section */}
@@ -227,7 +363,7 @@ const Header: React.FC = () => {
                 title="Reset Filters"
                 aria-label="Reset Filters"
               >
-                <img src="/images/Flag_of_Maine.svg" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
+                <img src="/images/logo.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
               </Link>
             </div>
 
@@ -389,6 +525,152 @@ const Header: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ========== MOBILE DRAWER ========== */}
+      {shouldRenderDrawer && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={`
+              md:hidden fixed inset-0 bg-black
+              transition-opacity duration-[350ms] ease-out
+              ${isDrawerAnimatedOpen ? 'opacity-50' : 'opacity-0'}
+            `}
+            style={{ zIndex: 29 }}
+            onClick={closeDrawer}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Content */}
+          <div
+            className={`
+              md:hidden absolute left-0 right-0
+              bg-white dark:bg-gray-800
+              shadow-lg rounded-b-2xl
+              transition-transform duration-[350ms] ease-out
+              ${isDrawerAnimatedOpen ? 'translate-y-0' : '-translate-y-full'}
+            `}
+            style={{
+              top: '3.5rem',
+              zIndex: 31,
+              maxHeight: 'calc(100vh - 3.5rem - 10rem)',
+              overflowY: 'auto',
+            }}
+            role="dialog"
+            aria-label="Filter menu"
+          >
+            <div className="p-3">
+              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
+                FILTER BY TYPE
+              </h3>
+
+              {/* Location Type Accordions - Full Width */}
+              <div className="space-y-1">
+                {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
+                  const isActive = activeLocationTypes.has(type);
+                  const isDisabled = config.disabled === true;
+                  const isExpanded = openDrawerAccordions.has(type);
+                  const products = getProductConfig(type);
+
+                  const bgColorClasses = {
+                    green: isActive ? 'bg-green-600' : 'bg-green-100 dark:bg-green-900',
+                    yellow: isActive ? 'bg-yellow-600' : 'bg-yellow-100 dark:bg-yellow-900',
+                    blue: isActive ? 'bg-blue-600' : 'bg-blue-100 dark:bg-blue-900',
+                    red: isActive ? 'bg-red-600' : 'bg-red-100 dark:bg-red-900',
+                    purple: isActive ? 'bg-purple-600' : 'bg-purple-100 dark:bg-purple-900',
+                    amber: isActive ? 'bg-amber-600' : 'bg-amber-100 dark:bg-amber-900',
+                    rose: isActive ? 'bg-rose-600' : 'bg-rose-100 dark:bg-rose-900',
+                    orange: isActive ? 'bg-orange-600' : 'bg-orange-100 dark:bg-orange-900',
+                    teal: isActive ? 'bg-teal-600' : 'bg-teal-100 dark:bg-teal-900',
+                    gray: isActive ? 'bg-gray-600' : 'bg-gray-100 dark:bg-gray-700',
+                  };
+
+                  const textColorClasses = isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300';
+
+                  return (
+                    <div key={type} className="w-full">
+                      {/* Accordion Header */}
+                      <button
+                        type="button"
+                        onClick={() => !isDisabled && toggleLocationType(type)}
+                        disabled={isDisabled}
+                        className={`
+                          w-full flex items-center justify-between
+                          px-4 py-3 rounded-lg
+                          transition-all duration-200
+                          ${bgColorClasses[config.color]} ${textColorClasses}
+                          ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md active:scale-[0.98]'}
+                        `}
+                        aria-pressed={isActive}
+                      >
+                        <span className="font-medium text-sm flex items-center gap-2">
+                          <span className="text-lg">{config.emoji}</span>
+                          {config.label}
+                        </span>
+
+                        {/* Expand Arrow (only when active) */}
+                        {isActive && !isDisabled && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleDrawerAccordion(type);
+                            }}
+                            className="p-1 hover:bg-white/20 rounded transition-colors"
+                            aria-label={`${isExpanded ? 'Hide' : 'Show'} ${config.label} products`}
+                            aria-expanded={isExpanded}
+                          >
+                            <svg
+                              className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                          </button>
+                        )}
+                      </button>
+
+                      {/* Accordion Content - Product Filters */}
+                      {isActive && !isDisabled && isExpanded && Object.keys(products).length > 0 && (
+                        <div
+                          className="mt-1 bg-white dark:bg-gray-700 rounded-lg p-3 animate-slideDown"
+                          role="region"
+                          aria-labelledby={`${type}-accordion`}
+                        >
+                          <div className="grid grid-cols-2 gap-2">
+                            {Object.values(products).map((product: any) => {
+                              const isProductActive = activeProductFilters[product.csvHeader] === true;
+                              return (
+                                <button
+                                  key={product.csvHeader}
+                                  type="button"
+                                  onClick={() => toggleFilter(product.csvHeader)}
+                                  className={`
+                                    px-3 py-2 rounded-md text-xs font-medium
+                                    transition-all duration-200
+                                    ${isProductActive
+                                      ? 'bg-blue-600 text-white shadow-sm'
+                                      : 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500'}
+                                  `}
+                                  aria-pressed={isProductActive}
+                                >
+                                  {product.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </header>
   );
 };

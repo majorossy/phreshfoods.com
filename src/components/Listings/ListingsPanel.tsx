@@ -3,16 +3,18 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
+import { ALL_LOCATION_TYPES } from '../../types/shop';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
+import WelcomeState from '../UI/WelcomeState.tsx';
 
 // Minimum items before enabling virtualization (small lists don't benefit)
 const VIRTUALIZATION_THRESHOLD = 20;
 
 const ListingsPanel = () => {
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
-  const { setActiveProductFilters, activeLocationTypes } = useFilters();
+  const { activeProductFilters, setActiveProductFilters, activeLocationTypes } = useFilters();
   const [headerHeight, setHeaderHeight] = useState(0);
   const [columnsPerRow, setColumnsPerRow] = useState(2);
 
@@ -139,7 +141,26 @@ const ListingsPanel = () => {
     );
   }
 
-  // No results state
+  // Check if we're in the default/homepage state
+  const hasActiveFilters = Object.values(activeProductFilters).some(value => value === true);
+  const isAllLocationTypesSelected = activeLocationTypes.size === ALL_LOCATION_TYPES.length;
+  const isDefaultState = !hasActiveFilters && isAllLocationTypesSelected;
+
+  // Show welcome/homepage state when in default state (no filters + all location types)
+  if (isDefaultState) {
+    return (
+      <section
+        id="listingsPanel"
+        ref={parentRef}
+        className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
+        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+      >
+        <WelcomeState />
+      </section>
+    );
+  }
+
+  // No results state (filters are active but no matches)
   if (currentlyDisplayedLocations.length === 0) {
     return (
       <section
