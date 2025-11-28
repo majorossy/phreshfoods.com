@@ -48,11 +48,13 @@ If dev server is running, restart it to pick up new data:
 
 ## 🚀 STANDUP PLAN
 
-**Purpose:** Start development environment and verify everything is working.
+**Purpose:** Start development environment using existing data files.
 
-### Quick Start (Recommended)
+### Prerequisites
+Data files must exist in `backend/data/`. If missing, run **REFRESH PLAN** first.
+
+### Quick Start
 ```bash
-# Start both frontend and backend
 npm run dev:full
 ```
 - Frontend: http://localhost:5173
@@ -67,30 +69,10 @@ npm run start:backend
 npm run dev
 ```
 
-### Health Checks
-```bash
-# Check if data files exist
-ls -la backend/data/
-
-# Test API endpoint
-curl http://localhost:3000/api/locations | head -c 500
-
-# Check for TypeScript errors
-npm run typecheck
-```
-
-### First Time Setup
-If data files are missing:
-```bash
-npm run process-data
-```
-
-### Verify Everything Works
+### Verify Running
 1. Open http://localhost:5173
 2. Map should load with markers
-3. Search for a location (e.g., "Portland, ME")
-4. Click a shop card - overlay should open
-5. Check console for errors (Cmd+Option+J)
+3. Click a shop card to test overlay
 
 ---
 

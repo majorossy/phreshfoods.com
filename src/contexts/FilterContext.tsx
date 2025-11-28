@@ -123,8 +123,10 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     setActiveLocationTypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(type)) {
-        // Don't allow deselecting if it's the only one selected
-        if (newSet.size > 1) {
+        // If unchecking the last type, reset to all types (return to homepage)
+        if (newSet.size === 1) {
+          return new Set(ALL_LOCATION_TYPES);
+        } else {
           newSet.delete(type);
         }
       } else {

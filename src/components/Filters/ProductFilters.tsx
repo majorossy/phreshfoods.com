@@ -2,7 +2,7 @@
 import React, { useMemo, useCallback } from 'react';
 import { useFilters } from '../../contexts/FilterContext';
 import { getMergedProductConfigs, CATEGORY_DISPLAY_ORDERS } from '../../config/products';
-import { LocationType } from '../../types/shop';
+import { LocationType, ALL_LOCATION_TYPES } from '../../types/shop';
 
 const ProductFilters: React.FC = () => {
   const { activeProductFilters, activeLocationTypes, toggleLocationType, toggleFilter, clearAllFilters } = useFilters();
@@ -156,16 +156,24 @@ const ProductFilters: React.FC = () => {
             </fieldset>
         ))}
       </div>
-      {Object.keys(activeProductFilters).some(key => activeProductFilters[key]) && ( // Show "Clear All" only if some filters are active
-        <button
-          type="button"
-          onClick={clearAllFilters}
-          className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"
-          aria-label="Clear all active filters"
-        >
-          Clear All Filters
-        </button>
-      )}
+      {(() => {
+        // Check if we're in the default state (all location types + no product filters)
+        const hasActiveFilters = Object.values(activeProductFilters).some(v => v === true);
+        const isAllLocationTypesSelected = activeLocationTypes.size === ALL_LOCATION_TYPES.length;
+        const isDefaultState = !hasActiveFilters && isAllLocationTypesSelected;
+
+        // Show "Back to Homepage" button when NOT in default state
+        return !isDefaultState && (
+          <button
+            type="button"
+            onClick={clearAllFilters}
+            className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"
+            aria-label="Clear all filters and return to homepage"
+          >
+            🏠 Back to Homepage
+          </button>
+        );
+      })()}
     </div>
   );
 };
