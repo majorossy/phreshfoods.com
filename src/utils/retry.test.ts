@@ -256,11 +256,17 @@ describe('retry - Custom shouldRetry', () => {
       return error.message.includes('network');
     };
 
-    const promise = retryAsync(mockFn, { shouldRetry });
-    await vi.runAllTimersAsync();
+    // Use try-catch to properly handle the rejection
+    try {
+      const promise = retryAsync(mockFn, { shouldRetry });
+      await vi.runAllTimersAsync();
+      await promise;
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error) {
+      expect((error as Error).message).toBe('Validation error');
+    }
 
-    // Should throw immediately (no retry for validation error)
-    await expect(promise).rejects.toThrow('Validation error');
     expect(mockFn).toHaveBeenCalledTimes(1);
   });
 
@@ -277,10 +283,17 @@ describe('retry - Custom shouldRetry', () => {
              error.message.includes('503');
     };
 
-    const promise = retryAsync(mockFn, { shouldRetry });
-    await vi.runAllTimersAsync();
+    // Use try-catch to properly handle the rejection
+    try {
+      const promise = retryAsync(mockFn, { shouldRetry });
+      await vi.runAllTimersAsync();
+      await promise;
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error) {
+      expect((error as Error).message).toBe('404 Not Found');
+    }
 
-    await expect(promise).rejects.toThrow('404 Not Found');
     expect(mockFn).toHaveBeenCalledTimes(1); // No retry
   });
 
@@ -290,15 +303,21 @@ describe('retry - Custom shouldRetry', () => {
     const mockFn = vi.fn().mockRejectedValue(new Error('error'));
     const attemptNumbers: number[] = [];
 
-    const shouldRetry = (error: Error, attempt: number) => {
+    const shouldRetry = (_error: Error, attempt: number) => {
       attemptNumbers.push(attempt);
       return attempt <= 2; // Only retry first 2 attempts
     };
 
-    const promise = retryAsync(mockFn, { maxRetries: 5, shouldRetry });
-    await vi.runAllTimersAsync();
-
-    await expect(promise).rejects.toThrow();
+    // Use try-catch to properly handle the rejection
+    try {
+      const promise = retryAsync(mockFn, { maxRetries: 5, shouldRetry });
+      await vi.runAllTimersAsync();
+      await promise;
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error) {
+      expect((error as Error).message).toBe('error');
+    }
 
     // Should have called shouldRetry with attempts 1, 2, 3
     expect(attemptNumbers).toEqual([1, 2, 3]);
@@ -317,10 +336,16 @@ describe('retry - Edge Cases', () => {
 
     const mockFn = vi.fn().mockRejectedValue('string error');
 
-    const promise = retryAsync(mockFn, { maxRetries: 1 });
-    await vi.runAllTimersAsync();
-
-    await expect(promise).rejects.toThrow('string error');
+    // Use try-catch to properly handle the rejection
+    try {
+      const promise = retryAsync(mockFn, { maxRetries: 1 });
+      await vi.runAllTimersAsync();
+      await promise;
+      // Should not reach here
+      expect(true).toBe(false);
+    } catch (error) {
+      expect((error as Error).message).toBe('string error');
+    }
   });
 
   it('handles functions that return non-promises', async () => {

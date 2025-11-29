@@ -344,9 +344,68 @@ const mockEvent = {
 };
 
 /**
+ * Mock IntersectionObserver - For observing element visibility
+ */
+class MockIntersectionObserver {
+  private callback: IntersectionObserverCallback;
+  private elements: Element[] = [];
+
+  constructor(callback: IntersectionObserverCallback, _options?: IntersectionObserverInit) {
+    this.callback = callback;
+  }
+
+  observe(element: Element) {
+    this.elements.push(element);
+  }
+
+  unobserve(element: Element) {
+    this.elements = this.elements.filter(el => el !== element);
+  }
+
+  disconnect() {
+    this.elements = [];
+  }
+
+  // Helper for testing: simulate intersection
+  _triggerIntersection(entries: IntersectionObserverEntry[]) {
+    this.callback(entries, this as unknown as IntersectionObserver);
+  }
+}
+
+/**
+ * Mock ResizeObserver - For observing element size changes
+ */
+class MockResizeObserver {
+  private callback: ResizeObserverCallback;
+  private elements: Element[] = [];
+
+  constructor(callback: ResizeObserverCallback) {
+    this.callback = callback;
+  }
+
+  observe(element: Element) {
+    this.elements.push(element);
+  }
+
+  unobserve(element: Element) {
+    this.elements = this.elements.filter(el => el !== element);
+  }
+
+  disconnect() {
+    this.elements = [];
+  }
+}
+
+/**
  * Main mock function - Call this in test setup to create the global google object
  */
 export function mockGoogleMaps() {
+  // Mock IntersectionObserver
+  (global as any).IntersectionObserver = MockIntersectionObserver;
+
+  // Mock ResizeObserver
+  (global as any).ResizeObserver = MockResizeObserver;
+
   (global as any).google = {
     maps: {
       Map: MockMap,

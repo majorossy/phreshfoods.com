@@ -7,6 +7,7 @@ import ProductFilters from './ProductFilters';
 import { FilterProvider } from '../../contexts/FilterContext';
 import { ToastProvider } from '../../contexts/ToastContext';
 import { mockGoogleMaps, cleanupGoogleMaps } from '../../test/mocks/googleMaps';
+import { ENABLED_LOCATION_TYPES } from '../../config/enabledLocationTypes';
 
 // Extend Vitest matchers with jest-axe
 expect.extend(toHaveNoViolations);
@@ -209,44 +210,46 @@ describe('ProductFilters Component', () => {
   });
 
   describe('Clear All Filters', () => {
-    it('should show Clear All button when filters are active', () => {
+    it('should show Back to Homepage button when filters are active', () => {
       renderComponent();
 
       // Activate a product filter first
       const allCheckboxes = screen.getAllByRole('checkbox');
-      const productCheckboxes = allCheckboxes.slice(5);
+      const locationTypeCount = ENABLED_LOCATION_TYPES.length;
+      const productCheckboxes = allCheckboxes.slice(locationTypeCount);
 
       if (productCheckboxes.length > 0) {
         fireEvent.click(productCheckboxes[0]);
 
-        // Clear All button should appear
-        const clearButton = screen.getByText('Clear All Filters');
+        // Back to Homepage button should appear (not "Clear All Filters")
+        const clearButton = screen.getByText(/back to homepage/i);
         expect(clearButton).toBeInTheDocument();
       }
     });
 
-    it('should hide Clear All button when no filters are active', () => {
+    it('should hide Back to Homepage button when in default state', () => {
       renderComponent();
 
-      // With no active product filters, button should not be present
-      const clearButton = screen.queryByText('Clear All Filters');
+      // With no active product filters and all location types selected, button should not be present
+      const clearButton = screen.queryByText(/back to homepage/i);
       expect(clearButton).not.toBeInTheDocument();
     });
 
-    it('should clear all filters when Clear All is clicked', () => {
+    it('should clear all filters when Back to Homepage is clicked', () => {
       renderComponent();
 
       // Activate a product filter
       const allCheckboxes = screen.getAllByRole('checkbox');
-      const productCheckboxes = allCheckboxes.slice(5);
+      const locationTypeCount = ENABLED_LOCATION_TYPES.length;
+      const productCheckboxes = allCheckboxes.slice(locationTypeCount);
 
       if (productCheckboxes.length > 0) {
         const firstProduct = productCheckboxes[0] as HTMLInputElement;
         fireEvent.click(firstProduct);
         expect(firstProduct.checked).toBe(true);
 
-        // Click Clear All
-        const clearButton = screen.getByText('Clear All Filters');
+        // Click Back to Homepage
+        const clearButton = screen.getByText(/back to homepage/i);
         fireEvent.click(clearButton);
 
         // Product filter should be unchecked
@@ -261,15 +264,16 @@ describe('ProductFilters Component', () => {
       const farmCheckbox = screen.getByLabelText('Show farm stands');
       fireEvent.click(farmCheckbox);
 
-      // Activate a product filter to show Clear All button
+      // Activate a product filter to show Back to Homepage button
       const allCheckboxes = screen.getAllByRole('checkbox');
-      const productCheckboxes = allCheckboxes.slice(5);
+      const locationTypeCount = ENABLED_LOCATION_TYPES.length;
+      const productCheckboxes = allCheckboxes.slice(locationTypeCount);
 
       if (productCheckboxes.length > 0) {
         fireEvent.click(productCheckboxes[0]);
 
-        // Click Clear All
-        const clearButton = screen.getByText('Clear All Filters');
+        // Click Back to Homepage
+        const clearButton = screen.getByText(/back to homepage/i);
         fireEvent.click(clearButton);
 
         // All location types should be selected again
@@ -360,18 +364,19 @@ describe('ProductFilters Component', () => {
       });
     });
 
-    it('should have accessible button for Clear All', () => {
+    it('should have accessible button for Back to Homepage', () => {
       renderComponent();
 
-      // Activate a filter to show Clear All button
+      // Activate a filter to show Back to Homepage button
       const allCheckboxes = screen.getAllByRole('checkbox');
-      const productCheckboxes = allCheckboxes.slice(5);
+      const locationTypeCount = ENABLED_LOCATION_TYPES.length;
+      const productCheckboxes = allCheckboxes.slice(locationTypeCount);
 
       if (productCheckboxes.length > 0) {
         fireEvent.click(productCheckboxes[0]);
 
-        const clearButton = screen.getByText('Clear All Filters');
-        expect(clearButton).toHaveAttribute('aria-label', 'Clear all active filters');
+        const clearButton = screen.getByText(/back to homepage/i);
+        expect(clearButton).toHaveAttribute('aria-label', 'Clear all filters and return to homepage');
         expect(clearButton).toHaveAttribute('type', 'button');
       }
     });
@@ -395,7 +400,7 @@ describe('ProductFilters Component', () => {
 
       // Default state: all location types selected, no product filters
       expect(screen.getByLabelText('Show farm stands')).toBeChecked();
-      expect(screen.queryByText('Clear All Filters')).not.toBeInTheDocument();
+      expect(screen.queryByText(/back to homepage/i)).not.toBeInTheDocument();
     });
 
     it('should update context when filters change', () => {
@@ -480,53 +485,28 @@ describe('ProductFilters Component', () => {
     it('should dynamically render location types from ENABLED_LOCATION_TYPES', () => {
       renderComponent();
 
-      // Count location type checkboxes (should match enabled types)
-      const locationTypeCheckboxes = screen.getAllByLabelText(/show.*farm|cheese|fish|butcher|antique|sugar/i);
+      // Count location type checkboxes (should match ENABLED_LOCATION_TYPES length)
+      // In test environment, all types default to enabled since env vars aren't set
+      const locationTypeCheckboxes = screen.getAllByLabelText(/show/i);
 
-      // With breweries/wineries disabled (per .env), should have 6 types
-      expect(locationTypeCheckboxes.length).toBe(6);
-    });
-
-    it('should NOT render brewery checkbox when VITE_ENABLE_BREWERIES=false', () => {
-      renderComponent();
-
-      // Brewery should not appear in location types
-      expect(screen.queryByLabelText(/show breweries/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/🍺/)).not.toBeInTheDocument();
-    });
-
-    it('should NOT render winery checkbox when VITE_ENABLE_WINERIES=false', () => {
-      renderComponent();
-
-      // Winery should not appear in location types
-      expect(screen.queryByLabelText(/show wineries/i)).not.toBeInTheDocument();
-      expect(screen.queryByText(/🍷/)).not.toBeInTheDocument();
-    });
-
-    it('should render sugar shack checkbox when VITE_ENABLE_SUGAR_SHACKS=true', () => {
-      renderComponent();
-
-      // Sugar shack should appear
-      expect(screen.getByLabelText(/show sugar shacks/i)).toBeInTheDocument();
-      expect(screen.getByText(/🍁/)).toBeInTheDocument();
+      expect(locationTypeCheckboxes.length).toBe(ENABLED_LOCATION_TYPES.length);
     });
 
     it('should use getDisplayName utility for location type labels', () => {
       renderComponent();
 
-      // Verify proper display names (plural form)
+      // Verify proper display names (plural form) for always-enabled types
       expect(screen.getByText('Farm Stands')).toBeInTheDocument();
       expect(screen.getByText('Cheesemongers')).toBeInTheDocument();
       expect(screen.getByText('Fishmongers')).toBeInTheDocument();
       expect(screen.getByText('Butchers')).toBeInTheDocument();
       expect(screen.getByText('Antiques')).toBeInTheDocument();
-      expect(screen.getByText('Sugar Shacks')).toBeInTheDocument();
     });
 
     it('should render location types in the order they appear in ENABLED_LOCATION_TYPES', () => {
       renderComponent();
 
-      const checkboxes = screen.getAllByLabelText(/show.*farm|cheese|fish|butcher|antique|sugar/i);
+      const checkboxes = screen.getAllByLabelText(/show/i);
 
       // First checkbox should be farm stands (first in ENABLED_LOCATION_TYPES)
       expect(checkboxes[0]).toHaveAccessibleName(/farm stands/i);

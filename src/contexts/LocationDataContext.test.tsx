@@ -3,9 +3,10 @@
  * Tests for LocationDataContext - Main data loading and filtering
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, waitFor } from '@testing-library/react';
+import { renderHook, waitFor, act } from '@testing-library/react';
 import { ReactNode } from 'react';
 import { LocationDataProvider, useLocationData } from './LocationDataContext';
+import { ToastProvider } from './ToastContext';
 import type { Shop } from '../types';
 
 const mockLocations: Shop[] = [
@@ -29,21 +30,25 @@ const mockLocations: Shop[] = [
   },
 ];
 
-// Mock fetch
-const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+// Mock the apiService module directly - this is more reliable than mocking fetch
+// since the service uses cachedFetch which has its own caching logic
+const mockFetchAndProcessLocations = vi.fn();
+vi.mock('../services/apiService', () => ({
+  fetchAndProcessLocations: (...args: unknown[]) => mockFetchAndProcessLocations(...args),
+}));
 
+// Wrapper must include ToastProvider since LocationDataProvider uses useToast()
 const wrapper = ({ children }: { children: ReactNode }) => (
-  <LocationDataProvider>{children}</LocationDataProvider>
+  <ToastProvider>
+    <LocationDataProvider>{children}</LocationDataProvider>
+  </ToastProvider>
 );
 
 describe('LocationDataContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(mockLocations),
-    });
+    // Default: return mock locations successfully
+    mockFetchAndProcessLocations.mockResolvedValue(mockLocations);
   });
 
   afterEach(() => {
@@ -76,7 +81,7 @@ describe('LocationDataContext', () => {
       renderHook(() => useLocationData(), { wrapper });
 
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledWith('/api/locations');
+        expect(mockFetchAndProcessLocations).toHaveBeenCalled();
       });
     });
 
@@ -98,18 +103,23 @@ describe('LocationDataContext', () => {
       });
     });
 
-    it('should set currentlyDisplayedLocations to all locations initially', async () => {
+    it('should have currentlyDisplayedLocations initially empty (filtering happens elsewhere)', async () => {
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
+      // currentlyDisplayedLocations is managed separately - filtering happens in App.tsx
+      // It starts empty and is populated via setCurrentlyDisplayedLocations
       await waitFor(() => {
-        expect(result.current.currentlyDisplayedLocations.length).toBe(2);
+        expect(result.current.isLoadingLocations).toBe(false);
       });
+
+      expect(result.current.currentlyDisplayedLocations).toEqual([]);
     });
   });
 
   describe('Error Handling', () => {
-    it('should set error when fetch fails', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+    it('should set error when fetch returns empty/null (service error)', async () => {
+      // When apiService has an error, it returns null or empty array
+      mockFetchAndProcessLocations.mockResolvedValueOnce(null);
 
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
@@ -117,11 +127,26 @@ describe('LocationDataContext', () => {
         expect(result.current.locationsError).toBeTruthy();
       });
 
+      // Error message from LocationDataContext.tsx line 57-58
       expect(result.current.locationsError).toContain('Failed to load');
     });
 
+    it('should set error when fetch throws', async () => {
+      // When apiService throws, the catch block runs
+      mockFetchAndProcessLocations.mockRejectedValueOnce(new Error('Network error'));
+
+      const { result } = renderHook(() => useLocationData(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.locationsError).toBeTruthy();
+      });
+
+      // Error message from LocationDataContext.tsx line 69
+      expect(result.current.locationsError).toContain('Unable to load');
+    });
+
     it('should set isLoadingLocations to false on error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetchAndProcessLocations.mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
@@ -131,7 +156,7 @@ describe('LocationDataContext', () => {
     });
 
     it('should keep allLocations empty on error', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      mockFetchAndProcessLocations.mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
@@ -151,48 +176,50 @@ describe('LocationDataContext', () => {
     });
 
     it('should refetch data when retryLoadLocations is called', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      // First call fails
+      mockFetchAndProcessLocations.mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
+      // Wait for initial load to fail
       await waitFor(() => {
         expect(result.current.locationsError).toBeTruthy();
       });
 
-      // Clear the error mock
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockLocations),
-      });
+      // Setup success for retry
+      mockFetchAndProcessLocations.mockResolvedValueOnce(mockLocations);
 
-      // Retry
-      await waitFor(() => {
+      // Trigger retry with act
+      await act(async () => {
         result.current.retryLoadLocations();
       });
 
+      // Wait for retry to complete
       await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(2);
+        expect(mockFetchAndProcessLocations).toHaveBeenCalledTimes(2);
       });
     });
 
     it('should clear error on successful retry', async () => {
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+      // First call fails
+      mockFetchAndProcessLocations.mockRejectedValueOnce(new Error('Network error'));
 
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
+      // Wait for initial load to fail
       await waitFor(() => {
         expect(result.current.locationsError).toBeTruthy();
       });
 
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockLocations),
-      });
+      // Setup success for retry
+      mockFetchAndProcessLocations.mockResolvedValueOnce(mockLocations);
 
-      await waitFor(() => {
+      // Trigger retry
+      await act(async () => {
         result.current.retryLoadLocations();
       });
 
+      // Wait for error to be cleared
       await waitFor(() => {
         expect(result.current.locationsError).toBe(null);
       });
@@ -203,21 +230,13 @@ describe('LocationDataContext', () => {
     it('should allow updating allLocations', async () => {
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
+      // Wait for initial load to complete
       await waitFor(() => {
-        expect(result.current.allLocations.length).toBe(2);
+        expect(result.current.isLoadingLocations).toBe(false);
       });
 
-      const newLocations: Shop[] = [
-        {
-          type: 'butcher',
-          Name: 'Butcher C',
-          Address: '300 Meat Ave',
-          slug: 'butcher-c',
-          lat: 43.6610,
-          lng: -70.2600,
-          products: { beef: true },
-        },
-      ];
+      // allLocations should be populated from fetch
+      expect(result.current.allLocations.length).toBe(2);
 
       // setAllLocations should be available
       expect(typeof result.current.setAllLocations).toBe('function');
@@ -226,9 +245,13 @@ describe('LocationDataContext', () => {
     it('should allow updating currentlyDisplayedLocations', async () => {
       const { result } = renderHook(() => useLocationData(), { wrapper });
 
+      // Wait for initial load to complete
       await waitFor(() => {
-        expect(result.current.currentlyDisplayedLocations.length).toBe(2);
+        expect(result.current.isLoadingLocations).toBe(false);
       });
+
+      // currentlyDisplayedLocations starts empty (filtering happens in App.tsx)
+      expect(result.current.currentlyDisplayedLocations).toEqual([]);
 
       // setCurrentlyDisplayedLocations should be available
       expect(typeof result.current.setCurrentlyDisplayedLocations).toBe('function');

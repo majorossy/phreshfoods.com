@@ -30,6 +30,7 @@ const mockShop: Shop = {
   placeDetails: {
     rating: 4.5,
     user_ratings_total: 42,
+    formatted_address: '123 Farm Road, Portland, ME 04101',  // Address is rendered from placeDetails
     opening_hours: {
       open_now: true,
       weekday_text: [
@@ -71,7 +72,8 @@ describe('QuickShopInfo Component', () => {
 
     it('should render shop address', () => {
       renderComponent();
-      expect(screen.getByText(/123 Farm Road/i)).toBeInTheDocument();
+      // Address comes from placeDetails.formatted_address
+      expect(screen.getByText(/123 Farm Road, Portland/i)).toBeInTheDocument();
     });
 
     it('should render distance if available', () => {
@@ -81,8 +83,10 @@ describe('QuickShopInfo Component', () => {
 
     it('should render location type badge with emoji', () => {
       renderComponent();
-      expect(screen.getByText(/🚜/)).toBeInTheDocument();
-      expect(screen.getByText('Farm Stand')).toBeInTheDocument();
+      // The badge contains both emoji and text in one element
+      // e.g., "🚜 Farm Stand"
+      const badge = screen.getByText(/🚜.*Farm Stand/);
+      expect(badge).toBeInTheDocument();
     });
 
     it('should render star rating', () => {
@@ -161,15 +165,12 @@ describe('QuickShopInfo Component', () => {
     });
 
     it('should toggle accordion sections when clicked', () => {
-      renderComponent();
+      // Accordions are only shown with showFullDetails=true
+      renderComponent(mockShop, true);
 
-      // Find accordion buttons
-      const accordionButtons = screen.getAllByRole('button', {
-        name: /products|information|hours/i
-      });
-
-      // Should have accordion functionality
-      expect(accordionButtons.length).toBeGreaterThan(0);
+      // Find accordion buttons (Products and Hours buttons in the accordion headers)
+      const productsButton = screen.getByRole('button', { name: /products/i });
+      expect(productsButton).toBeInTheDocument();
     });
   });
 
@@ -210,9 +211,10 @@ describe('QuickShopInfo Component', () => {
 
       renderComponent(cheeseShop);
 
-      // Should show cheese shop emoji and label
-      expect(screen.getByText(/🧀/)).toBeInTheDocument();
-      expect(screen.getByText('Cheesemonger')).toBeInTheDocument();
+      // Should show cheese shop emoji and label in one badge element
+      // e.g., "🧀 Cheesemonger"
+      const badge = screen.getByText(/🧀.*Cheesemonger/);
+      expect(badge).toBeInTheDocument();
     });
   });
 });

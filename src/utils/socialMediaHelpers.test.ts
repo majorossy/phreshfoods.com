@@ -1,13 +1,17 @@
 // src/utils/socialMediaHelpers.test.ts
 /**
  * Tests for social media URL helpers
+ *
+ * The module provides functions for:
+ * - getInstagramUrl, getFacebookUrl, getXUrl - Construct social media URLs
+ * - hasSocialMedia - Check if shop has any social media accounts
  */
 import { describe, it, expect } from 'vitest';
 import {
   getInstagramUrl,
   getFacebookUrl,
-  getTwitterUrl,
-  hasAnySocialMedia,
+  getXUrl,
+  hasSocialMedia,
 } from './socialMediaHelpers';
 import type { Shop } from '../types';
 
@@ -87,6 +91,7 @@ describe('socialMediaHelpers', () => {
 
       const url = getInstagramUrl(shopWithEmpty);
 
+      // Empty string should be treated as no Instagram
       expect(url).toBe(null);
     });
   });
@@ -127,15 +132,15 @@ describe('socialMediaHelpers', () => {
     });
   });
 
-  describe('getTwitterUrl', () => {
-    it('should construct Twitter/X URL from handle', () => {
-      const url = getTwitterUrl(mockShopWithAllSocial);
+  describe('getXUrl', () => {
+    it('should construct X URL from handle', () => {
+      const url = getXUrl(mockShopWithAllSocial);
 
-      expect(url).toBe('https://twitter.com/testfarm');
+      expect(url).toBe('https://x.com/testfarm');
     });
 
     it('should return null if no handle', () => {
-      const url = getTwitterUrl(mockShopWithNoSocial);
+      const url = getXUrl(mockShopWithNoSocial);
 
       expect(url).toBe(null);
     });
@@ -146,10 +151,10 @@ describe('socialMediaHelpers', () => {
         XHandle: '@testfarm',
       };
 
-      const url = getTwitterUrl(shop);
+      const url = getXUrl(shop);
 
       // Should strip @ symbol
-      expect(url).toBe('https://twitter.com/testfarm');
+      expect(url).toBe('https://x.com/testfarm');
     });
 
     it('should handle empty string handle', () => {
@@ -158,23 +163,23 @@ describe('socialMediaHelpers', () => {
         XHandle: '',
       };
 
-      const url = getTwitterUrl(shop);
+      const url = getXUrl(shop);
 
       expect(url).toBe(null);
     });
   });
 
-  describe('hasAnySocialMedia', () => {
+  describe('hasSocialMedia', () => {
     it('should return true when shop has any social media', () => {
-      expect(hasAnySocialMedia(mockShopWithAllSocial)).toBe(true);
+      expect(hasSocialMedia(mockShopWithAllSocial)).toBe(true);
     });
 
     it('should return true when shop has only Instagram', () => {
-      expect(hasAnySocialMedia(mockShopWithPartialSocial)).toBe(true);
+      expect(hasSocialMedia(mockShopWithPartialSocial)).toBe(true);
     });
 
     it('should return false when shop has no social media', () => {
-      expect(hasAnySocialMedia(mockShopWithNoSocial)).toBe(false);
+      expect(hasSocialMedia(mockShopWithNoSocial)).toBe(false);
     });
 
     it('should return true when shop has only Facebook', () => {
@@ -183,16 +188,16 @@ describe('socialMediaHelpers', () => {
         FacebookPageID: '123456',
       };
 
-      expect(hasAnySocialMedia(shop)).toBe(true);
+      expect(hasSocialMedia(shop)).toBe(true);
     });
 
-    it('should return true when shop has only Twitter', () => {
+    it('should return true when shop has only XHandle', () => {
       const shop = {
         ...mockShopWithNoSocial,
         XHandle: 'testhandle',
       };
 
-      expect(hasAnySocialMedia(shop)).toBe(true);
+      expect(hasSocialMedia(shop)).toBe(true);
     });
 
     it('should handle shop with empty string social fields', () => {
@@ -203,7 +208,7 @@ describe('socialMediaHelpers', () => {
         XHandle: '',
       };
 
-      expect(hasAnySocialMedia(shop)).toBe(false);
+      expect(hasSocialMedia(shop)).toBe(false);
     });
   });
 
@@ -211,11 +216,11 @@ describe('socialMediaHelpers', () => {
     it('should return valid HTTPS URLs', () => {
       const instagramUrl = getInstagramUrl(mockShopWithPartialSocial);
       const facebookUrl = getFacebookUrl(mockShopWithAllSocial);
-      const twitterUrl = getTwitterUrl(mockShopWithAllSocial);
+      const xUrl = getXUrl(mockShopWithAllSocial);
 
       if (instagramUrl) expect(instagramUrl).toMatch(/^https:\/\//);
       if (facebookUrl) expect(facebookUrl).toMatch(/^https:\/\//);
-      if (twitterUrl) expect(twitterUrl).toMatch(/^https:\/\//);
+      if (xUrl) expect(xUrl).toMatch(/^https:\/\//);
     });
 
     it('should not include query parameters or fragments', () => {

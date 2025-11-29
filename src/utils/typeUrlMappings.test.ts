@@ -1,4 +1,11 @@
 // src/utils/typeUrlMappings.test.ts
+/**
+ * Tests for URL mappings between internal location types and URL slugs
+ *
+ * The mapping system uses:
+ * - Internal types with underscores: farm_stand, cheese_shop, etc.
+ * - URL slugs with hyphens or single words: farm-stand, cheesemonger, etc.
+ */
 import { describe, it, expect } from 'vitest';
 import {
   typeToUrlSlug,
@@ -10,42 +17,44 @@ import {
   getDisplayName,
   getEmoji,
   getDisplayConfig,
+  TYPE_TO_URL_SLUG,
+  URL_SLUG_TO_TYPE,
 } from './typeUrlMappings';
 import type { LocationType } from '../types/shop';
 import { ALL_LOCATION_TYPES } from '../types/shop';
 
 describe('typeUrlMappings', () => {
   describe('typeToUrlSlug', () => {
-    it('should convert farm_stand to farms', () => {
-      expect(typeToUrlSlug('farm_stand')).toBe('farms');
+    it('should convert farm_stand to farm-stand', () => {
+      expect(typeToUrlSlug('farm_stand')).toBe('farm-stand');
     });
 
-    it('should convert cheese_shop to cheese', () => {
-      expect(typeToUrlSlug('cheese_shop')).toBe('cheese');
+    it('should convert cheese_shop to cheesemonger', () => {
+      expect(typeToUrlSlug('cheese_shop')).toBe('cheesemonger');
     });
 
-    it('should convert fish_monger to fish', () => {
-      expect(typeToUrlSlug('fish_monger')).toBe('fish');
+    it('should convert fish_monger to fishmonger', () => {
+      expect(typeToUrlSlug('fish_monger')).toBe('fishmonger');
     });
 
-    it('should convert butcher to butchers', () => {
-      expect(typeToUrlSlug('butcher')).toBe('butchers');
+    it('should convert butcher to butcher', () => {
+      expect(typeToUrlSlug('butcher')).toBe('butcher');
     });
 
-    it('should convert antique_shop to antiques', () => {
-      expect(typeToUrlSlug('antique_shop')).toBe('antiques');
+    it('should convert antique_shop to antique-shop', () => {
+      expect(typeToUrlSlug('antique_shop')).toBe('antique-shop');
     });
 
-    it('should convert brewery to breweries', () => {
-      expect(typeToUrlSlug('brewery')).toBe('breweries');
+    it('should convert brewery to brewery', () => {
+      expect(typeToUrlSlug('brewery')).toBe('brewery');
     });
 
-    it('should convert winery to wineries', () => {
-      expect(typeToUrlSlug('winery')).toBe('wineries');
+    it('should convert winery to winery', () => {
+      expect(typeToUrlSlug('winery')).toBe('winery');
     });
 
-    it('should convert sugar_shack to sugar-shacks', () => {
-      expect(typeToUrlSlug('sugar_shack')).toBe('sugar-shacks');
+    it('should convert sugar_shack to sugar-shack', () => {
+      expect(typeToUrlSlug('sugar_shack')).toBe('sugar-shack');
     });
 
     it('should handle all location types without errors', () => {
@@ -57,36 +66,36 @@ describe('typeUrlMappings', () => {
   });
 
   describe('urlSlugToType', () => {
-    it('should convert farms to farm_stand', () => {
-      expect(urlSlugToType('farms')).toBe('farm_stand');
+    it('should convert farm-stand to farm_stand', () => {
+      expect(urlSlugToType('farm-stand')).toBe('farm_stand');
     });
 
-    it('should convert cheese to cheese_shop', () => {
-      expect(urlSlugToType('cheese')).toBe('cheese_shop');
+    it('should convert cheesemonger to cheese_shop', () => {
+      expect(urlSlugToType('cheesemonger')).toBe('cheese_shop');
     });
 
-    it('should convert fish to fish_monger', () => {
-      expect(urlSlugToType('fish')).toBe('fish_monger');
+    it('should convert fishmonger to fish_monger', () => {
+      expect(urlSlugToType('fishmonger')).toBe('fish_monger');
     });
 
-    it('should convert butchers to butcher', () => {
-      expect(urlSlugToType('butchers')).toBe('butcher');
+    it('should convert butcher to butcher', () => {
+      expect(urlSlugToType('butcher')).toBe('butcher');
     });
 
-    it('should convert antiques to antique_shop', () => {
-      expect(urlSlugToType('antiques')).toBe('antique_shop');
+    it('should convert antique-shop to antique_shop', () => {
+      expect(urlSlugToType('antique-shop')).toBe('antique_shop');
     });
 
-    it('should convert breweries to brewery', () => {
-      expect(urlSlugToType('breweries')).toBe('brewery');
+    it('should convert brewery to brewery', () => {
+      expect(urlSlugToType('brewery')).toBe('brewery');
     });
 
-    it('should convert wineries to winery', () => {
-      expect(urlSlugToType('wineries')).toBe('winery');
+    it('should convert winery to winery', () => {
+      expect(urlSlugToType('winery')).toBe('winery');
     });
 
-    it('should convert sugar-shacks to sugar_shack', () => {
-      expect(urlSlugToType('sugar-shacks')).toBe('sugar_shack');
+    it('should convert sugar-shack to sugar_shack', () => {
+      expect(urlSlugToType('sugar-shack')).toBe('sugar_shack');
     });
 
     it('should return null for invalid slug', () => {
@@ -98,8 +107,8 @@ describe('typeUrlMappings', () => {
     });
 
     it('should be case-sensitive', () => {
-      expect(urlSlugToType('Farms')).toBeNull();
-      expect(urlSlugToType('FARMS')).toBeNull();
+      expect(urlSlugToType('Farm-Stand')).toBeNull();
+      expect(urlSlugToType('FARM-STAND')).toBeNull();
     });
   });
 
@@ -111,18 +120,19 @@ describe('typeUrlMappings', () => {
 
     it('should return single slug for single type', () => {
       const singleType = new Set<LocationType>(['farm_stand']);
-      expect(encodeTypesToPath(singleType)).toBe('farms');
+      expect(encodeTypesToPath(singleType)).toBe('farm-stand');
     });
 
     it('should return slugs joined with + for multiple types', () => {
       const multipleTypes = new Set<LocationType>(['farm_stand', 'cheese_shop']);
-      expect(encodeTypesToPath(multipleTypes)).toBe('cheese+farms');
+      // Sorted alphabetically: cheesemonger, farm-stand
+      expect(encodeTypesToPath(multipleTypes)).toBe('cheesemonger+farm-stand');
     });
 
     it('should sort types alphabetically by slug', () => {
       const types = new Set<LocationType>(['fish_monger', 'antique_shop', 'butcher']);
-      // antiques, butchers, fish (alphabetically)
-      expect(encodeTypesToPath(types)).toBe('antiques+butchers+fish');
+      // antique-shop, butcher, fishmonger (alphabetically)
+      expect(encodeTypesToPath(types)).toBe('antique-shop+butcher+fishmonger');
     });
 
     it('should handle all possible two-type combinations', () => {
@@ -133,10 +143,11 @@ describe('typeUrlMappings', () => {
 
       expect(result).toContain('+');
       expect(result.split('+')).toHaveLength(2);
-      expect(result).toMatch(/^(cheese|farms)\+(cheese|farms)$/);
+      // Should be alphabetically sorted: cheesemonger+farm-stand
+      expect(result).toBe('cheesemonger+farm-stand');
     });
 
-    it('should handle empty set by returning path for no types', () => {
+    it('should handle empty set by returning empty string', () => {
       const emptyTypes = new Set<LocationType>([]);
       const result = encodeTypesToPath(emptyTypes);
       // Empty set should produce empty string when joined
@@ -169,26 +180,26 @@ describe('typeUrlMappings', () => {
     });
 
     it('should parse single type from slug', () => {
-      const result = parseTypesFromPath('farms');
+      const result = parseTypesFromPath('farm-stand');
       expect(result.size).toBe(1);
       expect(result.has('farm_stand')).toBe(true);
     });
 
     it('should parse multiple types from slug with +', () => {
-      const result = parseTypesFromPath('farms+cheese');
+      const result = parseTypesFromPath('farm-stand+cheesemonger');
       expect(result.size).toBe(2);
       expect(result.has('farm_stand')).toBe(true);
       expect(result.has('cheese_shop')).toBe(true);
     });
 
     it('should handle path with leading slash', () => {
-      const result = parseTypesFromPath('/farms');
+      const result = parseTypesFromPath('/farm-stand');
       expect(result.size).toBe(1);
       expect(result.has('farm_stand')).toBe(true);
     });
 
     it('should handle complex multi-type path', () => {
-      const result = parseTypesFromPath('farms+cheese+fish+butchers');
+      const result = parseTypesFromPath('farm-stand+cheesemonger+fishmonger+butcher');
       expect(result.size).toBe(4);
       expect(result.has('farm_stand')).toBe(true);
       expect(result.has('cheese_shop')).toBe(true);
@@ -202,7 +213,7 @@ describe('typeUrlMappings', () => {
     });
 
     it('should filter out invalid slugs but keep valid ones', () => {
-      const result = parseTypesFromPath('farms+invalid+cheese');
+      const result = parseTypesFromPath('farm-stand+invalid+cheesemonger');
       expect(result.size).toBe(2);
       expect(result.has('farm_stand')).toBe(true);
       expect(result.has('cheese_shop')).toBe(true);
@@ -278,13 +289,13 @@ describe('typeUrlMappings', () => {
     });
 
     it('should return true for single type slug', () => {
-      expect(isTypeFilterPage('/farms')).toBe(true);
-      expect(isTypeFilterPage('farms')).toBe(true);
+      expect(isTypeFilterPage('/farm-stand')).toBe(true);
+      expect(isTypeFilterPage('farm-stand')).toBe(true);
     });
 
     it('should return true for multiple type slugs with +', () => {
-      expect(isTypeFilterPage('/farms+cheese')).toBe(true);
-      expect(isTypeFilterPage('farms+cheese')).toBe(true);
+      expect(isTypeFilterPage('/farm-stand+cheesemonger')).toBe(true);
+      expect(isTypeFilterPage('farm-stand+cheesemonger')).toBe(true);
     });
 
     it('should return true for all valid type slugs', () => {
@@ -310,7 +321,7 @@ describe('typeUrlMappings', () => {
     });
 
     it('should return false for mixed valid/invalid slugs', () => {
-      expect(isTypeFilterPage('/farms+invalid')).toBe(false);
+      expect(isTypeFilterPage('/farm-stand+invalid')).toBe(false);
     });
 
     it('should return false for root path /', () => {
@@ -322,8 +333,8 @@ describe('typeUrlMappings', () => {
     });
 
     it('should handle complex multi-type paths', () => {
-      expect(isTypeFilterPage('/farms+cheese+fish')).toBe(true);
-      expect(isTypeFilterPage('/antiques+breweries+wineries')).toBe(true);
+      expect(isTypeFilterPage('/farm-stand+cheesemonger+fishmonger')).toBe(true);
+      expect(isTypeFilterPage('/antique-shop+brewery+winery')).toBe(true);
     });
   });
 
@@ -369,10 +380,10 @@ describe('typeUrlMappings', () => {
   });
 
   describe('Edge cases', () => {
-    it('should handle types with special characters in slugs', () => {
+    it('should handle types with hyphens in slugs', () => {
       const type: LocationType = 'sugar_shack';
       const slug = typeToUrlSlug(type);
-      expect(slug).toContain('-'); // sugar-shacks has hyphen
+      expect(slug).toContain('-'); // sugar-shack has hyphen
 
       const convertedBack = urlSlugToType(slug);
       expect(convertedBack).toBe(type);

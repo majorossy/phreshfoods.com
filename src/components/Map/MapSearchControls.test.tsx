@@ -111,7 +111,8 @@ describe('MapSearchControls', () => {
       const { container } = renderComponent();
 
       // Should have positioning and styling classes
-      const mainDiv = container.querySelector('[role="search"]');
+      // The component uses a div with hidden lg:flex classes
+      const mainDiv = container.querySelector('.lg\\:flex');
       expect(mainDiv).toBeTruthy();
     });
 
