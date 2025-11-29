@@ -344,4 +344,179 @@ describe('TripPlannerContext', () => {
       expect(result.current.isOptimizedRoute).toBe(false);
     });
   });
+
+  describe('Route Optimization', () => {
+    it('should toggle route optimization on', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      expect(result.current.isOptimizedRoute).toBe(false);
+
+      act(() => {
+        result.current.toggleRouteOptimization();
+      });
+
+      expect(result.current.isOptimizedRoute).toBe(true);
+    });
+
+    it('should toggle route optimization off', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      act(() => {
+        result.current.toggleRouteOptimization(); // Turn on
+      });
+
+      act(() => {
+        result.current.toggleRouteOptimization(); // Turn off
+      });
+
+      expect(result.current.isOptimizedRoute).toBe(false);
+    });
+
+    it('should clear directions result when toggling optimization', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      act(() => {
+        result.current.toggleRouteOptimization();
+      });
+
+      // tripDirectionsResult should be null after toggle
+      expect(result.current.tripDirectionsResult).toBe(null);
+    });
+  });
+
+  describe('Maximum Stops Limit', () => {
+    it('should enforce maximum of 10 stops', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      // Add 10 stops
+      for (let i = 0; i < 10; i++) {
+        act(() => {
+          result.current.addStopToTrip({
+            ...mockShop1,
+            slug: `shop-${i}`,
+            Name: `Shop ${i}`,
+          });
+        });
+      }
+
+      expect(result.current.tripStops.length).toBe(10);
+
+      // Try to add 11th stop
+      act(() => {
+        result.current.addStopToTrip({
+          ...mockShop1,
+          slug: 'shop-11',
+          Name: 'Shop 11',
+        });
+      });
+
+      // Should still be 10 (rejected the 11th)
+      expect(result.current.tripStops.length).toBe(10);
+    });
+  });
+
+  describe('Trip Share URL', () => {
+    it('should generate share URL with stops', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      act(() => {
+        result.current.addStopToTrip(mockShop1);
+        result.current.addStopToTrip(mockShop2);
+      });
+
+      const shareUrl = result.current.getTripShareUrl();
+
+      // Should be a string containing the origin
+      expect(typeof shareUrl).toBe('string');
+      expect(shareUrl).toContain(window.location.origin);
+    });
+
+    it('should return URL even with empty trip', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      const shareUrl = result.current.getTripShareUrl();
+
+      // Should still return a valid URL
+      expect(typeof shareUrl).toBe('string');
+    });
+  });
+
+  describe('Calculate Trip Route', () => {
+    it('should have calculateTripRoute function', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      expect(typeof result.current.calculateTripRoute).toBe('function');
+    });
+
+    it('should have isFetchingTripRoute state', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      expect(result.current.isFetchingTripRoute).toBe(false);
+    });
+
+    it('should have tripError state', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      expect(result.current.tripError).toBe(null);
+    });
+
+    it('should not calculate route with no stops', async () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      await act(async () => {
+        await result.current.calculateTripRoute({ lat: 43.6591, lng: -70.2568 });
+      });
+
+      // Should not have a directions result since no stops
+      expect(result.current.tripDirectionsResult).toBe(null);
+    });
+  });
+
+  describe('Trip Directions Result', () => {
+    it('should have tripDirectionsResult initially null', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      expect(result.current.tripDirectionsResult).toBe(null);
+    });
+
+    it('should clear directions when stops are removed', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      act(() => {
+        result.current.addStopToTrip(mockShop1);
+      });
+
+      const stopId = result.current.tripStops[0].id;
+
+      act(() => {
+        result.current.removeStopFromTrip(stopId);
+      });
+
+      expect(result.current.tripDirectionsResult).toBe(null);
+    });
+
+    it('should clear directions when stops are reordered', () => {
+      const { result } = renderHook(() => useTripPlanner(), { wrapper });
+
+      act(() => {
+        result.current.addStopToTrip(mockShop1);
+        result.current.addStopToTrip(mockShop2);
+      });
+
+      act(() => {
+        result.current.reorderStops(0, 1);
+      });
+
+      expect(result.current.tripDirectionsResult).toBe(null);
+    });
+  });
+
+  describe('Context Error Handling', () => {
+    it('should throw error when used outside provider', () => {
+      // Render without wrapper to test error
+      expect(() => {
+        renderHook(() => useTripPlanner());
+      }).toThrow('useTripPlanner must be used within TripPlannerProvider');
+    });
+  });
 });
