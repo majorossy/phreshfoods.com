@@ -113,7 +113,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
           loading={priority ? 'eager' : loading}
           onError={handleError}
           // Priority hint for LCP optimization
-          {...(priority && { fetchpriority: 'high' } as any)}
+          {...(priority && { fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
           {...rest}
         />
       </picture>
@@ -130,7 +130,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       className={className}
       loading={priority ? 'eager' : loading}
       onError={handleError}
-      {...(priority && { fetchpriority: 'high' } as any)}
+      {...(priority && { fetchpriority: 'high' } as React.ImgHTMLAttributes<HTMLImageElement>)}
       {...rest}
     />
   );

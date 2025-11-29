@@ -24,7 +24,7 @@ interface TripStorageData extends StorageSchema {
  * Validates that an object matches the expected Shop interface structure.
  * This prevents corrupted data from causing runtime errors.
  */
-function isValidShop(data: any): data is Shop {
+function isValidShop(data: unknown): data is Shop {
   if (!data || typeof data !== 'object') return false;
 
   // Check required fields
@@ -52,7 +52,7 @@ function isValidShop(data: any): data is Shop {
 /**
  * Validates trip storage data structure.
  */
-function isValidTripData(data: any): data is TripStorageData {
+function isValidTripData(data: unknown): data is TripStorageData {
   if (!data || typeof data !== 'object') return false;
   if (typeof data.version !== 'number') return false;
   if (typeof data.timestamp !== 'number') return false;
@@ -66,7 +66,7 @@ function isValidTripData(data: any): data is TripStorageData {
  * Migrates storage data from older versions to the current version.
  * Add migration logic here as the schema evolves.
  */
-function migrateStorageData(data: any, fromVersion: number): TripStorageData | null {
+function migrateStorageData(data: unknown, fromVersion: number): TripStorageData | null {
   try {
     // Handle version 0 (no version field) to version 1
     if (fromVersion === 0) {

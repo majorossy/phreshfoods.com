@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { Shop, LocationType } from '../../types';
 import { getProductConfig, getCategoryDisplayOrder } from '../../config/productRegistry';
+import type { ProductConfig } from '../../config/products';
 import OptimizedImage from './OptimizedImage';
 
 interface ProductWithAvailability {
@@ -20,7 +21,7 @@ interface ProductIconGridProps {
   showSummary?: boolean;
   iconSize?: 'sm' | 'md' | 'lg';
   // For filter-selector mode
-  products?: Record<string, any>; // Product config to display
+  products?: Record<string, ProductConfig>; // Product config to display
   locationType?: LocationType; // Location type to get category order
   activeFilters?: Record<string, boolean>; // Which products are filtered
   onProductClick?: (productId: string) => void; // Click handler for toggling
@@ -86,7 +87,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
     // Group products by category if showCategories is true
     if (showCategories && locationType) {
       const categoryOrder = getCategoryDisplayOrder(locationType);
-      const productsByCategory: Record<string, Array<[string, any]>> = {};
+      const productsByCategory: Record<string, Array<[string, ProductConfig]>> = {};
 
       // Group products by category
       Object.entries(products).forEach(([productId, config]) => {
@@ -148,7 +149,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
     return (
       <div className="p-2">
         <div className="grid grid-cols-6 gap-1.5">
-          {Object.entries(products).map(([productId, config]: [string, any]) => {
+          {Object.entries(products).map(([productId, config]: [string, ProductConfig]) => {
             const isActive = !!activeFilters[productId];
             const icon = isActive ? config.icon_available : config.icon_unavailable;
 

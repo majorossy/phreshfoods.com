@@ -319,7 +319,7 @@ describe('TripPlannerContext', () => {
       const shopWithoutSlug = {
         ...mockShop1,
         slug: undefined,
-      } as any;
+      } as Shop;
 
       const { result } = renderHook(() => useTripPlanner(), { wrapper });
 

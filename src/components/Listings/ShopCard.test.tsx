@@ -1,7 +1,7 @@
 // src/components/Listings/ShopCard.test.tsx
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { toHaveNoViolations } from 'jest-axe';
 import { BrowserRouter } from 'react-router-dom';
 import ShopCard from './ShopCard';
 import { UIProvider } from '../../contexts/UIContext';
@@ -90,7 +90,7 @@ const mockCheeseShop: ShopWithDistance = {
 beforeEach(() => {
   // Setup Google Maps mock using the proper mock utility
   mockGoogleMaps();
-  (global as any).window.googleMapsApiLoaded = true;
+  (global as unknown as { window: { googleMapsApiLoaded: boolean } }).window.googleMapsApiLoaded = true;
 });
 
 afterEach(() => {

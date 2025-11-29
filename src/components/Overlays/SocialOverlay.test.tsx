@@ -83,8 +83,8 @@ describe('SocialOverlay Component', () => {
       renderComponent();
 
       // Component may have loading states; verify dialog structure exists
-      const shopName = screen.queryByText('Happy Acres Farm');
       // Shop name may or may not be visible depending on loading state
+      screen.queryByText('Happy Acres Farm'); // Query without storing unused variable
       expect(document.body).toBeTruthy();
     });
   });

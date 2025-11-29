@@ -17,8 +17,6 @@ import {
   getDisplayName,
   getEmoji,
   getDisplayConfig,
-  TYPE_TO_URL_SLUG,
-  URL_SLUG_TO_TYPE,
 } from './typeUrlMappings';
 import type { LocationType } from '../types/shop';
 import { ALL_LOCATION_TYPES } from '../types/shop';

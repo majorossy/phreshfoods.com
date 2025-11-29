@@ -1,6 +1,6 @@
 // src/components/Overlays/ShopDetailsOverlay.tsx
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { Shop } from '../../types';
+import { Shop, ShopWithDistance } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
 import { useUI } from '../../contexts/UIContext';
 import { useTripPlanner } from '../../contexts/TripPlannerContext';
@@ -378,13 +378,13 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
                 </div>
               )}
             </div>
-            {(shop as any).distanceText && (shop as any).distanceText !== "N/A" && (shop as any).distanceText !== "Set location" && (
+            {(shop as ShopWithDistance).distanceText && (shop as ShopWithDistance).distanceText !== "N/A" && (shop as ShopWithDistance).distanceText !== "Set location" && (
               <div className="flex items-center gap-1 mr-2 text-xs font-medium whitespace-nowrap text-orange-400" style={{ fontSize: '0.667em' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M12 1.5a.75.75 0 01.75.75v5.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM12.56 8.22a.75.75 0 00-1.061 0L6.22 13.56a.75.75 0 00.02 1.062l5.024 4.466a.75.75 0 001.042-.021l5.25-6.75a.75.75 0 00-.001-1.042L12.56 8.22zM12 10a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                   <path fillRule="evenodd" d="M9.694 3.138a.75.75 0 01.04.04l4.5 4.5a.75.75 0 01-1.06 1.06L10 5.561V15a.75.75 0 01-1.5 0V5.56L5.372 8.738a.75.75 0 01-1.06-1.06l4.5-4.5a.75.75 0 011.062-.04zm0-1.5a2.25 2.25 0 013.182.119l4.5 4.5A2.25 2.25 0 0116.25 9H13V3.75A2.25 2.25 0 0010.75 1.5h-1.5a2.25 2.25 0 00-2.25 2.25V9H3.75a2.25 2.25 0 01-1.122-4.262l4.5-4.5A2.25 2.25 0 019.694 1.638zM4 10.5a.75.75 0 01.75.75v3.045c0 .084.036.162.096.222L8.5 18.179a.75.75 0 001.038.021l5.25-6.75a.75.75 0 10-1.204-.936L10 15.561V11.25a.75.75 0 011.5 0v5.679c0 .084-.036.162-.096.222L4.75 12.48A2.25 2.25 0 014 10.5z" clipRule="evenodd" />
                 </svg>
-                <span>{(shop as any).distanceText}</span>
+                <span>{(shop as ShopWithDistance).distanceText}</span>
               </div>
             )}
             <svg

@@ -1,6 +1,14 @@
 // src/utils/seo.ts
-import { Shop } from '../types';
+import { Shop, PlaceOpeningHours } from '../types';
 import { getDisplayName } from './typeUrlMappings';
+
+// Schema.org opening hours specification
+interface SchemaOpeningHoursSpec {
+  '@type': 'OpeningHoursSpecification';
+  dayOfWeek: string;
+  opens?: string;
+  closes?: string;
+}
 
 export interface SEOConfig {
   title: string;
@@ -56,7 +64,7 @@ export function getFarmStandSEO(shop: Shop): SEOConfig {
   };
 
   Object.entries(productMap).forEach(([key, name]) => {
-    if ((shop as any)[key]) products.push(name);
+    if ((shop as Record<string, unknown>)[key]) products.push(name);
   });
 
   const productsText = products.length > 0
@@ -188,7 +196,7 @@ export function generateLocalBusinessSchema(shop: Shop): string {
 /**
  * Helper to generate opening hours in Schema.org format
  */
-function generateOpeningHours(hours: any): any[] {
+function generateOpeningHours(hours: PlaceOpeningHours | undefined): SchemaOpeningHoursSpec[] {
   if (!hours?.weekday_text) return [];
 
   const dayMap: { [key: string]: string } = {

@@ -39,7 +39,7 @@ import {
   OVERLAY_RENDER_WAIT_MS,
 } from '../../config/appConfig.ts';
 import { panToWithOffsets, extractLatLngFromPlace, waitForOverlaysToRender } from '../../utils/mapPanning';
-import { Shop } from '../../types';
+import { Shop, ShopWithDistance } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath } from '../../utils/typeUrlMappings';
 import { encodeFiltersToURL } from '../../utils/urlSync';
@@ -163,7 +163,7 @@ const MapComponent: React.FC = () => {
         s => s.slug === shop.slug || s.GoogleProfileID === shop.GoogleProfileID
       ) || shop;
 
-      logger.log('Marker clicked - shop has distance:', (shopWithDistance as any).distance);
+      logger.log('Marker clicked - shop has distance:', (shopWithDistance as ShopWithDistance).distance);
 
       setSelectedShop(shopWithDistance);
       openShopOverlays(shopWithDistance, 'shop');

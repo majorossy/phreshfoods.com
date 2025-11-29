@@ -1,6 +1,6 @@
 // src/components/Listings/ShopCard.tsx
 import React, { useEffect, useRef } from 'react';
-import { ShopWithDistance } from '../../types';
+import { ShopWithDistance, LocationType } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { getShopDetailBasePath, getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 import StarRating from '../UI/StarRating.tsx';
@@ -20,8 +20,8 @@ interface ShopCardProps {
 // Display names and emojis come from centralized config
 const getLocationTypeDisplay = (type: string) => {
   // Get centralized display name and emoji
-  const displayName = getDisplayName(type as any);
-  const emoji = getEmoji(type as any);
+  const displayName = getDisplayName(type as LocationType);
+  const emoji = getEmoji(type as LocationType);
 
   // UI-specific color mappings for badges
   let color: string;

@@ -126,12 +126,15 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   // Reset Google Maps API state
-  delete (window as any).googleMapsApiLoaded;
-  delete (window as any).google;
+  delete (window as Window & { googleMapsApiLoaded?: boolean; google?: unknown }).googleMapsApiLoaded;
+  delete (window as Window & { google?: unknown }).google;
 
-  // Reset window location
-  delete (window as any).location;
-  (window as any).location = { pathname: '/' };
+  // Reset window location - use Object.defineProperty for proper mock
+  Object.defineProperty(window, 'location', {
+    value: { pathname: '/' },
+    writable: true,
+    configurable: true,
+  });
 
   // Mock getCookie to return null by default
   vi.mocked(cookieHelper.getCookie).mockReturnValue(null);
@@ -349,8 +352,8 @@ describe('SearchContext - Maps API Readiness', () => {
   it('detects Maps API when already loaded', () => {
     // WHY THIS TEST: API loaded before component mounts
 
-    (window as any).googleMapsApiLoaded = true;
-    (window as any).google = {
+    (window as Window & { googleMapsApiLoaded?: boolean }).googleMapsApiLoaded = true;
+    (window as Window & { google?: unknown }).google = {
       maps: {
         DirectionsService: class {},
       },
@@ -372,8 +375,8 @@ describe('SearchContext - Maps API Readiness', () => {
 
     // Simulate API loading
     act(() => {
-      (window as any).googleMapsApiLoaded = true;
-      (window as any).google = {
+      (window as Window & { googleMapsApiLoaded?: boolean }).googleMapsApiLoaded = true;
+      (window as Window & { google?: unknown }).google = {
         maps: {
           DirectionsService: class {},
         },
@@ -492,7 +495,11 @@ describe('SearchContext - Cookie Loading', () => {
   it('does not load cookie when on direct farm URL', async () => {
     // WHY THIS TEST: Direct links to farms shouldn't override location
 
-    (window as any).location = { pathname: '/farm/happy-farm' };
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/farm/happy-farm' },
+      writable: true,
+      configurable: true,
+    });
 
     const savedPlace = createBangorPlace();
     vi.mocked(cookieHelper.getCookie).mockReturnValue(

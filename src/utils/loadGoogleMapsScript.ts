@@ -47,8 +47,8 @@ export function loadGoogleMapsScript(): Promise<void> {
 
   return new Promise((resolve, reject) => {
     // Define the global callback function
-    (window as any).initAppMapGlobal = () => {
-      (window as any).googleMapsApiLoaded = true;
+    (window as Window & { initAppMapGlobal?: () => void }).initAppMapGlobal = () => {
+      (window as Window & { googleMapsApiLoaded?: boolean }).googleMapsApiLoaded = true;
       window.dispatchEvent(new CustomEvent('google-maps-api-loaded'));
       isLoaded = true;
       isLoading = false;
@@ -56,7 +56,7 @@ export function loadGoogleMapsScript(): Promise<void> {
     };
 
     // Listen for Google Maps API errors (auth failures, quota exceeded, etc.)
-    (window as any).gm_authFailure = () => {
+    (window as Window & { gm_authFailure?: () => void }).gm_authFailure = () => {
       isLoading = false;
       const error = new Error(
         'Google Maps authentication failed. The API key may have restrictions that block this website. ' +

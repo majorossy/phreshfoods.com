@@ -43,7 +43,7 @@ import { requestCache, cachedFetch } from './requestCache';
  * WHY: We don't want real HTTP requests in tests
  */
 const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+global.fetch = mockFetch as typeof fetch;
 
 /**
  * Reset mocks and cache before each test

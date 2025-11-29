@@ -260,7 +260,7 @@ describe('FarmDataContext - Error Handling', () => {
     // WHY THIS TEST: Backend might return unexpected data format
 
     const mockFetch = vi.mocked(apiService.fetchAndProcessLocations);
-    mockFetch.mockResolvedValue(null as any); // Invalid response
+    mockFetch.mockResolvedValue(null as unknown as Shop[]); // Invalid response
 
     const { result } = renderUseFarmData();
 

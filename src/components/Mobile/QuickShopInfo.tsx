@@ -1,6 +1,6 @@
 // src/components/Mobile/QuickShopInfo.tsx
 import React, { useState } from 'react';
-import type { Shop } from '../../types';
+import type { Shop, LocationType } from '../../types';
 import { useUI } from '../../contexts/UIContext';
 import StarRating from '../UI/StarRating';
 import { getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
@@ -44,8 +44,8 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
   };
 
   const locationDisplay = {
-    emoji: getEmoji(shop.type as any),
-    label: getDisplayName(shop.type as any),
+    emoji: getEmoji(shop.type as LocationType),
+    label: getDisplayName(shop.type as LocationType),
   };
 
   return (

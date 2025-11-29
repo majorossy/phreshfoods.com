@@ -91,7 +91,7 @@ describe('Storage Validation', () => {
     });
 
     it('should filter out invalid shops', () => {
-      const invalidShop = { foo: 'bar' } as any;
+      const invalidShop = { foo: 'bar' } as unknown as Shop;
 
       saveTripToStorage('test_trip', [validShop, invalidShop]);
 

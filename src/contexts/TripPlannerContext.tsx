@@ -264,8 +264,8 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (result.status === 'OK' && result.routes && result.routes.length > 0) {
         setTripDirectionsResult(result);
         const routeInfo = result.routes[0];
-        const totalDistance = routeInfo.legs?.reduce((sum: number, leg: any) => sum + (leg.distance?.value || 0), 0) || 0;
-        const totalTime = routeInfo.legs?.reduce((sum: number, leg: any) => sum + (leg.duration?.value || 0), 0) || 0;
+        const totalDistance = routeInfo.legs?.reduce((sum: number, leg: google.maps.DirectionsLeg) => sum + (leg.distance?.value || 0), 0) || 0;
+        const totalTime = routeInfo.legs?.reduce((sum: number, leg: google.maps.DirectionsLeg) => sum + (leg.duration?.value || 0), 0) || 0;
 
         const distanceMiles = (totalDistance / 1609.34).toFixed(1);
         const timeMinutes = Math.round(totalTime / 60);

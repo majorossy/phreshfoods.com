@@ -60,7 +60,7 @@ export const MAP_ID: string = '6c1bbba6c5f48ca2beb388ad';
 interface MapStyleElement {
   elementType?: string;
   featureType?: string;
-  stylers: Array<{ [key: string]: any }>;
+  stylers: Array<Record<string, string | number>>;
 }
 
 interface MapStyles {

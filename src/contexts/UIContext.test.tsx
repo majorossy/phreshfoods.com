@@ -368,7 +368,7 @@ describe('UIContext', () => {
       const { result } = renderHook(() => useUI(), { wrapper });
 
       act(() => {
-        result.current.openShopOverlays(null as any);
+        result.current.openShopOverlays(null as unknown as Shop);
       });
 
       // Should handle gracefully

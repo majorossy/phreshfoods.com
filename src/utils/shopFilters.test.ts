@@ -272,8 +272,8 @@ describe('shopFilters - Distance and Radius Filtering', () => {
     // WHY THIS TEST: Data quality - some farms might have missing/bad coordinates
     const shops = [
       createMockShop({ id: 1, Name: 'Valid Farm', lat: 43.6600, lng: -70.2600 }),
-      createMockShop({ id: 2, Name: 'No Lat', lat: null as any, lng: -70.2600 }),
-      createMockShop({ id: 3, Name: 'No Lng', lat: 43.6600, lng: null as any }),
+      createMockShop({ id: 2, Name: 'No Lat', lat: null as unknown as number, lng: -70.2600 }),
+      createMockShop({ id: 3, Name: 'No Lng', lat: 43.6600, lng: null as unknown as number }),
       createMockShop({ id: 4, Name: 'NaN Coords', lat: NaN, lng: NaN }),
     ];
 

@@ -48,7 +48,7 @@ import type { Shop } from '../types';
  * - We'd hit rate limits on Google APIs
  */
 const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+global.fetch = mockFetch as typeof fetch;
 
 /**
  * Mock the requestCache utility
@@ -250,7 +250,7 @@ describe('apiService - geocodeAddressClient', () => {
     // These should NOT make any API call
     expect(await geocodeAddressClient('')).toBeNull();
     expect(await geocodeAddressClient('   ')).toBeNull(); // Only whitespace
-    expect(await geocodeAddressClient(null as any)).toBeNull();
+    expect(await geocodeAddressClient(null as unknown as string)).toBeNull();
 
     // Verify fetch was never called
     expect(mockFetch).not.toHaveBeenCalled();
@@ -359,7 +359,7 @@ describe('apiService - getPlaceDetailsClient', () => {
     // WHY THIS TEST: Input validation
 
     expect(await getPlaceDetailsClient('')).toBeNull();
-    expect(await getPlaceDetailsClient(null as any)).toBeNull();
+    expect(await getPlaceDetailsClient(null as unknown as string)).toBeNull();
 
     expect(mockFetch).not.toHaveBeenCalled();
   });
@@ -467,7 +467,7 @@ describe('apiService - getDirectionsClient', () => {
 
     expect(await getDirectionsClient('', 'Portland, ME')).toBeNull();
     expect(await getDirectionsClient('Portland, ME', '')).toBeNull();
-    expect(await getDirectionsClient(null as any, null as any)).toBeNull();
+    expect(await getDirectionsClient(null as unknown as string, null as unknown as string)).toBeNull();
 
     expect(mockFetch).not.toHaveBeenCalled();
   });

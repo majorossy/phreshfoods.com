@@ -117,8 +117,8 @@ export function initWebVitals(): void {
  * Get current Web Vitals for display in UI
  * Returns a promise that resolves with current metrics
  */
-export async function getCurrentVitals(): Promise<Record<string, any>> {
-  const vitals: Record<string, any> = {};
+export async function getCurrentVitals(): Promise<Record<string, Metric | undefined>> {
+  const vitals: Record<string, Metric | undefined> = {};
 
   // Capture current values
   await new Promise(resolve => {

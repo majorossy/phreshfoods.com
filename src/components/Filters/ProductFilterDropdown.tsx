@@ -6,7 +6,7 @@ import type { LocationType } from '../../types/shop';
 
 interface ProductFilterDropdownProps {
   category: string;
-  products: Record<string, any>; // Product config for this category
+  products: Record<string, { csvHeader: string; name: string }>; // Product config for this category
   locationType: LocationType; // Location type to get category order
   isOpen: boolean;
   onClose: () => void;

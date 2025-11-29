@@ -659,7 +659,7 @@ const Header: React.FC = () => {
                           aria-labelledby={`${type}-accordion`}
                         >
                           <div className="grid grid-cols-2 gap-2">
-                            {Object.values(products).map((product: any) => {
+                            {Object.values(products).map((product: { csvHeader: string; name: string }) => {
                               const isProductActive = activeProductFilters[product.csvHeader] === true;
                               return (
                                 <button

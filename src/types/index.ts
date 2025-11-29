@@ -5,11 +5,18 @@ export * from './shop';
 export * from './google-maps';
 export * from './ui';
 
+// Twitter widgets library interface (third-party)
+interface TwitterWidgets {
+  widgets: {
+    load: (element?: HTMLElement) => void;
+  };
+}
+
 // Window interface extension for custom properties
 declare global {
   interface Window {
     googleMapsApiLoaded?: boolean;
-    twttr?: any; // Twitter widgets library - complex third-party type
+    twttr?: TwitterWidgets; // Twitter widgets library
   }
 }
 
