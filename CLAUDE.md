@@ -452,6 +452,87 @@ The application implements a three-tier system to minimize Google API costs:
 - **TESTING_GUIDE.md** - Testing setup instructions and examples
 - **README.md** - Basic project information
 
+## Security
+
+### Security Features (2025-11)
+
+The application implements multiple security layers:
+
+**1. HTTPS Enforcement**
+- Enabled via `ENFORCE_HTTPS=true` in `.env` (production only)
+- Redirects HTTP to HTTPS using `X-Forwarded-Proto` header from reverse proxy
+- Implementation: `backend/server.js:56-78`
+
+**2. Security Headers (Helmet)**
+- Content Security Policy configured for Google Maps
+- Cross-Origin policies for map resources
+- Implementation: `backend/server.js:83-121`
+
+**3. Rate Limiting**
+| Endpoint | Production Limit | Window |
+|----------|-----------------|--------|
+| General `/api/*` | 100 requests | 15 min |
+| `/api/geocode` | 30 requests | 15 min |
+| `/api/places/details` | 30 requests | 15 min |
+| `/api/directions` | 30 requests | 15 min |
+| `/api/photo` | 50 requests | 15 min |
+
+Implementation: `backend/server.js:179-218`
+
+**4. Input Validation**
+- `sanitizeInput()` - Removes XSS vectors (`<>`, `javascript:`, `data:`, event handlers)
+- `validatePlaceId()` - Validates Google Place ID format (alphanumeric only)
+- `validateFieldsList()` - Whitelist of 38 allowed Google Places API fields
+- Waypoints validation - Validates lat/lng ranges (-90/90, -180/180)
+- Photo endpoint validation - Validates `maxwidth` (1-4800) and `photo_reference` format
+- Implementation: `backend/server.js:200-250`
+
+**5. Admin Authentication**
+- Tokens accepted ONLY via headers (never query parameters):
+  - `Authorization: Bearer <token>` (preferred)
+  - `X-Admin-Token: <token>` (alternative)
+- Brute-force protection: 5 failed attempts = 15-minute IP lockout
+- Failed attempts are logged with IP addresses
+- Implementation: `backend/server.js:1207-1264`
+
+**Using Admin Endpoints:**
+```bash
+# Preferred method (Authorization header):
+curl -H "Authorization: Bearer YOUR_ADMIN_TOKEN" \
+     "https://yoursite.com/api/cache/flush-and-refresh"
+
+# Alternative (X-Admin-Token header):
+curl -H "X-Admin-Token: YOUR_ADMIN_TOKEN" \
+     "https://yoursite.com/api/cache/flush-and-refresh"
+```
+
+**6. CORS Configuration**
+- Production: Restricted to `ALLOWED_ORIGINS` environment variable
+- Development: Uses `DEV_ALLOWED_ORIGINS` or allows localhost by default
+- Credentials enabled for authenticated requests
+- Implementation: `backend/server.js:123-163`
+
+### Security Best Practices
+
+**API Key Management:**
+- `.env` is gitignored - never commit secrets
+- Use separate API keys for frontend and backend
+- Restrict keys in Google Cloud Console:
+  - Frontend key: HTTP referrer restrictions (your domain)
+  - Backend key: IP address restrictions (your server)
+- Rotate keys periodically and after any suspected exposure
+
+**Environment Configuration:**
+- Copy `.env.example` to `.env` for new deployments
+- Generate secure admin tokens: `openssl rand -hex 32`
+- Set `NODE_ENV=production` in production
+
+**Dependency Security:**
+```bash
+npm run check:security  # Run npm audit
+npm audit fix           # Fix vulnerabilities
+```
+
 ## Recent Architectural Improvements
 
 ### Google API Cost Optimization (2025-01)
