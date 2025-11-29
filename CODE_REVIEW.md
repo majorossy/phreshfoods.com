@@ -17,7 +17,7 @@ The codebase is **well-structured** with good security practices in place. Howev
 - ✅ Input sanitization and rate limiting implemented
 - ✅ Environment variables properly used for secrets
 - ✅ Caching strategy for API calls
-- ✅ Comprehensive test coverage (147 tests passing)
+- ✅ Comprehensive test coverage (625+ tests passing)
 
 **Priority Areas for Improvement:**
 - 🟡 API key exposure risk (frontend)
@@ -118,7 +118,7 @@ Cache flush endpoint accessible with `ALLOW_CACHE_FLUSH=true` in production.
 ### 2.1 🟡 **MEDIUM:** Frontend Bundle Size
 
 **Current Data:**
-- Total data files: ~311KB (5 location types)
+- Total data files: ~400KB+ (8 location types)
 - ~49 useEffect hooks across 15 components
 
 **Optimization Opportunities:**
@@ -359,7 +359,7 @@ function validateConfig() {
 ### 5.1 ✅ **EXCELLENT:** Test Coverage
 
 **Current Status:**
-- 147 tests passing ✅
+- 625+ tests passing ✅
 - 8 test files covering critical paths ✅
 - Tests for contexts, utils, services ✅
 

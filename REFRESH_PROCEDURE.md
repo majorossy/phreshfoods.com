@@ -55,6 +55,9 @@ rm -rf node_modules/.vite
 - `backend/data/fishMongersData.json`
 - `backend/data/butchersData.json`
 - `backend/data/antiqueShopsData.json`
+- `backend/data/breweriesData.json` (if enabled)
+- `backend/data/wineriesData.json` (if enabled)
+- `backend/data/sugarShacksData.json` (if enabled)
 - `dist/` folder (frontend build output)
 - `node_modules/.vite/` (Vite cache)
 
@@ -142,6 +145,9 @@ The refresh pulls data from these Google Sheets (configured in `.env`):
 - `GOOGLE_SHEET_URL_FISH_MONGERS` - Fish mongers
 - `GOOGLE_SHEET_URL_BUTCHERS` - Butchers
 - `GOOGLE_SHEET_URL_ANTIQUE_SHOPS` - Antique shops
+- `GOOGLE_SHEET_URL_BREWERIES` - Breweries (feature-flagged)
+- `GOOGLE_SHEET_URL_WINERIES` - Wineries (feature-flagged)
+- `GOOGLE_SHEET_URL_SUGAR_SHACKS` - Sugar shacks (feature-flagged)
 
 ## Expected Results
 
@@ -149,15 +155,16 @@ After a successful refresh, you should have:
 - All data JSON files in `backend/data/`
 - Backend serving at http://localhost:3000
 - Frontend serving at http://localhost:5173
-- Total locations matching sum of all types (e.g., 113 total locations)
+- Total locations matching sum of all enabled types
 
-**Example location counts:**
+**Example location counts (varies based on enabled types):**
 - 19 farm stands
 - 17 cheese shops
 - 17 fish mongers
 - 20 butchers
 - 40 antique shops
-- **Total: 113 locations**
+- Plus breweries, wineries, sugar shacks (if enabled via feature flags)
+- **Base Total: ~113+ locations**
 
 ## Notes
 

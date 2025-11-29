@@ -1,28 +1,31 @@
 # PhreshFoods - Multi-Location Finder for Maine
 
-PhreshFoods is a comprehensive location finder application for Maine, helping users discover local farm stands, cheesemongers, fishmongers, butchers, and antiques. The application features Google Maps integration, product filtering, and real-time location search.
+PhreshFoods is a comprehensive location finder application for Maine, helping users discover local farm stands, cheesemongers, fishmongers, butchers, antiques, breweries, wineries, and sugar shacks. The application features Google Maps integration, product filtering, trip planning, and real-time location search.
 
 ## Features
 
-- **Multi-Location Type Support**: Farm stands, cheesemongers, fishmongers, butchers, and antiques
-- **Product Filtering**: Filter locations by specific products (58 unique products across all location types)
+- **Multi-Location Type Support**: 8 location types (farm stands, cheesemongers, fishmongers, butchers, antiques, breweries, wineries, sugar shacks)
+- **Product Filtering**: Filter locations by specific products (~93 unique products across all location types)
+- **Location Type Filtering**: Show/hide specific location types
 - **Location-Based Search**: Find locations near you with customizable radius
-- **Google Maps Integration**: Interactive map with custom markers, directions, and place details
+- **Trip Planning**: Build multi-stop trips with route optimization and shareable URLs
+- **Google Maps Integration**: Interactive map with custom markers, clustering, directions, and place details
 - **Detailed Shop Information**: Opening hours, ratings, reviews, product availability, and social media links
-- **Responsive Design**: Works seamlessly on desktop and mobile devices
+- **Responsive Design**: Works seamlessly on desktop and mobile devices with mobile-optimized bottom sheet
 - **Accessibility**: WCAG 2.1 Level AA compliant (~95%)
 - **Performance Optimized**: Virtual scrolling, map clustering, Web Vitals monitoring, and optimized images
 
 ## Tech Stack
 
 ### Frontend
-- **React 18** with TypeScript
-- **Vite** for fast development and optimized builds
+- **React 18.3** with TypeScript 5.4
+- **Vite 6** for fast development and optimized builds (with SWC)
 - **React Router 6** for routing
 - **TailwindCSS** for styling
 - **Google Maps JavaScript API** for maps and place data
-- **MarkerClusterer** for efficient map marker clustering
-- **react-window** for virtual scrolling performance
+- **@googlemaps/markerclusterer** for efficient map marker clustering
+- **@tanstack/react-virtual** for virtual scrolling performance
+- **@dnd-kit** for drag-and-drop trip reordering
 - **web-vitals** for performance monitoring
 
 ### Backend
@@ -108,11 +111,14 @@ npm run build           # Build both frontend and backend
 npm run process-data
 
 # Refresh specific location type only (faster)
-npm run process-data:farms      # Farm stands only
-npm run process-data:cheese     # Cheese shops only
-npm run process-data:fish       # Fish mongers only
-npm run process-data:butchers   # Butchers only
-npm run process-data:antiques   # Antique shops only
+npm run process-data:farms        # Farm stands only
+npm run process-data:cheese       # Cheese shops only
+npm run process-data:fish         # Fish mongers only
+npm run process-data:butchers     # Butchers only
+npm run process-data:antiques     # Antique shops only
+npm run process-data:breweries    # Breweries only
+npm run process-data:wineries     # Wineries only
+npm run process-data:sugar-shacks # Sugar shacks only
 ```
 
 See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.
@@ -191,14 +197,24 @@ phreshfoods.com/
 - `GOOGLE_SHEET_URL_FISH_MONGERS` - Published CSV URL for fish mongers
 - `GOOGLE_SHEET_URL_BUTCHERS` - Published CSV URL for butchers
 - `GOOGLE_SHEET_URL_ANTIQUE_SHOPS` - Published CSV URL for antique shops
+- `GOOGLE_SHEET_URL_BREWERIES` - Published CSV URL for breweries (optional)
+- `GOOGLE_SHEET_URL_WINERIES` - Published CSV URL for wineries (optional)
+- `GOOGLE_SHEET_URL_SUGAR_SHACKS` - Published CSV URL for sugar shacks (optional)
 - `PORT` - Server port (default: 3000)
 - `DATA_REFRESH_SCHEDULE` - Cron expression for automatic refresh (DISABLED by default to reduce API costs)
 - `MAX_DATA_FILE_AGE_HOURS` - Max age before data refresh (default: 720 hours / 30 days)
 - `NODE_ENV` - Environment (development/production)
 - `ALLOW_CACHE_FLUSH` - Enable cache flush in non-dev (default: false)
+- `ENABLE_BREWERIES` - Enable brewery location type (default: false)
+- `ENABLE_WINERIES` - Enable winery location type (default: false)
+- `ENABLE_SUGAR_SHACKS` - Enable sugar shack location type (default: false)
 
-### Frontend
-Frontend configuration is in `src/config/appConfig.ts` (consider moving API key to environment variables).
+### Frontend (.env)
+- `VITE_ENABLE_BREWERIES` - Enable breweries in frontend (default: false)
+- `VITE_ENABLE_WINERIES` - Enable wineries in frontend (default: false)
+- `VITE_ENABLE_SUGAR_SHACKS` - Enable sugar shacks in frontend (default: false)
+
+Frontend configuration is in `src/config/appConfig.ts` and `src/config/enabledLocationTypes.ts`.
 
 ## Data Processing
 
@@ -223,12 +239,15 @@ The application fetches location data from Google Sheets, processes it, and enri
 - **Product updates are FREE** (no API calls for product availability changes)
 - **Expected monthly cost**: $0.50-$2 (vs $26-30 with hourly refresh)
 
-### Location Types
+### Location Types (8 total)
 - **Farm Stands**: 22 products (meats, vegetables, fruits, aromatics)
 - **Cheese Shops**: 12 products (cheese types, milk sources)
 - **Fish Mongers**: 12 products (fish and shellfish)
 - **Butchers**: 12 products (meats, poultry, prepared items)
 - **Antique Shops**: 10 products (furniture, jewelry, art, collectibles)
+- **Breweries**: 9 products (beer styles) *(feature-flagged)*
+- **Wineries**: 10 products (wine types) *(feature-flagged)*
+- **Sugar Shacks**: 6 products (maple products) *(feature-flagged)*
 
 ## Production Deployment
 
@@ -266,8 +285,9 @@ Quick overview:
 - **SuperClusterAlgorithm**: Fast clustering with configurable radius
 
 ### List Performance
-- **Virtual Scrolling**: Only renders visible shop cards (10-15 instead of 228)
-- **React-window**: Dramatically reduces DOM nodes and memory usage
+- **Virtual Scrolling**: Only renders visible shop cards (10-15 instead of 228+)
+- **@tanstack/react-virtual**: Dramatically reduces DOM nodes and memory usage
+- **Dynamic threshold**: Only enables for 20+ items (smaller lists render normally)
 - **Responsive grid layout**: Adapts to screen size while maintaining performance
 
 ### Loading Performance
@@ -284,14 +304,15 @@ Quick overview:
 
 ## Architecture Highlights
 
-### Domain-Driven Context Architecture
+### Domain-Driven Context Architecture (7 Contexts)
 State management is split into focused, single-responsibility contexts:
-- **FarmDataContext** - Location data and loading states
+- **LocationDataContext** - All location data and loading states (primary)
 - **SearchContext** - Location search and radius
-- **FilterContext** - Product filtering
-- **UIContext** - UI state (overlays, modals)
+- **FilterContext** - Product and location type filtering
+- **UIContext** - UI state (overlays, modals, selected/hovered shop)
 - **DirectionsContext** - Google Maps directions
 - **ToastContext** - Toast notifications
+- **TripPlannerContext** - Trip planning with multi-stop routes
 
 This architecture reduces unnecessary re-renders and improves maintainability.
 
@@ -311,16 +332,20 @@ This architecture reduces unnecessary re-renders and improves maintainability.
 
 ### Adding a New Location Type
 1. Create Google Sheet tab for the location type
-2. Create product config file in `src/config/`
-3. Update `backend/processSheetData.js` to process new type
-4. Update `backend/server.js` to load and combine new type
-5. Create icon images in `public/images/icons/`
-6. Run `npm run process-data` to generate data
+2. Add `GOOGLE_SHEET_URL_*` environment variable
+3. Create product config file in `src/config/`
+4. Register in `src/config/productRegistry.ts`
+5. Add types to `src/types/shop.ts` (LocationType union, product interface, type guard)
+6. Update `backend/processSheetData.js` to process new type
+7. Update `backend/server.js` to load and combine new type
+8. Create icon images in `public/images/icons/`
+9. Add npm script in `package.json`
+10. Run `npm run process-data` to generate data
 
 ### Adding a New Product
 1. Add column to appropriate Google Sheet tab
 2. Update corresponding product config file in `src/config/`
-3. Add boolean field to Shop interface in `src/types/shop.ts`
+3. Add boolean field to product interface in `src/types/shop.ts`
 4. Update headerMap in `backend/processSheetData.js`
 5. Add icon images to `public/images/icons/`
 6. Run `npm run process-data` to refresh data

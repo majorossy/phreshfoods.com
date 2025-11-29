@@ -4,7 +4,7 @@
 
 To **reduce Google API costs by ~95%**, automatic data refresh is **DISABLED by default**.
 
-Location data (farm stands, cheese shops, fish mongers, butchers, antique shops) should be refreshed manually when you update your Google Sheets.
+Location data (farm stands, cheese shops, fish mongers, butchers, antique shops, breweries, wineries, sugar shacks) should be refreshed manually when you update your Google Sheets.
 
 ## When to Refresh Data
 
@@ -45,6 +45,15 @@ npm run process-data:butchers
 
 # Antique shops only
 npm run process-data:antiques
+
+# Breweries only
+npm run process-data:breweries
+
+# Wineries only
+npm run process-data:wineries
+
+# Sugar shacks only
+npm run process-data:sugar-shacks
 
 # Or use the --type flag directly:
 npm run process-data -- --type=farms

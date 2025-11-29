@@ -1,19 +1,32 @@
 // src/config/map.ts
 'use strict';
 
+import type { LocationType } from '../types/shop';
+import { LOCATION_TYPE_DISPLAY } from '../utils/typeUrlMappings';
+
 export const markerColor: string = "#ed411a"; // Default/legacy color
 
-// Location type specific marker colors (Tailwind color-500 values for consistency)
+/**
+ * Get marker color for a location type
+ * Re-exports from centralized typeUrlMappings for backward compatibility
+ */
+export function getMarkerColorForType(type: LocationType | string): string {
+  const locationType = type as LocationType;
+  return LOCATION_TYPE_DISPLAY[locationType]?.colors.marker ?? markerColor;
+}
+
+// Legacy MARKER_COLORS object for backward compatibility
+// Derived from centralized LOCATION_TYPE_DISPLAY
 export const MARKER_COLORS = {
-  farm_stand: "#22c55e",    // Green-500 for farm stands
-  cheese_shop: "#eab308",   // Yellow-500 for cheese shops
-  fish_monger: "#3b82f6",   // Blue-500 for fish mongers
-  butcher: "#ef4444",       // Red-500 for butchers
-  antique_shop: "#6b7280",  // Gray-500 for antique shops
-  brewery: "#d97706",       // Amber-600 for breweries (darker)
-  winery: "#a855f7",        // Purple-500 for wineries
-  sugar_shack: "#92400e",   // Amber-800 for sugar shacks (brown-orange)
-  default: "#ed411a"        // Red fallback
+  farm_stand: LOCATION_TYPE_DISPLAY.farm_stand.colors.marker,
+  cheese_shop: LOCATION_TYPE_DISPLAY.cheese_shop.colors.marker,
+  fish_monger: LOCATION_TYPE_DISPLAY.fish_monger.colors.marker,
+  butcher: LOCATION_TYPE_DISPLAY.butcher.colors.marker,
+  antique_shop: LOCATION_TYPE_DISPLAY.antique_shop.colors.marker,
+  brewery: LOCATION_TYPE_DISPLAY.brewery.colors.marker,
+  winery: LOCATION_TYPE_DISPLAY.winery.colors.marker,
+  sugar_shack: LOCATION_TYPE_DISPLAY.sugar_shack.colors.marker,
+  default: markerColor
 };
 
 export interface BoundsLiteral {

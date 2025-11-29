@@ -43,19 +43,44 @@ const ProductFilterDropdown: React.FC<ProductFilterDropdownProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose, buttonRef]);
 
-  // Close on Escape key
+  // Close on Escape key and return focus to trigger button
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
+        // Return focus to trigger button
+        buttonRef.current?.focus();
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, buttonRef]);
+
+  // Focus management: move focus into dropdown when opened, return to button when closed
+  useEffect(() => {
+    if (isOpen && dropdownRef.current) {
+      // Focus the first focusable element in the dropdown
+      const focusableElements = dropdownRef.current.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+    }
+  }, [isOpen]);
+
+  // Return focus to button when dropdown closes (for click-outside close)
+  const prevIsOpenRef = useRef(isOpen);
+  useEffect(() => {
+    if (prevIsOpenRef.current && !isOpen) {
+      // Dropdown just closed - return focus to trigger button
+      buttonRef.current?.focus();
+    }
+    prevIsOpenRef.current = isOpen;
+  }, [isOpen, buttonRef]);
 
   if (!isOpen) return null;
 

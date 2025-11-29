@@ -857,6 +857,10 @@ const MapComponent: React.FC = () => {
       <div id="map-description" className="sr-only">
         An interactive Google Map displaying locations of local businesses. Click on map markers to view details. Use shop cards in the left panel for keyboard navigation.
       </div>
+      {/* Live region for screen reader announcements */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {selectedShop && `Selected: ${selectedShop.placeDetails?.name || selectedShop.Name}`}
+      </div>
     </div>
   );
 };

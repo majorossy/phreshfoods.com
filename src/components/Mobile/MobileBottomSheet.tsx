@@ -1,9 +1,13 @@
 // src/components/Mobile/MobileBottomSheet.tsx
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, KeyboardEvent } from 'react';
 import { useUI } from '../../contexts/UIContext';
 import { useBottomSheetDrag } from '../../hooks/useBottomSheetDrag';
 import HorizontalCarousel from './HorizontalCarousel';
 import QuickShopInfo from './QuickShopInfo';
+import {
+  BOTTOM_SHEET,
+  getSnapPoints,
+} from '../../config/mobile';
 
 /**
  * MobileBottomSheet - Mobile-only bottom sheet component
@@ -23,9 +27,9 @@ const MobileBottomSheet: React.FC = () => {
   const handleSnapChange = useCallback((newHeight: number) => {
     // Set flag FIRST (before height triggers auto-expand effect)
     // This ensures React batches both updates and effect sees the flag
-    if (newHeight === 0.3 && selectedShop) {
+    if (newHeight === BOTTOM_SHEET.SNAP_COLLAPSED && selectedShop) {
       setIsManuallyCollapsed(true);
-    } else if (newHeight > 0.3) {
+    } else if (newHeight > BOTTOM_SHEET.SNAP_COLLAPSED) {
       // Clear flag when expanding (drag up or snap to higher point)
       setIsManuallyCollapsed(false);
     }
@@ -34,25 +38,61 @@ const MobileBottomSheet: React.FC = () => {
     setBottomSheetHeight(newHeight);
   }, [setBottomSheetHeight, selectedShop, setIsManuallyCollapsed]);
 
-  // Auto-expand to 90% when a shop is selected (unless manually collapsed)
+  // Auto-expand to full details when a shop is selected (unless manually collapsed)
   useEffect(() => {
-    if (selectedShop && bottomSheetHeight < 0.5 && !isManuallyCollapsed) {
-      setBottomSheetHeight(0.9);
+    if (selectedShop && bottomSheetHeight < BOTTOM_SHEET.SNAP_HALF && !isManuallyCollapsed) {
+      setBottomSheetHeight(BOTTOM_SHEET.SNAP_FULL_DETAILS);
     }
   }, [selectedShop, bottomSheetHeight, isManuallyCollapsed, setBottomSheetHeight]);
 
-  // Drag gesture hook - expand to 90% when shop is selected
+  // Drag gesture hook - snap points depend on whether shop is selected
+  const snapPoints = getSnapPoints(!!selectedShop);
   const { ref, isDragging, style } = useBottomSheetDrag({
     initialHeight: bottomSheetHeight,
-    snapPoints: selectedShop ? [0.3, 0.5, 0.9] : [0.3, 0.5, 0.75],
+    snapPoints: [...snapPoints], // Convert readonly to mutable array
     onSnapChange: handleSnapChange,
     enabled: true,
   });
+
+  // Handle keyboard interaction for drag handle
+  const handleDragHandleKeyDown = useCallback((event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      // Toggle between collapsed and expanded states
+      if (bottomSheetHeight <= BOTTOM_SHEET.SNAP_COLLAPSED) {
+        // Expand to half or full details depending on whether shop is selected
+        const targetHeight = selectedShop ? BOTTOM_SHEET.SNAP_FULL_DETAILS : BOTTOM_SHEET.SNAP_HALF;
+        handleSnapChange(targetHeight);
+      } else {
+        // Collapse
+        handleSnapChange(BOTTOM_SHEET.SNAP_COLLAPSED);
+      }
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      // Expand to next snap point
+      const currentIndex = snapPoints.indexOf(bottomSheetHeight);
+      if (currentIndex < snapPoints.length - 1) {
+        handleSnapChange(snapPoints[currentIndex + 1]);
+      }
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      // Collapse to previous snap point
+      const currentIndex = snapPoints.indexOf(bottomSheetHeight);
+      if (currentIndex > 0) {
+        handleSnapChange(snapPoints[currentIndex - 1]);
+      }
+    }
+  }, [bottomSheetHeight, selectedShop, snapPoints, handleSnapChange]);
+
+  // Determine expansion state for aria-expanded
+  const isExpanded = bottomSheetHeight > BOTTOM_SHEET.SNAP_COLLAPSED;
 
   return (
     <div
       ref={ref}
       id="mobileBottomSheet"
+      role="region"
+      aria-label="Shop listings panel"
       className={`
         fixed bottom-0 left-0 right-0
         bg-white dark:bg-gray-800
@@ -68,22 +108,25 @@ const MobileBottomSheet: React.FC = () => {
         willChange: isDragging ? 'height' : 'auto',
       }}
     >
-      {/* Drag Handle - Now functional! */}
+      {/* Drag Handle - Keyboard accessible */}
       <div className="flex justify-center pt-2 pb-1">
         <div
-          className="drag-handle w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full"
-          aria-label="Drag to expand or collapse"
+          className="drag-handle w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+          aria-label={isExpanded ? 'Press Enter to collapse panel, or use arrow keys to resize' : 'Press Enter to expand panel, or use arrow keys to resize'}
+          aria-expanded={isExpanded}
+          aria-controls="mobileBottomSheet"
           role="button"
           tabIndex={0}
+          onKeyDown={handleDragHandleKeyDown}
         />
       </div>
 
       {/* Content Container - switches between carousel and detailed info */}
       <div className="h-full overflow-x-visible overflow-y-hidden">
-        {bottomSheetHeight >= 0.5 && selectedShop ? (
+        {bottomSheetHeight >= BOTTOM_SHEET.SHOW_QUICK_INFO_THRESHOLD && selectedShop ? (
           /* Detailed Shop Info - shown when expanded (≥50vh) */
           <div className="h-full overflow-y-auto custom-scrollbar">
-            <QuickShopInfo shop={selectedShop} showFullDetails={bottomSheetHeight >= 0.9} />
+            <QuickShopInfo shop={selectedShop} showFullDetails={bottomSheetHeight >= BOTTOM_SHEET.SHOW_FULL_DETAILS_THRESHOLD} />
           </div>
         ) : (
           /* Carousel - shown when collapsed (<50vh) */

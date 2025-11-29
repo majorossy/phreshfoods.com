@@ -6,14 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 PhreshFoods is a multi-location-type finder application for Maine. It's a React + TypeScript + Vite frontend with a Node.js/Express backend that fetches location data from Google Sheets, enriches it with Google Maps API data (geocoding, place details), and serves it to the frontend.
 
-**Supported Location Types:**
+**Supported Location Types (8 total):**
 - Farm Stands (original focus)
 - Cheesemongers
 - Fishmongers
 - Butchers
 - Antiques
+- Breweries *(feature-flagged)*
+- Wineries *(feature-flagged)*
+- Sugar Shacks *(feature-flagged)*
 
-Each location type has its own product configuration and filtering system.
+Each location type has its own product configuration and filtering system. The last 3 types can be enabled/disabled via environment variables (see Feature Flags section).
 
 ## Development Commands
 
@@ -94,6 +97,9 @@ npm run process-data:cheese
 npm run process-data:fish
 npm run process-data:butchers
 npm run process-data:antiques
+npm run process-data:breweries
+npm run process-data:wineries
+npm run process-data:sugar-shacks
 
 # Or use the --type flag:
 npm run process-data -- --type=farms
@@ -123,24 +129,30 @@ Features:
   - `UI/` - Reusable UI components
   - `ErrorBoundary/` - Error boundary for catching component errors
 - `src/contexts/` - React Context for global state (domain-driven architecture)
-  - `AppContext.tsx` - Legacy composite context (backward compatibility)
   - `AppProviders.tsx` - Composite provider wrapping all domain contexts
-  - `FarmDataContext.tsx` - Farm stand data & loading states
+  - `LocationDataContext.tsx` - All location data & loading states (primary data context)
   - `SearchContext.tsx` - Location search & radius
-  - `FilterContext.tsx` - Product filtering
+  - `FilterContext.tsx` - Product filtering & location type filtering
   - `UIContext.tsx` - UI state (overlays, modals, selected shop)
   - `DirectionsContext.tsx` - Google Maps directions
   - `ToastContext.tsx` - Toast notifications
+  - `TripPlannerContext.tsx` - Trip planning with multi-stop routes
+  - `FarmDataContext.tsx` - Legacy alias (backwards compatibility)
 - `src/hooks/` - Custom React hooks
 - `src/services/` - API service layer (apiService.ts)
 - `src/types/` - TypeScript type definitions
 - `src/config/` - App configuration and product definitions
-  - `appConfig.ts` - Legacy farm products configuration
+  - `appConfig.ts` - App constants (map center, zoom, delays, marker styling)
+  - `productRegistry.ts` - Central registry mapping location types to product configs
+  - `enabledLocationTypes.ts` - Feature flags for location types
   - `farmProducts.ts` - Farm stand products (22 products)
   - `cheeseProducts.ts` - Cheese shop products (12 products)
   - `fishProducts.ts` - Fish monger products (12 products)
   - `butcherProducts.ts` - Butcher shop products (12 products)
   - `antiqueProducts.ts` - Antique shop products (10 products)
+  - `breweryProducts.ts` - Brewery products (9 products)
+  - `wineryProducts.ts` - Winery products (10 products)
+  - `sugarShackProducts.ts` - Sugar shack products (6 products)
 - `src/utils/` - Utility functions (cookie helpers, SEO, etc.)
 
 **State Management:**
@@ -148,13 +160,15 @@ Features:
 - **Migration Status:** Components are being migrated from legacy `AppContext` to specific domain hooks
 - **See:** `src/contexts/CONTEXTS.md` for comprehensive documentation
 
-**Domain Contexts:**
+**Domain Contexts (7 total):**
 
-1. **FarmDataContext** (`useFarmData()`)
-   - `allFarmStands` - All farm stands fetched from backend
-   - `currentlyDisplayedShops` - Filtered/sorted shops with distance calculations
-   - `isLoadingFarmStands` - Loading state
-   - `farmStandsError` - Error message if loading failed
+1. **LocationDataContext** (`useLocationData()`)
+   - `allLocations` - All locations fetched from backend (all 8 types combined)
+   - `currentlyDisplayedLocations` - Filtered/sorted locations with distance calculations
+   - `isLoadingLocations` - Loading state
+   - `locationsError` - Error message if loading failed
+   - `retryLoadLocations()` - Retry function for failed loads
+   - **Note:** `useFarmData()` is exported as a backwards-compatible alias
 
 2. **SearchContext** (`useSearch()`)
    - `lastPlaceSelectedByAutocomplete` - Search location from Google Places autocomplete
@@ -165,11 +179,14 @@ Features:
 
 3. **FilterContext** (`useFilters()`)
    - `activeProductFilters` - User's selected product filters
+   - `activeLocationTypes` - User's selected location types (farm_stand, cheese_shop, etc.)
 
 4. **UIContext** (`useUI()`)
    - `selectedShop` - Currently selected shop for detail view
+   - `hoveredShop` - Shop being hovered for map preview
    - `isShopOverlayOpen` - Shop details overlay state
    - `isSocialOverlayOpen` - Social/directions overlay state
+   - `isFilterDrawerOpen` - Filter drawer state (mobile)
    - `isInitialModalOpen` - Initial search modal state
 
 5. **DirectionsContext** (`useDirections()`)
@@ -178,7 +195,16 @@ Features:
    - `isFetchingDirections` - Loading state
 
 6. **ToastContext** (`useToast()`)
-   - `showToast()` - Display toast notifications
+   - `showToast()` - Display success/info notifications
+   - `showError()` - Display error notifications
+   - `showWarning()` - Display warning notifications
+
+7. **TripPlannerContext** (`useTripPlanner()`)
+   - `tripStops` - Array of shops in the trip
+   - `isTripMode` - Trip planning mode toggle
+   - `tripDirectionsResult` - Multi-stop directions from Google
+   - `isOptimizedRoute` - Whether route has been optimized
+   - **Features:** URL encoding for sharing, localStorage persistence, drag-to-reorder
 
 **Performance Benefits:**
 - Components using specific hooks only re-render when their domain changes
@@ -204,14 +230,17 @@ Features:
   - `fishMongersData.json` - Fish monger locations
   - `butchersData.json` - Butcher shop locations
   - `antiqueShopsData.json` - Antique shop locations
+  - `breweriesData.json` - Brewery locations *(feature-flagged)*
+  - `wineriesData.json` - Winery locations *(feature-flagged)*
+  - `sugarShacksData.json` - Sugar shack locations *(feature-flagged)*
   - `.gitkeep` - Placeholder to maintain directory structure in git
 
 **Data Flow:**
 1. **Manual refresh (recommended):** Run `npm run process-data` when you update Google Sheets
 2. **Optional scheduled refresh:** Disabled by default (set `DATA_REFRESH_SCHEDULE` in .env to enable)
 3. **processSheetData.js:**
-   - Fetches CSV from multiple Google Sheet tabs (via `GOOGLE_SHEET_URL`)
-   - Processes 5 location types: farm stands, cheese shops, fish mongers, butchers, antique shops
+   - Fetches CSV from multiple Google Sheet tabs (via `GOOGLE_SHEET_URL_*` env vars)
+   - Processes 8 location types: farm stands, cheese shops, fish mongers, butchers, antique shops, breweries, wineries, sugar shacks
    - **Change detection:** Compares location data hash - only updates changed/new locations
    - For changed/new locations: geocodes address, fetches Place Details
    - Saves enriched data to separate JSON files in `backend/data/`
@@ -227,7 +256,7 @@ Features:
 
 **API Endpoints:**
 - `GET /api/config` - Config endpoint (currently returns empty object)
-- `GET /api/locations` - Returns all locations (farm stands, cheese shops, fish mongers, butchers, antique shops)
+- `GET /api/locations` - Returns all enabled locations (up to 8 types based on feature flags)
 - `GET /api/geocode?address=...` - Geocode an address (proxied to Google)
 - `GET /api/places/details?placeId=...&fields=...` - Get Place Details (proxied to Google)
 - `GET /api/directions?origin=...&destination=...` - Get directions (proxied to Google)
@@ -235,38 +264,63 @@ Features:
 
 ### Environment Variables
 
-Required environment variables (backend):
+**Required (backend):**
 - `GOOGLE_API_KEY_BACKEND` - Google Maps API key for server-side calls
-- `GOOGLE_SHEET_URL` - Published CSV URL from Google Sheets
+- `GOOGLE_SHEET_URL` - Farm stands CSV URL
+- `GOOGLE_SHEET_URL_CHEESE_SHOPS` - Cheese shops CSV URL
+- `GOOGLE_SHEET_URL_FISH_MONGERS` - Fish mongers CSV URL
+- `GOOGLE_SHEET_URL_BUTCHERS` - Butchers CSV URL
+- `GOOGLE_SHEET_URL_ANTIQUE_SHOPS` - Antique shops CSV URL
+- `GOOGLE_SHEET_URL_BREWERIES` - Breweries CSV URL *(optional)*
+- `GOOGLE_SHEET_URL_WINERIES` - Wineries CSV URL *(optional)*
+- `GOOGLE_SHEET_URL_SUGAR_SHACKS` - Sugar shacks CSV URL *(optional)*
 - `PORT` - Server port (default: 3000)
-- `DATA_REFRESH_SCHEDULE` - Cron expression for data refresh (default: `1 * * * *` - every hour)
+
+**Optional (backend):**
+- `DATA_REFRESH_SCHEDULE` - Cron expression for data refresh (disabled by default)
 - `MAX_DATA_FILE_AGE_HOURS` - Max age before data refresh (default: 4 hours)
 - `NODE_ENV` - Set to 'development' to enable cache flush endpoint
 - `ALLOW_CACHE_FLUSH` - Set to 'true' to enable cache flush endpoint in non-dev
+- `ENABLE_BREWERIES` - Enable brewery location type (default: false)
+- `ENABLE_WINERIES` - Enable winery location type (default: false)
+- `ENABLE_SUGAR_SHACKS` - Enable sugar shack location type (default: false)
 
-Frontend config is in `src/config/appConfig.ts` (includes hardcoded Google Maps API key - consider moving to env).
+**Frontend feature flags (in .env):**
+- `VITE_ENABLE_BREWERIES` - Enable breweries in frontend (default: false)
+- `VITE_ENABLE_WINERIES` - Enable wineries in frontend (default: false)
+- `VITE_ENABLE_SUGAR_SHACKS` - Enable sugar shacks in frontend (default: false)
+
+Frontend config is in `src/config/appConfig.ts` and `src/config/enabledLocationTypes.ts`.
 
 ### Data Model
 
 **Shop Type (src/types/shop.ts):**
-- Fields from Google Sheet: Name, Address, City, Zip, Phone, Website, type, etc.
-- `type` field identifies location type: 'farm_stand', 'cheese_shop', 'fish_monger', 'butcher', 'antique_shop'
-- Product booleans (type-specific):
-  - **Farm Stands:** 22 products (meats, poultry, eggs, vegetables, fruits, aromatics)
-  - **Cheese Shops:** 12 products (cheese types, milk sources)
-  - **Fish Mongers:** 12 products (fish, shellfish)
-  - **Butchers:** 12 products (fresh meats, poultry, prepared meats, cuts)
-  - **Antique Shops:** 10 products (furniture, jewelry, art, books, ceramics, glassware, silverware, textiles, collectibles, vintage clothing)
-- Geocoded data: lat, lng
-- Enriched Google data: placeDetails (rating, opening_hours, photos, reviews, etc.)
-- Social media: TwitterHandle, FacebookPageID, InstagramUsername, InstagramLink, etc.
-- Routing: slug (used for /farm/:slug URLs)
+- `Shop` is a discriminated union type with 8 variants (one per location type)
+- `type` field identifies location type: `'farm_stand' | 'cheese_shop' | 'fish_monger' | 'butcher' | 'antique_shop' | 'brewery' | 'winery' | 'sugar_shack'`
+- `LocationType` is the union type, `ALL_LOCATION_TYPES` is the constant array
+- Type guards available: `isFarmStand()`, `isCheeseShop()`, `isFishMonger()`, `isButcher()`, `isAntiqueShop()`, `isBrewery()`, `isWinery()`, `isSugarShack()`
 
-**Product Configuration:**
+**Product interfaces (type-specific):**
+- **FarmStandProducts:** 22 products (beef, pork, lamb, chicken, turkey, duck, eggs, vegetables, fruits)
+- **CheeseShopProducts:** 12 products (cheddar, brie, gouda, mozzarella, feta, blue_cheese, parmesan, swiss, provolone, cow/goat/sheep_milk)
+- **FishMongerProducts:** 12 products (salmon, cod, haddock, tuna, halibut, scallops, shrimp, lobster, crab, clams, oysters, mussels)
+- **ButcherProducts:** 12 products (beef, pork, lamb, chicken, turkey, duck, sausages, bacon, ground_meat, steaks, roasts, chops)
+- **AntiqueShopProducts:** 10 products (furniture, jewelry, art, books, ceramics, glassware, silverware, textiles, collectibles, vintage_clothing)
+- **BreweryProducts:** 9 products (ipa, lager, stout, ale, pilsner, porter, wheat_beer, sour, cider)
+- **WineryProducts:** 10 products (red_wine, white_wine, rose, sparkling, dessert_wine, ice_wine, cabernet, chardonnay, pinot_noir, merlot)
+- **SugarShackProducts:** 6 products (maple_syrup, maple_sugar, maple_candy, maple_butter, maple_cream, pancake_mix)
+
+**Common fields (BaseLocation):**
+- From Google Sheet: Name, Address, City, Zip, Phone, Website, slug, social media fields
+- Geocoded: lat, lng (nullable if geocoding fails)
+- Enriched: placeDetails (rating, opening_hours, photos, reviews from Google)
+
+**Product Configuration (src/config/productRegistry.ts):**
+- Central registry maps location types → product configs
 - Each product has: `csvHeader`, `name`, `icon_available`, `icon_unavailable`, `category`
-- Icons stored in `/public/images/icons/` with naming pattern: `{product}_1.jpg` (available), `{product}_0.jpg` (unavailable)
-- Total: 58 unique products requiring 116 icon files
-- Some icons are shared between location types (e.g., meats shared between farm stands and butchers)
+- Icons stored in `/public/images/icons/` with pattern: `{product}_1.jpg` (available), `{product}_0.jpg` (unavailable)
+- Total: ~93 unique products across all 8 types
+- Helper functions: `getProductConfig()`, `getCategoryDisplayOrder()`, `getMergedProductConfigs()`
 
 **ShopWithDistance:**
 - Extends Shop with `distance` (meters) and `distanceText` (formatted string)
@@ -406,6 +460,9 @@ The application implements a three-tier system to minimize Google API costs:
 - `npm run process-data:fish` - Fish mongers only
 - `npm run process-data:butchers` - Butchers only
 - `npm run process-data:antiques` - Antique shops only
+- `npm run process-data:breweries` - Breweries only
+- `npm run process-data:wineries` - Wineries only
+- `npm run process-data:sugar-shacks` - Sugar shacks only
 
 **Cost Examples:**
 - Update 10 product availabilities: **$0** (0 API calls)
@@ -565,9 +622,10 @@ npm audit fix           # Fix vulnerabilities
 - **Result:** Smooth map interaction even with all 228 locations visible
 
 **Virtual Scrolling:**
-- **react-window integration:** Only renders visible shop cards (10-15 instead of 228)
-- **Grid layout support:** Custom Row renderer handles responsive columns
-- **Implementation:** `src/components/Listings/ListingsPanel.tsx` using FixedSizeList
+- **@tanstack/react-virtual integration:** Only renders visible shop cards (10-15 instead of 228+)
+- **Threshold:** Only enabled for 20+ items (smaller lists render normally)
+- **Dynamic height measurement:** Accurate row heights for smooth scrolling
+- **Implementation:** `src/components/Listings/ListingsPanel.tsx` using useVirtualizer
 - **Result:** 80% reduction in DOM nodes, eliminates scroll lag
 
 **Web Vitals Monitoring:**
@@ -595,13 +653,16 @@ npm audit fix           # Fix vulnerabilities
 - **Performance testing:** `npm run test:lighthouse` for audits
 - **Comprehensive checks:** `npm run check:all` for pre-commit validation
 
-### Multi-Location Type System (2025-01)
-- **Expanded from single location type to 5 types:** Farm stands, cheese shops, fish mongers, butchers, antique shops
+### Multi-Location Type System (2025-01, expanded 2025-11)
+- **Expanded from single location type to 8 types:** Farm stands, cheese shops, fish mongers, butchers, antique shops, breweries, wineries, sugar shacks
+- **Feature flags:** Last 3 types can be enabled/disabled via environment variables
 - **Type-specific product configurations:** Each location type has its own product config file with unique products and icons
+- **Central product registry:** `src/config/productRegistry.ts` maps types → configs
+- **Discriminated union types:** `Shop` type uses TypeScript discriminated unions with type guards
 - **Data file separation:** Each location type has its own JSON file in `backend/data/`
 - **Gitignore data files:** All generated JSON files are now gitignored and must be regenerated via `npm run process-data`
-- **Unified API endpoint:** `/api/locations` returns all location types combined
-- **Shop Details Overlay tabs:** Added tabbed interface (Info, Hours, Products) to shop details overlay
+- **Unified API endpoint:** `/api/locations` returns all enabled location types combined
+- **Shop Details Overlay:** Accordion interface (Products, Information, Hours)
 
 ### Version Control Improvements (2025-01)
 - **Data files gitignored:** `backend/data/*.json` files are no longer tracked by git
@@ -687,16 +748,17 @@ npm run process-data
 ```
 
 ### Migrating a Component to Domain Contexts
-1. Identify which domains the component uses (farm data, search, filters, UI, directions)
-2. Replace `import { AppContext } from '../contexts/AppContext'` with specific imports:
+1. Identify which domains the component uses (location data, search, filters, UI, directions, trip planner)
+2. Replace legacy AppContext imports with specific imports:
    ```tsx
-   import { useFarmData } from '../contexts/FarmDataContext';
+   import { useLocationData } from '../contexts/LocationDataContext';
    import { useSearch } from '../contexts/SearchContext';
+   import { useFilters } from '../contexts/FilterContext';
    // etc.
    ```
 3. Replace `const appContext = useContext(AppContext)` with:
    ```tsx
-   const { allFarmStands, isLoadingFarmStands } = useFarmData();
+   const { allLocations, isLoadingLocations } = useLocationData();
    const { currentRadius, mapsApiReady } = useSearch();
    ```
 4. Remove null checks (hooks throw errors if used outside providers)
@@ -707,14 +769,23 @@ npm run process-data
 
 ### Adding a New Location Type
 1. Create new Google Sheet tab for the location type
-2. Create product config file in `src/config/` (e.g., `bookstoreProducts.ts`)
-3. Define products with `csvHeader`, `name`, `icon_available`, `icon_unavailable`, `category`
-4. Update `backend/processSheetData.js` to process new location type
-5. Add new data file path (e.g., `backend/data/bookstoresData.json`)
-6. Update `backend/server.js` to load and combine new location type
-7. Create icon images in `public/images/icons/` (2 per product: `{product}_1.jpg` and `{product}_0.jpg`)
-8. Update Shop type in `src/types/shop.ts` if needed
-9. Run `npm run process-data` to generate initial data
+2. Add `GOOGLE_SHEET_URL_*` environment variable for the new sheet
+3. Create product config file in `src/config/` (e.g., `bookstoreProducts.ts`)
+4. Define products with `csvHeader`, `name`, `icon_available`, `icon_unavailable`, `category`
+5. Register in `src/config/productRegistry.ts` (add to `PRODUCT_CONFIGS` and `CATEGORY_DISPLAY_ORDER`)
+6. Add to `src/types/shop.ts`:
+   - Add to `LocationType` union
+   - Add to `ALL_LOCATION_TYPES` array
+   - Create product interface (e.g., `BookstoreProducts`)
+   - Create location interface (e.g., `Bookstore extends BaseLocation`)
+   - Add to `Shop` discriminated union
+   - Add type guard function (e.g., `isBookstore()`)
+7. Update `backend/processSheetData.js` to process new location type
+8. Add new data file path (e.g., `backend/data/bookstoresData.json`)
+9. Update `backend/server.js` to load and combine new location type
+10. Create icon images in `public/images/icons/` (2 per product)
+11. Add npm script in `package.json` (e.g., `process-data:bookstores`)
+12. Run `npm run process-data` to generate initial data
 
 ### Adding a New Product to Existing Location Type
 1. Add column to appropriate Google Sheet tab
@@ -734,7 +805,7 @@ npm run process-data
 2. Inspect JSON files in `backend/data/` directory directly
 3. Use `/api/cache/flush-and-refresh` endpoint to force refresh (dev mode)
 4. Check Google Sheet tabs have proper headers and data format
-5. Verify all required data files exist: `farmStandsData.json`, `cheeseShopsData.json`, `fishMongersData.json`, `butchersData.json`, `antiqueShopsData.json`
+5. Verify all required data files exist: `farmStandsData.json`, `cheeseShopsData.json`, `fishMongersData.json`, `butchersData.json`, `antiqueShopsData.json` (plus `breweriesData.json`, `wineriesData.json`, `sugarShacksData.json` if those types are enabled)
 6. If data files are missing, run `npm run process-data` to regenerate them
 
 ### Production Deployment
@@ -754,12 +825,13 @@ Quick steps:
 ## Tech Stack
 
 ### Frontend
-- **Core:** React 18, TypeScript, Vite (with SWC)
-- **Routing:** React Router 6
+- **Core:** React 18.3, TypeScript 5.4, Vite 6 (with SWC)
+- **Routing:** React Router 6.23
 - **Styling:** TailwindCSS 3.3.4
-- **Maps:** Google Maps JavaScript API, @googlemaps/markerclusterer
-- **Performance:** react-window (virtual scrolling), web-vitals (monitoring)
-- **Testing:** Vitest, React Testing Library, jest-axe
+- **Maps:** Google Maps JavaScript API, @googlemaps/markerclusterer 2.6
+- **Performance:** @tanstack/react-virtual 3.x (virtual scrolling), web-vitals 5.x (monitoring)
+- **Drag & Drop:** @dnd-kit (for trip planner reordering)
+- **Testing:** Vitest 4.x, React Testing Library 16.x, jest-axe
 
 ### Backend
 - **Runtime:** Node.js 16+, Express 4

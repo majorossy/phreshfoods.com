@@ -16,6 +16,9 @@ npm run process-data
 | `npm run process-data:fish` | Fish mongers only |
 | `npm run process-data:butchers` | Butchers only |
 | `npm run process-data:antiques` | Antique shops only |
+| `npm run process-data:breweries` | Breweries only |
+| `npm run process-data:wineries` | Wineries only |
+| `npm run process-data:sugar-shacks` | Sugar shacks only |
 
 ### Alternative Syntax
 ```bash

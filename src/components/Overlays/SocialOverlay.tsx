@@ -1,5 +1,5 @@
 // src/components/Overlays/SocialOverlay.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Shop, PlacePhoto as PlacePhotoData } from '../../types';
 import { useDirections } from '../../contexts/DirectionsContext';
@@ -7,6 +7,7 @@ import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { useTripPlanner } from '../../contexts/TripPlannerContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import {
   DndContext,
   closestCenter,
@@ -40,11 +41,21 @@ interface SocialOverlayProps {
 }
 
 const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onClose }) => {
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { socialOverlayInitialTab, tabChangeKey } = useUI();
   const [activeTab, setActiveTab] = useState(socialOverlayInitialTab);
   const [manualOrigin, setManualOrigin] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
+
+  // Focus trap for accessibility - handles Escape key and focus management
+  useFocusTrap({
+    isActive: isOpen,
+    onClose,
+    containerRef: overlayRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   // Get toast context
   const { showToast } = useToast();
@@ -325,7 +336,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
     if (isActive) {
       return brandColor; // Use brand color when active
     } else if (!isAvailable) {
-      return 'text-red-300 dark:text-red-400'; // Very light red when unavailable
+      return 'text-red-500 dark:text-red-400'; // Red for unavailable - meets WCAG AA contrast
     } else {
       // Available state - use brand color (lighter shade already applied by tab background)
       const brandIconClasses: Record<string, string> = {
@@ -342,8 +353,12 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
   return (
       <div
+        ref={overlayRef}
         id="detailsOverlaySocial"
         className={`detail-pop-overlay detail-pop-overlay-social custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Social details and directions for ${shop.placeDetails?.name || shop.Name}`}
       >
         {/* Social Icons - Only visible when collapsed */}
         {isCollapsed && (
@@ -402,13 +417,13 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                 }
               }}
               className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center ${
-                hasInstagram ? 'hover:bg-pink-50 cursor-pointer' : 'cursor-not-allowed opacity-40'
+                hasInstagram ? 'hover:bg-pink-50 cursor-pointer' : 'cursor-not-allowed opacity-50'
               }`}
               title={hasInstagram ? "Instagram" : "Instagram not available"}
-              aria-label="View Instagram"
+              aria-label={hasInstagram ? "View Instagram" : "Instagram not available"}
               disabled={!hasInstagram}
             >
-              <svg className={`h-4 w-4 ${hasInstagram ? 'text-pink-600' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+              <svg className={`h-4 w-4 ${hasInstagram ? 'text-pink-600' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </button>
@@ -422,13 +437,13 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                 }
               }}
               className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center ${
-                hasFacebook ? 'hover:bg-blue-50 cursor-pointer' : 'cursor-not-allowed opacity-40'
+                hasFacebook ? 'hover:bg-blue-50 cursor-pointer' : 'cursor-not-allowed opacity-50'
               }`}
               title={hasFacebook ? "Facebook" : "Facebook not available"}
-              aria-label="View Facebook"
+              aria-label={hasFacebook ? "View Facebook" : "Facebook not available"}
               disabled={!hasFacebook}
             >
-              <svg className={`h-4 w-4 ${hasFacebook ? 'text-[#1877F2]' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+              <svg className={`h-4 w-4 ${hasFacebook ? 'text-[#1877F2]' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
             </button>
@@ -442,13 +457,13 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                 }
               }}
               className={`w-8 h-8 bg-white shadow-lg border border-gray-300 border-b-0 transition-colors flex items-center justify-center rounded-tl-lg ${
-                hasX ? 'hover:bg-gray-100 cursor-pointer' : 'cursor-not-allowed opacity-40'
+                hasX ? 'hover:bg-gray-100 cursor-pointer' : 'cursor-not-allowed opacity-50'
               }`}
               title={hasX ? "X" : "X not available"}
-              aria-label="View X"
+              aria-label={hasX ? "View X" : "X not available"}
               disabled={!hasX}
             >
-              <svg className={`h-4 w-4 ${hasX ? 'text-gray-800' : 'text-red-300'}`} fill="currentColor" viewBox="0 0 24 24">
+              <svg className={`h-4 w-4 ${hasX ? 'text-gray-800' : 'text-gray-400'}`} fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
             </button>
@@ -488,95 +503,122 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        <button onClick={onClose} className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-50 z-10" aria-label="Close social details">
-          <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        <button ref={closeButtonRef} onClick={onClose} className="overlay-close-button absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-50 z-10" aria-label="Close social details">
+          <svg className="w-6 h-6 sm:w-7 sm:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
 
       <div className="shrink-0">
         <div className="mb-2 sm:mb-4 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4">
-          <nav id="socialOverlayTabs" className="flex flex-wrap -mb-px gap-1" aria-label="Tabs">
+          <div id="socialOverlayTabs" className="flex flex-wrap -mb-px gap-1" role="tablist" aria-label="Social media and info tabs" aria-orientation="horizontal">
             {/* Photos Tab - Always Available */}
             <button
               onClick={() => handleTabClick('photos')}
               title="Photos"
-              aria-label="View photos tab"
+              role="tab"
+              id="tab-photos"
+              aria-selected={activeTab === 'photos'}
+              aria-controls="tabpanel-photos"
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('photos', true)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('photos', 'text-blue-500 dark:text-blue-400', true)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
               </svg>
+              <span className="sr-only">Photos</span>
             </button>
 
             {/* Reviews Tab - Always Available */}
             <button
               onClick={() => handleTabClick('reviews')}
               title="Reviews"
-              aria-label="View reviews tab"
+              role="tab"
+              id="tab-reviews"
+              aria-selected={activeTab === 'reviews'}
+              aria-controls="tabpanel-reviews"
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('reviews', true)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('reviews', 'text-amber-500 dark:text-amber-400', true)}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
               </svg>
+              <span className="sr-only">Reviews</span>
             </button>
 
             {/* Directions Tab - Always Available */}
             <button
               onClick={() => handleTabClick('directions')}
               title="Directions"
-              aria-label="View directions tab"
+              role="tab"
+              id="tab-directions"
+              aria-selected={activeTab === 'directions'}
+              aria-controls="tabpanel-directions"
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('directions', true)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('directions', 'text-indigo-500 dark:text-indigo-400', true)}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fillRule="evenodd" d="M12.95 4.05a.75.75 0 010 1.06l-4.2 4.2a.75.75 0 000 1.06l4.2 4.2a.75.75 0 11-1.06 1.06l-4.2-4.2a2.25 2.25 0 010-3.18l4.2-4.2a.75.75 0 011.06 0zM6.22 3.22a.75.75 0 011.06 0l2.25 2.25a.75.75 0 01-1.06 1.06L6.22 4.28a.75.75 0 010-1.06zM4 8.75A.75.75 0 014.75 8h.5a.75.75 0 010 1.5h-.5A.75.75 0 014 8.75zM4.75 11a.75.75 0 000 1.5H7a.75.75 0 000-1.5H4.75zM6.22 14.22a.75.75 0 011.06 1.06l-2.25 2.25a.75.75 0 01-1.06-1.06l2.25-2.25z" clipRule="evenodd" />
               </svg>
+              <span className="sr-only">Directions</span>
             </button>
 
             {/* Instagram Tab - Conditional */}
             <button
               onClick={() => hasInstagram && handleTabClick('instagram')}
               title={hasInstagram ? "Instagram" : "Instagram not available"}
-              aria-label="View Instagram tab"
+              role="tab"
+              id="tab-instagram"
+              aria-selected={activeTab === 'instagram'}
+              aria-controls="tabpanel-instagram"
+              aria-disabled={!hasInstagram}
               disabled={!hasInstagram}
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('instagram', hasInstagram)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('instagram', 'text-pink-600 dark:text-pink-500', hasInstagram)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
+              <span className="sr-only">Instagram{!hasInstagram ? ' (not available)' : ''}</span>
             </button>
 
             {/* Facebook Tab - Conditional */}
             <button
               onClick={() => hasFacebook && handleTabClick('facebook')}
               title={hasFacebook ? "Facebook" : "Facebook not available"}
-              aria-label="View Facebook tab"
+              role="tab"
+              id="tab-facebook"
+              aria-selected={activeTab === 'facebook'}
+              aria-controls="tabpanel-facebook"
+              aria-disabled={!hasFacebook}
               disabled={!hasFacebook}
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('facebook', hasFacebook)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('facebook', 'text-[#1877F2] dark:text-[#1877F2]', hasFacebook)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
+              <span className="sr-only">Facebook{!hasFacebook ? ' (not available)' : ''}</span>
             </button>
 
             {/* X Tab - Conditional */}
             <button
               onClick={() => hasX && handleTabClick('x')}
               title={hasX ? "X" : "X not available"}
-              aria-label="View X tab"
+              role="tab"
+              id="tab-x"
+              aria-selected={activeTab === 'x'}
+              aria-controls="tabpanel-x"
+              aria-disabled={!hasX}
               disabled={!hasX}
               className={`social-tab-button group inline-flex items-center justify-center py-3 px-2 sm:px-3 font-medium text-xs sm:text-sm rounded-t-md transition-all ${getTabClasses('x', hasX)}`}
             >
               <svg className={`h-5 w-5 sm:h-6 sm:w-6 ${getIconClasses('x', 'text-black dark:text-white', hasX)}`} fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
+              <span className="sr-only">X{!hasX ? ' (not available)' : ''}</span>
             </button>
-          </nav>
+          </div>
         </div>
       </div>
 
       <div className="flex-grow overflow-y-auto custom-scrollbar px-2 sm:px-4 pb-4">
         {/* --- MODIFIED: RESTORED PHOTOS TAB CONTENT --- */}
         {activeTab === 'photos' && (
-          <div id="social-photos-panel">
+          <div id="tabpanel-photos" role="tabpanel" aria-labelledby="tab-photos">
             {googlePhotosData && googlePhotosData.length > 0 ? (
               <div id="socialOverlayGooglePhotosContainer" className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2 pb-4">
                 {googlePhotosData.map((photoDataObject, index) => {
@@ -599,7 +641,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
         {/* --- MODIFIED: RESTORED REVIEWS TAB CONTENT --- */}
         {activeTab === 'reviews' && (
-          <div id="social-reviews-panel">
+          <div id="tabpanel-reviews" role="tabpanel" aria-labelledby="tab-reviews">
             <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Reviews</h3>
             {shop.placeDetails?.reviews && shop.placeDetails.reviews.length > 0 ? (
               <ul className="space-y-3">
@@ -633,7 +675,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
         
         {/* Directions Tab Panel */}
         {activeTab === 'directions' && (
-          <div id="social-directions-panel" className="p-2 sm:p-4">
+          <div id="tabpanel-directions" role="tabpanel" aria-labelledby="tab-directions" className="p-2 sm:p-4">
             {/* Header with Trip Mode Toggle */}
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -932,7 +974,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
         {/* Instagram Tab Content */}
         {activeTab === 'instagram' && (
-          <div className="py-4">
+          <div id="tabpanel-instagram" role="tabpanel" aria-labelledby="tab-instagram" className="py-4">
             {(() => {
               const profileEmbedCode = getInstagramProfileEmbed(shop);
 
@@ -971,7 +1013,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
         {/* Facebook Tab Content */}
         {activeTab === 'facebook' && (
-          <div className="py-4">
+          <div id="tabpanel-facebook" role="tabpanel" aria-labelledby="tab-facebook" className="py-4">
             {(() => {
               const facebookUrl = getFacebookUrl(shop);
               const facebookName = getFacebookDisplayName(shop);
@@ -1034,7 +1076,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
         {/* X Tab Content */}
         {activeTab === 'x' && (
-          <div className="py-4">
+          <div id="tabpanel-x" role="tabpanel" aria-labelledby="tab-x" className="py-4">
             {(() => {
               const timelineEmbed = getXTimelineEmbed(shop);
               const xUrl = getXUrl(shop);

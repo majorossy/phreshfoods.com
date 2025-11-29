@@ -665,6 +665,17 @@ body.modal-active {
    Mobile Bottom Sheet Styles (Phase 1)
    ======================================== */
 
+/* Mobile CSS Custom Properties - Animation timing tokens */
+:root {
+  --mobile-transition-duration: 300ms;
+  --mobile-transition-slow: 400ms;
+  --mobile-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --mobile-spring-easing: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mobile-card-transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                            opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                            filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Mobile-only styles - isolated via media query for zero desktop impact */
 @media (max-width: 767px) {
   /* Bottom Sheet Container */
@@ -704,6 +715,9 @@ body.modal-active {
     margin: 8px auto;
     /* Touch target expansion for better UX */
     cursor: grab;
+    /* Subtle hint animation on first load */
+    animation: handle-hint 2s ease-in-out 1.5s 2;
+    transition: transform 0.15s ease, background 0.15s ease;
   }
 
   .dark .drag-handle {
@@ -712,6 +726,31 @@ body.modal-active {
 
   .drag-handle:active {
     cursor: grabbing;
+    transform: scaleY(1.5);
+    background: #9ca3af; /* gray-400 - brighter when active */
+  }
+
+  .dark .drag-handle:active {
+    background: rgb(156, 163, 175); /* gray-400 */
+  }
+
+  /* Drag handle hint animation - subtle pulse to indicate draggability */
+  @keyframes handle-hint {
+    0%, 100% {
+      transform: scaleX(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scaleX(1.3);
+      opacity: 1;
+    }
+  }
+
+  /* Stop animation when dragging */
+  #mobileBottomSheet.is-dragging .drag-handle {
+    animation: none;
+    transform: scaleY(1.5);
+    background: #9ca3af;
   }
 
   /* Horizontal Carousel */
@@ -749,6 +788,12 @@ body.modal-active {
     scroll-snap-align: center;
     /* Force stop at each card (no accidental skip) */
     scroll-snap-stop: always;
+    /* GPU acceleration for smooth transforms */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Stable compositor layer (avoids layer thrashing) */
+    will-change: transform, opacity;
   }
 
   /* Prevent ListingsPanel from showing on mobile */

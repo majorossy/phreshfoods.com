@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { ShopWithDistance, LocationType } from '../../types';
 import { useNavigate } from 'react-router-dom';
-import { getShopDetailBasePath, getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
+import { getShopDetailBasePath, getDisplayName, getEmoji, getBadgeClasses, getGlowColor } from '../../utils/typeUrlMappings';
 import StarRating from '../UI/StarRating.tsx';
 import OptimizedImage from '../UI/OptimizedImage.tsx';
 import { escapeHTMLSafe } from '../../utils';
@@ -17,44 +17,15 @@ interface ShopCardProps {
 }
 
 // Helper function to get location type display info
-// Display names and emojis come from centralized config
+// All display names, emojis, and colors come from centralized config
 const getLocationTypeDisplay = (type: string) => {
-  // Get centralized display name and emoji
-  const displayName = getDisplayName(type as LocationType);
-  const emoji = getEmoji(type as LocationType);
-
-  // UI-specific color mappings for badges
-  let color: string;
-  switch (type) {
-    case 'farm_stand':
-      color = 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100';
-      break;
-    case 'cheese_shop':
-      color = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100';
-      break;
-    case 'fish_monger':
-      color = 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100';
-      break;
-    case 'butcher':
-      color = 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100';
-      break;
-    case 'antique_shop':
-      color = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100';
-      break;
-    case 'brewery':
-      color = 'bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100';
-      break;
-    case 'winery':
-      color = 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100';
-      break;
-    case 'sugar_shack':
-      color = 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100';
-      break;
-    default:
-      color = 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100';
-  }
-
-  return { emoji, label: displayName, title: displayName, color };
+  const locationType = type as LocationType;
+  return {
+    emoji: getEmoji(locationType),
+    label: getDisplayName(locationType),
+    title: getDisplayName(locationType),
+    color: getBadgeClasses(locationType),
+  };
 };
 
 const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
@@ -115,31 +86,6 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
   const isSelected = selectedShop?.slug === shop.slug || selectedShop?.GoogleProfileID === shop.GoogleProfileID;
   const isHovered = hoveredShop?.slug === shop.slug || hoveredShop?.GoogleProfileID === shop.GoogleProfileID;
 
-  // Get glow color and border color based on shop type
-  const getGlowColor = (type: string) => {
-    switch (type) {
-      case 'farm_stand':
-        return 'rgba(34, 197, 94, 0.5)'; // green
-      case 'cheese_shop':
-        return 'rgba(234, 179, 8, 0.5)'; // yellow
-      case 'fish_monger':
-        return 'rgba(59, 130, 246, 0.5)'; // blue
-      case 'butcher':
-        return 'rgba(239, 68, 68, 0.5)'; // red
-      case 'antique_shop':
-        return 'rgba(107, 114, 128, 0.5)'; // gray
-      case 'brewery':
-        return 'rgba(217, 119, 6, 0.5)'; // amber-600 (darker)
-      case 'winery':
-        return 'rgba(168, 85, 247, 0.5)'; // purple
-      case 'sugar_shack':
-        return 'rgba(146, 64, 14, 0.5)'; // amber-800 (brown-orange)
-      default:
-        return 'rgba(107, 114, 128, 0.5)'; // gray
-    }
-  };
-
-
   return (
     <div
       ref={cardRef}
@@ -160,7 +106,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
             }
           : isHovered
             ? {
-                boxShadow: `0 0 12px 2px ${getGlowColor(shop.type)}, 0 15px 35px -8px rgba(0, 0, 0, 0.25)`,
+                boxShadow: `0 0 12px 2px ${getGlowColor(shop.type as LocationType)}, 0 15px 35px -8px rgba(0, 0, 0, 0.25)`,
                 transform: 'scale(1.03) translateY(-6px)',
               }
             : {

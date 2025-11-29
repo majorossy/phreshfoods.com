@@ -11,12 +11,22 @@ import { ALL_LOCATION_TYPES } from '../types/shop';
 
 /**
  * Display configuration for location types
- * This is the single source of truth for all user-facing location type names
+ * This is the single source of truth for all user-facing location type names AND colors
  */
+export interface LocationTypeColors {
+  /** Tailwind CSS classes for badge styling */
+  badge: string;
+  /** Hex color for map markers (Tailwind color-500 values) */
+  marker: string;
+  /** RGBA color for hover glow effects */
+  glow: string;
+}
+
 export interface LocationTypeDisplay {
   singular: string;
   plural: string;
   emoji: string;
+  colors: LocationTypeColors;
 }
 
 export const LOCATION_TYPE_DISPLAY: Record<LocationType, LocationTypeDisplay> = {
@@ -24,42 +34,89 @@ export const LOCATION_TYPE_DISPLAY: Record<LocationType, LocationTypeDisplay> = 
     singular: 'Farm Stand',
     plural: 'Farm Stands',
     emoji: '🚜',
+    colors: {
+      badge: 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100',
+      marker: '#22c55e', // Green-500
+      glow: 'rgba(34, 197, 94, 0.5)',
+    },
   },
   cheese_shop: {
     singular: 'Cheesemonger',
     plural: 'Cheesemongers',
     emoji: '🧀',
+    colors: {
+      badge: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100',
+      marker: '#eab308', // Yellow-500
+      glow: 'rgba(234, 179, 8, 0.5)',
+    },
   },
   fish_monger: {
     singular: 'Fishmonger',
     plural: 'Fishmongers',
     emoji: '🐟',
+    colors: {
+      badge: 'bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100',
+      marker: '#3b82f6', // Blue-500
+      glow: 'rgba(59, 130, 246, 0.5)',
+    },
   },
   butcher: {
     singular: 'Butcher',
     plural: 'Butchers',
     emoji: '🥩',
+    colors: {
+      badge: 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100',
+      marker: '#ef4444', // Red-500
+      glow: 'rgba(239, 68, 68, 0.5)',
+    },
   },
   antique_shop: {
     singular: 'Antiques',
     plural: 'Antiques',
     emoji: '🏺',
+    colors: {
+      badge: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
+      marker: '#6b7280', // Gray-500
+      glow: 'rgba(107, 114, 128, 0.5)',
+    },
   },
   brewery: {
     singular: 'Brewery',
     plural: 'Breweries',
     emoji: '🍺',
+    colors: {
+      badge: 'bg-amber-100 text-amber-700 dark:bg-amber-700 dark:text-amber-100',
+      marker: '#d97706', // Amber-600
+      glow: 'rgba(217, 119, 6, 0.5)',
+    },
   },
   winery: {
     singular: 'Winery',
     plural: 'Wineries',
     emoji: '🍷',
+    colors: {
+      badge: 'bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100',
+      marker: '#a855f7', // Purple-500
+      glow: 'rgba(168, 85, 247, 0.5)',
+    },
   },
   sugar_shack: {
     singular: 'Sugar Shack',
     plural: 'Sugar Shacks',
     emoji: '🍁',
+    colors: {
+      badge: 'bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100',
+      marker: '#92400e', // Amber-800 (brown-orange)
+      glow: 'rgba(146, 64, 14, 0.5)',
+    },
   },
+};
+
+/** Default colors for unknown location types */
+const DEFAULT_COLORS: LocationTypeColors = {
+  badge: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-100',
+  marker: '#ed411a', // Red fallback
+  glow: 'rgba(107, 114, 128, 0.5)',
 };
 
 // Internal type → URL slug mapping
@@ -287,4 +344,50 @@ export function getEmoji(type: LocationType): string {
  */
 export function getDisplayConfig(type: LocationType): LocationTypeDisplay {
   return LOCATION_TYPE_DISPLAY[type];
+}
+
+/**
+ * Get Tailwind badge classes for a location type
+ * @param type - Location type
+ * @returns Tailwind CSS classes for badge styling
+ *
+ * @example
+ * getBadgeClasses('farm_stand') // Returns "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100"
+ */
+export function getBadgeClasses(type: LocationType): string {
+  return LOCATION_TYPE_DISPLAY[type]?.colors.badge ?? DEFAULT_COLORS.badge;
+}
+
+/**
+ * Get marker color (hex) for a location type
+ * @param type - Location type
+ * @returns Hex color string for map markers
+ *
+ * @example
+ * getMarkerColor('farm_stand') // Returns "#22c55e"
+ * getMarkerColor('cheese_shop') // Returns "#eab308"
+ */
+export function getMarkerColor(type: LocationType): string {
+  return LOCATION_TYPE_DISPLAY[type]?.colors.marker ?? DEFAULT_COLORS.marker;
+}
+
+/**
+ * Get glow color (RGBA) for a location type
+ * @param type - Location type
+ * @returns RGBA color string for hover glow effects
+ *
+ * @example
+ * getGlowColor('farm_stand') // Returns "rgba(34, 197, 94, 0.5)"
+ */
+export function getGlowColor(type: LocationType): string {
+  return LOCATION_TYPE_DISPLAY[type]?.colors.glow ?? DEFAULT_COLORS.glow;
+}
+
+/**
+ * Get all colors for a location type
+ * @param type - Location type
+ * @returns Color configuration object
+ */
+export function getTypeColors(type: LocationType): LocationTypeColors {
+  return LOCATION_TYPE_DISPLAY[type]?.colors ?? DEFAULT_COLORS;
 }

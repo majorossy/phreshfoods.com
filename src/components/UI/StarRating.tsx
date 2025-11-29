@@ -16,9 +16,9 @@ const StarRating: React.FC<StarRatingProps> = ({
 
   if (isNaN(rating) || rating < 0 || rating > 5) {
     if (ratingValue === "N/A" || ratingValue === "" || ratingValue === null || ratingValue === undefined) {
-      return <div className="flex items-center text-xs text-gray-500">No rating</div>;
+      return <div className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
     }
-    return <div className="flex items-center text-xs text-gray-500">No rating</div>;
+    return <div className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
   }
 
   const displayRatingValue = rating.toFixed(1);
@@ -34,18 +34,23 @@ const StarRating: React.FC<StarRatingProps> = ({
         starClass = 'text-yellow-400';
     }
     starsHTML.push(
-      <svg key={i} className={`${starSizeClass} fill-current ${starClass}`} viewBox="0 0 20 20">
+      <svg key={i} className={`${starSizeClass} fill-current ${starClass}`} viewBox="0 0 20 20" aria-hidden="true">
         <path d={starSVGPath} />
       </svg>
     );
   }
 
+  // Build accessible label for screen readers
+  const ariaLabel = typeof reviewCount === 'number' && reviewCount >= 0
+    ? `Rating: ${displayRatingValue} out of 5 stars from ${reviewCount.toLocaleString()} reviews`
+    : `Rating: ${displayRatingValue} out of 5 stars`;
+
   return (
-    <div className="flex items-center gap-x-1 text-xs">
-      <span className="font-semibold text-gray-700">{displayRatingValue}</span>
-      <span className="inline-flex items-center">{starsHTML}</span>
+    <div className="flex items-center gap-x-1 text-xs" role="img" aria-label={ariaLabel}>
+      <span className="font-semibold text-gray-700" aria-hidden="true">{displayRatingValue}</span>
+      <span className="inline-flex items-center" aria-hidden="true">{starsHTML}</span>
       {(typeof reviewCount === 'number' && reviewCount >= 0) && (
-        <span className="text-gray-500 group-hover:text-gray-700">({reviewCount.toLocaleString()})</span>
+        <span className="text-gray-500 group-hover:text-gray-700" aria-hidden="true">({reviewCount.toLocaleString()})</span>
       )}
     </div>
   );

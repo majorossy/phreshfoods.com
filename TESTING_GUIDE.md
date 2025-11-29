@@ -127,18 +127,19 @@ import { BrowserRouter } from 'react-router-dom';
 import Header from './Header';
 import { SearchProvider } from '../../contexts/SearchContext';
 import { UIProvider } from '../../contexts/UIContext';
-import { FarmDataProvider } from '../../contexts/FarmDataContext';
+import { LocationDataProvider } from '../../contexts/LocationDataContext';
 
 // Helper to wrap component with all needed providers
+// Note: LocationDataProvider is the primary data context (FarmDataProvider is legacy)
 const AllProviders = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>
-    <FarmDataProvider>
+    <LocationDataProvider>
       <SearchProvider>
         <UIProvider>
           {children}
         </UIProvider>
       </SearchProvider>
-    </FarmDataProvider>
+    </LocationDataProvider>
   </BrowserRouter>
 );
 

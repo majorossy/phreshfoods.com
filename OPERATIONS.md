@@ -11,11 +11,14 @@ Quick reference for common development operations. Use these plans as standardiz
 ### Quick Refresh (Single Type)
 ```bash
 # Choose the type you updated:
-npm run process-data:farms      # Farm stands only
-npm run process-data:cheese     # Cheese shops only
-npm run process-data:fish       # Fish mongers only
-npm run process-data:butchers   # Butchers only
-npm run process-data:antiques   # Antique shops only
+npm run process-data:farms        # Farm stands only
+npm run process-data:cheese       # Cheese shops only
+npm run process-data:fish         # Fish mongers only
+npm run process-data:butchers     # Butchers only
+npm run process-data:antiques     # Antique shops only
+npm run process-data:breweries    # Breweries only
+npm run process-data:wineries     # Wineries only
+npm run process-data:sugar-shacks # Sugar shacks only
 ```
 
 ### Full Refresh (All Types)
@@ -194,6 +197,8 @@ lsof -ti :5173 | xargs kill -9
 | Start dev | `npm run dev:full` |
 | Refresh all data | `npm run process-data` |
 | Refresh farms only | `npm run process-data:farms` |
+| Refresh cheese only | `npm run process-data:cheese` |
+| Refresh breweries | `npm run process-data:breweries` |
 | Type check | `npm run typecheck` |
 | Full quality check | `npm run check:all` |
 | Build frontend | `npm run build:frontend` |

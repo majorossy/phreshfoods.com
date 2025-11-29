@@ -386,37 +386,38 @@ const Header: React.FC = () => {
                   locationTypeButtonRefs.current[type] = React.createRef<HTMLButtonElement>();
                 }
 
+                // Color classes - inactive state uses text-gray-600 for WCAG AA compliance (4.5:1 contrast ratio)
                 const colorClasses = {
                   green: isActive
                     ? 'bg-green-100 text-green-700 hover:bg-green-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-green-200 hover:text-black border border-green-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-green-200 hover:text-black border border-green-400',
                   yellow: isActive
                     ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-yellow-200 hover:text-black border border-yellow-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-yellow-200 hover:text-black border border-yellow-400',
                   blue: isActive
                     ? 'bg-blue-100 text-blue-700 hover:bg-blue-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-blue-200 hover:text-black border border-blue-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-blue-200 hover:text-black border border-blue-400',
                   red: isActive
                     ? 'bg-red-100 text-red-700 hover:bg-red-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-red-200 hover:text-black border border-red-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-red-200 hover:text-black border border-red-400',
                   purple: isActive
                     ? 'bg-purple-100 text-purple-700 hover:bg-purple-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-purple-200 hover:text-black border border-purple-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-purple-200 hover:text-black border border-purple-400',
                   amber: isActive
                     ? 'bg-amber-100 text-amber-700 hover:bg-amber-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-amber-200 hover:text-black border border-amber-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-amber-200 hover:text-black border border-amber-400',
                   rose: isActive
                     ? 'bg-rose-100 text-rose-700 hover:bg-rose-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-rose-200 hover:text-black border border-rose-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-rose-200 hover:text-black border border-rose-400',
                   orange: isActive
                     ? 'bg-orange-100 text-orange-700 hover:bg-orange-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-orange-200 hover:text-black border border-orange-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-orange-200 hover:text-black border border-orange-400',
                   teal: isActive
                     ? 'bg-teal-100 text-teal-700 hover:bg-teal-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-teal-200 hover:text-black border border-teal-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-teal-200 hover:text-black border border-teal-400',
                   gray: isActive
                     ? 'bg-gray-100 text-gray-700 hover:bg-gray-400 hover:text-black'
-                    : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-black border border-gray-400',
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-black border border-gray-400',
                 };
 
                 // Disabled styling - gray, low opacity, no hover effects
@@ -561,6 +562,7 @@ const Header: React.FC = () => {
               WebkitOverflowScrolling: 'touch',
             }}
             role="dialog"
+            aria-modal="true"
             aria-label="Filter menu"
           >
             <div className="p-3 min-h-full">
@@ -604,7 +606,7 @@ const Header: React.FC = () => {
                         teal: 'text-teal-700',
                         gray: 'text-gray-700',
                       }[config.color]
-                    : 'text-gray-400 dark:text-gray-400';
+                    : 'text-gray-600 dark:text-gray-300'; // Fixed: improved contrast for WCAG AA compliance
 
                   return (
                     <div key={type} className="w-full">

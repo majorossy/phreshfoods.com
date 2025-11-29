@@ -6,6 +6,7 @@ import { useUI } from '../../contexts/UIContext';
 import { useTripPlanner } from '../../contexts/TripPlannerContext';
 import ProductIconGrid from '../UI/ProductIconGrid';
 import { getProductConfig } from '../../config/productRegistry';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 // Fixed dimensions for zero layout shift (CLS optimization)
 const FIXED_HEIGHTS = {
@@ -143,6 +144,7 @@ interface ShopDetailsOverlayProps {
 }
 
 const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = true, onClose }) => {
+  const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const { setSocialOverlayActiveTab } = useUI();
   const { addStopToTrip, removeStopFromTrip, isShopInTrip, tripStops } = useTripPlanner();
@@ -150,6 +152,14 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
   const [isLoading, setIsLoading] = useState(true); // Show skeleton initially
   const previousShopRef = useRef<string | null>(null);
+
+  // Focus trap for accessibility - handles Escape key and focus management
+  useFocusTrap({
+    isActive: isOpen,
+    onClose,
+    containerRef: overlayRef,
+    initialFocusRef: closeButtonRef,
+  });
 
   // When the overlay opens for a new shop, show skeleton briefly then reveal content
   useEffect(() => {
@@ -170,11 +180,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
       return () => clearTimeout(timer);
     }
   }, [shop]);
-
-  // Focus management: focus close button when overlay opens
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-  }, []);
 
   // Handler for clicking on rating stars to switch to reviews tab
   const handleRatingClick = () => {
@@ -244,6 +249,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
 
   return (
     <div
+      ref={overlayRef}
       id="detailsOverlayShop"
       className={`detail-pop-overlay custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
       role="dialog"
@@ -356,7 +362,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
         <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleAccordion('info')}
-            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200"
+            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             style={{
               background: 'linear-gradient(to right, #426976, #5a8694)'
             }}
@@ -602,7 +608,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
         <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <button
             onClick={() => toggleAccordion('products')}
-            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200"
+            className="w-full flex items-center justify-between px-4 py-3 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
             style={{
               background: 'linear-gradient(to right, #426976, #5a8694)'
             }}

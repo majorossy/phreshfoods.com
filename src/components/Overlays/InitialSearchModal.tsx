@@ -4,12 +4,22 @@ import { AutocompletePlace } from '../../types';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { DEFAULT_PORTLAND_CENTER, MAINE_BOUNDS_LITERAL } from '../../config/appConfig.ts';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 const InitialSearchModal = () => {
   const { setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, mapsApiReady } = useSearch();
   const { setIsInitialModalOpen } = useUI();
+  const modalContainerRef = useRef<HTMLDivElement | null>(null); // Ref for focus trap container
   const autocompleteInputRef = useRef<HTMLInputElement | null>(null); // Ref for the <input> element
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null); // Ref for the Autocomplete instance
+
+  // Focus trap for accessibility
+  useFocusTrap({
+    isActive: true, // This modal is always active when rendered
+    onClose: () => setIsInitialModalOpen(false),
+    containerRef: modalContainerRef,
+    initialFocusRef: autocompleteInputRef,
+  });
 
   // Local state to hold the place selected by *this* autocomplete instance before submitting
   const [selectedPlaceFromModal, setSelectedPlaceFromModal] = useState<AutocompletePlace | null>(null);
@@ -131,25 +141,47 @@ const InitialSearchModal = () => {
     setIsInitialModalOpen(false);
   };
 
+  // Handle Enter key to submit search
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      handleModalSearch();
+    }
+  };
+
   return (
     <div
       id="initialSearchModal"
       className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-[100] transition-opacity duration-300 ease-in-out opacity-100 visible"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="initial-search-heading"
+      aria-describedby="initial-search-description"
     >
-      <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-11/12 max-w-md transform transition-all duration-300 ease-in-out scale-100 opacity-100">
-        <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center">
+      <div
+        ref={modalContainerRef}
+        className="bg-white p-6 sm:p-8 rounded-lg shadow-xl w-11/12 max-w-md transform transition-all duration-300 ease-in-out scale-100 opacity-100"
+      >
+        <h2
+          id="initial-search-heading"
+          className="text-xl sm:text-2xl font-semibold text-gray-800 mb-4 text-center"
+        >
           Find Local Shops Near You
         </h2>
+        <p id="initial-search-description" className="sr-only">
+          Enter a location to search for local shops. Press Enter to search or Escape to close.
+        </p>
         {/* Regular HTML input for Google Places Autocomplete */}
         <input
           ref={autocompleteInputRef}
-          id="modalSearchAutocompleteClassic" // New unique ID
+          id="modalSearchAutocompleteClassic"
           type="text"
           placeholder="Enter your town, city, or zip code"
+          aria-label="Search location"
           className="w-full p-3 border border-gray-300 rounded-md mb-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
           value={inputValue}
           onChange={handleInputChange}
-          // onKeyDown could be added here to handle 'Enter' submissions if needed
+          onKeyDown={handleKeyDown}
         />
         <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
           <button

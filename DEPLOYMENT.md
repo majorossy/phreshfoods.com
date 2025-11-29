@@ -80,7 +80,7 @@ npm run process-data
 ```
 
 This command will:
-- Fetch data from Google Sheets (all location types: farm stands, cheese shops, fish mongers, butchers, antique shops)
+- Fetch data from Google Sheets (all 8 location types: farm stands, cheese shops, fish mongers, butchers, antique shops, breweries, wineries, sugar shacks)
 - Geocode all addresses using Google Geocoding API
 - Enrich each location with Google Place Details (ratings, hours, photos, reviews)
 - Save processed data to `backend/data/*.json`
@@ -101,6 +101,9 @@ You should see:
 - `fishMongersData.json`
 - `butchersData.json`
 - `antiqueShopsData.json`
+- `breweriesData.json` (if breweries enabled)
+- `wineriesData.json` (if wineries enabled)
+- `sugarShacksData.json` (if sugar shacks enabled)
 
 ## Build Process
 

@@ -62,7 +62,7 @@ open http://localhost:5173
 
 ## Next Steps (Optional Optimizations)
 
-1. **Complete Virtual Scrolling:** The react-window implementation is partially done but disabled
+1. **Virtual Scrolling:** Now using @tanstack/react-virtual (replaces react-window)
 2. **Enable Production Build Optimizations:** Configure Vite for production builds
 3. **Add Performance Monitoring Dashboard:** Display Web Vitals in UI
 4. **Optimize Bundle Size:** Analyze and reduce JavaScript bundle size
