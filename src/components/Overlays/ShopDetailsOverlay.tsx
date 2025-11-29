@@ -195,7 +195,13 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
   };
 
   // Calculate product counts for accordion title - MUST be before early return
+  // Note: useMemo must be called unconditionally (React Rules of Hooks),
+  // so we guard against null shop INSIDE the callback
   const { availableCount, totalCount } = useMemo(() => {
+    if (!shop) {
+      return { availableCount: 0, totalCount: 0 };
+    }
+
     const productConfig = getProductConfig(shop.type);
     let available = 0;
     let total = 0;

@@ -122,14 +122,21 @@ describe('ShopDetailsOverlay Component', () => {
 
   describe('Null Shop Handling', () => {
     it('should handle null shop gracefully', () => {
-      // Note: The component has a bug where useMemo runs before the null guard.
-      // This is a known issue that would need to be fixed in the component.
-      // For now, we skip this test or expect an error.
+      // Component should render without crashing when shop is null
+      renderComponent(null);
 
-      // Verify that the test file can import the component
-      expect(ShopDetailsOverlay).toBeDefined();
-      // Component requires a shop prop - passing null would cause an error
-      // This test documents the current behavior
+      // Should not crash - dialog won't be present since component returns null
+      const dialog = screen.queryByRole('dialog');
+      expect(dialog).not.toBeInTheDocument();
+    });
+
+    it('should render nothing when shop is null', () => {
+      renderComponent(null);
+
+      // The ShopDetailsOverlay should not render any dialog when shop is null
+      // (Other providers like ToastProvider may render their containers)
+      expect(screen.queryByRole('dialog')).toBeNull();
+      expect(screen.queryByLabelText(/close shop details/i)).toBeNull();
     });
   });
 });
