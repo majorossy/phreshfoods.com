@@ -332,18 +332,17 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
                   ? 'bg-gray-100 dark:bg-gray-700 shadow-sm'
                   : 'bg-gray-50 dark:bg-gray-800 opacity-50'
               }`}
-              role="img"
-              aria-label={`${product.name}: ${product.available ? 'available' : 'not available'}`}
             >
               <OptimizedImage
                 src={`/images/icons/${product.icon}`}
-                alt=""
+                alt={showProductNames ? '' : `${product.name}: ${product.available ? 'available' : 'not available'}`}
                 className={`${iconSizeClasses[iconSize]} object-contain`}
                 loading="lazy"
               />
               {showProductNames && (
-                <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'} aria-hidden="true">
+                <span className={product.available ? 'text-gray-700 dark:text-gray-300 font-medium' : 'text-gray-500 dark:text-gray-500'}>
                   {product.name}
+                  <span className="sr-only">: {product.available ? 'available' : 'not available'}</span>
                 </span>
               )}
             </div>
