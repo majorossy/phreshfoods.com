@@ -69,7 +69,7 @@ const MapComponent: React.FC = () => {
   // Use domain-specific hooks for better performance (only re-render when relevant state changes)
   const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
-  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
+  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, previewShop } = useUI();
   const { directionsResult, clearDirections } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { tripDirectionsResult } = useTripPlanner();
@@ -764,8 +764,9 @@ const MapComponent: React.FC = () => {
       return;
     }
 
-    // Show InfoWindow for either selected or hovered shop (prioritize selected)
-    const shopToShow = selectedShop || hoveredShop;
+    // Show InfoWindow with priority: selected > preview > hovered
+    // Preview allows browsing carousel with arrows without selecting
+    const shopToShow = selectedShop || previewShop || hoveredShop;
 
     if (shopToShow && shopToShow.lat != null && shopToShow.lng != null) {
       const shopId = shopToShow.slug || shopToShow.GoogleProfileID || String(shopToShow.id);

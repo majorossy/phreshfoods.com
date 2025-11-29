@@ -1,5 +1,6 @@
 // src/components/UI/EmptyState.tsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LocationType } from '../../types';
 
 interface EmptyStateProps {
@@ -49,6 +50,8 @@ export const NoResultsState: React.FC<{
   onClearFilters?: () => void;
   activeLocationTypes?: Set<LocationType>;
 }> = ({ onClearFilters, activeLocationTypes }) => {
+  const navigate = useNavigate();
+
   // Generate context-aware message based on selected location types
   const getEmptyMessage = () => {
     const typesArray = Array.from(activeLocationTypes || []);
@@ -83,19 +86,35 @@ export const NoResultsState: React.FC<{
   const { title, description } = getEmptyMessage();
 
   return (
-    <EmptyState
-      icon={
+    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+      <div className="mb-4">
         <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
-      }
-      title={title}
-      description={description}
-      action={onClearFilters ? {
-        label: "Clear All Filters",
-        onClick: onClearFilters
-      } : undefined}
-    />
+      </div>
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+        {title}
+      </h3>
+      <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mb-6">
+        {description}
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3">
+        {onClearFilters && (
+          <button
+            onClick={onClearFilters}
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+          >
+            Clear All Filters
+          </button>
+        )}
+        <button
+          onClick={() => navigate('/not-sure')}
+          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+        >
+          Browse Categories
+        </button>
+      </div>
+    </div>
   );
 };
 

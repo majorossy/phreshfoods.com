@@ -1,5 +1,5 @@
 // src/components/Mobile/MobileBottomSheet.tsx
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { useUI } from '../../contexts/UIContext';
 import { useBottomSheetDrag } from '../../hooks/useBottomSheetDrag';
 import HorizontalCarousel from './HorizontalCarousel';
@@ -17,17 +17,34 @@ import QuickShopInfo from './QuickShopInfo';
  * - "See Full Details" button opens full overlay
  */
 const MobileBottomSheet: React.FC = () => {
-  const { bottomSheetHeight, setBottomSheetHeight, selectedShop, bottomSheetExpanded } = useUI();
+  const { bottomSheetHeight, setBottomSheetHeight, selectedShop, isManuallyCollapsed, setIsManuallyCollapsed } = useUI();
 
   // Handle snap point changes
   const handleSnapChange = useCallback((newHeight: number) => {
-    setBottomSheetHeight(newHeight);
-  }, [setBottomSheetHeight]);
+    // Set flag FIRST (before height triggers auto-expand effect)
+    // This ensures React batches both updates and effect sees the flag
+    if (newHeight === 0.3 && selectedShop) {
+      setIsManuallyCollapsed(true);
+    } else if (newHeight > 0.3) {
+      // Clear flag when expanding (drag up or snap to higher point)
+      setIsManuallyCollapsed(false);
+    }
 
-  // Drag gesture hook
-  const { ref, height, isDragging, style } = useBottomSheetDrag({
+    // Then set height - React batches both updates together
+    setBottomSheetHeight(newHeight);
+  }, [setBottomSheetHeight, selectedShop, setIsManuallyCollapsed]);
+
+  // Auto-expand to 90% when a shop is selected (unless manually collapsed)
+  useEffect(() => {
+    if (selectedShop && bottomSheetHeight < 0.5 && !isManuallyCollapsed) {
+      setBottomSheetHeight(0.9);
+    }
+  }, [selectedShop, bottomSheetHeight, isManuallyCollapsed, setBottomSheetHeight]);
+
+  // Drag gesture hook - expand to 90% when shop is selected
+  const { ref, isDragging, style } = useBottomSheetDrag({
     initialHeight: bottomSheetHeight,
-    snapPoints: [0.3, 0.5, 0.75],
+    snapPoints: selectedShop ? [0.3, 0.5, 0.9] : [0.3, 0.5, 0.75],
     onSnapChange: handleSnapChange,
     enabled: true,
   });
@@ -42,6 +59,7 @@ const MobileBottomSheet: React.FC = () => {
         rounded-t-2xl
         shadow-[0_-4px_20px_rgba(0,0,0,0.15)]
         z-40
+        overflow-visible
         ${isDragging ? 'is-dragging' : ''}
       `}
       style={{
@@ -60,15 +78,15 @@ const MobileBottomSheet: React.FC = () => {
         />
       </div>
 
-      {/* Content Container - switches between carousel and quick info */}
-      <div className="h-full overflow-hidden">
-        {bottomSheetHeight > 0.5 && selectedShop ? (
-          /* Quick Shop Info - shown when expanded (>50vh) */
-          <div className="h-full overflow-y-auto">
-            <QuickShopInfo shop={selectedShop} />
+      {/* Content Container - switches between carousel and detailed info */}
+      <div className="h-full overflow-x-visible overflow-y-hidden">
+        {bottomSheetHeight >= 0.5 && selectedShop ? (
+          /* Detailed Shop Info - shown when expanded (≥50vh) */
+          <div className="h-full overflow-y-auto custom-scrollbar">
+            <QuickShopInfo shop={selectedShop} showFullDetails={bottomSheetHeight >= 0.9} />
           </div>
         ) : (
-          /* Carousel - shown when collapsed/half (≤50vh) */
+          /* Carousel - shown when collapsed (<50vh) */
           <HorizontalCarousel />
         )}
       </div>

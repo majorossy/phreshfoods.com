@@ -71,7 +71,6 @@ describe('ProductFilters Component', () => {
       // Should have multiple category sections
       // Categories vary based on selected location types
       // With all types selected, we should see various categories
-      const categories = ['Meats', 'Poultry', 'Produce', 'Dairy']; // Example categories
 
       // At least some categories should be present
       const allText = screen.getByRole('heading', { level: 3, name: 'Filters' }).parentElement?.textContent;

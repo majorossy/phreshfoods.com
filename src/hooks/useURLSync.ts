@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { useFilters } from '../contexts/FilterContext';
 import { useSearch } from '../contexts/SearchContext';
-import { ALL_LOCATION_TYPES } from '../types/shop';
+import { ENABLED_LOCATION_TYPES } from '../config/enabledLocationTypes';
 import {
   encodeFiltersToURL,
   URLFilterState,
@@ -55,6 +55,19 @@ export function useURLSync() {
       return;
     }
 
+    // Skip URL sync when on /all ONLY if in clear state (all types, no filters)
+    // This prevents flash when clicking logo, but allows filter application
+    if (location.pathname === '/all') {
+      const hasActiveFilters = Object.values(activeProductFilters).some(v => v === true);
+      const isAllLocationTypesSelected = activeLocationTypes.size === ENABLED_LOCATION_TYPES.length;
+
+      // Only skip URL sync when we're in the "clear" state
+      if (isAllLocationTypesSelected && !hasActiveFilters) {
+        return; // Stay on /all - already in correct clear state
+      }
+      // If user has filters or non-all types, allow URL sync to navigate away
+    }
+
     // Clear any pending timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
@@ -62,15 +75,10 @@ export function useURLSync() {
 
     // Debounce URL updates by 300ms
     timeoutRef.current = setTimeout(() => {
-      // 1. Check if we're in the default/homepage state (all types + no filters)
-      const hasActiveFilters = Object.values(activeProductFilters).some(v => v === true);
-      const isAllLocationTypesSelected = activeLocationTypes.size === ALL_LOCATION_TYPES.length;
-      const isDefaultState = !hasActiveFilters && isAllLocationTypesSelected;
+      // 1. Encode location types to path
+      const typesPath = encodeTypesToPath(activeLocationTypes);
 
-      // 2. Encode location types to path (use '/' for homepage, not '/all')
-      const typesPath = isDefaultState ? '' : encodeTypesToPath(activeLocationTypes);
-
-      // 3. Build current filter state from context values (for query params only)
+      // 2. Build current filter state from context values (for query params only)
       const currentState: URLFilterState = {
         locationTypes: activeLocationTypes, // Not used in query params anymore
         productFilters: activeProductFilters,
@@ -78,12 +86,30 @@ export function useURLSync() {
         searchRadius: currentRadius,
       };
 
-      // 4. Encode query parameters (products, location, lat, lng, radius)
+      // 3. Encode query parameters (products, location, lat, lng, radius)
       const queryParams = encodeFiltersToURL(currentState);
       const queryString = queryParams.toString();
 
-      // 5. Build the new URL
-      let newUrl = typesPath ? `/${typesPath}` : '/';
+      // 4. Build the new URL
+      const hasActiveFilters = Object.values(activeProductFilters).some(v => v === true);
+      const isAllLocationTypesSelected = activeLocationTypes.size === ENABLED_LOCATION_TYPES.length;
+      const hasNoLocationTypes = activeLocationTypes.size === 0;
+
+      let newUrl: string;
+
+      // EMPTY FILTERS: No location types selected → /not-sure
+      if (hasNoLocationTypes) {
+        newUrl = '/not-sure';
+      }
+      // CLEAR FILTERS: All types + no products → /all
+      else if (isAllLocationTypesSelected && !hasActiveFilters) {
+        newUrl = '/all';
+      }
+      // FILTERED: Specific types or products selected → encoded path
+      else {
+        newUrl = typesPath ? `/${typesPath}` : '/all';
+      }
+
       if (queryString) {
         newUrl += `?${queryString}`;
       }

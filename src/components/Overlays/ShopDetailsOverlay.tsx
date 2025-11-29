@@ -149,7 +149,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['info', 'hours', 'products'])); // All open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
   const [isLoading, setIsLoading] = useState(true); // Show skeleton initially
-  const [displayedShop, setDisplayedShop] = useState<Shop | null>(null); // Track which shop is displayed
   const previousShopRef = useRef<string | null>(null);
 
   // When the overlay opens for a new shop, show skeleton briefly then reveal content
@@ -164,7 +163,6 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
 
       // Brief delay to allow skeleton to show, then reveal content
       const timer = setTimeout(() => {
-        setDisplayedShop(shop);
         setIsLoading(false);
         previousShopRef.current = shopId;
       }, 150); // Short delay for smooth transition

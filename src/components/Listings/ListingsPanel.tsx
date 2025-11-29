@@ -1,9 +1,9 @@
 // src/components/Listings/ListingsPanel.tsx
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useFilters } from '../../contexts/FilterContext';
-import { ALL_LOCATION_TYPES } from '../../types/shop';
 import ShopCard from './ShopCard.tsx';
 import ShopCardSkeleton from '../UI/ShopCardSkeleton.tsx';
 import { NoResultsState } from '../UI/EmptyState.tsx';
@@ -13,52 +13,22 @@ import WelcomeState from '../UI/WelcomeState.tsx';
 const VIRTUALIZATION_THRESHOLD = 20;
 
 const ListingsPanel = () => {
+  const location = useLocation();
   const { currentlyDisplayedLocations, allLocations, isLoadingLocations, locationsError, retryLoadLocations } = useLocationData();
-  const { activeProductFilters, setActiveProductFilters, activeLocationTypes } = useFilters();
-  const [headerHeight, setHeaderHeight] = useState(0);
+  const { setActiveProductFilters, activeLocationTypes } = useFilters();
   const [columnsPerRow, setColumnsPerRow] = useState(2);
 
   // Ref for the scrollable container
   const parentRef = useRef<HTMLElement>(null);
 
-  // Measure header height dynamically
-  useEffect(() => {
-    const measureHeader = () => {
-      const header = document.querySelector('header');
-      if (header) {
-        setHeaderHeight(header.offsetHeight + 8); // Add 8px spacing
-      }
-    };
-
-    measureHeader();
-    window.addEventListener('resize', measureHeader);
-
-    const header = document.querySelector('header');
-    let resizeObserver: ResizeObserver | null = null;
-
-    if (header && typeof ResizeObserver !== 'undefined') {
-      resizeObserver = new ResizeObserver(measureHeader);
-      resizeObserver.observe(header);
-    }
-
-    return () => {
-      window.removeEventListener('resize', measureHeader);
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      }
-    };
-  }, []);
-
-  // Calculate columns based on panel width
+  // Calculate columns based on screen width (not panel width)
   useEffect(() => {
     const updateColumns = () => {
-      const panel = parentRef.current;
-      if (panel) {
-        const width = panel.clientWidth;
-        // Match Tailwind breakpoints: 1 column on small, 2 on sm+
-        // md breakpoint goes back to 1, lg+ goes to 2
-        setColumnsPerRow(width < 640 ? 1 : 2);
-      }
+      const screenWidth = window.innerWidth;
+      // Mobile (< 640px): 1 column
+      // Small tablet (640-1000px): 1 column (full width cards)
+      // Large tablet/desktop (1000px+): 2 columns
+      setColumnsPerRow(screenWidth < 1000 ? 1 : 2);
     };
 
     updateColumns();
@@ -101,8 +71,7 @@ const ListingsPanel = () => {
       <section
         id="listingsPanel"
         ref={parentRef}
-        className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
-        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+        className="w-full md:w-2/5 lg:w-1/3 px-3 pb-3 sm:px-4 sm:pb-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           {Array(6).fill(0).map((_, index) => (
@@ -119,8 +88,7 @@ const ListingsPanel = () => {
       <section
         id="listingsPanel"
         ref={parentRef}
-        className="w-full md:w-2/5 lg:w-1/3 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
-        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
+        className="w-full md:w-2/5 lg:w-1/3 px-3 pb-3 sm:px-4 sm:pb-4 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
       >
         <div className="flex flex-col items-center justify-center h-full p-6 text-center">
           <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
@@ -141,19 +109,13 @@ const ListingsPanel = () => {
     );
   }
 
-  // Check if we're in the default/homepage state
-  const hasActiveFilters = Object.values(activeProductFilters).some(value => value === true);
-  const isAllLocationTypesSelected = activeLocationTypes.size === ALL_LOCATION_TYPES.length;
-  const isDefaultState = !hasActiveFilters && isAllLocationTypesSelected;
-
-  // Show welcome/homepage state when in default state (no filters + all location types)
-  if (isDefaultState) {
+  // Show WelcomeState ONLY on /not-sure route
+  if (location.pathname === '/not-sure') {
     return (
       <section
         id="listingsPanel"
         ref={parentRef}
         className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
-        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
       >
         <WelcomeState />
       </section>
@@ -167,9 +129,8 @@ const ListingsPanel = () => {
         id="listingsPanel"
         ref={parentRef}
         className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0"
-        style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
       >
-        <div className="p-3 sm:p-4">
+        <div className="px-3 pb-3 sm:px-4 sm:pb-4">
           <NoResultsState onClearFilters={handleClearFilters} activeLocationTypes={activeLocationTypes} />
         </div>
       </section>
@@ -182,12 +143,11 @@ const ListingsPanel = () => {
       id="listingsPanel"
       ref={parentRef}
       className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0 animate-fadeIn"
-      style={{ paddingTop: headerHeight > 0 ? `${headerHeight}px` : '8rem' }}
     >
       {useVirtualScrolling ? (
         // Virtualized rendering for large lists
         <div
-          className="p-3 sm:p-4"
+          className="px-3 pb-3 sm:px-4 sm:pb-4"
           style={{
             height: `${virtualizer.getTotalSize()}px`,
             width: '100%',
@@ -224,7 +184,7 @@ const ListingsPanel = () => {
         </div>
       ) : (
         // Regular rendering for small lists
-        <div className="p-3 sm:p-4">
+        <div className="px-3 pb-3 sm:px-4 sm:pb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
             {currentlyDisplayedLocations.map(shop => (
               <ShopCard

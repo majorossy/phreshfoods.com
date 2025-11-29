@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 
 import App from './App.tsx';
 // import AppTest from './AppTest';  // Temporary test
-import { AppProvider } from './contexts/AppContext.tsx';
+import { AppProviders } from './contexts/AppProviders.tsx';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 import { loadGoogleMapsScript } from './utils/loadGoogleMapsScript';
 
@@ -29,9 +29,9 @@ if (rootElement) {
             v7_relativeSplatPath: true,
           }}
         >
-          <AppProvider>
+          <AppProviders>
             <App />
-          </AppProvider>
+          </AppProviders>
         </BrowserRouter>
       </ErrorBoundary>
     </React.StrictMode>

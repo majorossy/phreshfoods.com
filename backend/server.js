@@ -17,6 +17,12 @@ const PORT = process.env.PORT || 3000;
 const GOOGLE_API_KEY_BACKEND = process.env.GOOGLE_API_KEY_BACKEND; // Still needed for on-demand calls
 const GOOGLE_SHEET_URL = process.env.GOOGLE_SHEET_URL; // Used by processSheetData.js
 
+// Feature flags for location types (read from environment)
+const ENABLE_BREWERIES = process.env.ENABLE_BREWERIES !== 'false';
+const ENABLE_WINERIES = process.env.ENABLE_WINERIES !== 'false';
+const ENABLE_SUGAR_SHACKS = process.env.ENABLE_SUGAR_SHACKS !== 'false';
+console.log('[Feature Flags] Breweries:', ENABLE_BREWERIES, 'Wineries:', ENABLE_WINERIES, 'Sugar Shacks:', ENABLE_SUGAR_SHACKS);
+
 // Data file paths for all location types
 const LOCATION_DATA_PATHS = {
     farm_stand: path.join(__dirname, 'data', 'farmStandsData.json'),
@@ -857,8 +863,17 @@ app.get('/api/locations', async (req, res) => {
             }
         }
 
-        // Merge all arrays
-        const mergedLocations = [...farmStands, ...cheeseShops, ...fishMongers, ...butchers, ...antiqueShops, ...breweries, ...wineries, ...sugarShacks];
+        // Merge all arrays (conditionally include based on feature flags)
+        const mergedLocations = [
+            ...farmStands,
+            ...cheeseShops,
+            ...fishMongers,
+            ...butchers,
+            ...antiqueShops,
+            ...(ENABLE_BREWERIES ? breweries : []),
+            ...(ENABLE_WINERIES ? wineries : []),
+            ...(ENABLE_SUGAR_SHACKS ? sugarShacks : []),
+        ];
 
         // Deduplicate by GoogleProfileID or slug and merge types
         const locationMap = new Map();

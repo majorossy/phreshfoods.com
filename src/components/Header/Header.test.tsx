@@ -189,7 +189,6 @@ describe('Header Component', () => {
       renderComponent();
 
       const radiusSlider = screen.getByRole('slider') as HTMLInputElement;
-      const radiusDisplay = screen.getByText(/mi$/);
 
       fireEvent.change(radiusSlider, { target: { value: '50' } });
 

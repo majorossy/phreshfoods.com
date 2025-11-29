@@ -1,6 +1,6 @@
 // src/utils/storageValidation.ts
 
-import { Shop } from '../types';
+import type { Shop } from '../types';
 
 /**
  * Storage validation and versioning utilities for localStorage data.

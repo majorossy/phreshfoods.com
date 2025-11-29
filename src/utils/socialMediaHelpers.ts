@@ -1,7 +1,7 @@
 // src/utils/socialMediaHelpers.ts
 // Helper functions for constructing and validating social media URLs
 
-import { Shop } from '../types';
+import type { Shop } from '../types';
 
 /**
  * Constructs Instagram profile URL from shop data

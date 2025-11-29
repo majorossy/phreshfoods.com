@@ -1,5 +1,5 @@
 // src/utils/sitemapGenerator.ts
-import { Shop } from '../types';
+import type { Shop } from '../types';
 
 /**
  * Generate XML sitemap for all farm stands

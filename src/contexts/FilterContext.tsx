@@ -1,7 +1,8 @@
 // src/contexts/FilterContext.tsx
 import React, { createContext, useState, useContext, ReactNode, useMemo, useCallback, useEffect } from 'react';
-import { useSearchParams, useParams, useLocation } from 'react-router-dom';
-import { LocationType, ALL_LOCATION_TYPES } from '../types/shop';
+import { useSearchParams, useParams, useLocation, useNavigate } from 'react-router-dom';
+import type { LocationType } from '../types/shop';
+import { ENABLED_LOCATION_TYPES } from '../config/enabledLocationTypes';
 import { PRODUCT_CONFIGS } from '../config/products';
 import { parseFiltersFromURL } from '../utils/urlSync';
 import { parseTypesFromPath } from '../utils/typeUrlMappings';
@@ -19,13 +20,14 @@ interface FilterContextType {
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
-// Default active location types (all types selected)
-const DEFAULT_ACTIVE_LOCATION_TYPES = new Set<LocationType>(ALL_LOCATION_TYPES);
+// Default active location types (only enabled types selected)
+const DEFAULT_ACTIVE_LOCATION_TYPES = new Set<LocationType>(ENABLED_LOCATION_TYPES);
 
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [searchParams] = useSearchParams();
   const { types } = useParams<{ types?: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeProductFilters, setActiveProductFilters] = useState<Record<string, boolean>>({});
 
   // Default: all location types selected
@@ -42,9 +44,12 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
     if (types) {
       // Types from path param (e.g., /farms or /farms+cheese)
       locationTypesFromUrl = parseTypesFromPath(types);
-    } else if (location.pathname === '/all') {
-      // Explicit /all route - use all types
-      locationTypesFromUrl = new Set<LocationType>(ALL_LOCATION_TYPES);
+    } else if (location.pathname === '/all' || location.pathname === '/') {
+      // /all and / should have ALL enabled location types selected
+      locationTypesFromUrl = new Set<LocationType>(ENABLED_LOCATION_TYPES);
+    } else if (location.pathname === '/not-sure') {
+      // /not-sure should have NO location types (empty state)
+      locationTypesFromUrl = new Set<LocationType>();
     } else {
       // Fallback: Try to parse from query params (backward compatibility)
       const urlState = parseFiltersFromURL(searchParams);
@@ -112,23 +117,38 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
 
   /**
    * Clears all active filters and resets location types to all selected
+   * ONLY navigates to /all - FilterContext URL initialization handles state updates
+   * This prevents race conditions with useURLSync
    */
   const clearAllFilters = useCallback(() => {
+    // Preserve search location query params (lat, lng, location, radius)
+    const currentParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams();
+
+    // Keep location-related params, remove product filters
+    ['lat', 'lng', 'location', 'radius'].forEach(key => {
+      const value = currentParams.get(key);
+      if (value) searchParams.set(key, value);
+    });
+
+    const queryString = searchParams.toString();
+    const newUrl = queryString ? `/all?${queryString}` : '/all';
+
+    // Update state IMMEDIATELY to prevent useURLSync from seeing empty state
     setActiveProductFilters({});
     setActiveLocationTypes(new Set(DEFAULT_ACTIVE_LOCATION_TYPES));
-  }, []);
+
+    // Then navigate
+    navigate(newUrl, { replace: true });
+  }, [navigate]);
 
   // Helper function to toggle a location type on/off
   const toggleLocationType = useCallback((type: LocationType) => {
     setActiveLocationTypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(type)) {
-        // If unchecking the last type, reset to all types (return to homepage)
-        if (newSet.size === 1) {
-          return new Set(ALL_LOCATION_TYPES);
-        } else {
-          newSet.delete(type);
-        }
+        // Allow unchecking the last type to reach empty state (→ /not-sure)
+        newSet.delete(type);
       } else {
         newSet.add(type);
       }

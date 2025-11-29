@@ -18,6 +18,7 @@ const ThrowError: React.FC<{ shouldThrow?: boolean }> = ({ shouldThrow = true })
 };
 
 // Component that throws on button click
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const ThrowOnClick: React.FC = () => {
   const [shouldThrow, setShouldThrow] = React.useState(false);
 

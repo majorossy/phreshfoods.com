@@ -1,5 +1,6 @@
 // src/utils/webVitals.ts
-import { onCLS, onFCP, onLCP, onTTFB, onINP, Metric } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
+import type { Metric } from 'web-vitals';
 
 /**
  * Web Vitals monitoring utility

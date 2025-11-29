@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import ProductIconGrid from '../UI/ProductIconGrid';
 import { useFilters } from '../../contexts/FilterContext';
-import { LocationType } from '../../types/shop';
+import type { LocationType } from '../../types/shop';
 
 interface ProductFilterDropdownProps {
   category: string;

@@ -2,7 +2,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { useFilters } from '../../contexts/FilterContext';
 import { getMergedProductConfigs, CATEGORY_DISPLAY_ORDERS } from '../../config/products';
-import { LocationType, ALL_LOCATION_TYPES } from '../../types/shop';
+import { ENABLED_LOCATION_TYPES } from '../../config/enabledLocationTypes';
+import { getDisplayName } from '../../utils/typeUrlMappings';
 
 const ProductFilters: React.FC = () => {
   const { activeProductFilters, activeLocationTypes, toggleLocationType, toggleFilter, clearAllFilters } = useFilters();
@@ -59,56 +60,21 @@ const ProductFilters: React.FC = () => {
       <fieldset className="border-none p-0 m-0 mb-4 pb-3 border-b border-gray-200">
         <legend className="text-sm font-medium text-gray-600 mb-2">Location Types</legend>
         <div className="space-y-1.5">
-          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={activeLocationTypes.has('farm_stand')}
-              onChange={() => toggleLocationType('farm_stand' as LocationType)}
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show farm stands"
-            />
-            <span className="font-medium">Farm Stands</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={activeLocationTypes.has('cheese_shop')}
-              onChange={() => toggleLocationType('cheese_shop' as LocationType)}
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show cheesemongers"
-            />
-            <span className="font-medium">Cheesemongers</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={activeLocationTypes.has('fish_monger')}
-              onChange={() => toggleLocationType('fish_monger' as LocationType)}
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show fishmongers"
-            />
-            <span className="font-medium">Fishmongers</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={activeLocationTypes.has('butcher')}
-              onChange={() => toggleLocationType('butcher' as LocationType)}
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show butchers"
-            />
-            <span className="font-medium">Butchers</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={activeLocationTypes.has('antique_shop')}
-              onChange={() => toggleLocationType('antique_shop' as LocationType)}
-              className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
-              aria-label="Show antiques"
-            />
-            <span className="font-medium">Antiques</span>
-          </label>
+          {ENABLED_LOCATION_TYPES.map((locationType) => (
+            <label
+              key={locationType}
+              className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
+            >
+              <input
+                type="checkbox"
+                checked={activeLocationTypes.has(locationType)}
+                onChange={() => toggleLocationType(locationType)}
+                className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-offset-0 transition duration-150 ease-in-out"
+                aria-label={`Show ${getDisplayName(locationType, true).toLowerCase()}`}
+              />
+              <span className="font-medium">{getDisplayName(locationType, true)}</span>
+            </label>
+          ))}
         </div>
       </fieldset>
 
@@ -159,7 +125,7 @@ const ProductFilters: React.FC = () => {
       {(() => {
         // Check if we're in the default state (all location types + no product filters)
         const hasActiveFilters = Object.values(activeProductFilters).some(v => v === true);
-        const isAllLocationTypesSelected = activeLocationTypes.size === ALL_LOCATION_TYPES.length;
+        const isAllLocationTypesSelected = activeLocationTypes.size === ENABLED_LOCATION_TYPES.length;
         const isDefaultState = !hasActiveFilters && isAllLocationTypesSelected;
 
         // Show "Back to Homepage" button when NOT in default state

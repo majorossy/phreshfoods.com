@@ -1,5 +1,6 @@
 // src/utils/shopFilters.ts
-import { Shop, ShopWithDistance, AutocompletePlace, LocationType, LOCATION_TYPE_COUNT } from '../types';
+import type { Shop, ShopWithDistance, AutocompletePlace, LocationType } from '../types';
+import { LOCATION_TYPE_COUNT } from '../types';
 import { METERS_PER_MILE, MILES_PER_METER } from '../config/appConfig';
 
 export interface FilterOptions {

@@ -29,6 +29,15 @@ interface UIContextType {
   bottomSheetHeight: number; // 0.3 to 0.75 (30vh to 75vh)
   setBottomSheetHeight: (height: number) => void;
   bottomSheetExpanded: boolean; // true when height > 0.3
+  // Mobile filter drawer state
+  isFilterDrawerOpen: boolean;
+  setIsFilterDrawerOpen: (isOpen: boolean) => void;
+  // Manual collapse flag - prevents auto-expand after user minimizes
+  isManuallyCollapsed: boolean;
+  setIsManuallyCollapsed: (collapsed: boolean) => void;
+  // Preview shop for carousel browsing (shows in InfoWindow without selecting)
+  previewShop: Shop | null;
+  setPreviewShop: (shop: Shop | null) => void;
 }
 
 const UIContext = createContext<UIContextType | undefined>(undefined);
@@ -55,6 +64,15 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   // Mobile bottom sheet state (Phase 2)
   const [bottomSheetHeight, setBottomSheetHeight] = useState<number>(0.3); // Start at 30vh
   const bottomSheetExpanded = bottomSheetHeight > 0.3;
+
+  // Mobile filter drawer state
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState<boolean>(false);
+
+  // Manual collapse flag - prevents auto-expand when user minimizes bottom sheet
+  const [isManuallyCollapsed, setIsManuallyCollapsed] = useState<boolean>(false);
+
+  // Preview shop for carousel browsing (shows in InfoWindow without selecting)
+  const [previewShop, setPreviewShop] = useState<Shop | null>(null);
 
   // Handle delayed unmount for shop overlay
   useEffect(() => {
@@ -230,6 +248,15 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     bottomSheetHeight,
     setBottomSheetHeight,
     bottomSheetExpanded,
+    // Mobile filter drawer
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+    // Manual collapse flag
+    isManuallyCollapsed,
+    setIsManuallyCollapsed,
+    // Preview shop
+    previewShop,
+    setPreviewShop,
   }), [
     selectedShop,
     handleSetSelectedShop,
@@ -249,6 +276,12 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     // Mobile bottom sheet (Phase 2)
     bottomSheetHeight,
     bottomSheetExpanded,
+    // Mobile filter drawer
+    isFilterDrawerOpen,
+    // Manual collapse flag
+    isManuallyCollapsed,
+    // Preview shop
+    previewShop,
   ]);
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;

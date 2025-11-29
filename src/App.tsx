@@ -28,6 +28,7 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 // These components are loaded on-demand, improving initial page load time
 const Header = lazy(() => import('./components/Header/Header.tsx'));
 const MapComponent = lazy(() => import('./components/Map/MapComponent.tsx'));
+const MapSearchControls = lazy(() => import('./components/Map/MapSearchControls.tsx'));
 const ListingsPanel = lazy(() => import('./components/Listings/ListingsPanel.tsx'));
 const MobileBottomSheet = lazy(() => import('./components/Mobile/MobileBottomSheet.tsx'));
 const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsOverlay.tsx'));
@@ -51,7 +52,9 @@ function App() {
     isSocialOverlayAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
-    setSelectedShop
+    setSelectedShop,
+    isFilterDrawerOpen,
+    setIsManuallyCollapsed
   } = useUI();
 
   // Mobile detection for bottom sheet (Phase 1)
@@ -160,8 +163,13 @@ function App() {
       if (shopFromUrl) {
         if (!selectedShop || (selectedShop.slug !== shopFromUrl.slug && selectedShop.GoogleProfileID !== shopFromUrl.GoogleProfileID)) {
           setSelectedShop(shopFromUrl);
-          openShopOverlays(shopFromUrl);
-        } else if (!isShopOverlayOpen && !isSocialOverlayOpen) {
+          setIsManuallyCollapsed(false); // New shop - clear collapse flag
+          // Only open overlays on desktop - mobile uses bottom sheet
+          if (!isMobile) {
+            openShopOverlays(shopFromUrl);
+          }
+        } else if (!isShopOverlayOpen && !isSocialOverlayOpen && !isMobile) {
+          // Only open overlays on desktop - mobile uses bottom sheet
           openShopOverlays(selectedShop);
         }
       } else {
@@ -186,7 +194,7 @@ function App() {
     }
   }, [
       location.pathname, allLocations, filteredAndSortedShops, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
-      openShopOverlays, closeShopOverlays, setSelectedShop, navigate
+      openShopOverlays, closeShopOverlays, setSelectedShop, navigate, isMobile, setIsManuallyCollapsed
     ]
   );
 
@@ -197,12 +205,14 @@ function App() {
       if (event.key === 'Escape' && (isShopOverlayOpen || isSocialOverlayOpen)) {
         // closeShopOverlays handles the delayed cleanup of selectedShop
         closeShopOverlays();
-        navigate('/');
+        // Navigate back to the list view, preserving query params
+        const searchParams = location.search;
+        navigate(`/all${searchParams}`, { replace: true });
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate]);
+  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, location.search]);
 
   // SEO: Update meta tags and structured data based on current route
   useEffect(() => {
@@ -244,8 +254,14 @@ function App() {
       <main id="main-content" className="flex-grow flex overflow-hidden" role="main">
         <ErrorBoundary>
           <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-gray-200 text-lg">Loading map...</div>}>
-            <div className="flex-1">
+            <div className="flex-1 relative">
               {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
+              {/* Map Search Controls - desktop only (lg+) */}
+              {mapsApiReady && (
+                <Suspense fallback={null}>
+                  <MapSearchControls />
+                </Suspense>
+              )}
             </div>
           </Suspense>
         </ErrorBoundary>
@@ -258,8 +274,8 @@ function App() {
           </Suspense>
         </ErrorBoundary>
 
-        {/* Mobile Bottom Sheet - shown only on mobile */}
-        {isMobile && (
+        {/* Mobile Bottom Sheet - shown only on mobile and when filter drawer is closed */}
+        {isMobile && !isFilterDrawerOpen && (
           <ErrorBoundary>
             <Suspense fallback={null}>
               <MobileBottomSheet />
@@ -267,7 +283,8 @@ function App() {
           </ErrorBoundary>
         )}
 
-        {shouldRenderShopOverlay && selectedShop && (
+        {/* Overlays - Desktop only (mobile uses bottom sheet) */}
+        {!isMobile && shouldRenderShopOverlay && selectedShop && (
           <LazyLoadErrorBoundary componentName="shop details">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
               <ShopDetailsOverlay
@@ -277,13 +294,15 @@ function App() {
                   // Start close animation - don't clear selectedShop yet!
                   // The delayed unmount in UIContext will handle cleanup
                   closeShopOverlays();
-                  navigate('/');
+                  // Navigate back to the list view, preserving query params
+                  const searchParams = location.search;
+                  navigate(`/all${searchParams}`, { replace: true });
                 }}
               />
             </Suspense>
           </LazyLoadErrorBoundary>
         )}
-        {shouldRenderSocialOverlay && selectedShop && (
+        {!isMobile && shouldRenderSocialOverlay && selectedShop && (
           <LazyLoadErrorBoundary componentName="social media">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
               <SocialOverlay
@@ -293,7 +312,9 @@ function App() {
                   // Start close animation - don't clear selectedShop yet!
                   // The delayed unmount in UIContext will handle cleanup
                   closeShopOverlays();
-                  navigate('/');
+                  // Navigate back to the list view, preserving query params
+                  const searchParams = location.search;
+                  navigate(`/all${searchParams}`, { replace: true });
                 }}
               />
             </Suspense>
@@ -301,8 +322,8 @@ function App() {
         )}
       </main>
       <Routes>
-          {/* Homepage redirect to /all */}
-          <Route path="/" element={<Navigate to="/all" replace />} />
+          {/* Root path - redirect to /not-sure (empty state for category browsing) */}
+          <Route path="/" element={<Navigate to="/not-sure" replace />} />
 
           {/* Redirects from old URLs to new standardized URLs for backward compatibility */}
           <Route path="/farms" element={<Navigate to="/farm-stand" replace />} />
@@ -317,6 +338,7 @@ function App() {
           {/* Type filter pages - MUST come before detail pages to avoid conflicts */}
           {/* Now using consistent paths for both listings and details */}
           <Route path="/all" element={<React.Fragment />} />
+          <Route path="/not-sure" element={<React.Fragment />} />
           <Route path="/farm-stand" element={<React.Fragment />} />
           <Route path="/cheesemonger" element={<React.Fragment />} />
           <Route path="/fishmonger" element={<React.Fragment />} />

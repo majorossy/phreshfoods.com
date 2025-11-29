@@ -19,6 +19,7 @@ import { useFilters } from '../../contexts/FilterContext';
 import { LocationType } from '../../types/shop';
 import { getProductConfig } from '../../config/productRegistry';
 import { getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
+import { ENABLED_LOCATION_TYPES } from '../../config/enabledLocationTypes';
 
 // Location type UI configurations (color and disabled state)
 // Display names and emojis come from centralized config
@@ -51,8 +52,7 @@ const Header: React.FC = () => {
   // Header collapse on mobile (Phase 3)
   const { isCollapsed, sentinelRef } = useHeaderCollapse();
 
-  // Mobile drawer state (hamburger menu)
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  // Mobile drawer state (hamburger menu) - now managed in UIContext
   const [shouldRenderDrawer, setShouldRenderDrawer] = useState(false);
   const [isDrawerAnimatedOpen, setIsDrawerAnimatedOpen] = useState(false);
   const [openDrawerAccordions, setOpenDrawerAccordions] = useState<Set<LocationType>>(new Set());
@@ -74,6 +74,8 @@ const Header: React.FC = () => {
   const {
     setSelectedShop,    // For handleTitleClick
     closeShopOverlays, // For handleTitleClick
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
   } = useUI();
 
   const {
@@ -91,7 +93,12 @@ const Header: React.FC = () => {
   }, [currentRadius]);
 
   // Effect to update context radius when debounced value changes
+  // Only update if we're on mobile/tablet (< lg), otherwise MapSearchControls handles it
   useEffect(() => {
+    if (window.innerWidth >= 1024) {
+      return; // Skip on desktop - MapSearchControls handles radius updates
+    }
+
     if (setCurrentRadius && debouncedRadius !== currentRadius) {
       setCurrentRadius(debouncedRadius);
     }
@@ -207,7 +214,7 @@ const Header: React.FC = () => {
 
   // Drawer animation effects (delayed mount/unmount pattern)
   useEffect(() => {
-    if (isDrawerOpen) {
+    if (isFilterDrawerOpen) {
       if (drawerTimeoutRef.current) {
         clearTimeout(drawerTimeoutRef.current);
       }
@@ -223,11 +230,11 @@ const Header: React.FC = () => {
         clearTimeout(drawerTimeoutRef.current);
       }
     };
-  }, [isDrawerOpen, shouldRenderDrawer]);
+  }, [isFilterDrawerOpen, shouldRenderDrawer]);
 
   // Delayed enter animation (RAF pattern)
   useEffect(() => {
-    if (isDrawerOpen && shouldRenderDrawer) {
+    if (isFilterDrawerOpen && shouldRenderDrawer) {
       const rafId = requestAnimationFrame(() => {
         setIsDrawerAnimatedOpen(true);
       });
@@ -235,7 +242,7 @@ const Header: React.FC = () => {
     } else {
       setIsDrawerAnimatedOpen(false);
     }
-  }, [isDrawerOpen, shouldRenderDrawer]);
+  }, [isFilterDrawerOpen, shouldRenderDrawer]);
 
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(event.target.value);
@@ -249,33 +256,34 @@ const Header: React.FC = () => {
     /* ... your existing keydown logic ... */
   }, []);
 
-  const handleTitleClick = useCallback(() => {
+  const handleTitleClick = useCallback((e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent Link's default navigation
     setSelectedShop(null);
     closeShopOverlays();
-    clearAllFilters(); // Reset all filters
+    clearAllFilters(); // Reset all filters (navigates to /all with query params)
     // Keep current search location/radius - don't reset
   }, [setSelectedShop, closeShopOverlays, clearAllFilters]);
 
   // Mobile drawer toggle handlers
   const toggleDrawer = useCallback(() => {
-    setIsDrawerOpen(prev => !prev);
-  }, []);
+    setIsFilterDrawerOpen(!isFilterDrawerOpen);
+  }, [isFilterDrawerOpen, setIsFilterDrawerOpen]);
 
   const closeDrawer = useCallback(() => {
-    setIsDrawerOpen(false);
-  }, []);
+    setIsFilterDrawerOpen(false);
+  }, [setIsFilterDrawerOpen]);
 
   // Escape key closes drawer
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isDrawerOpen) {
+      if (e.key === 'Escape' && isFilterDrawerOpen) {
         closeDrawer();
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isDrawerOpen, closeDrawer]);
+  }, [isFilterDrawerOpen, closeDrawer]);
 
   // Toggle accordion in drawer
   const toggleDrawerAccordion = useCallback((type: LocationType) => {
@@ -307,23 +315,19 @@ const Header: React.FC = () => {
       <div ref={sentinelRef} className="absolute top-0 h-0 w-0 pointer-events-none" aria-hidden="true" />
 
       {/* ========== MOBILE COLLAPSED BAR ========== */}
-      <div className="md:hidden w-full px-3 py-2 rounded-lg" style={{ backgroundColor: '#356A78' }}>
+      <div className="md:hidden w-full px-3 py-2">
         <div className="flex items-center gap-3">
           {/* Logo as Hamburger Menu */}
           <button
             onClick={toggleDrawer}
             className="cursor-pointer transition-transform duration-300 hover:scale-110 flex-shrink-0"
-            aria-label={isDrawerOpen ? "Close menu" : "Open menu"}
-            aria-expanded={isDrawerOpen}
+            aria-label={isFilterDrawerOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isFilterDrawerOpen}
           >
             <img
               src="/images/logo.png"
               alt="Maine Flag"
-              className="h-8 w-auto object-contain logo-hamburger"
-              style={{
-                transform: isDrawerOpen ? 'rotate(90deg)' : 'rotate(0deg)',
-                transition: 'transform 0.3s ease-out'
-              }}
+              className="h-8 w-auto object-contain logo-hamburger drop-shadow-lg"
             />
           </button>
 
@@ -334,7 +338,7 @@ const Header: React.FC = () => {
             id="headerSearchMobile"
             type="text"
             placeholder="Search location..."
-            className="flex-1 px-3 py-2 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white dark:bg-gray-800 dark:text-white"
+            className="flex-1 px-3 py-2 rounded-lg shadow-md bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm dark:bg-gray-800/90 dark:text-white border-0"
             value={inputValue}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
@@ -352,11 +356,11 @@ const Header: React.FC = () => {
           ${isCollapsed ? 'opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto' : 'opacity-100'}
         `}>
           {/* Combined Container: Logo, Type Filters, Search, Radius, and Filters */}
-          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 flex-1 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
+          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
             {/* Logo Section */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <Link
-                to="/"
+                to="/all"
                 onClick={handleTitleClick}
                 className="cursor-pointer transition-all duration-300 hover:scale-110 hover:-rotate-2 hover:drop-shadow-xl"
                 style={{ transformStyle: 'preserve-3d' }}
@@ -370,7 +374,9 @@ const Header: React.FC = () => {
             {/* Type Filter Buttons with Dropdowns */}
             <div className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
               <div className="flex items-center gap-1.5 flex-wrap">
-              {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
+              {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][])
+                .filter(([type]) => ENABLED_LOCATION_TYPES.includes(type))
+                .map(([type, config]) => {
                 const isActive = activeLocationTypes.has(type);
                 const isOpen = openLocationTypeDropdown === type;
                 const isDisabled = config.disabled === true;
@@ -479,11 +485,8 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-            {/* Spacer to push search to the right */}
-            <div className="flex-1 hidden sm:block"></div>
-
-            {/* Search, Radius, and Filters */}
-            <div className="flex flex-col sm:flex-row items-center gap-x-3 gap-y-2">
+            {/* Search, Radius, and Filters - Hidden on desktop (lg+), shown on mobile/tablet */}
+            <div className="lg:hidden flex flex-col sm:flex-row items-center gap-x-3 gap-y-2">
             <label htmlFor="headerSearchAutocompleteClassic" className="sr-only">Search for local farms and cheese shops by location</label>
             <input
               ref={autocompleteInputRef}
@@ -529,63 +532,79 @@ const Header: React.FC = () => {
       {/* ========== MOBILE DRAWER ========== */}
       {shouldRenderDrawer && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - only covers below the header, not the map */}
           <div
             className={`
-              md:hidden fixed inset-0 bg-black
+              md:hidden fixed left-0 right-0 bottom-0 bg-black pointer-events-auto
               transition-opacity duration-[350ms] ease-out
-              ${isDrawerAnimatedOpen ? 'opacity-50' : 'opacity-0'}
+              ${isDrawerAnimatedOpen ? 'opacity-70' : 'opacity-0'}
             `}
-            style={{ zIndex: 29 }}
             onClick={closeDrawer}
             aria-hidden="true"
+            style={{ top: '3.5rem', zIndex: 9998, touchAction: 'none' }}
           />
 
           {/* Drawer Content */}
           <div
             className={`
-              md:hidden absolute left-0 right-0
+              md:hidden fixed left-0 right-0
               bg-white dark:bg-gray-800
               shadow-lg rounded-b-2xl
               transition-transform duration-[350ms] ease-out
+              overflow-y-auto overscroll-contain
               ${isDrawerAnimatedOpen ? 'translate-y-0' : '-translate-y-full'}
             `}
             style={{
               top: '3.5rem',
-              zIndex: 31,
-              maxHeight: 'calc(100vh - 3.5rem - 10rem)',
-              overflowY: 'auto',
+              height: 'calc(100vh - 3.5rem - 2rem)',
+              zIndex: 9999,
+              WebkitOverflowScrolling: 'touch',
             }}
             role="dialog"
             aria-label="Filter menu"
           >
-            <div className="p-3">
+            <div className="p-3 min-h-full">
               <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
                 FILTER BY TYPE
               </h3>
 
               {/* Location Type Accordions - Full Width */}
               <div className="space-y-1">
-                {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][]).map(([type, config]) => {
+                {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][])
+                .filter(([type]) => ENABLED_LOCATION_TYPES.includes(type))
+                .map(([type, config]) => {
                   const isActive = activeLocationTypes.has(type);
                   const isDisabled = config.disabled === true;
                   const isExpanded = openDrawerAccordions.has(type);
                   const products = getProductConfig(type);
 
                   const bgColorClasses = {
-                    green: isActive ? 'bg-green-600' : 'bg-green-100 dark:bg-green-900',
-                    yellow: isActive ? 'bg-yellow-600' : 'bg-yellow-100 dark:bg-yellow-900',
-                    blue: isActive ? 'bg-blue-600' : 'bg-blue-100 dark:bg-blue-900',
-                    red: isActive ? 'bg-red-600' : 'bg-red-100 dark:bg-red-900',
-                    purple: isActive ? 'bg-purple-600' : 'bg-purple-100 dark:bg-purple-900',
-                    amber: isActive ? 'bg-amber-600' : 'bg-amber-100 dark:bg-amber-900',
-                    rose: isActive ? 'bg-rose-600' : 'bg-rose-100 dark:bg-rose-900',
-                    orange: isActive ? 'bg-orange-600' : 'bg-orange-100 dark:bg-orange-900',
-                    teal: isActive ? 'bg-teal-600' : 'bg-teal-100 dark:bg-teal-900',
-                    gray: isActive ? 'bg-gray-600' : 'bg-gray-100 dark:bg-gray-700',
+                    green: isActive ? 'bg-green-100' : 'bg-gray-100 dark:bg-gray-700',
+                    yellow: isActive ? 'bg-yellow-100' : 'bg-gray-100 dark:bg-gray-700',
+                    blue: isActive ? 'bg-blue-100' : 'bg-gray-100 dark:bg-gray-700',
+                    red: isActive ? 'bg-red-100' : 'bg-gray-100 dark:bg-gray-700',
+                    purple: isActive ? 'bg-purple-100' : 'bg-gray-100 dark:bg-gray-700',
+                    amber: isActive ? 'bg-amber-100' : 'bg-gray-100 dark:bg-gray-700',
+                    rose: isActive ? 'bg-rose-100' : 'bg-gray-100 dark:bg-gray-700',
+                    orange: isActive ? 'bg-orange-100' : 'bg-gray-100 dark:bg-gray-700',
+                    teal: isActive ? 'bg-teal-100' : 'bg-gray-100 dark:bg-gray-700',
+                    gray: isActive ? 'bg-gray-100' : 'bg-gray-100 dark:bg-gray-700',
                   };
 
-                  const textColorClasses = isActive ? 'text-white' : 'text-gray-700 dark:text-gray-300';
+                  const textColorClasses = isActive
+                    ? {
+                        green: 'text-green-700',
+                        yellow: 'text-yellow-700',
+                        blue: 'text-blue-700',
+                        red: 'text-red-700',
+                        purple: 'text-purple-700',
+                        amber: 'text-amber-700',
+                        rose: 'text-rose-700',
+                        orange: 'text-orange-700',
+                        teal: 'text-teal-700',
+                        gray: 'text-gray-700',
+                      }[config.color]
+                    : 'text-gray-400 dark:text-gray-400';
 
                   return (
                     <div key={type} className="w-full">
