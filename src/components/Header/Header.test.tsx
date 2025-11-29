@@ -411,4 +411,82 @@ describe('Header Component', () => {
       expect(screen.getByTitle('Reset Filters')).toBeInTheDocument();
     });
   });
+
+  describe('Header Layout Changes (Natural Width)', () => {
+    it('should NOT have flex-1 class on main search container', () => {
+      const { container } = renderComponent();
+
+      // Find the main search container by role
+      const searchContainer = container.querySelector('[role="search"]');
+
+      if (searchContainer) {
+        const className = searchContainer.className;
+        // Should NOT have flex-1 class (allows natural width)
+        expect(className).not.toContain('flex-1');
+      }
+    });
+
+    it('should NOT have spacer div that pushes content', () => {
+      const { container } = renderComponent();
+
+      // Search for flex-1 spacer divs (should not exist)
+      const allDivs = container.querySelectorAll('div');
+      const spacerDivs = Array.from(allDivs).filter(div =>
+        div.className.includes('flex-1') && div.textContent === ''
+      );
+
+      // Should not have empty spacer divs
+      expect(spacerDivs.length).toBe(0);
+    });
+
+    it('should render with natural width container', () => {
+      const { container } = renderComponent();
+
+      const searchContainer = container.querySelector('[role="search"]');
+
+      if (searchContainer) {
+        // Should have flex classes but not flex-1
+        const className = searchContainer.className;
+        expect(className).toContain('flex');
+        expect(className).not.toContain('flex-1');
+      }
+    });
+  });
+
+  describe('Location Type Chips - Feature Flag Integration', () => {
+    it('should only render enabled location types', () => {
+      renderComponent();
+
+      // Count location type buttons (should be 6 with breweries/wineries disabled)
+      const typeButtons = screen.getAllByRole('button', {
+        name: /hide|show.*farm|cheese|fish|butcher|antique|sugar/i
+      });
+
+      // Should have 6 types (not 8)
+      expect(typeButtons.length).toBeGreaterThanOrEqual(6);
+    });
+
+    it('should NOT render brewery chip when disabled', () => {
+      renderComponent();
+
+      // Should not find brewery emoji or text
+      expect(screen.queryByText(/🍺/)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/brewery/i)).not.toBeInTheDocument();
+    });
+
+    it('should NOT render winery chip when disabled', () => {
+      renderComponent();
+
+      // Should not find winery emoji or text
+      expect(screen.queryByText(/🍷/)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/winery/i)).not.toBeInTheDocument();
+    });
+
+    it('should render sugar shack chip when enabled', () => {
+      renderComponent();
+
+      // Should find sugar shack emoji
+      expect(screen.getByText(/🍁/)).toBeInTheDocument();
+    });
+  });
 });

@@ -475,4 +475,61 @@ describe('ProductFilters Component', () => {
       });
     });
   });
+
+  describe('Dynamic Location Type Rendering (Feature Flags)', () => {
+    it('should dynamically render location types from ENABLED_LOCATION_TYPES', () => {
+      renderComponent();
+
+      // Count location type checkboxes (should match enabled types)
+      const locationTypeCheckboxes = screen.getAllByLabelText(/show.*farm|cheese|fish|butcher|antique|sugar/i);
+
+      // With breweries/wineries disabled (per .env), should have 6 types
+      expect(locationTypeCheckboxes.length).toBe(6);
+    });
+
+    it('should NOT render brewery checkbox when VITE_ENABLE_BREWERIES=false', () => {
+      renderComponent();
+
+      // Brewery should not appear in location types
+      expect(screen.queryByLabelText(/show breweries/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/🍺/)).not.toBeInTheDocument();
+    });
+
+    it('should NOT render winery checkbox when VITE_ENABLE_WINERIES=false', () => {
+      renderComponent();
+
+      // Winery should not appear in location types
+      expect(screen.queryByLabelText(/show wineries/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/🍷/)).not.toBeInTheDocument();
+    });
+
+    it('should render sugar shack checkbox when VITE_ENABLE_SUGAR_SHACKS=true', () => {
+      renderComponent();
+
+      // Sugar shack should appear
+      expect(screen.getByLabelText(/show sugar shacks/i)).toBeInTheDocument();
+      expect(screen.getByText(/🍁/)).toBeInTheDocument();
+    });
+
+    it('should use getDisplayName utility for location type labels', () => {
+      renderComponent();
+
+      // Verify proper display names (plural form)
+      expect(screen.getByText('Farm Stands')).toBeInTheDocument();
+      expect(screen.getByText('Cheesemongers')).toBeInTheDocument();
+      expect(screen.getByText('Fishmongers')).toBeInTheDocument();
+      expect(screen.getByText('Butchers')).toBeInTheDocument();
+      expect(screen.getByText('Antiques')).toBeInTheDocument();
+      expect(screen.getByText('Sugar Shacks')).toBeInTheDocument();
+    });
+
+    it('should render location types in the order they appear in ENABLED_LOCATION_TYPES', () => {
+      renderComponent();
+
+      const checkboxes = screen.getAllByLabelText(/show.*farm|cheese|fish|butcher|antique|sugar/i);
+
+      // First checkbox should be farm stands (first in ENABLED_LOCATION_TYPES)
+      expect(checkboxes[0]).toHaveAccessibleName(/farm stands/i);
+    });
+  });
 });
