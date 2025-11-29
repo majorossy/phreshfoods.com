@@ -53,6 +53,30 @@ const PRODUCT_FIELDS = {
 
 const googleMapsClient = new Client({}); // Initialize the client for on-demand calls
 
+// HTTPS enforcement for production
+// This middleware redirects HTTP to HTTPS when behind a reverse proxy
+// The proxy sets X-Forwarded-Proto header to indicate original protocol
+if (process.env.NODE_ENV === 'production' && process.env.ENFORCE_HTTPS === 'true') {
+  app.use((req, res, next) => {
+    // Check if the request came through as HTTP via X-Forwarded-Proto header
+    // This is set by reverse proxies like nginx, AWS ELB, Cloudflare, etc.
+    const proto = req.headers['x-forwarded-proto'];
+
+    if (proto === 'http') {
+      // Build the HTTPS URL
+      const host = req.headers['x-forwarded-host'] || req.headers.host;
+      const httpsUrl = `https://${host}${req.url}`;
+
+      console.log(`[Security] Redirecting HTTP to HTTPS: ${req.url}`);
+      return res.redirect(301, httpsUrl);
+    }
+
+    next();
+  });
+
+  console.log('✅ HTTPS enforcement enabled');
+}
+
 // CORS configuration - restrict to specific origins in production
 // Security headers with helmet
 // Content Security Policy configured for Google Maps
@@ -152,7 +176,7 @@ app.use(compression({
   threshold: 1024 // Only compress responses larger than 1KB
 }));
 
-// Rate limiting for API endpoints
+// Rate limiting for API endpoints - General limiter
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit in dev for HMR
@@ -165,8 +189,33 @@ const apiLimiter = rateLimit({
   }
 });
 
+// Stricter rate limiting for costly Google API proxy endpoints
+// These endpoints make external API calls that cost money
+const costlyApiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 500 : 30, // Much stricter in production
+  message: { error: 'Too many API requests. Please try again later.', retryAfterSeconds: 900 },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Even stricter rate limiting for photo proxy (bandwidth intensive)
+const photoLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'development' ? 200 : 50, // Allow reasonable photo loading
+  message: { error: 'Too many photo requests. Please try again later.', retryAfterSeconds: 900 },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
 // Apply rate limiting to all /api routes
 app.use('/api/', apiLimiter);
+
+// Apply stricter rate limiting to costly endpoints (these stack with the general limiter)
+app.use('/api/geocode', costlyApiLimiter);
+app.use('/api/places/details', costlyApiLimiter);
+app.use('/api/directions', costlyApiLimiter);
+app.use('/api/photo', photoLimiter);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -176,13 +225,53 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Input sanitization to prevent XSS and injection attacks
 function sanitizeInput(input) {
     if (typeof input !== 'string') return input;
+
     // Remove dangerous characters while preserving valid address/search input
     return input
         .trim()
         .replace(/[<>]/g, '') // Remove HTML brackets
         .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+        .replace(/data:/gi, '') // Remove data: protocol (can execute scripts)
         .replace(/on\w+\s*=/gi, '') // Remove event handlers like onclick=
+        .replace(/expression\s*\(/gi, '') // Remove CSS expression() (IE vulnerability)
+        .replace(/url\s*\(/gi, '') // Remove CSS url() which can load external resources
         .substring(0, 500); // Limit length to prevent DoS
+}
+
+// Strict validation for specific input types
+function validatePlaceId(placeId) {
+    // Google Place IDs are alphanumeric strings, typically starting with "ChIJ"
+    if (typeof placeId !== 'string') return false;
+    if (placeId.length < 20 || placeId.length > 200) return false;
+    // Allow alphanumeric, underscore, dash (common in Place IDs)
+    return /^[A-Za-z0-9_\-]+$/.test(placeId);
+}
+
+function validateFieldsList(fields) {
+    // Whitelist of allowed Google Places fields
+    const allowedFields = new Set([
+        'formatted_address', 'formatted_phone_number', 'geometry', 'icon',
+        'international_phone_number', 'name', 'opening_hours', 'photos',
+        'place_id', 'plus_code', 'types', 'url', 'utc_offset', 'vicinity',
+        'website', 'address_components', 'adr_address', 'business_status',
+        'price_level', 'rating', 'reviews', 'user_ratings_total',
+        'current_opening_hours', 'secondary_opening_hours', 'delivery',
+        'dine_in', 'editorial_summary', 'reservable', 'serves_beer',
+        'serves_breakfast', 'serves_brunch', 'serves_dinner', 'serves_lunch',
+        'serves_vegetarian_food', 'serves_wine', 'takeout', 'wheelchair_accessible_entrance'
+    ]);
+
+    if (typeof fields !== 'string') return false;
+    const fieldList = fields.split(',').map(f => f.trim());
+
+    // Check each field is in the whitelist
+    for (const field of fieldList) {
+        if (!allowedFields.has(field)) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // Helper function to parse CSV (Only if not also defined in processSheetData.js, or ensure consistency) ---
@@ -1047,11 +1136,32 @@ app.get('/api/geocode', async (req, res) => {
 
 // Proxy for on-demand Google Place Details API calls from client
 app.get('/api/places/details', async (req, res) => {
-    const placeId = sanitizeInput(req.query.placeId);
-    const fields = sanitizeInput(req.query.fields) || 'name,formatted_address,website,opening_hours,rating,user_ratings_total,photos,formatted_phone_number,url,icon,business_status,reviews,geometry';
+    const placeId = req.query.placeId;
+    const requestedFields = req.query.fields;
+
+    // Validate placeId format
     if (!placeId) {
         return res.status(400).json({ error: 'placeId query parameter is required' });
     }
+
+    if (!validatePlaceId(placeId)) {
+        return res.status(400).json({ error: 'Invalid placeId format' });
+    }
+
+    // Use default fields or validate requested fields against whitelist
+    const defaultFields = 'name,formatted_address,website,opening_hours,rating,user_ratings_total,photos,formatted_phone_number,url,icon,business_status,reviews,geometry';
+    let fields = defaultFields;
+
+    if (requestedFields) {
+        if (!validateFieldsList(requestedFields)) {
+            return res.status(400).json({
+                error: 'Invalid fields parameter',
+                details: 'One or more requested fields are not allowed'
+            });
+        }
+        fields = requestedFields;
+    }
+
     const details = await getPlaceDetailsOnServer(placeId, fields);
     if (details) {
         res.json(details);
@@ -1071,6 +1181,11 @@ app.get('/api/directions', async (req, res) => {
     // Parse optional waypoints parameter (JSON array of {lat, lng} objects)
     let waypoints = [];
     if (req.query.waypoints) {
+        // Limit JSON string length to prevent DoS
+        if (typeof req.query.waypoints !== 'string' || req.query.waypoints.length > 5000) {
+            return res.status(400).json({ error: 'Waypoints parameter too large' });
+        }
+
         try {
             waypoints = JSON.parse(req.query.waypoints);
             if (!Array.isArray(waypoints)) {
@@ -1082,6 +1197,35 @@ app.get('/api/directions', async (req, res) => {
                     error: 'Too many waypoints',
                     details: 'Maximum 9 waypoints allowed (10 total stops including origin and destination)'
                 });
+            }
+
+            // Validate each waypoint has valid lat/lng coordinates
+            for (let i = 0; i < waypoints.length; i++) {
+                const wp = waypoints[i];
+                if (typeof wp !== 'object' || wp === null) {
+                    return res.status(400).json({
+                        error: 'Invalid waypoint format',
+                        details: `Waypoint at index ${i} must be an object with lat and lng properties`
+                    });
+                }
+
+                const { lat, lng } = wp;
+
+                // Validate lat is a number in valid range (-90 to 90)
+                if (typeof lat !== 'number' || isNaN(lat) || lat < -90 || lat > 90) {
+                    return res.status(400).json({
+                        error: 'Invalid waypoint latitude',
+                        details: `Waypoint at index ${i}: lat must be a number between -90 and 90`
+                    });
+                }
+
+                // Validate lng is a number in valid range (-180 to 180)
+                if (typeof lng !== 'number' || isNaN(lng) || lng < -180 || lng > 180) {
+                    return res.status(400).json({
+                        error: 'Invalid waypoint longitude',
+                        details: `Waypoint at index ${i}: lng must be a number between -180 and 180`
+                    });
+                }
             }
         } catch (err) {
             return res.status(400).json({ error: 'Invalid waypoints JSON format' });
@@ -1153,13 +1297,37 @@ app.get('/api/directions', async (req, res) => {
 // Proxy for Google Maps photo requests (to keep API key secure)
 app.get('/api/photo', async (req, res) => {
     const photoReference = req.query.photo_reference;
-    const maxWidth = req.query.maxwidth || 400;
+    const maxWidthParam = req.query.maxwidth;
 
+    // Validate photoReference - Google photo references are alphanumeric with some special chars
     if (!photoReference) {
         return res.status(400).json({ error: 'photo_reference query parameter is required' });
     }
 
-    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photo_reference=${photoReference}&key=${GOOGLE_API_KEY_BACKEND}`;
+    // Photo references are typically 100-200 chars, alphanumeric with dashes/underscores
+    if (typeof photoReference !== 'string' || photoReference.length > 500) {
+        return res.status(400).json({ error: 'Invalid photo_reference format' });
+    }
+
+    // Only allow safe characters in photo reference (alphanumeric, dash, underscore, equals, plus, slash)
+    if (!/^[A-Za-z0-9_\-=+\/]+$/.test(photoReference)) {
+        return res.status(400).json({ error: 'Invalid photo_reference characters' });
+    }
+
+    // Validate maxWidth - must be a positive integer within Google's allowed range
+    let maxWidth = 400; // Default
+    if (maxWidthParam !== undefined) {
+        const parsedWidth = parseInt(maxWidthParam, 10);
+        if (isNaN(parsedWidth) || parsedWidth < 1 || parsedWidth > 4800) {
+            return res.status(400).json({
+                error: 'Invalid maxwidth parameter',
+                details: 'maxwidth must be an integer between 1 and 4800'
+            });
+        }
+        maxWidth = parsedWidth;
+    }
+
+    const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photo_reference=${encodeURIComponent(photoReference)}&key=${GOOGLE_API_KEY_BACKEND}`;
 
     try {
         const response = await fetch(photoUrl);
@@ -1180,9 +1348,40 @@ app.get('/api/photo', async (req, res) => {
 
 // Route to manually flush the on-demand cache and trigger data refresh
 // Admin authentication middleware
+// Track failed auth attempts for rate limiting
+const failedAuthAttempts = new Map(); // IP -> { count, firstAttempt }
+const AUTH_LOCKOUT_THRESHOLD = 5; // Lock after 5 failed attempts
+const AUTH_LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minute lockout
+
 const authenticateAdmin = (req, res, next) => {
-    // Check for admin token in header or query param
-    const token = req.headers['x-admin-token'] || req.query.token;
+    const clientIP = req.ip;
+
+    // Check for lockout
+    const attempts = failedAuthAttempts.get(clientIP);
+    if (attempts && attempts.count >= AUTH_LOCKOUT_THRESHOLD) {
+        const timeSinceFirst = Date.now() - attempts.firstAttempt;
+        if (timeSinceFirst < AUTH_LOCKOUT_DURATION) {
+            const remainingMinutes = Math.ceil((AUTH_LOCKOUT_DURATION - timeSinceFirst) / 60000);
+            console.warn(`[Security] Blocked locked-out IP: ${clientIP}`);
+            return res.status(429).json({
+                error: 'Too many failed attempts. Try again later.',
+                retryAfterMinutes: remainingMinutes
+            });
+        }
+        // Lockout expired, reset
+        failedAuthAttempts.delete(clientIP);
+    }
+
+    // SECURITY: Only accept token from Authorization header (Bearer scheme) or X-Admin-Token header
+    // NEVER accept tokens from query parameters (they get logged in URLs, browser history, referrer headers)
+    let token = null;
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.substring(7); // Remove 'Bearer ' prefix
+    } else if (req.headers['x-admin-token']) {
+        token = req.headers['x-admin-token'];
+    }
+
     const expectedToken = process.env.ADMIN_TOKEN;
 
     if (!expectedToken) {
@@ -1193,11 +1392,18 @@ const authenticateAdmin = (req, res, next) => {
         return res.status(403).json({ error: 'Admin access not configured' });
     }
 
-    if (token !== expectedToken) {
-        console.warn(`Failed admin authentication attempt from IP: ${req.ip}`);
+    if (!token || token !== expectedToken) {
+        // Track failed attempt
+        const currentAttempts = failedAuthAttempts.get(clientIP) || { count: 0, firstAttempt: Date.now() };
+        currentAttempts.count++;
+        failedAuthAttempts.set(clientIP, currentAttempts);
+
+        console.warn(`[Security] Failed admin authentication attempt from IP: ${clientIP} (attempt ${currentAttempts.count})`);
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
+    // Successful auth - clear any failed attempts
+    failedAuthAttempts.delete(clientIP);
     next();
 };
 
