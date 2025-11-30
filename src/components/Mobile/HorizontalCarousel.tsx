@@ -1,13 +1,14 @@
 // src/components/Mobile/HorizontalCarousel.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLocationData } from '../../contexts/LocationDataContext';
 import { useUI } from '../../contexts/UIContext';
 import { useFilters } from '../../contexts/FilterContext';
 import { useSearch } from '../../contexts/SearchContext';
-import ShopCard from '../Listings/ShopCard';
+import ShopCardMobile from './ShopCardMobile';
 import { getShopDetailBasePath } from '../../utils/typeUrlMappings';
 import { encodeFiltersToURL } from '../../utils/urlSync';
+import { useCarouselSwipe } from '../../hooks/useCarouselSwipe';
 import {
   CAROUSEL,
   BOTTOM_SHEET,
@@ -15,34 +16,82 @@ import {
 } from '../../config/mobile';
 
 /**
- * HorizontalCarousel - Arrow-controlled carousel for mobile bottom sheet
+ * Get card tier based on bottom sheet height
+ */
+function getCardTier(height: number): 'minimal' | 'compact' | 'expanded' {
+  if (height <= BOTTOM_SHEET.SNAP_COLLAPSED) {
+    return 'minimal';
+  }
+  if (height <= BOTTOM_SHEET.SNAP_HALF) {
+    return 'compact';
+  }
+  return 'expanded';
+}
+
+/**
+ * HorizontalCarousel - Swipe-enabled carousel for mobile bottom sheet
  *
  * Features:
+ * - Touch swipe with momentum physics (NEW!)
+ * - Arrow button navigation (accessibility fallback)
  * - Transform-based positioning (no scroll behavior)
  * - Shows 1 large center card + side peeks (80% card width, 10% peeks)
- * - Arrow-only navigation (no swipe gestures)
  * - Auto-centers on selected shop
  *
  * Design:
- * - Center card: scale(1.2), bright, elevated shadow
- * - Side cards: scale(0.85), dimmed with dark overlay, 10% visible behind arrows
+ * - Center card: scale(1.05), bright, elevated shadow
+ * - Side cards: scale(0.9), dimmed with dark overlay, 10% visible behind arrows
  * - Consistent percentage-based spacing
  */
 const HorizontalCarousel: React.FC = () => {
   const { currentlyDisplayedLocations } = useLocationData();
-  const { selectedShop, setSelectedShop, setBottomSheetHeight, setIsManuallyCollapsed, setPreviewShop } = useUI();
+  const { selectedShop, setSelectedShop, setBottomSheetHeight, setIsManuallyCollapsed, setPreviewShop, bottomSheetHeight } = useUI();
+
+  // Calculate card tier based on bottom sheet height
+  const cardTier = useMemo(() => getCardTier(bottomSheetHeight), [bottomSheetHeight]);
   const { activeLocationTypes, activeProductFilters } = useFilters();
   const { lastPlaceSelectedByAutocomplete, currentRadius } = useSearch();
   const navigate = useNavigate();
-  const [centerIndex, setCenterIndex] = useState(0);
 
-  // Auto-center on selected shop when selection changes
+  // Find the initial index based on selected shop
+  const getInitialIndex = useCallback(() => {
+    if (!selectedShop) return 0;
+    const index = currentlyDisplayedLocations.findIndex(
+      (shop) =>
+        shop.slug === selectedShop.slug ||
+        shop.GoogleProfileID === selectedShop.GoogleProfileID
+    );
+    return index !== -1 ? index : 0;
+  }, [selectedShop, currentlyDisplayedLocations]);
+
+  // Use the swipe hook for touch navigation
+  const {
+    containerRef,
+    currentIndex,
+    isDragging,
+    isAnimating,
+    goToIndex,
+    style: swipeStyle,
+  } = useCarouselSwipe({
+    itemCount: currentlyDisplayedLocations.length,
+    itemWidth: CAROUSEL.CARD_WIDTH_PERCENT,
+    gapWidth: CAROUSEL.CARD_GAP_PERCENT,
+    initialIndex: getInitialIndex(),
+    onIndexChange: (index) => {
+      // Update preview shop when swiping (shows InfoWindow on map)
+      if (currentlyDisplayedLocations[index]) {
+        setPreviewShop(currentlyDisplayedLocations[index]);
+      }
+    },
+    enabled: currentlyDisplayedLocations.length > 1,
+  });
+
+  // Auto-center on selected shop when selection changes externally
+  // IMPORTANT: Skip while animating to prevent race conditions (oscillation bug fix)
   useEffect(() => {
-    if (!selectedShop) {
-      // No selected shop - default to first card
-      setCenterIndex(0);
-      return;
-    }
+    // Don't interrupt ongoing animations - this prevents the oscillation bug
+    // where arrow clicks would compete with auto-center effects
+    if (!selectedShop || isAnimating) return;
 
     const selectedIndex = currentlyDisplayedLocations.findIndex(
       (shop) =>
@@ -50,21 +99,23 @@ const HorizontalCarousel: React.FC = () => {
         shop.GoogleProfileID === selectedShop.GoogleProfileID
     );
 
-    if (selectedIndex !== -1) {
-      setCenterIndex(selectedIndex);
+    if (selectedIndex !== -1 && selectedIndex !== currentIndex) {
+      goToIndex(selectedIndex, true);
     }
-  }, [selectedShop, currentlyDisplayedLocations]);
+  }, [selectedShop, currentlyDisplayedLocations, currentIndex, goToIndex, isAnimating]);
 
   // Handle card click - set as selected shop, expand, and navigate to URL
   const handleCardClick = useCallback((index: number) => {
+    // Don't handle clicks while dragging
+    if (isDragging) return;
+
     const shop = currentlyDisplayedLocations[index];
     setSelectedShop(shop);
     setPreviewShop(null); // Clear preview - we're now selecting
-    setCenterIndex(index);
     setBottomSheetHeight(BOTTOM_SHEET.SNAP_FULL_DETAILS);
     setIsManuallyCollapsed(false); // Clear collapse flag - user is actively expanding
 
-    // Add URL navigation (matching ShopCard.tsx:81-100 pattern)
+    // Add URL navigation (matching ShopCard.tsx pattern)
     const urlIdentifier = shop.slug || shop.GoogleProfileID || `shop-${shop.Name?.replace(/\W/g, '-').toLowerCase()}`;
     const basePath = getShopDetailBasePath(shop.type);
 
@@ -79,38 +130,47 @@ const HorizontalCarousel: React.FC = () => {
     const url = queryString ? `${basePath}/${urlIdentifier}?${queryString}` : `${basePath}/${urlIdentifier}`;
 
     navigate(url);
-  }, [currentlyDisplayedLocations, setSelectedShop, setPreviewShop, setBottomSheetHeight, setIsManuallyCollapsed, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius, navigate]);
+  }, [currentlyDisplayedLocations, setSelectedShop, setPreviewShop, setBottomSheetHeight, setIsManuallyCollapsed, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius, navigate, isDragging]);
 
-  // Navigate to previous card (just move carousel, don't select)
+  // Navigate to previous card (arrow button)
   const handlePrevious = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    if (centerIndex > 0) {
-      const newIndex = centerIndex - 1;
-      setCenterIndex(newIndex);
-      // Set preview to show in map InfoWindow (without selecting/expanding)
-      setPreviewShop(currentlyDisplayedLocations[newIndex]);
+    e.stopPropagation();
+    if (currentIndex > 0) {
+      goToIndex(currentIndex - 1, true);
     }
-  }, [centerIndex, currentlyDisplayedLocations, setPreviewShop]);
+  }, [currentIndex, goToIndex]);
 
-  // Navigate to next card (just move carousel, don't select)
+  // Navigate to next card (arrow button)
   const handleNext = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    if (centerIndex < currentlyDisplayedLocations.length - 1) {
-      const newIndex = centerIndex + 1;
-      setCenterIndex(newIndex);
-      // Set preview to show in map InfoWindow (without selecting/expanding)
-      setPreviewShop(currentlyDisplayedLocations[newIndex]);
+    e.stopPropagation();
+    if (currentIndex < currentlyDisplayedLocations.length - 1) {
+      goToIndex(currentIndex + 1, true);
     }
-  }, [centerIndex, currentlyDisplayedLocations, setPreviewShop]);
+  }, [currentIndex, currentlyDisplayedLocations.length, goToIndex]);
 
-  // Calculate transform offset: each card takes (cardWidth + gap)% of container
-  const cardStep = CAROUSEL.CARD_WIDTH_PERCENT + CAROUSEL.CARD_GAP_PERCENT; // 90%
-  const offset = centerIndex * -cardStep;
+  // Keyboard navigation
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowLeft' && currentIndex > 0) {
+      e.preventDefault();
+      goToIndex(currentIndex - 1, true);
+    } else if (e.key === 'ArrowRight' && currentIndex < currentlyDisplayedLocations.length - 1) {
+      e.preventDefault();
+      goToIndex(currentIndex + 1, true);
+    }
+  }, [currentIndex, currentlyDisplayedLocations.length, goToIndex]);
 
   return (
-    <div className="relative h-full overflow-visible">
-      {/* Left Arrow - only show if not at first card */}
-      {centerIndex > 0 && (
+    <div
+      ref={containerRef}
+      className={`relative h-full overflow-visible carousel-container ${isDragging ? 'is-swiping' : ''}`}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Shop listings carousel"
+    >
+      {/* Left Arrow - kept for accessibility */}
+      {currentIndex > 0 && (
         <button
           onClick={handlePrevious}
           className="absolute left-3 top-1/2 -translate-y-1/2 z-20
@@ -128,8 +188,8 @@ const HorizontalCarousel: React.FC = () => {
         </button>
       )}
 
-      {/* Right Arrow - only show if not at last card */}
-      {centerIndex < currentlyDisplayedLocations.length - 1 && (
+      {/* Right Arrow - kept for accessibility */}
+      {currentIndex < currentlyDisplayedLocations.length - 1 && (
         <button
           onClick={handleNext}
           className="absolute right-3 top-1/2 -translate-y-1/2 z-20
@@ -147,33 +207,38 @@ const HorizontalCarousel: React.FC = () => {
         </button>
       )}
 
-      {/* Position Indicator - shows current card position */}
+      {/* Position Indicator */}
       {currentlyDisplayedLocations.length > 1 && (
         <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
-          <span className="text-xs text-gray-500 dark:text-gray-400
-                         bg-white/80 dark:bg-gray-800/80
-                         px-2.5 py-1 rounded-full
-                         backdrop-blur-sm shadow-sm">
-            {centerIndex + 1} / {currentlyDisplayedLocations.length}
+          <span
+            className="text-xs text-gray-500 dark:text-gray-400
+                       bg-white/80 dark:bg-gray-800/80
+                       px-2.5 py-1 rounded-full
+                       backdrop-blur-sm shadow-sm"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {currentIndex + 1} / {currentlyDisplayedLocations.length}
           </span>
         </div>
       )}
 
-      {/* Card Container - uses transform for positioning */}
+      {/* Card Container - uses swipe hook for transform */}
       <div
+        data-carousel-track
         className="flex h-full items-center pb-4 overflow-visible"
         style={{
-          // Transform-based positioning (no scroll needed)
-          // Start at initial offset to center first card, then shift by offset
-          transform: `translateX(calc(${CAROUSEL.INITIAL_OFFSET_PERCENT}% + ${offset}%))`,
-          transition: MOBILE_ANIMATION.TRANSFORM_TRANSITION,
-          // Prevent any user interaction on container
-          pointerEvents: 'none',
+          ...swipeStyle,
+          // Disable transition during drag for immediate feedback
+          transition: isDragging ? 'none' : MOBILE_ANIMATION.TRANSFORM_TRANSITION,
+          // Prevent selection during drag
           userSelect: 'none',
+          WebkitUserSelect: 'none',
         }}
+        aria-live="polite"
       >
         {currentlyDisplayedLocations.map((shop, index) => {
-          const isCenterCard = index === centerIndex;
+          const isCenterCard = index === currentIndex;
           return (
             <div
               key={shop.slug || shop.GoogleProfileID || shop.Name}
@@ -192,12 +257,21 @@ const HorizontalCarousel: React.FC = () => {
                 opacity: isCenterCard ? 1 : CAROUSEL.SIDE_CARD_OPACITY,
                 filter: isCenterCard ? 'none' : `brightness(${CAROUSEL.SIDE_CARD_BRIGHTNESS})`,
                 transition: MOBILE_ANIMATION.CARD_TRANSITION,
-                // Re-enable interactions on cards
-                pointerEvents: 'auto',
+                // Allow pointer events for card interaction
+                pointerEvents: isDragging ? 'none' : 'auto',
               }}
               onClick={() => handleCardClick(index)}
+              role="group"
+              aria-roledescription="slide"
+              aria-label={`${index + 1} of ${currentlyDisplayedLocations.length}: ${shop.Name}`}
+              aria-current={isCenterCard ? 'true' : undefined}
             >
-              <ShopCard shop={shop} />
+              <ShopCardMobile
+                shop={shop}
+                tier={cardTier}
+                isCenterCard={isCenterCard}
+                onTap={() => handleCardClick(index)}
+              />
             </div>
           );
         })}

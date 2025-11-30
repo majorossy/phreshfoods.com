@@ -164,3 +164,107 @@ export function selectSnapPoint(
     Math.abs(curr - currentHeight) < Math.abs(prev - currentHeight) ? curr : prev
   );
 }
+
+// =============================================================================
+// GESTURE CONFIGURATION
+// =============================================================================
+
+export const GESTURE = {
+  // Direction lock thresholds
+  DIRECTION_LOCK_THRESHOLD_PX: 10, // Minimum movement to determine direction
+  HORIZONTAL_ANGLE_DEG: 30, // Angle below this = horizontal gesture
+  VERTICAL_ANGLE_DEG: 60, // Angle above this = vertical gesture
+
+  // Velocity thresholds (px/s)
+  SWIPE_VELOCITY_THRESHOLD: 300, // Minimum velocity for intentional swipe
+  FLICK_VELOCITY_THRESHOLD: 800, // High velocity for "flick" gesture
+
+  // Overscroll behavior
+  MAX_OVERSCROLL_PERCENT: 25, // Maximum visual overscroll as % of container
+  RUBBER_BAND_TENSION: 0.55, // Resistance factor (0.55 = iOS-like)
+
+  // Touch zones
+  PHOTO_CAROUSEL_HEIGHT_PX: 200, // Approximate photo area height for gesture targeting
+} as const;
+
+// =============================================================================
+// PHYSICS CONFIGURATION
+// =============================================================================
+
+export const PHYSICS = {
+  // Spring configurations for different animations
+  SPRING_SNAP: { stiffness: 450, damping: 35, mass: 1 }, // Snappy response
+  SPRING_BOUNCE: { stiffness: 400, damping: 20, mass: 1 }, // Bouncy feedback
+  SPRING_GENTLE: { stiffness: 150, damping: 20, mass: 1 }, // Subtle animations
+  SPRING_STIFF: { stiffness: 500, damping: 40, mass: 1 }, // Quick response
+
+  // Momentum scrolling
+  DECELERATION_RATE: 0.998, // How quickly momentum dies (0.998 = iOS-like)
+
+  // Animation timing
+  MIN_ANIMATION_DURATION_MS: 150, // Minimum animation time
+  MAX_ANIMATION_DURATION_MS: 500, // Maximum animation time
+} as const;
+
+// =============================================================================
+// HAPTICS CONFIGURATION
+// =============================================================================
+
+export const HAPTICS_CONFIG = {
+  // Enable/disable haptics globally
+  ENABLED: true,
+
+  // Trigger mappings - which haptic pattern for each interaction
+  TRIGGERS: {
+    CAROUSEL_SNAP: 'selection', // Ultra-light on card change
+    CAROUSEL_EDGE: 'light', // Light on hitting boundary
+    SHEET_SNAP: 'medium', // Medium on bottom sheet snap
+    PHOTO_CHANGE: 'selection', // Ultra-light on photo swipe
+    ADD_TO_TRIP: 'success', // Success pattern
+    REMOVE_FROM_TRIP: 'light', // Light on removal
+    LONG_PRESS: 'medium', // Medium on long press detection
+  },
+} as const;
+
+// =============================================================================
+// CAROUSEL SWIPE CONFIGURATION
+// =============================================================================
+
+export const CAROUSEL_SWIPE = {
+  // Swipe detection
+  MIN_SWIPE_DISTANCE_PX: 50, // Minimum distance for a valid swipe
+  MIN_SWIPE_VELOCITY: 200, // Minimum velocity (px/s) to trigger swipe
+
+  // Animation
+  SNAP_ANIMATION_DURATION_MS: 300, // Duration for snap animation
+
+  // Edge behavior
+  EDGE_RESISTANCE: 0.3, // How much to resist at edges (0 = no move, 1 = full move)
+
+  // Item dimensions (derived from CAROUSEL config)
+  get ITEM_WIDTH_PERCENT() {
+    return CAROUSEL.CARD_WIDTH_PERCENT;
+  },
+  get GAP_PERCENT() {
+    return CAROUSEL.CARD_GAP_PERCENT;
+  },
+  get ITEM_STEP_PERCENT() {
+    return CAROUSEL.CARD_WIDTH_PERCENT + CAROUSEL.CARD_GAP_PERCENT;
+  },
+} as const;
+
+// =============================================================================
+// GESTURE COORDINATION TYPES
+// =============================================================================
+
+/**
+ * Types for gesture coordination between components
+ */
+export type GestureOwner = 'sheet' | 'carousel' | 'photo-carousel' | null;
+export type GestureDirection = 'horizontal' | 'vertical' | null;
+
+export interface GestureState {
+  owner: GestureOwner;
+  direction: GestureDirection;
+  isDragging: boolean;
+}

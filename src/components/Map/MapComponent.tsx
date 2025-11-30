@@ -57,6 +57,7 @@ const MapComponent: React.FC = () => {
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const previousSelectedShopSlugRef = useRef<string | null>(null);
   const previousHoveredShopSlugRef = useRef<string | null>(null);
+  const previousPreviewShopSlugRef = useRef<string | null>(null);
   const searchLocationMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
   const searchRadiusCircleRef = useRef<google.maps.Circle | null>(null);
   const markerClustererRef = useRef<MarkerClusterer | null>(null);
@@ -69,7 +70,7 @@ const MapComponent: React.FC = () => {
   // Use domain-specific hooks for better performance (only re-render when relevant state changes)
   const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
-  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, previewShop } = useUI();
+  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, previewShop, setPreviewShop } = useUI();
   const { directionsResult, clearDirections } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { tripDirectionsResult } = useTripPlanner();
@@ -165,6 +166,7 @@ const MapComponent: React.FC = () => {
 
       logger.log('Marker clicked - shop has distance:', (shopWithDistance as ShopWithDistance).distance);
 
+      setPreviewShop(null); // Clear any carousel preview state
       setSelectedShop(shopWithDistance);
       openShopOverlays(shopWithDistance, 'shop');
       // Navigate to type-specific detail page with filters preserved
@@ -188,7 +190,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [currentlyDisplayedLocations, setSelectedShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius]);
+  }, [currentlyDisplayedLocations, setSelectedShop, setPreviewShop, openShopOverlays, navigate, closeNativeInfoWindow, unmountInfoWindowReactRoot, activeLocationTypes, activeProductFilters, lastPlaceSelectedByAutocomplete, currentRadius]);
 
 
   // Initialize Map and its specific listeners
@@ -340,6 +342,9 @@ const MapComponent: React.FC = () => {
     const hoveredShopSlug = hoveredShop?.slug || null;
     const hoverChanged = hoveredShopSlug !== previousHoveredShopSlugRef.current;
 
+    const previewShopSlug = previewShop?.slug || null;
+    const previewChanged = previewShopSlug !== previousPreviewShopSlugRef.current;
+
     currentlyDisplayedLocations.forEach((shop: Shop, index) => {
       if (shop.lat == null || shop.lng == null || isNaN(shop.lat) || isNaN(shop.lng)) return;
       const shopId = shop.slug || shop.GoogleProfileID || String(shop.id) || `marker-${index}`;
@@ -401,20 +406,22 @@ const MapComponent: React.FC = () => {
         }
       }
 
-      // Check if this marker is hovered or selected
+      // Check if this marker is hovered, selected, or previewed
       const isSelected = selectedShopSlug === shop.slug;
       const wasSelected = previousSelectedShopSlugRef.current === shop.slug;
       const isHovered = hoveredShopSlug === shop.slug;
       const wasHovered = previousHoveredShopSlugRef.current === shop.slug;
+      const isPreviewed = previewShopSlug === shop.slug;
+      const wasPreviewed = previousPreviewShopSlugRef.current === shop.slug;
 
-      // Determine marker styling based on state (hover takes precedence)
+      // Determine marker styling based on state (hover takes precedence, then preview, then selected)
       let scale = MARKER_DEFAULT_SCALE;
       // Type-specific colors: Use markerColorForShop determined above
       let backgroundColor = markerColorForShop;
       let backgroundImage = '';
       let zIndex = index + MARKER_DEFAULT_Z_INDEX_OFFSET;
 
-      if (isHovered || isSelected) {
+      if (isHovered || isSelected || isPreviewed) {
         // Hover or Selected state - use Maine state flag image with larger scale
         scale = isHovered ? 'scale(2.0)' : 'scale(2.08125)';
 
@@ -429,7 +436,8 @@ const MapComponent: React.FC = () => {
       // This prevents unnecessary DOM updates and improves performance
       const needsUpdate = !markerExists || // New marker, needs initial styling
                           (selectionChanged && (isSelected || wasSelected)) ||
-                          (hoverChanged && (isHovered || wasHovered));
+                          (hoverChanged && (isHovered || wasHovered)) ||
+                          (previewChanged && (isPreviewed || wasPreviewed));
 
       if (needsUpdate) {
         const innerMarker = (marker.content as HTMLElement).firstChild as HTMLElement;
@@ -456,8 +464,8 @@ const MapComponent: React.FC = () => {
             }
           }
 
-          // Update border width (thinner when selected/hovered)
-          const borderWidth = (isHovered || isSelected)
+          // Update border width (thinner when selected/hovered/previewed)
+          const borderWidth = (isHovered || isSelected || isPreviewed)
             ? `${MARKER_BORDER_WIDTH_PX * 0.5}px`
             : `${MARKER_BORDER_WIDTH_PX}px`;
           if (innerMarker.style.borderWidth !== borderWidth) {
@@ -474,9 +482,10 @@ const MapComponent: React.FC = () => {
       newMarkersMap.set(shopId, marker);
     });
 
-    // Update previous selected and hovered shop references
+    // Update previous selected, hovered, and preview shop references
     previousSelectedShopSlugRef.current = selectedShopSlug;
     previousHoveredShopSlugRef.current = hoveredShopSlug;
+    previousPreviewShopSlugRef.current = previewShopSlug;
 
     // Optimized cleanup: Only remove markers that are no longer needed
     // This is more efficient than iterating through all old markers
@@ -502,7 +511,7 @@ const MapComponent: React.FC = () => {
       // Force re-render of clusters
       markerClustererRef.current.render();
     }
-  }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, createMarkerElement, createMarkerClickHandler, checkAndClearHover, setHoveredShop]);
+  }, [currentlyDisplayedLocations, mapsApiReady, selectedShop, hoveredShop, previewShop, createMarkerElement, createMarkerClickHandler, checkAndClearHover, setHoveredShop]);
 
   // Effect to pan map to selectedShop with offset to frame info window
   // Uses single pan operation with calculated offsets for smooth movement
@@ -539,6 +548,26 @@ const MapComponent: React.FC = () => {
 
     doPan();
   }, [selectedShop, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
+
+  // Effect to pan map to previewShop (carousel browsing)
+  // Pans when user browses carousel, even if a shop is selected (allows browsing other shops)
+  useEffect(() => {
+    const map = googleMapRef.current;
+    if (!map || !mapsApiReady || !previewShop) return;
+    if (!window.google?.maps?.LatLng) return;
+    if (previewShop.lat == null || previewShop.lng == null || isNaN(previewShop.lat) || isNaN(previewShop.lng)) return;
+
+    // Skip if previewShop is the same as selectedShop (already panned by selectedShop effect)
+    const isSameAsSelected = selectedShop && (
+      previewShop.slug === selectedShop.slug ||
+      previewShop.GoogleProfileID === selectedShop.GoogleProfileID
+    );
+    if (isSameAsSelected) return;
+
+    // Pan to preview shop - simple pan without offset
+    const previewLatLng = new window.google.maps.LatLng(previewShop.lat, previewShop.lng);
+    map.panTo(previewLatLng);
+  }, [previewShop, selectedShop, mapsApiReady]);
 
   // Consolidated effect for search location: pan, marker, circle, and auto-zoom
   // Handles both initial location selection and radius changes
@@ -764,9 +793,9 @@ const MapComponent: React.FC = () => {
       return;
     }
 
-    // Show InfoWindow with priority: selected > preview > hovered
-    // Preview allows browsing carousel with arrows without selecting
-    const shopToShow = selectedShop || previewShop || hoveredShop;
+    // Show InfoWindow with priority: preview > selected > hovered
+    // Preview takes precedence to allow browsing carousel without losing selected state
+    const shopToShow = previewShop || selectedShop || hoveredShop;
 
     if (shopToShow && shopToShow.lat != null && shopToShow.lng != null) {
       const shopId = shopToShow.slug || shopToShow.GoogleProfileID || String(shopToShow.id);
@@ -843,7 +872,7 @@ const MapComponent: React.FC = () => {
       closeNativeInfoWindow();
       unmountInfoWindowReactRoot();
     };
-  }, [selectedShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot, checkAndClearHover]);
+  }, [selectedShop, previewShop, hoveredShop, mapsApiReady, closeNativeInfoWindow, unmountInfoWindowReactRoot, checkAndClearHover]);
 
   return (
     <div

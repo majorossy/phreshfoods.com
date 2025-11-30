@@ -5,7 +5,10 @@ import {
   MOBILE_ANIMATION,
   SNAP_POINTS,
   selectSnapPoint,
+  GESTURE,
 } from '../config/mobile';
+import { gestureHaptics } from '../utils/haptics';
+import { determineDirection } from '../utils/velocityTracker';
 
 interface UseBottomSheetDragOptions {
   initialHeight?: number; // 0.3 to 0.9 (30vh to 90vh)
@@ -24,6 +27,7 @@ interface UseBottomSheetDragOptions {
  * - Uses refs for zero re-renders during drag (60fps)
  * - RequestAnimationFrame for smooth animations
  * - Direction lock to prevent carousel conflicts
+ * - Haptic feedback on snap (NEW!)
  */
 export function useBottomSheetDrag({
   initialHeight = BOTTOM_SHEET.SNAP_COLLAPSED,
@@ -37,11 +41,13 @@ export function useBottomSheetDrag({
 
   // Refs for drag state (no re-renders during drag)
   const startYRef = useRef<number>(0);
+  const startXRef = useRef<number>(0);
   const currentYRef = useRef<number>(0);
   const startHeightRef = useRef<number>(initialHeight);
   const startTimeRef = useRef<number>(0);
   const rafIdRef = useRef<number | null>(null);
   const dragLockedRef = useRef<boolean>(false);
+  const directionLockedRef = useRef<'horizontal' | 'vertical' | null>(null);
   // Velocity tracking: rolling window of recent touch positions
   const velocitySamplesRef = useRef<Array<{ y: number; time: number }>>([]);
 
@@ -52,6 +58,14 @@ export function useBottomSheetDrag({
     );
     return nearest;
   }, [snapPoints]);
+
+  // Sync internal height with external initialHeight when it changes
+  // This allows programmatic height changes from outside (e.g., card click → expand)
+  useEffect(() => {
+    if (!isDragging && initialHeight !== currentHeight) {
+      setCurrentHeight(initialHeight);
+    }
+  }, [initialHeight, isDragging]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!enabled) return;
@@ -72,10 +86,12 @@ export function useBottomSheetDrag({
 
       // Start drag
       startYRef.current = touch.clientY;
+      startXRef.current = touch.clientX;
       currentYRef.current = touch.clientY;
       startHeightRef.current = currentHeight;
       startTimeRef.current = Date.now();
       dragLockedRef.current = false;
+      directionLockedRef.current = null; // Reset direction lock
       // Reset velocity tracking
       velocitySamplesRef.current = [{ y: touch.clientY, time: Date.now() }];
       setIsDragging(true);
@@ -94,8 +110,31 @@ export function useBottomSheetDrag({
         velocitySamplesRef.current.shift();
       }
 
-      // Calculate delta (inverted vs swipe-to-close - drag UP increases height)
-      const deltaY = startYRef.current - currentYRef.current;
+      // Calculate deltas
+      const deltaX = touch.clientX - startXRef.current;
+      const deltaY = startYRef.current - currentYRef.current; // Inverted: drag UP = positive
+
+      // Determine direction if not yet locked
+      if (!directionLockedRef.current) {
+        const direction = determineDirection(
+          deltaX,
+          -deltaY, // Negate because determineDirection expects positive Y = down
+          GESTURE.HORIZONTAL_ANGLE_DEG,
+          GESTURE.VERTICAL_ANGLE_DEG
+        );
+
+        if (direction !== 'undetermined') {
+          directionLockedRef.current = direction;
+        }
+      }
+
+      // If locked to horizontal, let the carousel handle it
+      if (directionLockedRef.current === 'horizontal') {
+        setIsDragging(false);
+        return;
+      }
+
+      // Calculate delta for height change
       const deltaVh = deltaY / window.innerHeight;
 
       // Calculate new height with bounds
@@ -156,6 +195,11 @@ export function useBottomSheetDrag({
       const nearest = selectSnapPoint(clampedHeight, velocity, snapPoints);
       setCurrentHeight(nearest);
 
+      // Haptic feedback on snap
+      if (nearest !== startHeightRef.current) {
+        gestureHaptics.sheetSnap();
+      }
+
       // Notify parent of snap change
       if (onSnapChange && nearest !== startHeightRef.current) {
         onSnapChange(nearest);
@@ -164,6 +208,7 @@ export function useBottomSheetDrag({
       // Reset drag state
       setIsDragging(false);
       dragLockedRef.current = false;
+      directionLockedRef.current = null;
       velocitySamplesRef.current = [];
 
       if (rafIdRef.current) {

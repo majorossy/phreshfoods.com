@@ -249,8 +249,9 @@ const MapSearchControls: React.FC = () => {
         </div>
       )}
 
-      {/* Tablet/Desktop: Both controls at bottom-left */}
-      <div className="hidden md:flex fixed bottom-6 left-6 z-30 items-center gap-3">
+      {/* Tablet/Desktop: Both controls at bottom-right of map area (to right of social overlay, left of listings panel) */}
+      {/* Positioned from right: 42% (listings panel) + small gap = ~44% from right edge */}
+      <div className="hidden md:flex fixed bottom-6 right-[44%] z-30 items-center gap-3">
         {/* Radius Slider */}
         <div className="flex items-center gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-gray-200/50 dark:border-gray-700/50">
           <label

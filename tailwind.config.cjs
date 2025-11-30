@@ -82,6 +82,42 @@ module.exports = {
           '0%': { maxHeight: '1000px', opacity: '1' },
           '100%': { maxHeight: '0', opacity: '0' },
         },
+        // Mobile carousel animations
+        snapBounce: {
+          '0%': { transform: 'scale(0.98)' },
+          '50%': { transform: 'scale(1.02)' },
+          '100%': { transform: 'scale(1)' },
+        },
+        cardEnter: {
+          '0%': { opacity: '0', transform: 'scale(0.9) translateY(20px)' },
+          '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+        },
+        cardPulse: {
+          '0%, 100%': { boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' },
+          '50%': { boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.15)' },
+        },
+        photoShine: {
+          '0%': { backgroundPosition: '-100% 0' },
+          '100%': { backgroundPosition: '100% 0' },
+        },
+        statusPulse: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        productIconPop: {
+          '0%': { transform: 'scale(0)', opacity: '0' },
+          '70%': { transform: 'scale(1.1)' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        rubberBand: {
+          '0%': { transform: 'scale(1)' },
+          '30%': { transform: 'scale(1.1, 0.9)' },
+          '40%': { transform: 'scale(0.9, 1.1)' },
+          '50%': { transform: 'scale(1.05, 0.95)' },
+          '65%': { transform: 'scale(0.98, 1.02)' },
+          '75%': { transform: 'scale(1.02, 0.98)' },
+          '100%': { transform: 'scale(1)' },
+        },
       },
       animation: {
         slideDown: 'slideDown 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -99,6 +135,14 @@ module.exports = {
         shimmer: 'shimmer 2s linear infinite',
         expandHeight: 'expandHeight 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         collapseHeight: 'collapseHeight 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+        // Mobile carousel animations
+        snapBounce: 'snapBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        cardEnter: 'cardEnter 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        cardPulse: 'cardPulse 2s ease-in-out infinite',
+        photoShine: 'photoShine 1.5s ease-in-out',
+        statusPulse: 'statusPulse 2s ease-in-out infinite',
+        productIconPop: 'productIconPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        rubberBand: 'rubberBand 0.8s ease-out',
       },
       // Box shadow with smooth glow effect
       boxShadow: {

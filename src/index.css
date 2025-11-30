@@ -848,4 +848,120 @@ body.modal-active {
     position: relative;
     z-index: 32;
   }
+
+  /* ========================================
+     Mobile Shop Card Styles (Week 2)
+     ======================================== */
+
+  /* Shop Card Mobile - Base styling */
+  .shop-card-mobile {
+    /* Enable hardware acceleration for smooth animations */
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    /* Ensure touch events work properly */
+    touch-action: manipulation;
+  }
+
+  /* Photo Carousel within card */
+  .shop-photo-carousel {
+    /* Isolate touch events from parent carousel */
+    touch-action: pan-x pinch-zoom;
+  }
+
+  /* Prevent text selection during swipes */
+  .shop-card-mobile.is-swiping,
+  .shop-photo-carousel.is-swiping {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Product preview staggered animation */
+  .product-preview__icon {
+    animation: productIconPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+  }
+
+  .product-preview__icon:nth-child(1) { animation-delay: 0ms; }
+  .product-preview__icon:nth-child(2) { animation-delay: 50ms; }
+  .product-preview__icon:nth-child(3) { animation-delay: 100ms; }
+  .product-preview__icon:nth-child(4) { animation-delay: 150ms; }
+  .product-preview__icon:nth-child(5) { animation-delay: 200ms; }
+
+  /* More pill fade-in after icons */
+  .product-preview__more {
+    animation: fadeIn 0.2s ease-out 0.25s backwards;
+  }
+
+  /* Status badge pulsing dot */
+  .status-badge__dot {
+    animation: statusPulse 2s ease-in-out infinite;
+  }
+
+  /* Quick action bar button press feedback */
+  .quick-action-bar__button:active {
+    transform: scale(0.95);
+  }
+
+  /* Carousel swipe state */
+  .carousel-container.is-swiping {
+    cursor: grabbing;
+  }
+
+  /* Disable pointer events on carousel track during swipe, but NOT on navigation buttons */
+  .carousel-container.is-swiping [data-carousel-track],
+  .carousel-container.is-swiping [data-carousel-track] * {
+    pointer-events: none !important;
+  }
+
+  /* Review snippet quote styling */
+  .review-snippet {
+    position: relative;
+  }
+
+  /* Photo loading shimmer effect */
+  .shop-photo-carousel .animate-pulse {
+    background: linear-gradient(
+      90deg,
+      #f3f4f6 25%,
+      #e5e7eb 50%,
+      #f3f4f6 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+  }
+
+  .dark .shop-photo-carousel .animate-pulse {
+    background: linear-gradient(
+      90deg,
+      #374151 25%,
+      #4b5563 50%,
+      #374151 75%
+    );
+    background-size: 200% 100%;
+  }
+}
+
+/* Product icon pop animation keyframe (if not in Tailwind) */
+@keyframes productIconPop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Status pulse keyframe */
+@keyframes statusPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }

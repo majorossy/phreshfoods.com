@@ -20,6 +20,10 @@ interface UIContextType {
   isSocialOverlayAnimatedOpen: boolean;
   openShopOverlays: (shop: Shop, openTab?: 'shop' | 'social' | 'directions', socialTab?: string) => void;
   closeShopOverlays: () => void;
+  openBothOverlays: () => void;
+  closeShopOverlay: () => void;
+  closeSocialOverlay: () => void;
+  toggleBothOverlays: () => void;
   isInitialModalOpen: boolean;
   setIsInitialModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   socialOverlayInitialTab: string;
@@ -220,6 +224,56 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     }, OVERLAY_ANIMATION_DURATION_MS + 50); // Small buffer after animation
   }, []);
 
+  // Open both overlays without changing selectedShop (for the double-arrow button)
+  const openBothOverlays = useCallback(() => {
+    setIsShopOverlayOpen(true);
+    setIsSocialOverlayOpen(true);
+    // Safely add class to body
+    if (document.body) {
+      document.body.classList.add('modal-active');
+    }
+  }, []);
+
+  // Close just the shop overlay (for individual panel control)
+  const closeShopOverlay = useCallback(() => {
+    setIsShopOverlayOpen(false);
+    // Only remove modal-active if both are now closed
+    if (!isSocialOverlayOpen && document.body) {
+      document.body.classList.remove('modal-active');
+    }
+  }, [isSocialOverlayOpen]);
+
+  // Close just the social overlay (for individual panel control)
+  const closeSocialOverlay = useCallback(() => {
+    setIsSocialOverlayOpen(false);
+    // Only remove modal-active if both are now closed
+    if (!isShopOverlayOpen && document.body) {
+      document.body.classList.remove('modal-active');
+    }
+  }, [isShopOverlayOpen]);
+
+  // Toggle both overlays together (for the double-arrow button)
+  // If either is open -> close both; if both closed -> open both
+  const toggleBothOverlays = useCallback(() => {
+    const eitherOpen = isShopOverlayOpen || isSocialOverlayOpen;
+
+    if (eitherOpen) {
+      // Close both
+      setIsShopOverlayOpen(false);
+      setIsSocialOverlayOpen(false);
+      if (document.body) {
+        document.body.classList.remove('modal-active');
+      }
+    } else {
+      // Open both
+      setIsShopOverlayOpen(true);
+      setIsSocialOverlayOpen(true);
+      if (document.body) {
+        document.body.classList.add('modal-active');
+      }
+    }
+  }, [isShopOverlayOpen, isSocialOverlayOpen]);
+
   const setSocialOverlayActiveTab = useCallback((tab: string) => {
     setSocialOverlayInitialTab(tab);
     setTabChangeKey(prev => prev + 1); // Force update even if tab is the same
@@ -239,6 +293,10 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     isSocialOverlayAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
+    openBothOverlays,
+    closeShopOverlay,
+    closeSocialOverlay,
+    toggleBothOverlays,
     isInitialModalOpen,
     setIsInitialModalOpen,
     socialOverlayInitialTab,
@@ -269,6 +327,10 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     isSocialOverlayAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
+    openBothOverlays,
+    closeShopOverlay,
+    closeSocialOverlay,
+    toggleBothOverlays,
     isInitialModalOpen,
     socialOverlayInitialTab,
     setSocialOverlayActiveTab,
