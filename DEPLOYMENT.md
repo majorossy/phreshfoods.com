@@ -1,6 +1,6 @@
-# PhreshFoods Deployment Guide
+# phind.us Deployment Guide
 
-This guide covers deploying PhreshFoods to production.
+This guide covers deploying phind.us to production.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ This guide covers deploying PhreshFoods to production.
 
 ```bash
 git clone <repository-url>
-cd phreshfoods.com
+cd phind.us
 ```
 
 ### 2. Install Dependencies
@@ -156,7 +156,7 @@ For production, use a process manager like PM2:
 npm install -g pm2
 
 # Start the application
-pm2 start backend/server.js --name phreshfoods
+pm2 start backend/server.js --name phindus
 
 # Save PM2 process list
 pm2 save
@@ -194,8 +194,8 @@ CMD ["node", "backend/server.js"]
 Build and run:
 
 ```bash
-docker build -t phreshfoods .
-docker run -p 3000:3000 --env-file .env phreshfoods
+docker build -t phindus .
+docker run -p 3000:3000 --env-file .env phindus
 ```
 
 ## Post-Deployment Verification
@@ -256,7 +256,7 @@ Monitor application logs:
 
 ```bash
 # PM2
-pm2 logs phreshfoods
+pm2 logs phindus
 
 # Docker
 docker logs -f <container-id>
@@ -317,13 +317,13 @@ If a deployment fails:
    ```bash
    npm run build:frontend
    cp -r dist/* backend/public/
-   pm2 restart phreshfoods
+   pm2 restart phindus
    ```
 
 3. **Restore previous data files** (if you have backups):
    ```bash
    cp backup/*.json backend/data/
-   pm2 restart phreshfoods
+   pm2 restart phindus
    ```
 
 ## Scaling Considerations

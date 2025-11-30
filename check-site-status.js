@@ -12,7 +12,7 @@ async function checkSiteStatus() {
     const apiData = await apiResponse.json();
 
     console.log('✅ Site Status Check:');
-    console.log('  - Frontend: ' + (frontendHtml.includes('PhreshFoods') ? '✓ Running' : '✗ Error'));
+    console.log('  - Frontend: ' + (frontendHtml.includes('phind.us') ? '✓ Running' : '✗ Error'));
     console.log('  - Backend API: ' + (Array.isArray(apiData) ? `✓ Serving ${apiData.length} locations` : '✗ Error'));
     console.log('\nThe site should now be loading without hooks errors.');
     console.log('Please check http://localhost:5173 in your browser.');

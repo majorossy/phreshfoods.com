@@ -164,12 +164,11 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({
             animationDelay: `${index * 50}ms`,
           }}
           role="listitem"
-          aria-label={product.name}
           title={product.name}
         >
           <img
             src={`/images/icons/${product.icon}`}
-            alt=""
+            alt={product.name}
             width={iconSize}
             height={iconSize}
             className="w-full h-full object-cover"

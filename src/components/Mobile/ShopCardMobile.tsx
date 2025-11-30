@@ -106,6 +106,7 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
           height={photoHeight}
           maxPhotos={5}
           photoSize={400}
+          priority={isCenterCard}
         />
 
         {/* Overlaid badges */}

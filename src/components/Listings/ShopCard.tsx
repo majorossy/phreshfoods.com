@@ -14,6 +14,8 @@ import { encodeFiltersToURL } from '../../utils/urlSync';
 
 interface ShopCardProps {
   shop: ShopWithDistance;
+  /** Mark as priority for LCP optimization (eager loading, fetchpriority=high) */
+  priority?: boolean;
 }
 
 // Helper function to get location type display info
@@ -28,7 +30,7 @@ const getLocationTypeDisplay = (type: string) => {
   };
 };
 
-const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
+const ShopCard: React.FC<ShopCardProps> = ({ shop, priority = false }) => {
   const navigate = useNavigate();
   const { selectedShop, hoveredShop, setHoveredShop } = useUI(); // Get selectedShop and hoveredShop from UI context
   const { activeProductFilters, activeLocationTypes } = useFilters();
@@ -133,7 +135,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           fallbackSrc={fallbackImageUrlCard}
           width={400}
           height={250}
-          loading="lazy"
+          priority={priority}
         />
       </div>
 

@@ -13,7 +13,9 @@ declare global {
     // Google Maps - already typed by @types/google.maps
     google?: typeof google;
 
-    // Any other window extensions can be added here
+    // Early fetch promise for LCP optimization
+    // Set in index.html during HTML parsing, consumed by LocationDataContext
+    __LOCATIONS_PROMISE__?: Promise<import('./shop').Shop[] | null>;
   }
 }
 

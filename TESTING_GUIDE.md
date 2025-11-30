@@ -151,7 +151,7 @@ describe('Header', () => {
       </AllProviders>
     );
 
-    expect(screen.getByText(/PhreshFoods/i)).toBeInTheDocument();
+    expect(screen.getByText(/phind\.us/i)).toBeInTheDocument();
   });
 
   it('updates search radius when slider is moved', () => {
@@ -177,7 +177,7 @@ describe('Header', () => {
       </AllProviders>
     );
 
-    const title = screen.getByText(/PhreshFoods/i);
+    const title = screen.getByText(/phind\.us/i);
 
     // Click should not throw error
     expect(() => fireEvent.click(title)).not.toThrow();

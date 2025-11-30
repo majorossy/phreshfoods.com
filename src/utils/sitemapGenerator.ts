@@ -5,7 +5,7 @@ import type { Shop } from '../types';
  * Generate XML sitemap for all farm stands
  */
 export function generateSitemap(shops: Shop[]): string {
-  const baseUrl = 'https://phreshfoods.com'; // Update with your actual domain
+  const baseUrl = 'https://phind.us'; // Update with your actual domain
   const today = new Date().toISOString().split('T')[0];
 
   const urls = [

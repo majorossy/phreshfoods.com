@@ -108,17 +108,19 @@ const MobileBottomSheet: React.FC = () => {
         willChange: isDragging ? 'height' : 'auto',
       }}
     >
-      {/* Drag Handle - Keyboard accessible */}
-      <div className="flex justify-center pt-2 pb-1">
+      {/* Drag Handle - Keyboard accessible with 44px min touch target */}
+      <div
+        className="flex justify-center items-center min-h-[44px] cursor-pointer"
+        role="button"
+        tabIndex={0}
+        aria-label={isExpanded ? 'Press Enter to collapse panel, or use arrow keys to resize' : 'Press Enter to expand panel, or use arrow keys to resize'}
+        aria-expanded={isExpanded}
+        aria-controls="mobileBottomSheet"
+        onKeyDown={handleDragHandleKeyDown}
+      >
         <div
           id="bottom-sheet-drag-handle"
-          className="drag-handle w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
-          aria-label={isExpanded ? 'Press Enter to collapse panel, or use arrow keys to resize' : 'Press Enter to expand panel, or use arrow keys to resize'}
-          aria-expanded={isExpanded}
-          aria-controls="mobileBottomSheet"
-          role="button"
-          tabIndex={0}
-          onKeyDown={handleDragHandleKeyDown}
+          className="drag-handle w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full pointer-events-none"
         />
       </div>
 

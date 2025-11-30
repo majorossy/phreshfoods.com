@@ -66,10 +66,10 @@ describe('SEO Utilities', () => {
       expect(seo).toHaveProperty('keywords');
     });
 
-    it('should include PhreshFoods in title', () => {
+    it('should include phind.us in title', () => {
       const seo = getHomepageSEO();
 
-      expect(seo.title).toContain('PhreshFoods');
+      expect(seo.title).toContain('phind.us');
     });
 
     it('should mention all location types in description', () => {

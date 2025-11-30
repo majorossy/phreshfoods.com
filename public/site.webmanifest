@@ -1,6 +1,6 @@
 {
-  "name": "Phinder",
-  "short_name": "Phinder",
+  "name": "phind.us",
+  "short_name": "phind.us",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",

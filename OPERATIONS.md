@@ -1,4 +1,4 @@
-# PhreshFoods Operations Guide
+# phind.us Operations Guide
 
 Quick reference for common development operations. Use these plans as standardized procedures.
 
@@ -88,7 +88,7 @@ npm run dev
 # If running dev:full, just Ctrl+C in that terminal
 
 # Or kill all node processes for this project
-pkill -f "node.*phreshfoods"
+pkill -f "node.*phindus"
 ```
 
 ### Find and Kill Specific Processes
@@ -110,7 +110,7 @@ npm run check:all    # typecheck + lint + tests
 ### Clean Shutdown with Cache Clear
 ```bash
 # Stop processes
-pkill -f "node.*phreshfoods"
+pkill -f "node.*phindus"
 
 # Clear build caches (if having issues)
 npm run clean:cache
@@ -202,7 +202,7 @@ lsof -ti :5173 | xargs kill -9
 | Type check | `npm run typecheck` |
 | Full quality check | `npm run check:all` |
 | Build frontend | `npm run build:frontend` |
-| Kill all | `pkill -f "node.*phreshfoods"` |
+| Kill all | `pkill -f "node.*phindus"` |
 
 ---
 

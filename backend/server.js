@@ -87,8 +87,11 @@ app.use(helmet({
       scriptSrc: [
         "'self'",
         "'unsafe-inline'", // Required for Google Maps
+        "'unsafe-eval'", // Required for Google Maps WebGL/WASM
+        "'wasm-unsafe-eval'", // Required for Google Maps WebAssembly
         "https://maps.googleapis.com",
-        "https://maps.gstatic.com"
+        "https://maps.gstatic.com",
+        "https://www.gstatic.com"
       ],
       styleSrc: [
         "'self'",
@@ -109,11 +112,15 @@ app.use(helmet({
       ],
       connectSrc: [
         "'self'",
+        "data:", // Required for Google Maps inline data URLs
+        "blob:", // Required for Google Maps blob URLs
         "https://*.googleapis.com",
+        "https://*.gstatic.com",
         "https://*.google.com"
       ],
       frameSrc: ["https://www.google.com"],
-      workerSrc: ["blob:"]
+      workerSrc: ["'self'", "blob:"],
+      childSrc: ["blob:"] // Required for Google Maps workers
     }
   },
   crossOriginEmbedderPolicy: false, // Required for Google Maps
@@ -131,7 +138,7 @@ const getAllowedOrigins = () => {
     // In production, require ALLOWED_ORIGINS to be set
     if (!process.env.ALLOWED_ORIGINS) {
       console.error('⚠️  WARNING: ALLOWED_ORIGINS not set in production! Using restrictive default.');
-      return ['https://phreshfoods.com', 'https://www.phreshfoods.com'];
+      return ['https://phind.us', 'https://www.phind.us'];
     }
     return process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.trim());
   }
@@ -218,7 +225,43 @@ app.use('/api/directions', costlyApiLimiter);
 app.use('/api/photo', photoLimiter);
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+
+// Static file serving with aggressive caching for performance
+// Different cache durations based on file type and content-addressability
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        const ext = path.extname(filePath).toLowerCase();
+
+        // Immutable assets (fonts, hashed JS/CSS from Vite build)
+        // These files have content hashes in their names, so they can be cached forever
+        if (filePath.includes('/assets/') || ext === '.woff2' || ext === '.woff') {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            return;
+        }
+
+        // Images - long cache with revalidation (30 days)
+        // WebP/AVIF get slightly longer cache since they're optimized formats
+        if (['.webp', '.avif', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico'].includes(ext)) {
+            res.setHeader('Cache-Control', 'public, max-age=2592000, stale-while-revalidate=86400');
+            return;
+        }
+
+        // HTML files - short cache to ensure users get updates
+        if (ext === '.html' || filePath.endsWith('/')) {
+            res.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+            return;
+        }
+
+        // JSON files (manifests, etc.) - moderate cache
+        if (ext === '.json') {
+            res.setHeader('Cache-Control', 'public, max-age=3600, stale-while-revalidate=86400');
+            return;
+        }
+
+        // Default - moderate cache for other static files
+        res.setHeader('Cache-Control', 'public, max-age=3600');
+    }
+}));
 
 // --- Helper Functions ---
 
@@ -388,7 +431,7 @@ app.get('/api/config', (req, res) => {
 // Sitemap endpoint for SEO
 app.get('/sitemap.xml', async (req, res) => {
     try {
-        const baseUrl = 'https://phreshfoods.com';
+        const baseUrl = 'https://phind.us';
         const now = new Date().toISOString();
 
         // Load all location data from JSON files
@@ -482,11 +525,22 @@ app.get('/sitemap.xml', async (req, res) => {
                 };
                 const detailPath = typeToDetailPath[shop.type] || '/farm-stand';
 
+                // Calculate priority based on rating and review count
+                // High-rated shops (4.5+) get 0.9, medium (4.0-4.5) get 0.8, others get 0.7
+                const rating = shop.placeDetails?.rating || 0;
+                const reviewCount = shop.placeDetails?.user_ratings_total || 0;
+                let priority = 0.7; // Default priority
+                if (rating >= 4.5 && reviewCount >= 10) {
+                    priority = 0.9; // Highly rated with good review count
+                } else if (rating >= 4.0 || reviewCount >= 20) {
+                    priority = 0.8; // Good rating or many reviews
+                }
+
                 sitemap += '  <url>\n';
                 sitemap += `    <loc>${baseUrl}${detailPath}/${encodeURIComponent(slug)}</loc>\n`;
                 sitemap += `    <lastmod>${now}</lastmod>\n`;
                 sitemap += '    <changefreq>weekly</changefreq>\n';
-                sitemap += '    <priority>0.8</priority>\n';
+                sitemap += `    <priority>${priority}</priority>\n`;
                 sitemap += '  </url>\n';
             }
         });
@@ -695,9 +749,10 @@ app.get('/api/locations', async (req, res) => {
             }
 
             // Send from memory cache with proper headers
+            // Extended cache (24h) with stale-while-revalidate for better repeat visit performance
             res.set({
                 'ETag': locationsCache.etag,
-                'Cache-Control': 'public, max-age=3600, must-revalidate',
+                'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
                 'Last-Modified': new Date(Math.max(farmModTime, cheeseModTime || 0)).toUTCString(),
                 'X-Cache': 'HIT'
             });
@@ -1076,9 +1131,10 @@ app.get('/api/locations', async (req, res) => {
         console.log(`[Locations API] Serving ${farmStands.length} farm stands + ${cheeseShops.length} cheese shops + ${fishMongers.length} fish mongers + ${butchers.length} butchers + ${antiqueShops.length} antique shops + ${breweries.length} breweries + ${wineries.length} wineries + ${sugarShacks.length} sugar shacks = ${allLocations.length} total locations (cache updated)`);
 
         // Send with cache headers
+        // Extended cache (24h) with stale-while-revalidate (7d) for better repeat visit performance
         res.set({
             'ETag': etag,
-            'Cache-Control': 'public, max-age=3600, must-revalidate',
+            'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
             'Last-Modified': new Date(Math.max(
                 farmModTime,
                 cheeseModTime || 0,
@@ -1335,10 +1391,16 @@ app.get('/api/photo', async (req, res) => {
             return res.status(response.status).send('Failed to fetch photo');
         }
 
-        // Get the image data and forward it
+        // Get the image data and forward it with caching headers
         const arrayBuffer = await response.arrayBuffer();
         const imageBuffer = Buffer.from(arrayBuffer);
+
+        // Set caching headers - photos rarely change, cache for 7 days
+        // public: allow CDN/browser caching
+        // max-age: browser cache for 7 days (604800 seconds)
+        // stale-while-revalidate: serve stale for 1 day while fetching fresh
         res.set('Content-Type', response.headers.get('content-type'));
+        res.set('Cache-Control', 'public, max-age=604800, stale-while-revalidate=86400');
         res.send(imageBuffer);
     } catch (error) {
         console.error('Error proxying photo request:', error);

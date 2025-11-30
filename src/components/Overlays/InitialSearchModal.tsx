@@ -1,135 +1,71 @@
 // src/components/Overlays/InitialSearchModal.tsx
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState, useCallback, useMemo } from 'react';
 import { AutocompletePlace } from '../../types';
 import { useSearch } from '../../contexts/SearchContext';
 import { useUI } from '../../contexts/UIContext';
 import { DEFAULT_PORTLAND_CENTER, MAINE_BOUNDS_LITERAL } from '../../config/appConfig.ts';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { PlaceAutocomplete, PlaceAutocompleteRef } from '../UI/PlaceAutocomplete';
 
 const InitialSearchModal = () => {
   const { setLastPlaceSelectedByAutocompleteAndCookie, setSearchTerm, mapsApiReady } = useSearch();
   const { setIsInitialModalOpen } = useUI();
-  const modalContainerRef = useRef<HTMLDivElement | null>(null); // Ref for focus trap container
-  const autocompleteInputRef = useRef<HTMLInputElement | null>(null); // Ref for the <input> element
-  const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null); // Ref for the Autocomplete instance
+  const modalContainerRef = useRef<HTMLDivElement | null>(null);
+  const autocompleteRef = useRef<PlaceAutocompleteRef | null>(null);
 
   // Focus trap for accessibility
   useFocusTrap({
-    isActive: true, // This modal is always active when rendered
+    isActive: true,
     onClose: () => setIsInitialModalOpen(false),
     containerRef: modalContainerRef,
-    initialFocusRef: autocompleteInputRef,
+    initialFocusRef: undefined, // Will focus the autocomplete container instead
   });
 
-  // Local state to hold the place selected by *this* autocomplete instance before submitting
+  // Local state to hold the place selected
   const [selectedPlaceFromModal, setSelectedPlaceFromModal] = useState<AutocompletePlace | null>(null);
-  // Local state for the input field's current text value
-  const [inputValue, setInputValue] = useState<string>("");
+  const [hasError, setHasError] = useState(false);
 
-  // Initialize Google Maps Autocomplete
-  useEffect(() => {
-    if (!mapsApiReady || !autocompleteInputRef.current || !window.google?.maps?.places || autocompleteInstanceRef.current) {
-      // Don't initialize if API not ready, ref not set, Places library not loaded, or already initialized
-      return;
-    }
-
-    const autocompleteOptions: google.maps.places.AutocompleteOptions = {
-      types: ['geocode'], // Focus on regions like towns, cities, zips, addresses
-      componentRestrictions: { country: 'us' },
-      fields: ['place_id', 'name', 'formatted_address', 'geometry', 'address_components', 'types'],
-    };
-    
-    // Set bias and restriction once Maps API is ready and input element is available
+  // Memoize location bias for Maine bounds
+  const locationBias = useMemo(() => {
     if (MAINE_BOUNDS_LITERAL) {
-        const bounds = new google.maps.LatLngBounds(
-            {lat: MAINE_BOUNDS_LITERAL.south, lng: MAINE_BOUNDS_LITERAL.west},
-            {lat: MAINE_BOUNDS_LITERAL.north, lng: MAINE_BOUNDS_LITERAL.east}
-        );
-        autocompleteOptions.bounds = bounds; // Bias results towards these bounds
-        autocompleteOptions.strictBounds = false; // Allow results outside bounds but prioritize within
+      return {
+        north: MAINE_BOUNDS_LITERAL.north,
+        south: MAINE_BOUNDS_LITERAL.south,
+        east: MAINE_BOUNDS_LITERAL.east,
+        west: MAINE_BOUNDS_LITERAL.west
+      };
     }
+    return undefined;
+  }, []);
 
+  // Handle place selection from autocomplete
+  const handlePlaceSelect = useCallback((place: AutocompletePlace, term: string) => {
+    setSelectedPlaceFromModal(place);
+    setHasError(false);
 
-    const autocomplete = new window.google.maps.places.Autocomplete(
-      autocompleteInputRef.current,
-      autocompleteOptions
-    );
-    autocompleteInstanceRef.current = autocomplete; // Store the instance
-
-    autocomplete.addListener('place_changed', () => {
-      const placeResult = autocomplete.getPlace(); // google.maps.places.PlaceResult
-
-      if (placeResult.geometry && placeResult.geometry.location) {
-        // Adapt PlaceResult to your AutocompletePlace type
-        const adaptedPlace: AutocompletePlace = {
-          name: placeResult.name,
-          formatted_address: placeResult.formatted_address,
-          geometry: {
-            location: {
-              lat: placeResult.geometry.location.lat(),
-              lng: placeResult.geometry.location.lng(),
-            },
-            viewport: placeResult.geometry.viewport?.toJSON(),
-          },
-          place_id: placeResult.place_id,
-          address_components: placeResult.address_components,
-          types: placeResult.types,
-        };
-        setSelectedPlaceFromModal(adaptedPlace);
-        setInputValue(placeResult.formatted_address || placeResult.name || ""); // Update input value with selection
-      } else {
-        setSelectedPlaceFromModal(null); // Clear selection if invalid
-        // Input value remains what the user typed if they didn't pick from dropdown
-      }
-    });
-
-    // It's good practice, though Autocomplete might clean up some listeners.
-    return () => {
-        if (autocompleteInstanceRef.current) {
-            google.maps.event.clearInstanceListeners(autocompleteInstanceRef.current);
-            // Remove the PAC container if it exists - this is important for preventing duplicates on HMR
-            const pacContainers = document.getElementsByClassName('pac-container');
-            for (let i = 0; i < pacContainers.length; i++) {
-                pacContainers[i].remove();
-            }
-        }
-    };
-
-  }, [mapsApiReady]); // Re-run effect if mapsApiReady changes (e.g., on first load)
-
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-    // If user types something new after making a selection, clear the selection state
-    if (selectedPlaceFromModal && event.target.value !== (selectedPlaceFromModal.formatted_address || selectedPlaceFromModal.name)) {
-      setSelectedPlaceFromModal(null);
+    // Auto-submit on place selection for better UX
+    if (place.geometry) {
+      setSearchTerm(term);
+      setLastPlaceSelectedByAutocompleteAndCookie(place, term);
+      setIsInitialModalOpen(false);
     }
-  };
+  }, [setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setIsInitialModalOpen]);
 
-
-  const handleModalSearch = () => {
+  const handleModalSearch = useCallback(() => {
     if (selectedPlaceFromModal && selectedPlaceFromModal.geometry) {
       const term = selectedPlaceFromModal.formatted_address || selectedPlaceFromModal.name || "Selected Location";
       setSearchTerm(term);
       setLastPlaceSelectedByAutocompleteAndCookie(selectedPlaceFromModal, term);
       setIsInitialModalOpen(false);
-    } else if (inputValue.trim()) {
-      setSearchTerm(inputValue.trim());
-      setLastPlaceSelectedByAutocompleteAndCookie(null, inputValue.trim());
-      setIsInitialModalOpen(false);
     } else {
-      autocompleteInputRef.current?.focus();
-      if(autocompleteInputRef.current){
-        autocompleteInputRef.current.style.border = "1px solid red";
-        setTimeout(() => {
-            if(autocompleteInputRef.current) autocompleteInputRef.current.style.border = "";
-        }, 2000);
-      }
-      return;
+      // Show error state if no valid selection
+      setHasError(true);
+      autocompleteRef.current?.focus();
+      setTimeout(() => setHasError(false), 2000);
     }
-  };
+  }, [selectedPlaceFromModal, setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setIsInitialModalOpen]);
 
-  const handleSkip = () => {
+  const handleSkip = useCallback(() => {
     const portlandTerm = "Portland, Maine";
     const portlandPlace: AutocompletePlace = {
       name: portlandTerm,
@@ -139,15 +75,7 @@ const InitialSearchModal = () => {
     setSearchTerm(portlandTerm);
     setLastPlaceSelectedByAutocompleteAndCookie(portlandPlace, portlandTerm);
     setIsInitialModalOpen(false);
-  };
-
-  // Handle Enter key to submit search
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      handleModalSearch();
-    }
-  };
+  }, [setSearchTerm, setLastPlaceSelectedByAutocompleteAndCookie, setIsInitialModalOpen]);
 
   return (
     <div
@@ -169,19 +97,20 @@ const InitialSearchModal = () => {
           Find Local Shops Near You
         </h2>
         <p id="initial-search-description" className="sr-only">
-          Enter a location to search for local shops. Press Enter to search or Escape to close.
+          Enter a location to search for local shops. Select a suggestion to search or press Escape to close.
         </p>
-        {/* Regular HTML input for Google Places Autocomplete */}
-        <input
-          ref={autocompleteInputRef}
-          id="modalSearchAutocompleteClassic"
-          type="text"
+        {/* PlaceAutocomplete Web Component for Google Places */}
+        <PlaceAutocomplete
+          ref={autocompleteRef}
+          onPlaceSelect={handlePlaceSelect}
           placeholder="Enter your town, city, or zip code"
-          aria-label="Search location"
-          className="w-full p-3 border border-gray-300 rounded-md mb-4 shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm"
-          value={inputValue}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
+          className={`place-autocomplete-modal ${hasError ? 'place-autocomplete-error' : ''}`}
+          id="modalSearchAutocomplete"
+          ariaLabel="Search location"
+          types={['geocode']}
+          includedRegionCodes={['us']}
+          locationBias={locationBias}
+          mapsApiReady={mapsApiReady}
         />
         <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
           <button

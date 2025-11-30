@@ -67,7 +67,7 @@ const WelcomeState: React.FC = () => {
           <span className="text-5xl" role="img" aria-label="Maine pine tree">🌲</span>
         </div>
         <h2 id="welcome-title" className="text-3xl font-bold text-gray-900 mb-3">
-          Welcome to PhreshFoods
+          Welcome to phind.us
         </h2>
         <p id="welcome-tagline" className="text-lg text-gray-600 leading-relaxed">
           Discover Maine's finest local food and artisan goods

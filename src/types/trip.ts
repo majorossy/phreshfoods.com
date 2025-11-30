@@ -66,7 +66,7 @@ export function saveTripToLocalStorage(stops: TripStop[], isOptimized: boolean):
     isOptimizedRoute: isOptimized,
     timestamp: Date.now()
   };
-  localStorage.setItem('phreshfoods_trip_planner', JSON.stringify(data));
+  localStorage.setItem('phindus_trip_planner', JSON.stringify(data));
 }
 
 /**
@@ -74,7 +74,7 @@ export function saveTripToLocalStorage(stops: TripStop[], isOptimized: boolean):
  */
 export function loadTripFromLocalStorage(): TripPersistence | null {
   try {
-    const stored = localStorage.getItem('phreshfoods_trip_planner');
+    const stored = localStorage.getItem('phindus_trip_planner');
     if (!stored) {
       return null;
     }
@@ -89,5 +89,5 @@ export function loadTripFromLocalStorage(): TripPersistence | null {
  * Helper to clear trip from localStorage
  */
 export function clearTripFromLocalStorage(): void {
-  localStorage.removeItem('phreshfoods_trip_planner');
+  localStorage.removeItem('phindus_trip_planner');
 }

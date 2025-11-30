@@ -144,7 +144,12 @@ const CardListings = () => {
       id="card-listings"
       ref={parentRef}
       className="w-full md:w-2/5 lg:w-1/3 overflow-y-auto custom-scrollbar bg-white/80 backdrop-blur-sm md:bg-white/95 md:backdrop-blur-none shrink-0 animate-fadeIn"
+      aria-labelledby="listings-heading"
     >
+      {/* Screen reader heading for section */}
+      <h2 id="listings-heading" className="sr-only">
+        {currentlyDisplayedLocations.length} Local Business{currentlyDisplayedLocations.length !== 1 ? 'es' : ''} Found
+      </h2>
       {useVirtualScrolling ? (
         // Virtualized rendering for large lists
         <div
@@ -172,12 +177,17 @@ const CardListings = () => {
                 }}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 pb-3 sm:pb-4">
-                  {rowShops.map(shop => (
-                    <ShopCard
-                      key={shop.slug || shop.GoogleProfileID || shop.Name}
-                      shop={shop}
-                    />
-                  ))}
+                  {rowShops.map((shop, shopIndex) => {
+                    // Priority for first 4 cards (first 2 rows in 2-column layout)
+                    const globalIndex = virtualRow.index * 2 + shopIndex;
+                    return (
+                      <ShopCard
+                        key={shop.slug || shop.GoogleProfileID || shop.Name}
+                        shop={shop}
+                        priority={globalIndex < 4}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -187,10 +197,11 @@ const CardListings = () => {
         // Regular rendering for small lists
         <div className="px-3 pb-3 sm:px-4 sm:pb-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {currentlyDisplayedLocations.map(shop => (
+            {currentlyDisplayedLocations.map((shop, index) => (
               <ShopCard
                 key={shop.slug || shop.GoogleProfileID || shop.Name}
                 shop={shop}
+                priority={index < 4}
               />
             ))}
           </div>

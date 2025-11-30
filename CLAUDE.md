@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PhreshFoods is a multi-location-type finder application for Maine. It's a React + TypeScript + Vite frontend with a Node.js/Express backend that fetches location data from Google Sheets, enriches it with Google Maps API data (geocoding, place details), and serves it to the frontend.
+phind.us is a multi-location-type finder application for Maine. It's a React + TypeScript + Vite frontend with a Node.js/Express backend that fetches location data from Google Sheets, enriches it with Google Maps API data (geocoding, place details), and serves it to the frontend.
 
 **Supported Location Types (8 total):**
 - Farm Stands (original focus)
@@ -342,12 +342,13 @@ Frontend config is in `src/config/appConfig.ts` and `src/config/enabledLocationT
 - Directions rendering with DirectionsService/DirectionsRenderer
 - Place Autocomplete for location search
 
-**⚠️ Google Places Autocomplete Migration Notice:**
-- Current: Using `google.maps.places.Autocomplete` (Header.tsx:113)
-- Recommended: Migrate to `google.maps.places.PlaceAutocompleteElement`
-- Timeline: Not urgent - 12+ months support guaranteed (as of March 2025)
-- Migration guide: https://developers.google.com/maps/documentation/javascript/places-migration-overview
-- Note: You'll see deprecation warnings in the browser console until migration is complete
+**✅ Google Places Autocomplete Migration (Completed Nov 2025):**
+- Migrated from deprecated `google.maps.places.Autocomplete` to new `PlaceAutocompleteElement` Web Component
+- **Implementation:** Uses `PlaceAutocomplete` reusable component (`src/components/UI/PlaceAutocomplete.tsx`)
+- **Hook:** `usePlaceAutocomplete` (`src/hooks/usePlaceAutocomplete.ts`) with automatic legacy fallback
+- **Files migrated:** `MapSearchControls.tsx`, `InitialSearchModal.tsx`
+- **Fallback:** Automatically falls back to legacy API if `PlaceAutocompleteElement` isn't available
+- Note: Legacy API deprecation warnings may still appear until Google fully enables the new Web Component for all accounts
 
 **Map Styling & Customization:**
 - **Local Custom Styling:** Map appearance is controlled via local code in `src/config/map.ts`

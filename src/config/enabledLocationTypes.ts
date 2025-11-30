@@ -45,18 +45,11 @@ export const ENABLED_LOCATION_TYPES: readonly LocationType[] = [
   ...CONDITIONAL_TYPES.filter((t) => t.enabled).map((t) => t.type),
 ] as const;
 
-// Debug: Log what we're reading from env (after ENABLED_LOCATION_TYPES is defined)
-console.log('[EnabledLocationTypes] Raw env values:', {
-  VITE_ENABLE_BREWERIES: import.meta.env.VITE_ENABLE_BREWERIES,
-  VITE_ENABLE_WINERIES: import.meta.env.VITE_ENABLE_WINERIES,
-  VITE_ENABLE_SUGAR_SHACKS: import.meta.env.VITE_ENABLE_SUGAR_SHACKS,
-});
-console.log('[EnabledLocationTypes] Computed flags:', {
-  ENABLE_BREWERIES,
-  ENABLE_WINERIES,
-  ENABLE_SUGAR_SHACKS,
-});
-console.log('[EnabledLocationTypes] Enabled types:', ENABLED_LOCATION_TYPES);
+// Debug logging removed - feature flags are stable
+// To debug, uncomment the block below:
+// if (import.meta.env.DEV) {
+//   console.log('[EnabledLocationTypes] Enabled types:', ENABLED_LOCATION_TYPES);
+// }
 
 /**
  * Helper to check if a specific location type is enabled

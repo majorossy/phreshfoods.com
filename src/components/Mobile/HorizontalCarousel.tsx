@@ -168,8 +168,10 @@ const HorizontalCarousel: React.FC = () => {
       tabIndex={0}
       role="region"
       aria-roledescription="carousel"
-      aria-label="Shop listings carousel"
+      aria-labelledby="carousel-heading"
     >
+      {/* Screen reader heading for proper heading hierarchy */}
+      <h2 id="carousel-heading" className="sr-only">Shop listings</h2>
       {/* Left Arrow - kept for accessibility */}
       {currentIndex > 0 && (
         <button

@@ -27,24 +27,26 @@ interface TripStorageData extends StorageSchema {
 function isValidShop(data: unknown): data is Shop {
   if (!data || typeof data !== 'object') return false;
 
+  const obj = data as Record<string, unknown>;
+
   // Check required fields
   const requiredFields = ['Name', 'slug', 'lat', 'lng', 'type'];
   for (const field of requiredFields) {
-    if (!(field in data)) return false;
+    if (!(field in obj)) return false;
   }
 
   // Validate coordinate types
-  if (typeof data.lat !== 'number' || typeof data.lng !== 'number') return false;
-  if (data.lat < -90 || data.lat > 90) return false;
-  if (data.lng < -180 || data.lng > 180) return false;
+  if (typeof obj.lat !== 'number' || typeof obj.lng !== 'number') return false;
+  if (obj.lat < -90 || obj.lat > 90) return false;
+  if (obj.lng < -180 || obj.lng > 180) return false;
 
   // Validate string fields
-  if (typeof data.Name !== 'string' || typeof data.slug !== 'string') return false;
-  if (typeof data.type !== 'string') return false;
+  if (typeof obj.Name !== 'string' || typeof obj.slug !== 'string') return false;
+  if (typeof obj.type !== 'string') return false;
 
   // Validate type enum
   const validTypes = ['farm_stand', 'cheese_shop', 'fish_monger', 'butcher', 'antique_shop', 'brewery', 'winery', 'sugar_shack'];
-  if (!validTypes.includes(data.type)) return false;
+  if (!validTypes.includes(obj.type)) return false;
 
   return true;
 }
@@ -54,12 +56,15 @@ function isValidShop(data: unknown): data is Shop {
  */
 function isValidTripData(data: unknown): data is TripStorageData {
   if (!data || typeof data !== 'object') return false;
-  if (typeof data.version !== 'number') return false;
-  if (typeof data.timestamp !== 'number') return false;
-  if (!Array.isArray(data.tripStops)) return false;
+
+  const obj = data as Record<string, unknown>;
+
+  if (typeof obj.version !== 'number') return false;
+  if (typeof obj.timestamp !== 'number') return false;
+  if (!Array.isArray(obj.tripStops)) return false;
 
   // Validate each shop in the trip
-  return data.tripStops.every(isValidShop);
+  return obj.tripStops.every(isValidShop);
 }
 
 /**

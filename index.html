@@ -10,36 +10,55 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="apple-mobile-web-app-title" content="Phinder" />
+    <meta name="apple-mobile-web-app-title" content="phind.us" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="theme-color" content="#1a6a41" />
+    <meta name="color-scheme" content="light" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="manifest" href="/site.webmanifest" />
 
 
     <!-- Primary Meta Tags -->
-    <title>PhreshFoods - Find Local Farms, Cheesemongers, Fishmongers & More in Maine</title>
-    <meta name="title" content="PhreshFoods - Find Local Farms, Cheesemongers, Fishmongers & More in Maine" />
+    <title>phind.us - Find Local Farms, Cheesemongers, Fishmongers & More in Maine</title>
+    <meta name="title" content="phind.us - Find Local Farms, Cheesemongers, Fishmongers & More in Maine" />
     <meta name="description" content="Discover fresh, local products from farm stands, cheesemongers, fishmongers, butchers, and antique shops across Maine. Search by location, filter by products, and support local businesses in your community." />
     <meta name="keywords" content="farm stands, cheesemongers, fishmongers, butchers, antique shops, local produce, farmers market, fresh vegetables, Maine farms, local food, organic produce, artisan cheese, fresh seafood, local meat" />
-    <meta name="author" content="PhreshFoods" />
+    <meta name="author" content="phind.us" />
 
     <!-- Open Graph / Facebook -->
+    <!-- TODO: Create og-image.jpg (1200x630px, <200KB) and og-image.webp (<100KB) for social sharing -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://phreshfoods.com/" />
-    <meta property="og:title" content="PhreshFoods - Support Local Maine Businesses" />
+    <meta property="og:url" content="https://phind.us/" />
+    <meta property="og:title" content="phind.us - Support Local Maine Businesses" />
     <meta property="og:description" content="Find the freshest local products from farm stands, cheesemongers, fishmongers, and more near you. Search by location and discover what's available." />
-    <meta property="og:image" content="https://phreshfoods.com/images/og-image.jpg" />
+    <meta property="og:image" content="https://phind.us/images/og-image.jpg" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="phind.us" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://phreshfoods.com/" />
-    <meta property="twitter:title" content="PhreshFoods - Support Local Maine Businesses" />
+    <meta property="twitter:url" content="https://phind.us/" />
+    <meta property="twitter:title" content="phind.us - Support Local Maine Businesses" />
     <meta property="twitter:description" content="Find the freshest local products from farm stands, cheesemongers, fishmongers, and more near you. Search by location and discover what's available." />
-    <meta property="twitter:image" content="https://phreshfoods.com/images/og-image.jpg" />
+    <meta property="twitter:image" content="https://phind.us/images/og-image.jpg" />
 
     <!-- Additional SEO Meta Tags -->
     <meta name="robots" content="index, follow" />
     <meta name="language" content="English" />
     <meta name="revisit-after" content="7 days" />
-    <link rel="canonical" href="https://phreshfoods.com/" />
+    <link rel="canonical" href="https://phind.us/" />
+
+    <!-- Geo Meta Tags for Local SEO (Maine-focused) -->
+    <meta name="geo.region" content="US-ME" />
+    <meta name="geo.placename" content="Maine, United States" />
+    <meta name="geo.position" content="43.6591;-70.2568" />
+    <meta name="ICBM" content="43.6591, -70.2568" />
+
+    <!-- Language and Regional Targeting -->
+    <link rel="alternate" hreflang="en-US" href="https://phind.us/" />
+    <link rel="alternate" hreflang="en" href="https://phind.us/" />
+    <link rel="alternate" hreflang="x-default" href="https://phind.us/" />
 
     <!-- Resource hints for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -49,8 +68,14 @@
     <link rel="dns-prefetch" href="https://khms0.googleapis.com">
     <link rel="dns-prefetch" href="https://khms1.googleapis.com">
     <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
-    <!-- Preload the most critical font weights for faster rendering -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+
+    <!-- Preload critical resources for LCP optimization -->
+    <link rel="preload" href="/api/locations" as="fetch" crossorigin="anonymous">
+    <!-- Preload WebP logo (8KB) instead of PNG (5MB) for faster LCP -->
+    <link rel="preload" as="image" href="/images/logo-300.webp" type="image/webp">
+
+    <!-- Font loading: async with font-display:swap for non-blocking render -->
+    <!-- preconnect hints above enable fast font loading without brittle URL preloads -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
 
@@ -74,6 +99,9 @@
         .initial-loader p { color: #6b7280; font-size: 0.875rem; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .simple-loader { border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-top: 20px; }
+        /* Critical header CSS for LCP */
+        header { position: absolute; top: 0; left: 0; right: 0; z-index: 30; }
+        .logo-hamburger { height: 2rem; width: auto; }
     </style>
 </head>
 <body class="bg-white antialiased">
@@ -81,7 +109,7 @@
     <div id="root">
         <!-- Fallback content if JavaScript is disabled or React fails to load -->
         <div class="initial-loader">
-            <h1>Loading PhreshFoods...</h1>
+            <h1>Loading phind.us...</h1>
             <p>Discovering fresh local products near you</p>
             <div class="simple-loader"></div>
         </div>
@@ -94,6 +122,24 @@
       and the script tag for your compiled JavaScript bundle here during development and build.
       You DO NOT need to add <link> or <script> tags for your application code manually.
     -->
+
+    <!-- Early data fetch - starts during HTML parsing, React consumes the promise -->
+    <script>
+      // Start fetching location data immediately during HTML parsing
+      // LocationDataContext will await this promise instead of starting its own fetch
+      window.__LOCATIONS_PROMISE__ = fetch('/api/locations', {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+      })
+      .catch(function(error) {
+        console.warn('[Early Fetch] Failed, will retry in React:', error);
+        return null;
+      });
+    </script>
+
     <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>

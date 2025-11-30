@@ -11,7 +11,7 @@
 - ✅ Dynamic product filters based on selected location types
 - ✅ Type badges on shop cards (Green for farms, Yellow for cheese)
 - ✅ Smart routing (`/farm/:slug` vs `/cheese/:slug`)
-- ✅ Updated header branding ("PhreshFoods")
+- ✅ Updated header branding ("phind.us")
 - ✅ Updated search placeholder text and ARIA labels
 - ✅ All context providers migrated to new architecture
 
@@ -399,11 +399,11 @@ SEO metadata doesn't distinguish between farm stands and cheese shops.
 Update meta tags based on location type:
 
 **For cheese shops:**
-- Title: `{Name} - Artisan Cheese Shop in {City}, Maine | PhreshFoods`
+- Title: `{Name} - Artisan Cheese Shop in {City}, Maine | phind.us`
 - Description: `Find {Name}, a local cheese shop in {City}, Maine offering {products}. Open now...`
 
 **For farm stands:**
-- Title: `{Name} - Fresh Local Farm in {City}, Maine | PhreshFoods`
+- Title: `{Name} - Fresh Local Farm in {City}, Maine | phind.us`
 - Description: `Shop local at {Name} farm stand in {City}, Maine for {products}...`
 
 #### Implementation Location

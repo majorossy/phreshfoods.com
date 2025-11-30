@@ -57,7 +57,7 @@ const MapComponentRefactored: React.FC = () => {
   // Use domain-specific hooks
   const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
-  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen } = useUI();
+  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopDetailsOpen, isShopSocialsOpen } = useUI();
   const { directionsResult } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { tripStops, isTripMode, tripDirectionsResult } = useTripPlanner();
@@ -148,9 +148,9 @@ const MapComponentRefactored: React.FC = () => {
 
     // Handle panning based on UI state
     const handlePanning = async () => {
-      if (isShopOverlayOpen || isSocialOverlayOpen) {
+      if (isShopDetailsOpen || isShopSocialsOpen) {
         await waitForOverlaysToRender();
-        panToWithOffsets(googleMapRef.current!, latLng, isShopOverlayOpen, isSocialOverlayOpen);
+        panToWithOffsets(googleMapRef.current!, latLng, isShopDetailsOpen, isShopSocialsOpen);
       } else if (lastPlaceSelectedByAutocomplete) {
         googleMapRef.current.setCenter(latLng);
         googleMapRef.current.setZoom(USER_LOCATION_MAP_ZOOM);
@@ -160,7 +160,7 @@ const MapComponentRefactored: React.FC = () => {
     };
 
     handlePanning();
-  }, [mapViewTargetLocation, lastPlaceSelectedByAutocomplete, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [mapViewTargetLocation, lastPlaceSelectedByAutocomplete, isShopDetailsOpen, isShopSocialsOpen]);
 
   // Handle window resize with debounce
   useEffect(() => {
@@ -173,9 +173,9 @@ const MapComponentRefactored: React.FC = () => {
           google.maps.event.trigger(googleMapRef.current, 'resize');
 
           // Re-pan if overlays are open
-          if ((isShopOverlayOpen || isSocialOverlayOpen) && selectedShop) {
+          if ((isShopDetailsOpen || isShopSocialsOpen) && selectedShop) {
             const latLng = { lat: selectedShop.lat, lng: selectedShop.lng };
-            panToWithOffsets(googleMapRef.current, latLng, isShopOverlayOpen, isSocialOverlayOpen);
+            panToWithOffsets(googleMapRef.current, latLng, isShopDetailsOpen, isShopSocialsOpen);
           }
         }
       }, WINDOW_RESIZE_DEBOUNCE_MS);
@@ -186,7 +186,7 @@ const MapComponentRefactored: React.FC = () => {
       clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
     };
-  }, [isShopOverlayOpen, isSocialOverlayOpen, selectedShop]);
+  }, [isShopDetailsOpen, isShopSocialsOpen, selectedShop]);
 
   // Calculate search location for radius display
   const searchLocation = lastPlaceSelectedByAutocomplete

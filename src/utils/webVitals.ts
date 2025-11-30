@@ -9,6 +9,7 @@ import type { Metric } from 'web-vitals';
 
 // Configuration
 const DEBUG_MODE = import.meta.env.DEV; // Only log in development
+const VERBOSE_VITALS = import.meta.env.VITE_VERBOSE_VITALS === 'true'; // Set to 'true' for detailed logging
 const ANALYTICS_ENDPOINT = import.meta.env.VITE_ANALYTICS_ENDPOINT;
 
 /**
@@ -74,8 +75,8 @@ async function sendToAnalytics(metric: Metric) {
     }
   }
 
-  // In development, always log to console
-  if (DEBUG_MODE) {
+  // In development with verbose mode, log to console
+  if (DEBUG_MODE && VERBOSE_VITALS) {
     const rating = getRating(metric.name, metric.value);
     const emoji = rating === 'good' ? '✅' : rating === 'poor' ? '❌' : '⚠️';
     const formattedValue = formatValue(metric.name, metric.value);
@@ -107,7 +108,7 @@ export function initWebVitals(): void {
   onFCP(sendToAnalytics);  // First Contentful Paint
   onTTFB(sendToAnalytics); // Time to First Byte
 
-  if (DEBUG_MODE) {
+  if (DEBUG_MODE && VERBOSE_VITALS) {
     console.log('🚀 Web Vitals monitoring initialized');
     console.log('📊 Metrics will appear as users interact with the page');
   }
@@ -139,7 +140,7 @@ export async function getCurrentVitals(): Promise<Record<string, Metric | undefi
 export function markPerformance(markName: string): void {
   if ('performance' in window && 'mark' in performance) {
     performance.mark(markName);
-    if (DEBUG_MODE) {
+    if (DEBUG_MODE && VERBOSE_VITALS) {
       console.log(`⏱️ Performance mark: ${markName}`);
     }
   }
@@ -162,7 +163,7 @@ export function measurePerformance(
     const measures = performance.getEntriesByName(measureName);
     const duration = measures[measures.length - 1]?.duration || 0;
 
-    if (DEBUG_MODE) {
+    if (DEBUG_MODE && VERBOSE_VITALS) {
       console.log(`⏱️ ${measureName}: ${Math.round(duration)}ms`);
     }
 
@@ -177,7 +178,7 @@ export function measurePerformance(
  * Report custom app-specific metrics
  */
 export function reportCustomMetric(name: string, value: number, unit: string = 'ms'): void {
-  if (DEBUG_MODE) {
+  if (DEBUG_MODE && VERBOSE_VITALS) {
     console.log(`📈 Custom metric - ${name}: ${value}${unit}`);
   }
 

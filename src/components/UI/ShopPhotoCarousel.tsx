@@ -15,6 +15,8 @@ interface ShopPhotoCarouselProps {
   className?: string;
   /** Callback when photo changes */
   onPhotoChange?: (index: number) => void;
+  /** Mark as priority for LCP optimization */
+  priority?: boolean;
 }
 
 /**
@@ -83,6 +85,7 @@ const ShopPhotoCarousel: React.FC<ShopPhotoCarouselProps> = ({
   photoSize = 400,
   className = '',
   onPhotoChange,
+  priority = false,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -185,7 +188,7 @@ const ShopPhotoCarousel: React.FC<ShopPhotoCarouselProps> = ({
 
     // Determine target index based on position and velocity
     const velocity = velocityRef.current;
-    const velocityThreshold = CAROUSEL_SWIPE.VELOCITY_THRESHOLD;
+    const velocityThreshold = CAROUSEL_SWIPE.MIN_SWIPE_VELOCITY;
 
     let targetIndex = currentIndex;
 
@@ -298,9 +301,10 @@ const ShopPhotoCarousel: React.FC<ShopPhotoCarouselProps> = ({
               {shouldLoad ? (
                 <img
                   src={photoUrl}
-                  alt=""
+                  alt={`Photo ${index + 1} of ${shop.Name}`}
                   className="w-full h-full object-cover"
                   loading={index === 0 ? 'eager' : 'lazy'}
+                  fetchPriority={priority && index === 0 ? 'high' : undefined}
                   onError={(e) => {
                     // Show placeholder gradient on error
                     const target = e.target as HTMLImageElement;

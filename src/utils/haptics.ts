@@ -244,6 +244,9 @@ export const gestureHaptics = {
 
   /** Selection: item selected */
   select: (): boolean => haptics.selection(),
+
+  /** Button: button pressed */
+  buttonPress: (): boolean => haptics.light(),
 };
 
 export default haptics;

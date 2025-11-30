@@ -1,6 +1,6 @@
 # Element Naming Convention
 
-This document defines the naming standards for HTML elements across the PhreshFoods codebase. Consistent naming improves debugging, testing, and accessibility.
+This document defines the naming standards for HTML elements across the phind.us codebase. Consistent naming improves debugging, testing, and accessibility.
 
 ## Why Element Naming Matters
 

@@ -7,7 +7,6 @@ import { getLoadError } from '../utils/loadGoogleMapsScript';
 import { useToast } from './ToastContext';
 import { parseGoogleMapsError, formatErrorMessage } from '../utils/googleMapsErrors';
 import { parseFiltersFromURL } from '../utils/urlSync';
-import { logger } from '../utils/logger';
 import {
   LAST_SEARCHED_LOCATION_COOKIE_NAME,
   COOKIE_EXPIRY_DAYS,
@@ -81,17 +80,13 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const isDirectFarmUrl = window.location.pathname.startsWith('/farm/');
     if (isDirectFarmUrl) {
-      logger.log('[SearchContext] Skipping load - direct farm URL');
       return;
     }
 
     // Only run if we haven't loaded a location yet
     if (lastPlaceSelectedByAutocomplete) {
-      logger.log('[SearchContext] Skipping load - location already set:', lastPlaceSelectedByAutocomplete);
       return;
     }
-
-    logger.log('[SearchContext] Loading saved location...');
 
     // Parse URL params first (highest priority)
     const urlState = parseFiltersFromURL(searchParams);
@@ -100,7 +95,6 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     // (Don't use URL location if it only has coordinates without names)
     if (urlState.searchLocation?.geometry &&
         (urlState.searchLocation.name || urlState.searchLocation.formatted_address)) {
-      logger.log('[SearchContext] Loading from URL:', urlState.searchLocation);
       _setLastPlaceSelectedByAutocompleteInternal(urlState.searchLocation);
       _setSearchTermInternal(urlState.searchLocation.formatted_address || urlState.searchLocation.name || '');
       setMapViewTargetLocation(urlState.searchLocation);
@@ -110,15 +104,12 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
 
     // No URL params - check cookie (second priority)
     const savedLocationCookie = getCookie(LAST_SEARCHED_LOCATION_COOKIE_NAME);
-    logger.log('[SearchContext] Cookie value:', savedLocationCookie);
 
     if (savedLocationCookie) {
       try {
         const locationData = JSON.parse(savedLocationCookie) as { term: string; place: AutocompletePlace };
-        logger.log('[SearchContext] Parsed cookie data:', locationData);
 
         if (locationData?.place?.geometry) {
-          logger.log('[SearchContext] Loading from cookie:', locationData);
           _setLastPlaceSelectedByAutocompleteInternal(locationData.place);
           _setSearchTermInternal(locationData.term || '');
           setMapViewTargetLocation(locationData.place);
@@ -133,7 +124,6 @@ export const SearchProvider = ({ children }: { children: ReactNode }) => {
     }
 
     // No URL or cookie - set Portland, Maine as default (lowest priority)
-    logger.log('[SearchContext] No saved location, using Portland default');
     const portlandPlace: AutocompletePlace = {
       name: "Portland, Maine",
       formatted_address: "Portland, ME, USA",

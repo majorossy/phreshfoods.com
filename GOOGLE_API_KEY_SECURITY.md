@@ -33,7 +33,7 @@ Your Google Maps API keys are currently **exposed** in:
 
 - Google Cloud Console access: https://console.cloud.google.com/
 - Your project name (where you created the API keys)
-- Your production domain (e.g., `phreshfoods.com`)
+- Your production domain (e.g., `phind.us`)
 
 ---
 
@@ -67,8 +67,8 @@ https://www.yourdomain.com/*
 ```
 http://localhost:5173/*
 http://localhost:3000/*
-https://phreshfoods.com/*
-https://www.phreshfoods.com/*
+https://phind.us/*
+https://www.phind.us/*
 ```
 
 **What this does:** Key only works when requests come from these domains.

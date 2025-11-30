@@ -142,7 +142,7 @@ const ReviewSnippet: React.FC<ReviewSnippetProps> = ({
             {review.authorPhoto && (
               <img
                 src={review.authorPhoto}
-                alt=""
+                alt={`${review.authorName}'s profile photo`}
                 className="w-4 h-4 rounded-full object-cover"
                 loading="lazy"
                 onError={(e) => {

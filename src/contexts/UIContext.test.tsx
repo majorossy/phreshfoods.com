@@ -34,8 +34,8 @@ describe('UIContext', () => {
     it('should have overlays closed initially', () => {
       const { result } = renderHook(() => useUI(), { wrapper });
 
-      expect(result.current.isShopOverlayOpen).toBe(false);
-      expect(result.current.isSocialOverlayOpen).toBe(false);
+      expect(result.current.isShopDetailsOpen).toBe(false);
+      expect(result.current.isShopSocialsOpen).toBe(false);
       expect(result.current.selectedShop).toBe(null);
     });
 
@@ -95,8 +95,8 @@ describe('UIContext', () => {
       });
 
       expect(result.current.selectedShop).toEqual(mockShop);
-      expect(result.current.isShopOverlayOpen).toBe(true);
-      expect(result.current.isSocialOverlayOpen).toBe(true);
+      expect(result.current.isShopDetailsOpen).toBe(true);
+      expect(result.current.isShopSocialsOpen).toBe(true);
     });
 
     it('should set selectedShop when opening overlays', () => {
@@ -116,8 +116,8 @@ describe('UIContext', () => {
         result.current.openShopOverlays(mockShop, 'shop');
       });
 
-      expect(result.current.isShopOverlayOpen).toBe(true);
-      expect(result.current.isSocialOverlayOpen).toBe(true);
+      expect(result.current.isShopDetailsOpen).toBe(true);
+      expect(result.current.isShopSocialsOpen).toBe(true);
     });
 
     it('should open social tab when openTab="social"', () => {
@@ -127,8 +127,8 @@ describe('UIContext', () => {
         result.current.openShopOverlays(mockShop, 'social');
       });
 
-      expect(result.current.isSocialOverlayOpen).toBe(true);
-      expect(result.current.isShopOverlayOpen).toBe(false);
+      expect(result.current.isShopSocialsOpen).toBe(true);
+      expect(result.current.isShopDetailsOpen).toBe(false);
     });
 
     it('should open directions tab when openTab="directions"', () => {
@@ -138,8 +138,8 @@ describe('UIContext', () => {
         result.current.openShopOverlays(mockShop, 'directions');
       });
 
-      expect(result.current.isSocialOverlayOpen).toBe(true);
-      expect(result.current.isShopOverlayOpen).toBe(false);
+      expect(result.current.isShopSocialsOpen).toBe(true);
+      expect(result.current.isShopDetailsOpen).toBe(false);
     });
 
     it('should add modal-active class to body when opening', () => {
@@ -165,8 +165,8 @@ describe('UIContext', () => {
         result.current.closeShopOverlays();
       });
 
-      expect(result.current.isShopOverlayOpen).toBe(false);
-      expect(result.current.isSocialOverlayOpen).toBe(false);
+      expect(result.current.isShopDetailsOpen).toBe(false);
+      expect(result.current.isShopSocialsOpen).toBe(false);
     });
 
     it('should remove modal-active class from body', () => {
@@ -287,10 +287,10 @@ describe('UIContext', () => {
       const { result } = renderHook(() => useUI(), { wrapper });
 
       act(() => {
-        result.current.setSocialOverlayActiveTab('reviews');
+        result.current.setShopSocialsActiveTab('reviews');
       });
 
-      expect(result.current.socialOverlayInitialTab).toBe('reviews');
+      expect(result.current.shopSocialsInitialTab).toBe('reviews');
     });
 
     it('should open social overlay with specific tab', () => {
@@ -300,35 +300,35 @@ describe('UIContext', () => {
         result.current.openShopOverlays(mockShop, 'social', 'directions');
       });
 
-      expect(result.current.socialOverlayInitialTab).toBe('directions');
+      expect(result.current.shopSocialsInitialTab).toBe('directions');
     });
   });
 
   describe('Overlay Animation State', () => {
-    it('should compute shouldRenderShopOverlay correctly', () => {
+    it('should compute shouldRenderShopDetails correctly', () => {
       const { result } = renderHook(() => useUI(), { wrapper });
 
       // Initially should not render
-      expect(result.current.shouldRenderShopOverlay).toBe(false);
+      expect(result.current.shouldRenderShopDetails).toBe(false);
 
       act(() => {
         result.current.openShopOverlays(mockShop);
       });
 
       // Should render when open
-      expect(result.current.shouldRenderShopOverlay).toBe(true);
+      expect(result.current.shouldRenderShopDetails).toBe(true);
     });
 
-    it('should compute shouldRenderSocialOverlay correctly', () => {
+    it('should compute shouldRenderShopSocials correctly', () => {
       const { result } = renderHook(() => useUI(), { wrapper });
 
-      expect(result.current.shouldRenderSocialOverlay).toBe(false);
+      expect(result.current.shouldRenderShopSocials).toBe(false);
 
       act(() => {
         result.current.openShopOverlays(mockShop, 'social');
       });
 
-      expect(result.current.shouldRenderSocialOverlay).toBe(true);
+      expect(result.current.shouldRenderShopSocials).toBe(true);
     });
 
     it('should provide animated open states for transitions', () => {
@@ -339,8 +339,8 @@ describe('UIContext', () => {
       });
 
       // Animated states should be available
-      expect(typeof result.current.isShopOverlayAnimatedOpen).toBe('boolean');
-      expect(typeof result.current.isSocialOverlayAnimatedOpen).toBe('boolean');
+      expect(typeof result.current.isShopDetailsAnimatedOpen).toBe('boolean');
+      expect(typeof result.current.isShopSocialsAnimatedOpen).toBe('boolean');
     });
   });
 
@@ -361,7 +361,7 @@ describe('UIContext', () => {
       });
 
       // Should handle rapid state changes without crashing
-      expect(result.current.isShopOverlayOpen).toBe(true);
+      expect(result.current.isShopDetailsOpen).toBe(true);
     });
 
     it('should handle opening overlays with null shop', () => {

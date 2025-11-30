@@ -17,6 +17,7 @@ import {
   getShopSEO,
   generateLocalBusinessSchema,
   generateOrganizationSchema,
+  generateBreadcrumbSchema,
   updateMetaTags,
   addStructuredData
 } from './utils/seo';
@@ -24,9 +25,11 @@ import {
 import LazyLoadErrorBoundary from './components/LazyLoadErrorBoundary.tsx';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 
+// Header is eagerly loaded for LCP optimization (it's above-the-fold content)
+import Header from './components/Header/Header.tsx';
+
 // Code splitting: Lazy load components to reduce initial bundle size
 // These components are loaded on-demand, improving initial page load time
-const Header = lazy(() => import('./components/Header/Header.tsx'));
 const MapComponent = lazy(() => import('./components/Map/MapComponent.tsx'));
 const MapSearchControls = lazy(() => import('./components/Map/MapSearchControls.tsx'));
 const CardListings = lazy(() => import('./components/Listings/CardListings.tsx'));
@@ -223,9 +226,10 @@ function App() {
       const seoConfig = getShopSEO(selectedShop);
       updateMetaTags(seoConfig);
 
-      // Add structured data for LocalBusiness
-      const structuredData = generateLocalBusinessSchema(selectedShop);
-      addStructuredData(structuredData);
+      // Add structured data for LocalBusiness + BreadcrumbList
+      const localBusinessSchema = generateLocalBusinessSchema(selectedShop);
+      const breadcrumbSchema = generateBreadcrumbSchema(selectedShop);
+      addStructuredData([localBusinessSchema, breadcrumbSchema]);
     } else if (location.pathname === '/' || isTypeFilterPage(location.pathname)) {
       // Homepage or type filter page - use homepage SEO
       const seoConfig = getHomepageSEO();
@@ -247,15 +251,13 @@ function App() {
         Skip to main content
       </a>
       <ErrorBoundary>
-        <Suspense fallback={<div className="bg-[#e8dcc3] shadow-md z-30 h-16 animate-pulse" />}>
-          <Header />
-        </Suspense>
+        <Header />
       </ErrorBoundary>
       <main id="main-content" className="flex-grow flex overflow-hidden" role="main">
         <ErrorBoundary>
-          <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-gray-200 text-lg">Loading map...</div>}>
+          <Suspense fallback={<div className="flex-1 bg-gray-100" aria-label="Loading map" />}>
             <div className="flex-1 relative">
-              {mapsApiReady ? <MapComponent /> : <div className="w-full h-full flex items-center justify-center bg-gray-200 text-lg">Loading Map API...</div>}
+              {mapsApiReady ? <MapComponent /> : <div className="w-full h-full bg-gray-100" aria-label="Loading map" />}
               {/* Map Search Controls - desktop only (lg+) */}
               {mapsApiReady && (
                 <Suspense fallback={null}>

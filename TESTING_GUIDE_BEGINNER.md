@@ -1,6 +1,6 @@
 # Testing Guide for Beginners
 
-Welcome to the PhreshFoods testing suite! This guide will teach you everything you need to know about testing this application, even if you've never written a test before.
+Welcome to the phind.us testing suite! This guide will teach you everything you need to know about testing this application, even if you've never written a test before.
 
 ## 📊 Current Test Coverage
 

@@ -1,6 +1,6 @@
-# PhreshFoods - Multi-Location Finder for Maine
+# phind.us - Multi-Location Finder for Maine
 
-PhreshFoods is a comprehensive location finder application for Maine, helping users discover local farm stands, cheesemongers, fishmongers, butchers, antiques, breweries, wineries, and sugar shacks. The application features Google Maps integration, product filtering, trip planning, and real-time location search.
+phind.us is a comprehensive location finder application for Maine, helping users discover local farm stands, cheesemongers, fishmongers, butchers, antiques, breweries, wineries, and sugar shacks. The application features Google Maps integration, product filtering, trip planning, and real-time location search.
 
 ## Features
 
@@ -49,7 +49,7 @@ PhreshFoods is a comprehensive location finder application for Maine, helping us
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd phreshfoods.com
+cd phind.us
 ```
 
 2. Install dependencies:
@@ -154,7 +154,7 @@ npm run check:all        # Run all checks (typecheck, lint, test)
 ## Project Structure
 
 ```
-phreshfoods.com/
+phind.us/
 ├── src/                        # Frontend source code
 │   ├── components/            # React components
 │   │   ├── Filters/          # Product filtering UI

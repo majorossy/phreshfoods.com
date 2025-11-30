@@ -37,7 +37,7 @@
             try {
                 const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                 const rootEl = iframeDoc.getElementById('root');
-                if (rootEl && rootEl.innerHTML.includes('Loading PhreshFoods')) {
+                if (rootEl && rootEl.innerHTML.includes('Loading phind.us')) {
                     errors.push('React app not mounted - still showing loading screen');
                     errorLog.textContent = errors.join('\n');
                 }

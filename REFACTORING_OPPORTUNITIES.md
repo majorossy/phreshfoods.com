@@ -380,7 +380,7 @@ describe('Shop Overlay Navigation', () => {
 import { openDB } from 'idb';
 
 const cacheLocations = async (locations) => {
-  const db = await openDB('phreshfoods', 1);
+  const db = await openDB('phindus', 1);
   await db.put('locations', locations, 'current');
 };
 ```

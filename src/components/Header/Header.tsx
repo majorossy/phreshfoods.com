@@ -5,7 +5,7 @@ import ProductFilterDropdown from '../Filters/ProductFilterDropdown';
 import { useHeaderCollapse } from '../../hooks/useHeaderCollapse';
 import { useUI } from '../../contexts/UIContext';
 import { useFilters } from '../../contexts/FilterContext';
-import { LocationType } from '../../types/shop';
+import type { LocationType } from '../../types/shop';
 import { getProductConfig } from '../../config/productRegistry';
 import { getDisplayName, getEmoji } from '../../utils/typeUrlMappings';
 import { ENABLED_LOCATION_TYPES } from '../../config/enabledLocationTypes';
@@ -26,7 +26,7 @@ const LOCATION_TYPE_CONFIG: Record<LocationType, { emoji: string; label: string;
 const Header: React.FC = () => {
   // Product filter dropdowns for location types
   const [openLocationTypeDropdown, setOpenLocationTypeDropdown] = useState<LocationType | null>(null);
-  const locationTypeButtonRefs = useRef<Record<LocationType, React.RefObject<HTMLButtonElement>>>({});
+  const locationTypeButtonRefs = useRef<Partial<Record<LocationType, React.RefObject<HTMLButtonElement>>>>({});
 
   // Header collapse on mobile (Phase 3)
   const { isCollapsed, sentinelRef } = useHeaderCollapse();
@@ -144,22 +144,35 @@ const Header: React.FC = () => {
       {/* Sentinel for IntersectionObserver */}
       <div ref={sentinelRef} className="absolute top-0 h-0 w-0 pointer-events-none" aria-hidden="true" />
 
+      {/* Site-wide H1 - Screen reader only, positioned once for SEO */}
+      <h1 id="site-title" className="sr-only">phind.us - Local Maine Business Finder</h1>
+
       {/* ========== MOBILE COLLAPSED BAR ========== */}
       <div id="mobile-header-bar" className="md:hidden w-full px-3 py-2">
         <div className="flex items-center">
-          {/* Logo as Hamburger Menu */}
+          {/* Logo as Hamburger Menu - min 44x44px touch target for WCAG compliance */}
           <button
             id="mobile-menu-toggle"
             onClick={toggleDrawer}
-            className="cursor-pointer transition-transform duration-300 hover:scale-110 flex-shrink-0"
+            className="cursor-pointer transition-transform duration-300 hover:scale-110 flex-shrink-0 p-2 -m-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
             aria-label={isFilterDrawerOpen ? "Close menu" : "Open menu"}
             aria-expanded={isFilterDrawerOpen}
           >
-            <img
-              src="/images/logo.png"
-              alt="Maine Flag"
-              className="h-8 w-auto object-contain logo-hamburger drop-shadow-lg"
-            />
+            <picture>
+              <source
+                srcSet="/images/logo-300.webp 1x, /images/logo-600.webp 2x"
+                type="image/webp"
+              />
+              <img
+                src="/images/logo-300.webp"
+                alt="phind.us Logo - Maine Flag"
+                className="h-8 w-auto object-contain logo-hamburger drop-shadow-lg"
+                fetchPriority="high"
+                loading="eager"
+                width="32"
+                height="32"
+              />
+            </picture>
           </button>
         </div>
       </div>
@@ -172,7 +185,7 @@ const Header: React.FC = () => {
           ${isCollapsed ? 'opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto' : 'opacity-100'}
         `}>
           {/* Combined Container: Logo, Type Filters, Search, Radius, and Filters */}
-          <div id="header-controls" className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
+          <nav id="header-controls" className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} aria-label="Main navigation and filters">
             {/* Logo Section */}
             <div id="header-logo" className="flex items-center gap-2 flex-shrink-0">
               <Link
@@ -181,16 +194,30 @@ const Header: React.FC = () => {
                 onClick={handleTitleClick}
                 className="cursor-pointer transition-all duration-300 hover:scale-110 hover:-rotate-2 hover:drop-shadow-xl"
                 style={{ transformStyle: 'preserve-3d' }}
-                title="Reset Filters"
-                aria-label="Reset Filters"
+                title="phind.us - Reset Filters"
+                aria-label="phind.us Home - Reset Filters"
               >
-                <img src="/images/logo.png" alt="Maine Flag" className="h-8 sm:h-10 w-auto object-contain"/>
+                <picture>
+                  <source
+                    srcSet="/images/logo-300.webp 1x, /images/logo-600.webp 2x"
+                    type="image/webp"
+                  />
+                  <img
+                    src="/images/logo-300.webp"
+                    alt="phind.us Logo - Maine Flag"
+                    className="h-8 sm:h-10 w-auto object-contain"
+                    fetchPriority="high"
+                    loading="eager"
+                    width="40"
+                    height="40"
+                  />
+                </picture>
               </Link>
             </div>
 
             {/* Type Filter Buttons with Dropdowns */}
             <div id="location-type-filters" className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
-              <div className="flex items-center gap-1.5 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
               {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][])
                 .filter(([type]) => ENABLED_LOCATION_TYPES.includes(type))
                 .map(([type, config]) => {
@@ -251,7 +278,7 @@ const Header: React.FC = () => {
                         type="button"
                         onClick={() => !isDisabled && toggleLocationType(type)}
                         disabled={isDisabled}
-                        className="text-xs pl-2 pr-1 py-0.5 font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-all duration-200"
+                        className="text-xs pl-3 pr-2 py-2.5 min-h-[44px] font-medium whitespace-nowrap flex items-center gap-1 flex-shrink-0 transition-all duration-200"
                         title={isDisabled ? `${config.label} (Coming Soon)` : `${isActive ? 'Hide' : 'Show'} ${config.label}`}
                         aria-label={isDisabled ? `${config.label} (Coming Soon)` : `${isActive ? 'Hide' : 'Show'} ${config.label} locations`}
                         aria-pressed={isActive}
@@ -270,14 +297,14 @@ const Header: React.FC = () => {
                             e.stopPropagation();
                             setOpenLocationTypeDropdown(isOpen ? null : type);
                           }}
-                          className="text-xs pr-2 pl-0.5 py-0.5 flex items-center transition-colors hover:opacity-80"
+                          className="text-xs px-3 py-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors hover:opacity-80"
                           title={`${config.label} product filters`}
                           aria-label={`Open ${config.label} product filters`}
                           aria-expanded={isOpen}
                           aria-haspopup="true"
                         >
                           <svg
-                            className={`w-2.5 h-2.5 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                            className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -305,7 +332,7 @@ const Header: React.FC = () => {
               </div>
             </div>
 
-          </div>
+          </nav>
         </div>
       </div>
 
@@ -347,9 +374,9 @@ const Header: React.FC = () => {
             aria-label="Filter menu"
           >
             <div className="p-3 min-h-full">
-              <h3 id="mobile-filter-heading" className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
+              <h2 id="mobile-filter-heading" className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
                 FILTER BY TYPE
-              </h3>
+              </h2>
 
               {/* Location Type Accordions - Full Width */}
               <div id="mobile-location-types" className="space-y-1">
@@ -411,7 +438,7 @@ const Header: React.FC = () => {
                           {config.label}
                         </span>
 
-                        {/* Expand Arrow (only when active) */}
+                        {/* Expand Arrow (only when active) - min 44x44px touch target */}
                         {isActive && !isDisabled && (
                           <button
                             id={`mobile-location-expand-btn-${type}`}
@@ -420,12 +447,12 @@ const Header: React.FC = () => {
                               e.stopPropagation();
                               toggleDrawerAccordion(type);
                             }}
-                            className="p-1 hover:bg-white/20 rounded transition-colors"
+                            className="p-3 -m-1 hover:bg-white/20 rounded transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
                             aria-label={`${isExpanded ? 'Hide' : 'Show'} ${config.label} products`}
                             aria-expanded={isExpanded}
                           >
                             <svg
-                              className={`w-4 h-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                              className={`w-5 h-5 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -443,7 +470,7 @@ const Header: React.FC = () => {
                           role="region"
                           aria-labelledby={`${type}-accordion`}
                         >
-                          <div className="grid grid-cols-2 gap-2">
+                          <div className="grid grid-cols-2 gap-3">
                             {Object.values(products).map((product: { csvHeader: string; name: string }) => {
                               const isProductActive = activeProductFilters[product.csvHeader] === true;
                               return (

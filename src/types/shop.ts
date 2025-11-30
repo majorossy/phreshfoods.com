@@ -349,7 +349,9 @@ export function isSugarShack(shop: Shop): shop is SugarShack {
   return shop.type === 'sugar_shack';
 }
 
-export interface ShopWithDistance extends Shop {
+// ShopWithDistance adds distance fields to any Shop type
+// Using intersection instead of extends for union types
+export type ShopWithDistance = Shop & {
   distance?: number; // Distance in meters (optional, for sorting)
   distanceText?: string; // Formatted distance string for display (e.g., "2.3 mi away")
-}
+};

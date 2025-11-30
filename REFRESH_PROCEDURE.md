@@ -1,6 +1,6 @@
 # Refresh Procedure
 
-This document describes the "refresh" operation for the PhreshFoods application.
+This document describes the "refresh" operation for the phind.us application.
 
 ## What is "Refresh"?
 
