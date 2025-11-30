@@ -111,7 +111,7 @@ Features:
 - Shows cost savings summary after completion
 - Can update specific location types to save time
 
-**See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.**
+**See [DATA_REFRESH_GUIDE.md](./docs/DATA_REFRESH_GUIDE.md) for complete documentation.**
 
 ## Architecture
 
@@ -478,7 +478,7 @@ The application implements a three-tier system to minimize Google API costs:
   - Place Details: 6 hours (15 minutes if opening_hours requested)
   - Directions: 1 hour
 
-**See [DATA_REFRESH_GUIDE.md](./DATA_REFRESH_GUIDE.md) for complete documentation.**
+**See [DATA_REFRESH_GUIDE.md](./docs/DATA_REFRESH_GUIDE.md) for complete documentation.**
 
 ### CSV Parsing
 - Custom CSV parser in both server.js and processSheetData.js
