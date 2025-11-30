@@ -33,6 +33,11 @@ dist/
 backend/data/*.json
 !backend/data/.gitkeep
 
+# Built JS/CSS bundles (hashed filenames change on every build)
+backend/public/assets/
+backend/public/workbox-*.js
+backend/public/sw.js
+
 # Lighthouse reports
 lighthouse-*.json
 *.report.html

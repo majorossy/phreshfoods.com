@@ -428,8 +428,8 @@ const MapComponent: React.FC = () => {
         // Hover or Selected state - use Maine state flag image with larger scale
         scale = isHovered ? 'scale(2.0)' : 'scale(2.08125)';
 
-        // Use Maine state flag image
-        backgroundImage = 'url(https://www.maine.gov/sos/kids/themes/kids/images/flag.gif)';
+        // Use local Maine state flag image
+        backgroundImage = 'url(/images/flag.png)';
         backgroundColor = '';
 
         zIndex = isHovered ? MARKER_HOVER_Z_INDEX : MARKER_SELECTED_Z_INDEX;

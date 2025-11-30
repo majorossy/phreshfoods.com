@@ -93,6 +93,7 @@ app.use(helmet({
         "https://maps.gstatic.com",
         "https://www.gstatic.com"
       ],
+      scriptSrcAttr: ["'unsafe-inline'"], // Required for inline event handlers
       styleSrc: [
         "'self'",
         "'unsafe-inline'", // Required for Google Maps
