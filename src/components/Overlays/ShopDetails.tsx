@@ -1,4 +1,4 @@
-// src/components/Overlays/ShopDetailsOverlay.tsx
+// src/components/Overlays/ShopDetails.tsx
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { Shop, ShopWithDistance } from '../../types';
 import { escapeHTMLSafe } from '../../utils';
@@ -137,18 +137,18 @@ const ShopDetailsSkeleton: React.FC = () => (
   </>
 );
 
-interface ShopDetailsOverlayProps {
+interface ShopDetailsProps {
   shop: Shop;
   isOpen?: boolean; // Controls open/close animation (true = visible, false = animating out)
   onClose: () => void;
 }
 
-const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = true, onClose }) => {
+const ShopDetails: React.FC<ShopDetailsProps> = ({ shop, isOpen = true, onClose }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const { setSocialOverlayActiveTab, closeShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, toggleBothOverlays } = useUI();
+  const { setShopSocialsActiveTab, isShopDetailsOpen, isShopSocialsOpen, toggleBothOverlays } = useUI();
   // Check if either overlay is open (for toggle button state)
-  const eitherOverlayOpen = isShopOverlayOpen || isSocialOverlayOpen;
+  const eitherOverlayOpen = isShopDetailsOpen || isShopSocialsOpen;
   const { addStopToTrip, removeStopFromTrip, isShopInTrip, tripStops } = useTripPlanner();
   const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['info', 'hours', 'products'])); // All open by default
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
@@ -185,7 +185,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
 
   // Handler for clicking on rating stars to switch to reviews tab
   const handleRatingClick = () => {
-    setSocialOverlayActiveTab('reviews');
+    setShopSocialsActiveTab('reviews');
   };
 
   // Accordion toggle handler
@@ -252,7 +252,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
   return (
     <div
       ref={overlayRef}
-      id="detailsOverlayShop"
+      id="shop-details"
       className={`detail-pop-overlay custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
       role="dialog"
       aria-modal="true"
@@ -274,6 +274,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
       >
         {/* Close Button (X) - Top */}
         <button
+          id="shop-details-close-btn"
           ref={closeButtonRef}
           onClick={onClose}
           className="w-full py-2 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors border-b border-gray-200 dark:border-gray-600"
@@ -288,6 +289,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
 
         {/* Toggle Both Overlays Button (Double Arrow) - Middle */}
         <button
+          id="shop-details-toggle-overlays-btn"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -312,6 +314,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
 
         {/* Collapse/Expand Button (Arrow) - Bottom */}
         <button
+          id="shop-details-collapse-btn"
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -462,6 +465,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
                       <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
                     </svg>
                     <a
+                      id="shop-phone-link"
                       href={`tel:${displayPhone}`}
                       className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                     >
@@ -477,6 +481,7 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
                   </svg>
                   {displayWebsite ? (
                     <a
+                      id="shop-website-link"
                       href={displayWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
@@ -485,12 +490,13 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
                       {displayWebsite.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                     </a>
                   ) : (
-                    <span className="text-xs text-gray-500 dark:text-gray-400">Website: N/A</span>
+                    <span id="shop-website-na" className="text-xs text-gray-500 dark:text-gray-400">Website: N/A</span>
                   )}
                 </div>
 
                 {/* Add to Trip Button - Small & Compact */}
                 <button
+                  id="shop-add-to-trip-btn"
                   onClick={() => {
                     if (isShopInTrip(shop.slug)) {
                       const stop = tripStops.find(s => s.shop.slug === shop.slug);
@@ -705,4 +711,4 @@ const ShopDetailsOverlay: React.FC<ShopDetailsOverlayProps> = ({ shop, isOpen = 
   );
 };
 
-export default ShopDetailsOverlay;
+export default ShopDetails;

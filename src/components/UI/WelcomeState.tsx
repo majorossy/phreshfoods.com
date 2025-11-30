@@ -60,16 +60,16 @@ const WelcomeState: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-start py-8 px-4 text-center animate-fadeIn">
+    <div id="welcome-state" className="flex flex-col items-center justify-start py-8 px-4 text-center animate-fadeIn">
       {/* Header Section */}
-      <div className="mb-8 max-w-2xl bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-gray-200/50">
+      <div id="welcome-header" className="mb-8 max-w-2xl bg-white/90 backdrop-blur-md rounded-2xl shadow-lg p-6 border border-gray-200/50">
         <div className="mb-3">
           <span className="text-5xl" role="img" aria-label="Maine pine tree">🌲</span>
         </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">
+        <h2 id="welcome-title" className="text-3xl font-bold text-gray-900 mb-3">
           Welcome to PhreshFoods
         </h2>
-        <p className="text-lg text-gray-600 leading-relaxed">
+        <p id="welcome-tagline" className="text-lg text-gray-600 leading-relaxed">
           Discover Maine's finest local food and artisan goods
         </p>
       </div>
@@ -92,10 +92,10 @@ const WelcomeState: React.FC = () => {
                 <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform duration-300">
                   {category.emoji}
                 </div>
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                <h3 id={`category-title-${category.type}`} className="text-sm font-semibold text-gray-900 mb-1">
                   {category.title}
                 </h3>
-                <p className="text-xs text-gray-600">
+                <p id={`category-subtitle-${category.type}`} className="text-xs text-gray-600">
                   {category.subtitle}
                 </p>
               </div>
@@ -108,18 +108,18 @@ const WelcomeState: React.FC = () => {
       </div>
 
       {/* Bottom Help Text */}
-      <div className="max-w-xl bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 border border-gray-200/50">
+      <div id="welcome-help" className="max-w-xl bg-white/80 backdrop-blur-sm rounded-xl shadow-md p-6 border border-gray-200/50">
         <div className="flex items-center justify-center gap-2 text-sm text-gray-600 mb-4">
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>Or use the <strong>Filters</strong> menu above to find exactly what you need</span>
+          <span id="welcome-filter-hint">Or use the <strong>Filters</strong> menu above to find exactly what you need</span>
         </div>
 
         {/* Popular searches hint */}
-        <div className="text-xs text-gray-500">
-          <p className="mb-2 font-medium">Popular searches:</p>
-          <p className="leading-relaxed">
+        <div id="popular-searches" className="text-xs text-gray-500">
+          <p id="popular-searches-label" className="mb-2 font-medium">Popular searches:</p>
+          <p id="popular-searches-list" className="leading-relaxed">
             Fresh Eggs • Raw Milk • Grass-Fed Beef • Local Honey • Artisan Cheese • Day-Boat Seafood
           </p>
         </div>

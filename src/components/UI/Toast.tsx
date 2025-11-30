@@ -75,6 +75,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = TOAST_
 
   return (
     <div
+      id={`toast-${type}`}
       className={`
         max-w-sm w-full shadow-2xl rounded-lg overflow-hidden border-2
         ${typeStyles[type].bg} ${typeStyles[type].border}
@@ -90,9 +91,10 @@ const Toast: React.FC<ToastProps> = ({ message, type, onClose, duration = TOAST_
             {icons[type]}
           </div>
           <div className="ml-3 flex-1 pt-0.5">
-            <p className={`text-sm font-medium ${typeStyles[type].text}`}>{message}</p>
+            <p id={`toast-message-${type}`} className={`text-sm font-medium ${typeStyles[type].text}`}>{message}</p>
           </div>
           <button
+            id="toast-close-button"
             onClick={() => {
               setIsExiting(true);
               setTimeout(onClose, 300);

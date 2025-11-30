@@ -16,9 +16,9 @@ const StarRating: React.FC<StarRatingProps> = ({
 
   if (isNaN(rating) || rating < 0 || rating > 5) {
     if (ratingValue === "N/A" || ratingValue === "" || ratingValue === null || ratingValue === undefined) {
-      return <div className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
+      return <div id="no-rating-message" className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
     }
-    return <div className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
+    return <div id="no-rating-message-invalid" className="flex items-center text-xs text-gray-500" role="status" aria-label="No rating available">No rating</div>;
   }
 
   const displayRatingValue = rating.toFixed(1);
@@ -46,11 +46,11 @@ const StarRating: React.FC<StarRatingProps> = ({
     : `Rating: ${displayRatingValue} out of 5 stars`;
 
   return (
-    <div className="flex items-center gap-x-1 text-xs" role="img" aria-label={ariaLabel}>
-      <span className="font-semibold text-gray-700" aria-hidden="true">{displayRatingValue}</span>
-      <span className="inline-flex items-center" aria-hidden="true">{starsHTML}</span>
+    <div id="star-rating" className="flex items-center gap-x-1 text-xs" role="img" aria-label={ariaLabel}>
+      <span id="star-rating-value" className="font-semibold text-gray-700" aria-hidden="true">{displayRatingValue}</span>
+      <span id="star-rating-stars" className="inline-flex items-center" aria-hidden="true">{starsHTML}</span>
       {(typeof reviewCount === 'number' && reviewCount >= 0) && (
-        <span className="text-gray-500 group-hover:text-gray-700" aria-hidden="true">({reviewCount.toLocaleString()})</span>
+        <span id="star-rating-count" className="text-gray-500 group-hover:text-gray-700" aria-hidden="true">({reviewCount.toLocaleString()})</span>
       )}
     </div>
   );

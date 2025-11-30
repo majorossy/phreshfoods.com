@@ -14,8 +14,8 @@ const StarRating: React.FC<{ rating: number; reviewCount?: number }> = ({ rating
     : `Rating: ${rating.toFixed(1)} out of 5 stars`;
 
   return (
-    <div className="flex items-center gap-x-0.5 text-xs" role="img" aria-label={ariaLabel}>
-      <span className="font-semibold text-gray-700 mr-1" aria-hidden="true">{rating.toFixed(1)}</span>
+    <div id="info-window-rating" className="flex items-center gap-x-0.5 text-xs" role="img" aria-label={ariaLabel}>
+      <span id="info-window-rating-value" className="font-semibold text-gray-700 mr-1" aria-hidden="true">{rating.toFixed(1)}</span>
       {Array(fullStars).fill(0).map((_, i) => (
         <svg key={`full-${i}`} className="w-3 h-3 fill-current text-yellow-400" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path></svg>
       ))}
@@ -28,7 +28,7 @@ const StarRating: React.FC<{ rating: number; reviewCount?: number }> = ({ rating
       {Array(emptyStars).fill(0).map((_, i) => (
         <svg key={`empty-${i}`} className="w-3 h-3 fill-current text-gray-300" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"></path></svg>
       ))}
-      {reviewCount !== undefined && <span className="ml-1 text-gray-500" aria-hidden="true">({reviewCount})</span>}
+      {reviewCount !== undefined && <span id="info-window-review-count" className="ml-1 text-gray-500" aria-hidden="true">({reviewCount})</span>}
     </div>
   );
 };
@@ -44,7 +44,7 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
   }
 
   return (
-    <div className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
+    <div id="info-window-content" className="infowindow-content-wrapper font-sans text-sm" style={{ width: '250px' }}> {/* Fixed width example */}
       {/* Product Icons Grid - Shows ALL products with color/grey icons, grouped by category */}
       <ProductIconGrid
         shop={shop}
@@ -54,20 +54,20 @@ const InfoWindowContent: React.FC<InfoWindowContentProps> = ({ shop }) => {
         iconSize="sm"
       />
 
-      <div className="p-2">
-        <h3 className="text-sm font-semibold mb-0.5 truncate text-gray-800 leading-tight" title={shop.Name}>
+      <div id="info-window-details" className="p-2">
+        <h3 id="info-window-name" className="text-sm font-semibold mb-0.5 truncate text-gray-800 leading-tight" title={shop.Name}>
           {shop.Name}
         </h3>
 
         {/* Optional Rating - ensure shop.placeDetails.rating exists */}
         {shop.placeDetails?.rating !== undefined && shop.placeDetails.rating > 0 && (
-          <div className="mb-1">
+          <div id="info-window-rating-wrapper" className="mb-1">
             <StarRating rating={shop.placeDetails.rating} reviewCount={shop.placeDetails.user_ratings_total} />
           </div>
         )}
 
         {shop.Address && (
-          <p className="text-xs text-gray-600 mb-1.5 leading-snug line-clamp-2" title={shop.Address}>
+          <p id="info-window-address" className="text-xs text-gray-600 mb-1.5 leading-snug line-clamp-2" title={shop.Address}>
             {shop.Address}
           </p>
         )}

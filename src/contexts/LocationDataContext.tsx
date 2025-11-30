@@ -114,6 +114,3 @@ export const useLocationData = () => {
   }
   return context;
 };
-
-// Backward compatibility alias - can be removed after full migration
-export const useFarmData = useLocationData;

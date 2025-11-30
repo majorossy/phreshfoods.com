@@ -244,6 +244,7 @@ const ShopPhotoCarousel: React.FC<ShopPhotoCarouselProps> = ({
 
     return (
       <div
+        id={`shop-photo-carousel-placeholder-${shop.slug || shop.GoogleProfileID}`}
         className={`shop-photo-carousel relative overflow-hidden rounded-t-xl ${className}`}
         style={{ height }}
         role="img"
@@ -262,6 +263,7 @@ const ShopPhotoCarousel: React.FC<ShopPhotoCarouselProps> = ({
 
   return (
     <div
+      id={`shop-photo-carousel-${shop.slug || shop.GoogleProfileID}`}
       ref={containerRef}
       className={`shop-photo-carousel relative overflow-hidden rounded-t-xl ${className}`}
       style={{ height }}

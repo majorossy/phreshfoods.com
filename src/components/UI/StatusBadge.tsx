@@ -106,6 +106,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
 
   return (
     <span
+      id={`status-badge-${shop.slug || shop.GoogleProfileID}`}
       className={`
         status-badge
         inline-flex items-center
@@ -122,11 +123,12 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
       {/* Pulsing dot for open status */}
       {statusInfo.pulse && (
         <span
+          id={`status-dot-${shop.slug || shop.GoogleProfileID}`}
           className="status-badge__dot w-1.5 h-1.5 bg-white rounded-full mr-1.5 animate-pulse"
           aria-hidden="true"
         />
       )}
-      {statusInfo.text}
+      <span id={`status-text-${shop.slug || shop.GoogleProfileID}`}>{statusInfo.text}</span>
     </span>
   );
 };

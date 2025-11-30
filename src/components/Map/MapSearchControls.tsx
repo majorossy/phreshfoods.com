@@ -186,7 +186,7 @@ const MapSearchControls: React.FC = () => {
   return (
     <>
       {/* Mobile: Search input in header bar (right of logo) */}
-      <div className="md:hidden fixed top-2 left-24 right-3 z-30">
+      <div id="map-search-controls-mobile" className="md:hidden fixed top-2 left-24 right-3 z-30">
         <label htmlFor="mapSearchAutocompleteMobile" className="sr-only">
           Search for locations by zip, city, or address
         </label>
@@ -215,7 +215,7 @@ const MapSearchControls: React.FC = () => {
 
       {/* Mobile: Radius slider only when nav drawer is open */}
       {isFilterDrawerOpen && (
-        <div className="md:hidden fixed top-12 left-3 right-3 z-30">
+        <div id="radius-slider-mobile" className="md:hidden fixed top-12 left-3 right-3 z-30">
           <div className="flex items-center gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-gray-200/50 dark:border-gray-700/50">
             <label
               htmlFor="radiusSliderMobile"
@@ -251,9 +251,9 @@ const MapSearchControls: React.FC = () => {
 
       {/* Tablet/Desktop: Both controls at bottom-right of map area (to right of social overlay, left of listings panel) */}
       {/* Positioned from right: 42% (listings panel) + small gap = ~44% from right edge */}
-      <div className="hidden md:flex fixed bottom-6 right-[44%] z-30 items-center gap-3">
+      <div id="map-search-controls-desktop" className="hidden md:flex fixed bottom-6 right-[44%] z-30 items-center gap-3">
         {/* Radius Slider */}
-        <div className="flex items-center gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-gray-200/50 dark:border-gray-700/50">
+        <div id="radius-slider-desktop" className="flex items-center gap-2 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg shadow-lg px-3 py-2 border border-gray-200/50 dark:border-gray-700/50">
           <label
             htmlFor="radiusSliderDesktop"
             className="text-xs font-medium whitespace-nowrap text-gray-700 dark:text-gray-300"
@@ -285,7 +285,7 @@ const MapSearchControls: React.FC = () => {
         </div>
 
         {/* Search Input - desktop with its own autocomplete instance */}
-        <div>
+        <div id="search-input-desktop">
           <label htmlFor="mapSearchAutocompleteDesktop" className="sr-only">
             Search for locations by zip, city, or address
           </label>

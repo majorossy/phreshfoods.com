@@ -4,7 +4,7 @@ import { Shop, ShopWithDistance, AutocompletePlace, LocationType } from '../type
 import { filterAndSortShops } from '../utils/shopFilters';
 
 interface UseFilteredShopsOptions {
-  allFarmStands: Shop[] | undefined;
+  allLocations: Shop[] | undefined;
   activeProductFilters: Record<string, boolean> | undefined;
   activeLocationTypes: Set<LocationType> | undefined;
   searchLocation: AutocompletePlace | null;
@@ -23,7 +23,7 @@ interface UseFilteredShopsOptions {
  */
 export function useFilteredShops(options: UseFilteredShopsOptions): ShopWithDistance[] {
   const {
-    allFarmStands,
+    allLocations,
     activeProductFilters,
     activeLocationTypes,
     searchLocation,
@@ -32,16 +32,16 @@ export function useFilteredShops(options: UseFilteredShopsOptions): ShopWithDist
   } = options;
 
   return useMemo(() => {
-    if (!allFarmStands || allFarmStands.length === 0) {
+    if (!allLocations || allLocations.length === 0) {
       return [];
     }
 
-    return filterAndSortShops(allFarmStands, {
+    return filterAndSortShops(allLocations, {
       productFilters: activeProductFilters || {},
       locationTypes: activeLocationTypes || new Set(['farm_stand', 'cheese_shop']),
       location: searchLocation,
       radius: currentRadius,
       mapsApiReady,
     });
-  }, [allFarmStands, activeProductFilters, activeLocationTypes, searchLocation, currentRadius, mapsApiReady]);
+  }, [allLocations, activeProductFilters, activeLocationTypes, searchLocation, currentRadius, mapsApiReady]);
 }

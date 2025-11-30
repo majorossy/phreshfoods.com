@@ -141,6 +141,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
       <div className="p-4 flex-grow flex flex-col space-y-2"> {/* Uniform padding and spacing */}
         <div className="flex items-start justify-between gap-2">
           <h2
+            id={`shop-card-name-${shop.slug || shop.GoogleProfileID}`}
             className="text-md lg:text-lg font-semibold text-gray-800 dark:text-gray-100 leading-tight line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex-1"
             title={displayName}
           >
@@ -148,6 +149,7 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
           </h2>
           {/* Location Type Badge */}
           <span
+            id={`shop-card-type-badge-${shop.slug || shop.GoogleProfileID}`}
             className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap flex-shrink-0 ${locationDisplay.color}`}
             title={locationDisplay.title}
           >
@@ -164,9 +166,9 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
 
 
         {displayAddress && displayAddress !== 'N/A' && (
-          <div className="flex items-start text-xs text-gray-600 dark:text-gray-400" title={displayAddress}>
+          <div id={`shop-card-address-${shop.slug || shop.GoogleProfileID}`} className="flex items-start text-xs text-gray-600 dark:text-gray-400" title={displayAddress}>
             <svg className="w-3.5 h-3.5 mr-1.5 mt-0.5 text-gray-400 dark:text-gray-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"></path></svg>
-            <span className="line-clamp-2">{displayAddress}</span> {/* Allow address to wrap slightly */}
+            <span id={`shop-card-address-text-${shop.slug || shop.GoogleProfileID}`} className="line-clamp-2">{displayAddress}</span> {/* Allow address to wrap slightly */}
           </div>
         )}
 
@@ -179,21 +181,22 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
 
         {/* Display Distance - NEW */}
         {shop.distanceText && shop.distanceText !== "N/A" && shop.distanceText !== "Set location" && (
-          <div className="flex items-center text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
+          <div id={`shop-card-distance-${shop.slug || shop.GoogleProfileID}`} className="flex items-center text-xs text-orange-600 dark:text-orange-400 font-medium mt-1">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M12 1.5a.75.75 0 01.75.75v5.5a.75.75 0 01-1.5 0V2.25A.75.75 0 0112 1.5zM12.56 8.22a.75.75 0 00-1.061 0L6.22 13.56a.75.75 0 00.02 1.062l5.024 4.466a.75.75 0 001.042-.021l5.25-6.75a.75.75 0 00-.001-1.042L12.56 8.22zM12 10a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" /> {/* Example icon, choose one you like */}
                <path fillRule="evenodd" d="M9.694 3.138a.75.75 0 01.04.04l4.5 4.5a.75.75 0 01-1.06 1.06L10 5.561V15a.75.75 0 01-1.5 0V5.56L5.372 8.738a.75.75 0 01-1.06-1.06l4.5-4.5a.75.75 0 011.062-.04zm0-1.5a2.25 2.25 0 013.182.119l4.5 4.5A2.25 2.25 0 0116.25 9H13V3.75A2.25 2.25 0 0010.75 1.5h-1.5a2.25 2.25 0 00-2.25 2.25V9H3.75a2.25 2.25 0 01-1.122-4.262l4.5-4.5A2.25 2.25 0 019.694 1.638zM4 10.5a.75.75 0 01.75.75v3.045c0 .084.036.162.096.222L8.5 18.179a.75.75 0 001.038.021l5.25-6.75a.75.75 0 10-1.204-.936L10 15.561V11.25a.75.75 0 011.5 0v5.679c0 .084-.036.162-.096.222L4.75 12.48A2.25 2.25 0 014 10.5z" clipRule="evenodd" /> {/* Another direction icon */}
             </svg>
-            <span>{shop.distanceText}</span>
+            <span id={`shop-card-distance-text-${shop.slug || shop.GoogleProfileID}`}>{shop.distanceText}</span>
           </div>
         )}
          {shop.distanceText === "Set location" && (
-            <p className="text-xs text-gray-500 italic mt-1">Set start location for distance</p>
+            <p id={`shop-card-set-location-hint-${shop.slug || shop.GoogleProfileID}`} className="text-xs text-gray-500 italic mt-1">Set start location for distance</p>
         )}
 
         <div className="!mt-auto pt-2"> {/* Pushes button to bottom, !mt-auto overrides space-y for this specific div */}
           {/* Add to Trip Button */}
           <button
+            id={`trip-button-${shop.slug || shop.GoogleProfileID}`}
             type="button"
             onClick={(e) => {
               e.stopPropagation();
@@ -222,14 +225,14 @@ const ShopCard: React.FC<ShopCardProps> = ({ shop }) => {
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>In Trip</span>
+                <span id={`trip-button-text-in-${shop.slug || shop.GoogleProfileID}`}>In Trip</span>
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                <span>Add to Trip</span>
+                <span id={`trip-button-text-add-${shop.slug || shop.GoogleProfileID}`}>Add to Trip</span>
               </>
             )}
           </button>

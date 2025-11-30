@@ -70,7 +70,7 @@ const MapComponent: React.FC = () => {
   // Use domain-specific hooks for better performance (only re-render when relevant state changes)
   const { currentlyDisplayedLocations } = useLocationData();
   const { mapsApiReady, mapViewTargetLocation, currentRadius, lastPlaceSelectedByAutocomplete } = useSearch();
-  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, previewShop, setPreviewShop } = useUI();
+  const { selectedShop, setSelectedShop, hoveredShop, setHoveredShop, openShopOverlays, isShopDetailsOpen, isShopSocialsOpen, previewShop, setPreviewShop } = useUI();
   const { directionsResult, clearDirections } = useDirections();
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const { tripDirectionsResult } = useTripPlanner();
@@ -526,7 +526,7 @@ const MapComponent: React.FC = () => {
     // Wait for overlays to render before panning to avoid double-pan issue
     // If overlays are opening, defer pan until they have valid widths
     const doPan = async () => {
-      if (isShopOverlayOpen || isSocialOverlayOpen) {
+      if (isShopDetailsOpen || isShopSocialsOpen) {
         // Wait for overlays to render (max OVERLAY_RENDER_WAIT_MS)
         const overlaysReady = await waitForOverlaysToRender(OVERLAY_RENDER_WAIT_MS);
 
@@ -540,14 +540,14 @@ const MapComponent: React.FC = () => {
       panToWithOffsets({
         map,
         targetLatLng: shopLatLng,
-        isShopOverlayOpen,
-        isSocialOverlayOpen,
+        isShopDetailsOpen,
+        isShopSocialsOpen,
         includeInfoWindowOffset: true, // Frame info window above marker
       });
     };
 
     doPan();
-  }, [selectedShop, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [selectedShop, mapsApiReady, isShopDetailsOpen, isShopSocialsOpen]);
 
   // Effect to pan map to previewShop (carousel browsing)
   // Pans when user browses carousel, even if a shop is selected (allows browsing other shops)
@@ -659,13 +659,13 @@ const MapComponent: React.FC = () => {
       panToWithOffsets({
         map,
         targetLatLng,
-        isShopOverlayOpen,
-        isSocialOverlayOpen,
+        isShopDetailsOpen,
+        isShopSocialsOpen,
         includeInfoWindowOffset: false,
         bounds: bounds || undefined, // Use fitBounds if we have bounds, otherwise panTo
       });
     });
-  }, [mapViewTargetLocation, currentRadius, mapsApiReady, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [mapViewTargetLocation, currentRadius, mapsApiReady, isShopDetailsOpen, isShopSocialsOpen]);
 
   // Listings panel width observer - re-pan when panel width changes
   useEffect(() => {
@@ -688,8 +688,8 @@ const MapComponent: React.FC = () => {
           panToWithOffsets({
             map,
             targetLatLng: shopLatLng,
-            isShopOverlayOpen,
-            isSocialOverlayOpen,
+            isShopDetailsOpen,
+            isShopSocialsOpen,
             includeInfoWindowOffset: true,
           });
         } else if (mapViewTargetLocation?.geometry?.location) {
@@ -700,8 +700,8 @@ const MapComponent: React.FC = () => {
           panToWithOffsets({
             map,
             targetLatLng,
-            isShopOverlayOpen,
-            isSocialOverlayOpen,
+            isShopDetailsOpen,
+            isShopSocialsOpen,
             includeInfoWindowOffset: false,
             bounds: bounds || undefined,
           });
@@ -715,7 +715,7 @@ const MapComponent: React.FC = () => {
       clearTimeout(resizeTimeout);
       resizeObserver.disconnect();
     };
-  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopDetailsOpen, isShopSocialsOpen]);
 
   // Window resize handler - recalculate offsets and re-pan to maintain proper framing
   useEffect(() => {
@@ -735,8 +735,8 @@ const MapComponent: React.FC = () => {
           panToWithOffsets({
             map,
             targetLatLng: shopLatLng,
-            isShopOverlayOpen,
-            isSocialOverlayOpen,
+            isShopDetailsOpen,
+            isShopSocialsOpen,
             includeInfoWindowOffset: true,
           });
         } else if (mapViewTargetLocation?.geometry?.location) {
@@ -748,8 +748,8 @@ const MapComponent: React.FC = () => {
           panToWithOffsets({
             map,
             targetLatLng,
-            isShopOverlayOpen,
-            isSocialOverlayOpen,
+            isShopDetailsOpen,
+            isShopSocialsOpen,
             includeInfoWindowOffset: false,
             bounds: bounds || undefined,
           });
@@ -762,7 +762,7 @@ const MapComponent: React.FC = () => {
       clearTimeout(resizeTimeout);
       window.removeEventListener('resize', handleResize);
     };
-  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [mapsApiReady, selectedShop, mapViewTargetLocation, isShopDetailsOpen, isShopSocialsOpen]);
 
   // --- ADDED: Effect to display/clear directions route on map ---
   // Priority: tripDirectionsResult takes precedence over single directionsResult

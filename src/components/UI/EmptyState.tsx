@@ -21,18 +21,19 @@ const EmptyState: React.FC<EmptyStateProps> = ({ icon, title, description, actio
   );
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <div id="empty-state" className="flex flex-col items-center justify-center py-12 px-4 text-center">
       <div className="mb-4">
         {icon || defaultIcon}
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <h3 id="empty-state-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
         {title}
       </h3>
-      <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mb-6">
+      <p id="empty-state-description" className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mb-6">
         {description}
       </p>
       {action && (
         <button
+          id="empty-state-action-button"
           onClick={action.onClick}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
         >
@@ -86,21 +87,22 @@ export const NoResultsState: React.FC<{
   const { title, description } = getEmptyMessage();
 
   return (
-    <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+    <div id="no-results-state" className="flex flex-col items-center justify-center py-12 px-4 text-center">
       <div className="mb-4">
         <svg className="w-16 h-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+      <h3 id="no-results-title" className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
         {title}
       </h3>
-      <p className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mb-6">
+      <p id="no-results-description" className="text-sm text-gray-600 dark:text-gray-400 max-w-sm mb-6">
         {description}
       </p>
       <div className="flex flex-col sm:flex-row gap-3">
         {onClearFilters && (
           <button
+            id="clear-filters-button"
             onClick={onClearFilters}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
           >
@@ -108,6 +110,7 @@ export const NoResultsState: React.FC<{
           </button>
         )}
         <button
+          id="browse-categories-button"
           onClick={() => navigate('/not-sure')}
           className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
         >

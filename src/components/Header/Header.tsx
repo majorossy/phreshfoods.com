@@ -129,6 +129,7 @@ const Header: React.FC = () => {
 
   return (
     <header
+      id="site-header"
       className={`
         absolute top-0 left-0 right-0 z-30 print:hidden
         transition-all duration-300 ease-out
@@ -144,10 +145,11 @@ const Header: React.FC = () => {
       <div ref={sentinelRef} className="absolute top-0 h-0 w-0 pointer-events-none" aria-hidden="true" />
 
       {/* ========== MOBILE COLLAPSED BAR ========== */}
-      <div className="md:hidden w-full px-3 py-2">
+      <div id="mobile-header-bar" className="md:hidden w-full px-3 py-2">
         <div className="flex items-center">
           {/* Logo as Hamburger Menu */}
           <button
+            id="mobile-menu-toggle"
             onClick={toggleDrawer}
             className="cursor-pointer transition-transform duration-300 hover:scale-110 flex-shrink-0"
             aria-label={isFilterDrawerOpen ? "Close menu" : "Open menu"}
@@ -163,17 +165,18 @@ const Header: React.FC = () => {
       </div>
 
       {/* ========== DESKTOP HEADER (UNCHANGED) ========== */}
-      <div className="hidden md:block w-full">
+      <div id="desktop-header" className="hidden md:block w-full">
         <div className={`
           flex flex-col sm:flex-row justify-between items-center py-2 gap-y-2 gap-x-4 w-full px-3 sm:px-4
           transition-opacity duration-300
           ${isCollapsed ? 'opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto' : 'opacity-100'}
         `}>
           {/* Combined Container: Logo, Type Filters, Search, Radius, and Filters */}
-          <div className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
+          <div id="header-controls" className="flex flex-col sm:flex-row items-center gap-x-4 gap-y-2 px-5 py-3 rounded-2xl flex-wrap" style={{ backgroundColor: '#356A78' }} role="search" aria-label="Search and filter locations">
             {/* Logo Section */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div id="header-logo" className="flex items-center gap-2 flex-shrink-0">
               <Link
+                id="logo-link"
                 to="/all"
                 onClick={handleTitleClick}
                 className="cursor-pointer transition-all duration-300 hover:scale-110 hover:-rotate-2 hover:drop-shadow-xl"
@@ -186,7 +189,7 @@ const Header: React.FC = () => {
             </div>
 
             {/* Type Filter Buttons with Dropdowns */}
-            <div className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
+            <div id="location-type-filters" className="flex items-center gap-3 flex-wrap" role="group" aria-label="Location type filters">
               <div className="flex items-center gap-1.5 flex-wrap">
               {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][])
                 .filter(([type]) => ENABLED_LOCATION_TYPES.includes(type))
@@ -244,6 +247,7 @@ const Header: React.FC = () => {
                     <div className={`flex items-center rounded-full overflow-hidden transition-all duration-200 ${buttonClasses}`}>
                       {/* Main button - toggles location type filter */}
                       <button
+                        id={`location-type-btn-${type}`}
                         type="button"
                         onClick={() => !isDisabled && toggleLocationType(type)}
                         disabled={isDisabled}
@@ -259,6 +263,7 @@ const Header: React.FC = () => {
                       {/* Arrow button - opens product filter dropdown (only when type is active) */}
                       {isActive && !isDisabled && (
                         <button
+                          id={`location-type-dropdown-btn-${type}`}
                           ref={locationTypeButtonRefs.current[type]}
                           type="button"
                           onClick={(e) => {
@@ -309,6 +314,7 @@ const Header: React.FC = () => {
         <>
           {/* Backdrop - only covers below the header, not the map */}
           <div
+            id="mobile-drawer-backdrop"
             className={`
               md:hidden fixed left-0 right-0 bottom-0 bg-black pointer-events-auto
               transition-opacity duration-[350ms] ease-out
@@ -321,6 +327,7 @@ const Header: React.FC = () => {
 
           {/* Drawer Content */}
           <div
+            id="mobile-filter-drawer"
             className={`
               md:hidden fixed left-0 right-0
               bg-white dark:bg-gray-800
@@ -340,12 +347,12 @@ const Header: React.FC = () => {
             aria-label="Filter menu"
           >
             <div className="p-3 min-h-full">
-              <h3 className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
+              <h3 id="mobile-filter-heading" className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">
                 FILTER BY TYPE
               </h3>
 
               {/* Location Type Accordions - Full Width */}
-              <div className="space-y-1">
+              <div id="mobile-location-types" className="space-y-1">
                 {(Object.entries(LOCATION_TYPE_CONFIG) as [LocationType, typeof LOCATION_TYPE_CONFIG[LocationType]][])
                 .filter(([type]) => ENABLED_LOCATION_TYPES.includes(type))
                 .map(([type, config]) => {
@@ -386,6 +393,7 @@ const Header: React.FC = () => {
                     <div key={type} className="w-full">
                       {/* Accordion Header */}
                       <button
+                        id={`mobile-location-type-btn-${type}`}
                         type="button"
                         onClick={() => !isDisabled && toggleLocationType(type)}
                         disabled={isDisabled}
@@ -406,6 +414,7 @@ const Header: React.FC = () => {
                         {/* Expand Arrow (only when active) */}
                         {isActive && !isDisabled && (
                           <button
+                            id={`mobile-location-expand-btn-${type}`}
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
@@ -439,6 +448,7 @@ const Header: React.FC = () => {
                               const isProductActive = activeProductFilters[product.csvHeader] === true;
                               return (
                                 <button
+                                  id={`mobile-product-filter-${product.csvHeader}`}
                                   key={product.csvHeader}
                                   type="button"
                                   onClick={() => toggleFilter(product.csvHeader)}

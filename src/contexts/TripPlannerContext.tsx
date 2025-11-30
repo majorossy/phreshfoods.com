@@ -10,7 +10,7 @@ import {
   encodeTripToUrl
 } from '../types/trip';
 import { useToast } from './ToastContext';
-import { useFarmData } from './LocationDataContext';
+import { useLocationData } from './LocationDataContext';
 import { logger } from '../utils/logger';
 
 
@@ -46,7 +46,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [tripError, setTripError] = useState<string | null>(null);
 
   const { showToast } = useToast();
-  const { allFarmStands } = useFarmData();
+  const { allLocations } = useLocationData();
   const hasInitialized = useRef(false);
 
   // Generate unique ID for trip stop
@@ -54,7 +54,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   // Load trip from URL or localStorage on mount
   useEffect(() => {
-    if (hasInitialized.current || !allFarmStands || allFarmStands.length === 0) {
+    if (hasInitialized.current || !allLocations || allLocations.length === 0) {
       return;
     }
 
@@ -68,7 +68,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
       // Load from URL
       const stops: TripStop[] = [];
       urlTrip.slugs.forEach((slug, index) => {
-        const shop = allFarmStands.find(s => s.slug === slug);
+        const shop = allLocations.find(s => s.slug === slug);
         if (shop) {
           stops.push({
             shop,
@@ -92,7 +92,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
     if (stored && stored.stopSlugs.length > 0) {
       const stops: TripStop[] = [];
       stored.stopSlugs.forEach((slug, index) => {
-        const shop = allFarmStands.find(s => s.slug === slug);
+        const shop = allLocations.find(s => s.slug === slug);
         if (shop) {
           stops.push({
             shop,
@@ -108,7 +108,7 @@ export const TripPlannerProvider: React.FC<{ children: React.ReactNode }> = ({ c
         logger.log('[Trip Planner] Loaded trip from localStorage:', stops.length, 'stops');
       }
     }
-  }, [allFarmStands, showToast]);
+  }, [allLocations, showToast]);
 
   // Save to localStorage whenever trip changes
   useEffect(() => {

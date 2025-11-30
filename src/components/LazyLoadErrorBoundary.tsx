@@ -74,8 +74,8 @@ class LazyLoadErrorBoundary extends Component<Props, State> {
       const canRetry = retryCount < MAX_RETRIES;
 
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-          <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
+        <div id="lazy-load-error-boundary" className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+          <div id="lazy-load-error-content" className="max-w-md w-full bg-white shadow-lg rounded-lg p-6">
             <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
               <svg
                 className="w-6 h-6 text-yellow-600"
@@ -106,6 +106,7 @@ class LazyLoadErrorBoundary extends Component<Props, State> {
             )}
             <div className="flex gap-2">
               <button
+                id="lazy-load-retry-button"
                 onClick={this.handleRetry}
                 className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
@@ -113,6 +114,7 @@ class LazyLoadErrorBoundary extends Component<Props, State> {
               </button>
               {canRetry && (
                 <button
+                  id="lazy-load-home-button"
                   onClick={() => (window.location.href = '/')}
                   className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
                 >

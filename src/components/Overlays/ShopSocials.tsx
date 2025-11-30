@@ -1,4 +1,4 @@
-// src/components/Overlays/SocialOverlay.tsx
+// src/components/Overlays/ShopSocials.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import DOMPurify from 'dompurify';
 import { Shop, PlacePhoto as PlacePhotoData } from '../../types';
@@ -34,19 +34,19 @@ import {
   getXTimelineEmbed
 } from '../../utils/socialMediaHelpers';
 
-interface SocialOverlayProps {
+interface ShopSocialsProps {
   shop: Shop;
   isOpen?: boolean; // Controls open/close animation (true = visible, false = animating out)
   onClose: () => void;
 }
 
-const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onClose }) => {
+const ShopSocials: React.FC<ShopSocialsProps> = ({ shop, isOpen = true, onClose }) => {
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const { socialOverlayInitialTab, tabChangeKey, closeShopOverlays, isShopOverlayOpen, isSocialOverlayOpen, toggleBothOverlays } = useUI();
+  const { shopSocialsInitialTab, tabChangeKey, isShopDetailsOpen, isShopSocialsOpen, toggleBothOverlays } = useUI();
   // Check if either overlay is open (for toggle button state)
-  const eitherOverlayOpen = isShopOverlayOpen || isSocialOverlayOpen;
-  const [activeTab, setActiveTab] = useState(socialOverlayInitialTab);
+  const eitherOverlayOpen = isShopDetailsOpen || isShopSocialsOpen;
+  const [activeTab, setActiveTab] = useState(shopSocialsInitialTab);
   const [manualOrigin, setManualOrigin] = useState('');
   const [useCurrentLocation, setUseCurrentLocation] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false); // Default: expanded
@@ -110,10 +110,10 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
   // Watch for external tab changes (e.g., from clicking rating stars)
   // tabChangeKey ensures this triggers even if the same tab is clicked multiple times
   useEffect(() => {
-    if (socialOverlayInitialTab) {
-      setActiveTab(socialOverlayInitialTab);
+    if (shopSocialsInitialTab) {
+      setActiveTab(shopSocialsInitialTab);
     }
-  }, [socialOverlayInitialTab, tabChangeKey]);
+  }, [shopSocialsInitialTab, tabChangeKey]);
 
   // Lazy load and process Instagram embeds
   useEffect(() => {
@@ -356,7 +356,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
   return (
       <div
         ref={overlayRef}
-        id="detailsOverlaySocial"
+        id="shop-socials"
         className={`detail-pop-overlay detail-pop-overlay-social custom-scrollbar ${isOpen ? 'is-open' : ''} ${isCollapsed ? 'is-collapsed' : ''}`}
         role="dialog"
         aria-modal="true"
@@ -487,6 +487,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
         >
           {/* Close Button (X) - Top */}
           <button
+            id="shop-socials-close-btn"
             ref={closeButtonRef}
             onClick={onClose}
             className="w-full py-2 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors border-b border-gray-200 dark:border-gray-600"
@@ -501,6 +502,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
           {/* Toggle Both Overlays Button (Double Arrow) - Middle */}
           <button
+            id="shop-socials-toggle-overlays-btn"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -525,6 +527,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
           {/* Collapse/Expand Button (Arrow) - Bottom */}
           <button
+            id="shop-socials-collapse-btn"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -682,7 +685,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
         {/* --- MODIFIED: RESTORED REVIEWS TAB CONTENT --- */}
         {activeTab === 'reviews' && (
           <div id="tabpanel-reviews" role="tabpanel" aria-labelledby="tab-reviews">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Reviews</h3>
+            <h3 id="reviews-section-heading" className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Reviews</h3>
             {shop.placeDetails?.reviews && shop.placeDetails.reviews.length > 0 ? (
               <ul className="space-y-3">
                 {shop.placeDetails.reviews.map((review, index) => (
@@ -718,7 +721,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
           <div id="tabpanel-directions" role="tabpanel" aria-labelledby="tab-directions" className="p-2 sm:p-4">
             {/* Header with Trip Mode Toggle */}
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
+              <h3 id="directions-section-heading" className="text-lg font-semibold text-gray-800 dark:text-gray-100">
                 {isTripMode ? 'Trip Planner' : `Directions to ${shopNameForDisplay}`}
               </h3>
               <button
@@ -1037,7 +1040,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <h3 id="instagram-unavailable-heading" className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         No Instagram Account
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1100,7 +1103,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <h3 id="facebook-unavailable-heading" className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         No Facebook Page
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1176,7 +1179,7 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
                       </svg>
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      <h3 id="x-unavailable-heading" className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                         No X Account
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -1196,4 +1199,4 @@ const SocialOverlay: React.FC<SocialOverlayProps> = ({ shop, isOpen = true, onCl
 
 // Memoize component to prevent unnecessary re-renders
 // Only re-renders when shop or onClose props change
-export default React.memo(SocialOverlay);
+export default React.memo(ShopSocials);

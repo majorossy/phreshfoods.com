@@ -149,6 +149,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({
 
   return (
     <div
+      id={`product-preview-${shop.slug || shop.GoogleProfileID}`}
       className={`product-preview flex items-center gap-1.5 ${className}`}
       role="list"
       aria-label="Available products"

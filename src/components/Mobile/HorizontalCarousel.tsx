@@ -161,6 +161,7 @@ const HorizontalCarousel: React.FC = () => {
 
   return (
     <div
+      id="horizontal-carousel"
       ref={containerRef}
       className={`relative h-full overflow-visible carousel-container ${isDragging ? 'is-swiping' : ''}`}
       onKeyDown={handleKeyDown}
@@ -172,6 +173,7 @@ const HorizontalCarousel: React.FC = () => {
       {/* Left Arrow - kept for accessibility */}
       {currentIndex > 0 && (
         <button
+          id="carousel-prev-button"
           onClick={handlePrevious}
           className="absolute left-3 top-1/2 -translate-y-1/2 z-20
                      bg-white/95 dark:bg-gray-800/95 rounded-full
@@ -191,6 +193,7 @@ const HorizontalCarousel: React.FC = () => {
       {/* Right Arrow - kept for accessibility */}
       {currentIndex < currentlyDisplayedLocations.length - 1 && (
         <button
+          id="carousel-next-button"
           onClick={handleNext}
           className="absolute right-3 top-1/2 -translate-y-1/2 z-20
                      bg-white/95 dark:bg-gray-800/95 rounded-full
@@ -209,8 +212,9 @@ const HorizontalCarousel: React.FC = () => {
 
       {/* Position Indicator */}
       {currentlyDisplayedLocations.length > 1 && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
+        <div id="carousel-position-indicator" className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
           <span
+            id="carousel-position-text"
             className="text-xs text-gray-500 dark:text-gray-400
                        bg-white/80 dark:bg-gray-800/80
                        px-2.5 py-1 rounded-full
@@ -279,12 +283,12 @@ const HorizontalCarousel: React.FC = () => {
 
       {/* Empty State */}
       {currentlyDisplayedLocations.length === 0 && (
-        <div className="flex items-center justify-center w-full h-full px-6 text-center">
+        <div id="carousel-empty-state" className="flex items-center justify-center w-full h-full px-6 text-center">
           <div>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p id="carousel-empty-title" className="text-gray-500 dark:text-gray-400 text-sm">
               No locations found
             </p>
-            <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">
+            <p id="carousel-empty-subtitle" className="text-gray-400 dark:text-gray-500 text-xs mt-1">
               Try adjusting your search or filters
             </p>
           </div>

@@ -10,24 +10,24 @@ interface UIContextType {
   setSelectedShop: (shop: Shop | null) => void;
   hoveredShop: Shop | null;
   setHoveredShop: (shop: Shop | null) => void;
-  isShopOverlayOpen: boolean;
-  isSocialOverlayOpen: boolean;
+  isShopDetailsOpen: boolean;
+  isShopSocialsOpen: boolean;
   // Track if overlays should be rendered (stays true during close animation)
-  shouldRenderShopOverlay: boolean;
-  shouldRenderSocialOverlay: boolean;
+  shouldRenderShopDetails: boolean;
+  shouldRenderShopSocials: boolean;
   // Track if overlays should show "is-open" class (delayed for enter animation)
-  isShopOverlayAnimatedOpen: boolean;
-  isSocialOverlayAnimatedOpen: boolean;
+  isShopDetailsAnimatedOpen: boolean;
+  isShopSocialsAnimatedOpen: boolean;
   openShopOverlays: (shop: Shop, openTab?: 'shop' | 'social' | 'directions', socialTab?: string) => void;
   closeShopOverlays: () => void;
   openBothOverlays: () => void;
-  closeShopOverlay: () => void;
-  closeSocialOverlay: () => void;
+  closeShopDetails: () => void;
+  closeShopSocials: () => void;
   toggleBothOverlays: () => void;
   isInitialModalOpen: boolean;
   setIsInitialModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  socialOverlayInitialTab: string;
-  setSocialOverlayActiveTab: (tab: string) => void;
+  shopSocialsInitialTab: string;
+  setShopSocialsActiveTab: (tab: string) => void;
   tabChangeKey: number;
   // Mobile bottom sheet state (Phase 2)
   bottomSheetHeight: number; // 0.3 to 0.75 (30vh to 75vh)
@@ -49,17 +49,17 @@ const UIContext = createContext<UIContextType | undefined>(undefined);
 export const UIProvider = ({ children }: { children: ReactNode }) => {
   const [selectedShop, _setSelectedShopInternal] = useState<Shop | null>(null);
   const [hoveredShop, setHoveredShop] = useState<Shop | null>(null);
-  const [isShopOverlayOpen, setIsShopOverlayOpen] = useState<boolean>(false);
-  const [isSocialOverlayOpen, setIsSocialOverlayOpen] = useState<boolean>(false);
+  const [isShopDetailsOpen, setIsShopDetailsOpen] = useState<boolean>(false);
+  const [isShopSocialsOpen, setIsShopSocialsOpen] = useState<boolean>(false);
   // Track if overlays should be rendered (delayed unmount for animation)
-  const [shouldRenderShopOverlay, setShouldRenderShopOverlay] = useState<boolean>(false);
-  const [shouldRenderSocialOverlay, setShouldRenderSocialOverlay] = useState<boolean>(false);
-  const [socialOverlayInitialTab, setSocialOverlayInitialTab] = useState<string>('photos');
+  const [shouldRenderShopDetails, setShouldRenderShopDetails] = useState<boolean>(false);
+  const [shouldRenderShopSocials, setShouldRenderShopSocials] = useState<boolean>(false);
+  const [shopSocialsInitialTab, setShopSocialsInitialTab] = useState<string>('photos');
   const [tabChangeKey, setTabChangeKey] = useState<number>(0);
 
   // Refs for cleanup timeouts
-  const shopOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const socialOverlayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shopDetailsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const shopSocialsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const selectedShopCleanupRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initial modal disabled - users should use header search instead
@@ -78,83 +78,83 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   // Preview shop for carousel browsing (shows in InfoWindow without selecting)
   const [previewShop, setPreviewShop] = useState<Shop | null>(null);
 
-  // Handle delayed unmount for shop overlay
+  // Handle delayed unmount for shop details
   useEffect(() => {
-    if (isShopOverlayOpen) {
+    if (isShopDetailsOpen) {
       // Opening: immediately render
-      if (shopOverlayTimeoutRef.current) {
-        clearTimeout(shopOverlayTimeoutRef.current);
-        shopOverlayTimeoutRef.current = null;
+      if (shopDetailsTimeoutRef.current) {
+        clearTimeout(shopDetailsTimeoutRef.current);
+        shopDetailsTimeoutRef.current = null;
       }
-      setShouldRenderShopOverlay(true);
-    } else if (shouldRenderShopOverlay) {
+      setShouldRenderShopDetails(true);
+    } else if (shouldRenderShopDetails) {
       // Closing: delay unmount for animation
-      shopOverlayTimeoutRef.current = setTimeout(() => {
-        setShouldRenderShopOverlay(false);
-        shopOverlayTimeoutRef.current = null;
+      shopDetailsTimeoutRef.current = setTimeout(() => {
+        setShouldRenderShopDetails(false);
+        shopDetailsTimeoutRef.current = null;
       }, OVERLAY_ANIMATION_DURATION_MS);
     }
 
     return () => {
-      if (shopOverlayTimeoutRef.current) {
-        clearTimeout(shopOverlayTimeoutRef.current);
+      if (shopDetailsTimeoutRef.current) {
+        clearTimeout(shopDetailsTimeoutRef.current);
       }
     };
-  }, [isShopOverlayOpen, shouldRenderShopOverlay]);
+  }, [isShopDetailsOpen, shouldRenderShopDetails]);
 
   // Track if overlays should show their "open" animation state (delayed for enter animation)
-  const [isShopOverlayAnimatedOpen, setIsShopOverlayAnimatedOpen] = useState<boolean>(false);
-  const [isSocialOverlayAnimatedOpen, setIsSocialOverlayAnimatedOpen] = useState<boolean>(false);
+  const [isShopDetailsAnimatedOpen, setIsShopDetailsAnimatedOpen] = useState<boolean>(false);
+  const [isShopSocialsAnimatedOpen, setIsShopSocialsAnimatedOpen] = useState<boolean>(false);
 
   // Delay the "is-open" class until after mount for smooth enter animation
   useEffect(() => {
-    if (isShopOverlayOpen && shouldRenderShopOverlay) {
+    if (isShopDetailsOpen && shouldRenderShopDetails) {
       // Use requestAnimationFrame to ensure DOM has painted before adding class
       const rafId = requestAnimationFrame(() => {
-        setIsShopOverlayAnimatedOpen(true);
+        setIsShopDetailsAnimatedOpen(true);
       });
       return () => cancelAnimationFrame(rafId);
     } else {
-      setIsShopOverlayAnimatedOpen(false);
+      setIsShopDetailsAnimatedOpen(false);
     }
-  }, [isShopOverlayOpen, shouldRenderShopOverlay]);
+  }, [isShopDetailsOpen, shouldRenderShopDetails]);
 
-  // Handle delayed unmount for social overlay
+  // Handle delayed unmount for shop socials
   useEffect(() => {
-    if (isSocialOverlayOpen) {
+    if (isShopSocialsOpen) {
       // Opening: immediately render
-      if (socialOverlayTimeoutRef.current) {
-        clearTimeout(socialOverlayTimeoutRef.current);
-        socialOverlayTimeoutRef.current = null;
+      if (shopSocialsTimeoutRef.current) {
+        clearTimeout(shopSocialsTimeoutRef.current);
+        shopSocialsTimeoutRef.current = null;
       }
-      setShouldRenderSocialOverlay(true);
-    } else if (shouldRenderSocialOverlay) {
+      setShouldRenderShopSocials(true);
+    } else if (shouldRenderShopSocials) {
       // Closing: delay unmount for animation
-      socialOverlayTimeoutRef.current = setTimeout(() => {
-        setShouldRenderSocialOverlay(false);
-        socialOverlayTimeoutRef.current = null;
+      shopSocialsTimeoutRef.current = setTimeout(() => {
+        setShouldRenderShopSocials(false);
+        shopSocialsTimeoutRef.current = null;
       }, OVERLAY_ANIMATION_DURATION_MS);
     }
 
     return () => {
-      if (socialOverlayTimeoutRef.current) {
-        clearTimeout(socialOverlayTimeoutRef.current);
+      if (shopSocialsTimeoutRef.current) {
+        clearTimeout(shopSocialsTimeoutRef.current);
       }
     };
-  }, [isSocialOverlayOpen, shouldRenderSocialOverlay]);
+  }, [isShopSocialsOpen, shouldRenderShopSocials]);
 
-  // Delay the "is-open" class for social overlay until after mount for smooth enter animation
+  // Delay the "is-open" class for shop socials until after mount for smooth enter animation
   useEffect(() => {
-    if (isSocialOverlayOpen && shouldRenderSocialOverlay) {
+    if (isShopSocialsOpen && shouldRenderShopSocials) {
       // Use requestAnimationFrame to ensure DOM has painted before adding class
       const rafId = requestAnimationFrame(() => {
-        setIsSocialOverlayAnimatedOpen(true);
+        setIsShopSocialsAnimatedOpen(true);
       });
       return () => cancelAnimationFrame(rafId);
     } else {
-      setIsSocialOverlayAnimatedOpen(false);
+      setIsShopSocialsAnimatedOpen(false);
     }
-  }, [isSocialOverlayOpen, shouldRenderSocialOverlay]);
+  }, [isShopSocialsOpen, shouldRenderShopSocials]);
 
   const handleSetSelectedShop = useCallback((shop: Shop | null) => {
     _setSelectedShopInternal(shop);
@@ -184,17 +184,17 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     }
 
     handleSetSelectedShop(shop);
-    setSocialOverlayInitialTab(socialTab);
+    setShopSocialsInitialTab(socialTab);
 
     if (openTab === 'shop') {
-      setIsShopOverlayOpen(true);
-      setIsSocialOverlayOpen(true);
+      setIsShopDetailsOpen(true);
+      setIsShopSocialsOpen(true);
     } else if (openTab === 'directions') {
-      setIsSocialOverlayOpen(true);
-      setIsShopOverlayOpen(false);
+      setIsShopSocialsOpen(true);
+      setIsShopDetailsOpen(false);
     } else if (openTab === 'social') {
-      setIsSocialOverlayOpen(true);
-      setIsShopOverlayOpen(false);
+      setIsShopSocialsOpen(true);
+      setIsShopDetailsOpen(false);
     }
 
     // Safely add class to body
@@ -204,8 +204,8 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
   }, [handleSetSelectedShop]);
 
   const closeShopOverlays = useCallback(() => {
-    setIsShopOverlayOpen(false);
-    setIsSocialOverlayOpen(false);
+    setIsShopDetailsOpen(false);
+    setIsShopSocialsOpen(false);
     // Safely remove class from body
     if (document.body) {
       document.body.classList.remove('modal-active');
@@ -226,56 +226,56 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
 
   // Open both overlays without changing selectedShop (for the double-arrow button)
   const openBothOverlays = useCallback(() => {
-    setIsShopOverlayOpen(true);
-    setIsSocialOverlayOpen(true);
+    setIsShopDetailsOpen(true);
+    setIsShopSocialsOpen(true);
     // Safely add class to body
     if (document.body) {
       document.body.classList.add('modal-active');
     }
   }, []);
 
-  // Close just the shop overlay (for individual panel control)
-  const closeShopOverlay = useCallback(() => {
-    setIsShopOverlayOpen(false);
+  // Close just the shop details (for individual panel control)
+  const closeShopDetails = useCallback(() => {
+    setIsShopDetailsOpen(false);
     // Only remove modal-active if both are now closed
-    if (!isSocialOverlayOpen && document.body) {
+    if (!isShopSocialsOpen && document.body) {
       document.body.classList.remove('modal-active');
     }
-  }, [isSocialOverlayOpen]);
+  }, [isShopSocialsOpen]);
 
-  // Close just the social overlay (for individual panel control)
-  const closeSocialOverlay = useCallback(() => {
-    setIsSocialOverlayOpen(false);
+  // Close just the shop socials (for individual panel control)
+  const closeShopSocials = useCallback(() => {
+    setIsShopSocialsOpen(false);
     // Only remove modal-active if both are now closed
-    if (!isShopOverlayOpen && document.body) {
+    if (!isShopDetailsOpen && document.body) {
       document.body.classList.remove('modal-active');
     }
-  }, [isShopOverlayOpen]);
+  }, [isShopDetailsOpen]);
 
   // Toggle both overlays together (for the double-arrow button)
   // If either is open -> close both; if both closed -> open both
   const toggleBothOverlays = useCallback(() => {
-    const eitherOpen = isShopOverlayOpen || isSocialOverlayOpen;
+    const eitherOpen = isShopDetailsOpen || isShopSocialsOpen;
 
     if (eitherOpen) {
       // Close both
-      setIsShopOverlayOpen(false);
-      setIsSocialOverlayOpen(false);
+      setIsShopDetailsOpen(false);
+      setIsShopSocialsOpen(false);
       if (document.body) {
         document.body.classList.remove('modal-active');
       }
     } else {
       // Open both
-      setIsShopOverlayOpen(true);
-      setIsSocialOverlayOpen(true);
+      setIsShopDetailsOpen(true);
+      setIsShopSocialsOpen(true);
       if (document.body) {
         document.body.classList.add('modal-active');
       }
     }
-  }, [isShopOverlayOpen, isSocialOverlayOpen]);
+  }, [isShopDetailsOpen, isShopSocialsOpen]);
 
-  const setSocialOverlayActiveTab = useCallback((tab: string) => {
-    setSocialOverlayInitialTab(tab);
+  const setShopSocialsActiveTab = useCallback((tab: string) => {
+    setShopSocialsInitialTab(tab);
     setTabChangeKey(prev => prev + 1); // Force update even if tab is the same
   }, []);
 
@@ -285,22 +285,22 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     setSelectedShop: handleSetSelectedShop,
     hoveredShop,
     setHoveredShop,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-    shouldRenderShopOverlay,
-    shouldRenderSocialOverlay,
-    isShopOverlayAnimatedOpen,
-    isSocialOverlayAnimatedOpen,
+    isShopDetailsOpen,
+    isShopSocialsOpen,
+    shouldRenderShopDetails,
+    shouldRenderShopSocials,
+    isShopDetailsAnimatedOpen,
+    isShopSocialsAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
     openBothOverlays,
-    closeShopOverlay,
-    closeSocialOverlay,
+    closeShopDetails,
+    closeShopSocials,
     toggleBothOverlays,
     isInitialModalOpen,
     setIsInitialModalOpen,
-    socialOverlayInitialTab,
-    setSocialOverlayActiveTab,
+    shopSocialsInitialTab,
+    setShopSocialsActiveTab,
     tabChangeKey,
     // Mobile bottom sheet (Phase 2)
     bottomSheetHeight,
@@ -319,21 +319,21 @@ export const UIProvider = ({ children }: { children: ReactNode }) => {
     selectedShop,
     handleSetSelectedShop,
     hoveredShop,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-    shouldRenderShopOverlay,
-    shouldRenderSocialOverlay,
-    isShopOverlayAnimatedOpen,
-    isSocialOverlayAnimatedOpen,
+    isShopDetailsOpen,
+    isShopSocialsOpen,
+    shouldRenderShopDetails,
+    shouldRenderShopSocials,
+    isShopDetailsAnimatedOpen,
+    isShopSocialsAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
     openBothOverlays,
-    closeShopOverlay,
-    closeSocialOverlay,
+    closeShopDetails,
+    closeShopSocials,
     toggleBothOverlays,
     isInitialModalOpen,
-    socialOverlayInitialTab,
-    setSocialOverlayActiveTab,
+    shopSocialsInitialTab,
+    setShopSocialsActiveTab,
     tabChangeKey,
     // Mobile bottom sheet (Phase 2)
     bottomSheetHeight,

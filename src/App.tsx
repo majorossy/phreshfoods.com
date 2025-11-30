@@ -14,7 +14,7 @@ import { LAST_SEARCHED_LOCATION_COOKIE_NAME } from './config/appConfig';
 import { initWebVitals, markPerformance, reportCustomMetric } from './utils/webVitals';
 import {
   getHomepageSEO,
-  getFarmStandSEO,
+  getShopSEO,
   generateLocalBusinessSchema,
   generateOrganizationSchema,
   updateMetaTags,
@@ -29,10 +29,10 @@ import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary.tsx';
 const Header = lazy(() => import('./components/Header/Header.tsx'));
 const MapComponent = lazy(() => import('./components/Map/MapComponent.tsx'));
 const MapSearchControls = lazy(() => import('./components/Map/MapSearchControls.tsx'));
-const ListingsPanel = lazy(() => import('./components/Listings/ListingsPanel.tsx'));
+const CardListings = lazy(() => import('./components/Listings/CardListings.tsx'));
 const MobileBottomSheet = lazy(() => import('./components/Mobile/MobileBottomSheet.tsx'));
-const ShopDetailsOverlay = lazy(() => import('./components/Overlays/ShopDetailsOverlay.tsx'));
-const SocialOverlay = lazy(() => import('./components/Overlays/SocialOverlay.tsx'));
+const ShopDetails = lazy(() => import('./components/Overlays/ShopDetails.tsx'));
+const ShopSocials = lazy(() => import('./components/Overlays/ShopSocials.tsx'));
 
 function App() {
   const navigate = useNavigate();
@@ -44,12 +44,12 @@ function App() {
   const { activeProductFilters, activeLocationTypes } = useFilters();
   const {
     selectedShop,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
-    shouldRenderShopOverlay,
-    shouldRenderSocialOverlay,
-    isShopOverlayAnimatedOpen,
-    isSocialOverlayAnimatedOpen,
+    isShopDetailsOpen,
+    isShopSocialsOpen,
+    shouldRenderShopDetails,
+    shouldRenderShopSocials,
+    isShopDetailsAnimatedOpen,
+    isShopSocialsAnimatedOpen,
     openShopOverlays,
     closeShopOverlays,
     setSelectedShop,
@@ -89,7 +89,7 @@ function App() {
 
   // Use custom hook for filtering and sorting shops
   const filteredAndSortedShops = useFilteredShops({
-    allFarmStands: allLocations,
+    allLocations,
     activeProductFilters,
     activeLocationTypes,
     searchLocation: lastPlaceSelectedByAutocomplete,
@@ -168,32 +168,32 @@ function App() {
           if (!isMobile) {
             openShopOverlays(shopFromUrl);
           }
-        } else if (!isShopOverlayOpen && !isSocialOverlayOpen && !isMobile) {
+        } else if (!isShopDetailsOpen && !isShopSocialsOpen && !isMobile) {
           // Only open overlays on desktop - mobile uses bottom sheet
           openShopOverlays(selectedShop);
         }
       } else {
         // Shop not found - redirect to homepage
         navigate('/', { replace: true });
-        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+        if (isShopDetailsOpen || isShopSocialsOpen) closeShopOverlays();
         if (selectedShop) setSelectedShop(null);
       }
     } else if (location.pathname === '/' || isTypeFilterPage(location.pathname)) {
       // On homepage or type filter page - close any open overlays
       // Note: Don't clear selectedShop here - closeShopOverlays handles the delayed cleanup
       // This prevents the flicker during close animation
-      if (isShopOverlayOpen || isSocialOverlayOpen) {
+      if (isShopDetailsOpen || isShopSocialsOpen) {
         closeShopOverlays();
       }
     } else if (!selectedShop && location.pathname.match(/^\/(farm-stand|cheesemonger|fishmonger|butcher|antique-shop|brewery|winery|sugar-shack)\//)) {
       // Edge case: shop detail URL but no selected shop and data is loaded
       if (allLocations && allLocations.length > 0) {
         navigate('/', { replace: true });
-        if (isShopOverlayOpen || isSocialOverlayOpen) closeShopOverlays();
+        if (isShopDetailsOpen || isShopSocialsOpen) closeShopOverlays();
       }
     }
   }, [
-      location.pathname, allLocations, filteredAndSortedShops, selectedShop, isShopOverlayOpen, isSocialOverlayOpen,
+      location.pathname, allLocations, filteredAndSortedShops, selectedShop, isShopDetailsOpen, isShopSocialsOpen,
       openShopOverlays, closeShopOverlays, setSelectedShop, navigate, isMobile, setIsManuallyCollapsed
     ]
   );
@@ -202,7 +202,7 @@ function App() {
   // Escape key handler to close overlays
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && (isShopOverlayOpen || isSocialOverlayOpen)) {
+      if (event.key === 'Escape' && (isShopDetailsOpen || isShopSocialsOpen)) {
         // closeShopOverlays handles the delayed cleanup of selectedShop
         closeShopOverlays();
         // Navigate back to the list view, preserving query params
@@ -212,7 +212,7 @@ function App() {
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isShopOverlayOpen, isSocialOverlayOpen, closeShopOverlays, navigate, location.search]);
+  }, [isShopDetailsOpen, isShopSocialsOpen, closeShopOverlays, navigate, location.search]);
 
   // SEO: Update meta tags and structured data based on current route
   useEffect(() => {
@@ -220,7 +220,7 @@ function App() {
 
     if (slugMatch && selectedShop) {
       // Farm detail page - use shop-specific SEO
-      const seoConfig = getFarmStandSEO(selectedShop);
+      const seoConfig = getShopSEO(selectedShop);
       updateMetaTags(seoConfig);
 
       // Add structured data for LocalBusiness
@@ -269,7 +269,7 @@ function App() {
         <ErrorBoundary>
           <Suspense fallback={<div className="hidden md:block md:w-2/5 lg:w-1/3 p-4 bg-white/80 animate-pulse z-10" />}>
             <div className="hidden md:block">
-              <ListingsPanel />
+              <CardListings />
             </div>
           </Suspense>
         </ErrorBoundary>
@@ -284,12 +284,12 @@ function App() {
         )}
 
         {/* Overlays - Desktop only (mobile uses bottom sheet) */}
-        {!isMobile && shouldRenderShopOverlay && selectedShop && (
+        {!isMobile && shouldRenderShopDetails && selectedShop && (
           <LazyLoadErrorBoundary componentName="shop details">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
-              <ShopDetailsOverlay
+              <ShopDetails
                 shop={selectedShop}
-                isOpen={isShopOverlayAnimatedOpen}
+                isOpen={isShopDetailsAnimatedOpen}
                 onClose={() => {
                   // Start close animation - don't clear selectedShop yet!
                   // The delayed unmount in UIContext will handle cleanup
@@ -302,12 +302,12 @@ function App() {
             </Suspense>
           </LazyLoadErrorBoundary>
         )}
-        {!isMobile && shouldRenderSocialOverlay && selectedShop && (
+        {!isMobile && shouldRenderShopSocials && selectedShop && (
           <LazyLoadErrorBoundary componentName="social media">
             <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="text-white">Loading...</div></div>}>
-              <SocialOverlay
+              <ShopSocials
                 shop={selectedShop}
-                isOpen={isSocialOverlayAnimatedOpen}
+                isOpen={isShopSocialsAnimatedOpen}
                 onClose={() => {
                   // Start close animation - don't clear selectedShop yet!
                   // The delayed unmount in UIContext will handle cleanup

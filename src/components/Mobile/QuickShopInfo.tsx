@@ -49,10 +49,11 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
   };
 
   return (
-    <div className="px-4 pb-4 pt-2">
+    <div id="quick-shop-info" className="px-4 pb-4 pt-2">
       {/* Close Button */}
       <div className="flex justify-end mb-2">
         <button
+          id="quick-shop-close"
           onClick={handleClose}
           className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           aria-label="Close shop details"
@@ -66,10 +67,10 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
       {/* Shop Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1">
+          <h3 id="quick-shop-name" className="text-lg font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 flex-1">
             {shop.placeDetails?.name || shop.Name}
           </h3>
-          <span className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap flex-shrink-0">
+          <span id="quick-shop-type-badge" className="text-xs px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 whitespace-nowrap flex-shrink-0">
             {locationDisplay.emoji} {locationDisplay.label}
           </span>
         </div>
@@ -87,21 +88,21 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
       {/* Quick Info Grid */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         {/* Hours Today */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        <div id="quick-shop-hours-section" className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+          <h4 id="quick-shop-hours-label" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Hours Today
           </h4>
-          <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
+          <p id="quick-shop-hours-value" className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
             {getTodayHours()}
           </p>
         </div>
 
         {/* Distance */}
-        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        <div id="quick-shop-distance-section" className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
+          <h4 id="quick-shop-distance-label" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Distance
           </h4>
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+          <p id="quick-shop-distance-value" className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {shop.distanceText && shop.distanceText !== 'N/A' && shop.distanceText !== 'Set location'
               ? shop.distanceText
               : 'Set location'}
@@ -111,11 +112,11 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
 
       {/* Address */}
       {shop.placeDetails?.formatted_address && (
-        <div className="mb-4">
-          <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+        <div id="quick-shop-address-section" className="mb-4">
+          <h4 id="quick-shop-address-label" className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
             Address
           </h4>
-          <p className="text-sm text-gray-700 dark:text-gray-300">
+          <p id="quick-shop-address-value" className="text-sm text-gray-700 dark:text-gray-300">
             {shop.placeDetails.formatted_address}
           </p>
         </div>
@@ -126,6 +127,7 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
         <div className="mb-4 flex gap-3">
           {shop.Phone && (
             <a
+              id="quick-shop-call-btn"
               href={`tel:${shop.Phone}`}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center justify-center gap-2"
             >
@@ -137,6 +139,7 @@ const QuickShopInfo: React.FC<QuickShopInfoProps> = ({ shop, showFullDetails = f
           )}
           {shop.Website && (
             <a
+              id="quick-shop-website-btn"
               href={shop.Website}
               target="_blank"
               rel="noopener noreferrer"

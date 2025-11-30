@@ -28,6 +28,7 @@ export const TripStopCard: React.FC<TripStopCardProps> = ({ stop, index, onRemov
 
   return (
     <div
+      id={`trip-stop-card-${stop.id}`}
       ref={setNodeRef}
       style={style}
       className={`bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md p-3 flex items-center space-x-3 ${
@@ -36,6 +37,7 @@ export const TripStopCard: React.FC<TripStopCardProps> = ({ stop, index, onRemov
     >
       {/* Drag Handle */}
       <div
+        id={`trip-stop-drag-handle-${stop.id}`}
         {...attributes}
         {...listeners}
         className="cursor-move text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex-shrink-0"
@@ -73,6 +75,7 @@ export const TripStopCard: React.FC<TripStopCardProps> = ({ stop, index, onRemov
 
       {/* Remove Button */}
       <button
+        id={`trip-stop-remove-${stop.id}`}
         onClick={() => onRemove(stop.id)}
         className="flex-shrink-0 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
         aria-label="Remove stop"

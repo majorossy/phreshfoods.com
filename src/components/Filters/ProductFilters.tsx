@@ -53,11 +53,11 @@ const ProductFilters: React.FC = () => {
 
 
   return (
-    <div className="bg-white p-3 shadow rounded-md border border-gray-200 max-h-[400px] overflow-y-auto custom-scrollbar"> {/* Added max-height and scroll */}
-      <h3 className="text-md font-semibold text-gray-700 mb-3 border-b pb-2 sticky top-0 bg-white z-10">Filters</h3>
+    <div id="product-filters-panel" className="bg-white p-3 shadow rounded-md border border-gray-200 max-h-[400px] overflow-y-auto custom-scrollbar"> {/* Added max-height and scroll */}
+      <h3 id="product-filters-heading" className="text-md font-semibold text-gray-700 mb-3 border-b pb-2 sticky top-0 bg-white z-10">Filters</h3>
 
       {/* Location Type Filter Section */}
-      <fieldset className="border-none p-0 m-0 mb-4 pb-3 border-b border-gray-200">
+      <fieldset id="location-type-fieldset" className="border-none p-0 m-0 mb-4 pb-3 border-b border-gray-200">
         <legend className="text-sm font-medium text-gray-600 mb-2">Location Types</legend>
         <div className="space-y-1.5">
           {ENABLED_LOCATION_TYPES.map((locationType) => (
@@ -66,6 +66,7 @@ const ProductFilters: React.FC = () => {
               className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
             >
               <input
+                id={`location-type-checkbox-${locationType}`}
                 type="checkbox"
                 checked={activeLocationTypes.has(locationType)}
                 onChange={() => toggleLocationType(locationType)}
@@ -79,7 +80,7 @@ const ProductFilters: React.FC = () => {
       </fieldset>
 
       {/* Product Filters Section */}
-      <div className="space-y-3">
+      <div id="product-filters-list" className="space-y-3">
         {/* Render categories in the specified order, then any remaining categories */}
         {[...categoryOrder, ...Object.keys(filtersGroupedByCategory).filter(cat => !categoryOrder.includes(cat))]
           .filter(category => filtersGroupedByCategory[category] && filtersGroupedByCategory[category].length > 0) // Only render if category exists and has items
@@ -97,6 +98,7 @@ const ProductFilters: React.FC = () => {
                       className="flex items-center space-x-2 cursor-pointer text-sm text-gray-700 hover:text-blue-600 p-1 rounded hover:bg-gray-100 transition-colors"
                     >
                       <input
+                        id={`product-filter-checkbox-${filter.id}`}
                         type="checkbox"
                         checked={!!activeProductFilters[filter.id]}
                         onChange={() => handleFilterChange(filter.id)}
@@ -131,6 +133,7 @@ const ProductFilters: React.FC = () => {
         // Show "Back to Homepage" button when NOT in default state
         return !isDefaultState && (
           <button
+            id="clear-all-filters-button"
             type="button"
             onClick={clearAllFilters}
             className="mt-3 text-xs text-blue-600 hover:text-blue-800 hover:underline w-full text-left pt-2 border-t border-gray-200"

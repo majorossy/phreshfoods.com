@@ -111,6 +111,7 @@ const MobileBottomSheet: React.FC = () => {
       {/* Drag Handle - Keyboard accessible */}
       <div className="flex justify-center pt-2 pb-1">
         <div
+          id="bottom-sheet-drag-handle"
           className="drag-handle w-10 h-1 bg-gray-300 dark:bg-gray-600 rounded-full cursor-pointer focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
           aria-label={isExpanded ? 'Press Enter to collapse panel, or use arrow keys to resize' : 'Press Enter to expand panel, or use arrow keys to resize'}
           aria-expanded={isExpanded}

@@ -84,6 +84,7 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
 
   return (
     <article
+      id={`shop-card-mobile-${shop.slug || shop.GoogleProfileID}`}
       className={`
         shop-card-mobile
         bg-white dark:bg-gray-800
@@ -111,6 +112,7 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
         <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
           {/* Location Type Badge */}
           <span
+            id={`shop-mobile-type-badge-${shop.slug || shop.GoogleProfileID}`}
             className={`
               text-[10px] font-semibold px-2 py-0.5 rounded
               ${typeColors.bg} ${typeColors.text}
@@ -127,7 +129,7 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
         {/* Distance Badge (top right) */}
         {cardData.distance && (
           <div className="absolute top-2 right-2 z-10">
-            <span className="text-[10px] text-white bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm font-medium">
+            <span id={`shop-mobile-distance-${shop.slug || shop.GoogleProfileID}`} className="text-[10px] text-white bg-black/60 px-2 py-0.5 rounded backdrop-blur-sm font-medium">
               {cardData.distance}
             </span>
           </div>
@@ -138,20 +140,20 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
       <div className="p-3">
         {/* Header: Name + Rating */}
         <div className="flex items-start justify-between gap-2 mb-1.5">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 flex-1">
+          <h3 id={`shop-mobile-name-${shop.slug || shop.GoogleProfileID}`} className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1 flex-1">
             {cardData.name}
           </h3>
 
           {/* Rating */}
           {tier !== 'minimal' && cardData.hasRating && (
-            <div className="flex items-center gap-0.5 flex-shrink-0">
+            <div id={`shop-mobile-rating-${shop.slug || shop.GoogleProfileID}`} className="flex items-center gap-0.5 flex-shrink-0">
               <svg className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+              <span id={`shop-mobile-rating-value-${shop.slug || shop.GoogleProfileID}`} className="text-xs font-medium text-gray-700 dark:text-gray-300">
                 {cardData.rating.toFixed(1)}
               </span>
-              <span className="text-[10px] text-gray-500 dark:text-gray-400">
+              <span id={`shop-mobile-rating-count-${shop.slug || shop.GoogleProfileID}`} className="text-[10px] text-gray-500 dark:text-gray-400">
                 ({cardData.ratingCount})
               </span>
             </div>
@@ -160,7 +162,7 @@ const ShopCardMobile: React.FC<ShopCardMobileProps> = ({
 
         {/* Location (compact & expanded tiers) */}
         {tier !== 'minimal' && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
+          <p id={`shop-mobile-location-${shop.slug || shop.GoogleProfileID}`} className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
             {cardData.city || cardData.address}
           </p>
         )}

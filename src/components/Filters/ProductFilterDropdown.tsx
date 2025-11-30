@@ -86,6 +86,7 @@ const ProductFilterDropdown: React.FC<ProductFilterDropdownProps> = ({
 
   return (
     <div
+      id={`product-filter-dropdown-${locationType}`}
       ref={dropdownRef}
       className="absolute top-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg z-50 min-w-[420px]"
       role="dialog"
@@ -105,6 +106,7 @@ const ProductFilterDropdown: React.FC<ProductFilterDropdownProps> = ({
       {/* Footer with close button */}
       <div className="px-3 py-2 border-t border-gray-200 bg-gray-50 rounded-b-lg flex justify-end">
         <button
+          id={`product-filter-close-${locationType}`}
           onClick={onClose}
           className="text-xs text-gray-600 hover:text-gray-800 font-medium"
         >

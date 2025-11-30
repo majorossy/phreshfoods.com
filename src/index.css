@@ -76,7 +76,7 @@ main {
     width: 100%;
 }
 
-#listingsPanel {
+#card-listings {
     background:transparent; /* This is often overridden by Tailwind utility in the component itself */
     position: absolute;
     top: 0;
@@ -87,7 +87,7 @@ main {
     overflow-y: auto;
 }
 @media (max-width: 767px) {
-    #listingsPanel {
+    #card-listings {
         width: 100%;
     }
 }
@@ -140,34 +140,34 @@ main {
 }
 
 /* Shop Details Overlay - slides from right */
-#detailsOverlayShop {
+#shop-details {
     right: 0;
     transform: translateX(100%); /* Initial off-screen position */
 }
-#detailsOverlayShop.is-open {
+#shop-details.is-open {
     transform: translateX(0%);
 }
 /* When collapsed manually, slide back out */
-#detailsOverlayShop.is-open.is-collapsed {
+#shop-details.is-open.is-collapsed {
     transform: translateX(100%);
 }
-@media (min-width: 768px) { #detailsOverlayShop { width: 42%; } }
-@media (max-width: 767px) { #detailsOverlayShop { width: 100%; } }
+@media (min-width: 768px) { #shop-details { width: 42%; } }
+@media (max-width: 767px) { #shop-details { width: 100%; } }
 
-/* Social Overlay - slides from left */
-#detailsOverlaySocial {
+/* Shop Socials Overlay - slides from left */
+#shop-socials {
     left: 0;
     transform: translateX(-100%); /* Initial off-screen position */
 }
-#detailsOverlaySocial.is-open {
+#shop-socials.is-open {
     transform: translateX(0%);
 }
 /* When collapsed manually, slide back out */
-#detailsOverlaySocial.is-open.is-collapsed {
+#shop-socials.is-open.is-collapsed {
     transform: translateX(-100%);
 }
-@media (min-width: 768px) { #detailsOverlaySocial { width: 30%; } }
-@media (max-width: 767px) { #detailsOverlaySocial { width: 100%; } }
+@media (min-width: 768px) { #shop-socials { width: 30%; } }
+@media (max-width: 767px) { #shop-socials { width: 100%; } }
 
 
 .overlay-close-button {
@@ -189,13 +189,13 @@ main {
     }
 }
 
-/* --- Overlay Content Structure for Social Overlay (if still needed for height) --- */
+/* --- Overlay Content Structure for Shop Socials (if still needed for height) --- */
 /* These can often be replaced by flex utilities in the component JSX */
-#detailsOverlaySocial > div:nth-child(2) { /* Header/Tabs container */
+#shop-socials > div:nth-child(2) { /* Header/Tabs container */
     padding: 1rem 1rem 0 1rem; /* Replicate with Tailwind: px-4 pt-4 */
     flex-shrink: 0;
 }
-#detailsOverlaySocial > div:nth-child(3) { /* Content container */
+#shop-socials > div:nth-child(3) { /* Content container */
     flex-grow: 1;
     overflow: hidden;
     padding: 0 1rem 1rem 1rem; /* Replicate with Tailwind: px-4 pb-4 and handle top padding by inner elements */
@@ -796,14 +796,14 @@ body.modal-active {
     will-change: transform, opacity;
   }
 
-  /* Prevent ListingsPanel from showing on mobile */
-  #listingsPanel {
+  /* Prevent CardListings from showing on mobile */
+  #card-listings {
     display: none !important;
   }
 
   /* Mobile Overlay Fullscreen (Phase 4) */
-  #detailsOverlayShop,
-  #detailsOverlaySocial {
+  #shop-details,
+  #shop-socials {
     width: 100% !important;
     height: 100% !important;
     top: 0 !important;
@@ -814,8 +814,8 @@ body.modal-active {
     transform: translateY(100%) !important;
   }
 
-  #detailsOverlayShop.is-open,
-  #detailsOverlaySocial.is-open {
+  #shop-details.is-open,
+  #shop-socials.is-open {
     transform: translateY(0%) !important;
   }
 

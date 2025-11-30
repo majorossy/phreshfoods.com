@@ -105,10 +105,10 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
       ];
 
       return (
-        <div className="p-3">
+        <div id="product-icon-grid-filter" className="p-3">
           {sortedCategories.map((category) => (
             <div key={category} className="mb-4 last:mb-0">
-              <h3 className="text-sm font-semibold text-gray-700 mb-2 capitalize border-b border-gray-200 pb-1">
+              <h3 id={`product-filter-category-${category.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-semibold text-gray-700 mb-2 capitalize border-b border-gray-200 pb-1">
                 {category}
               </h3>
               <div className="grid grid-cols-6 gap-1.5">
@@ -147,7 +147,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
 
     // Simple grid without categories (fallback)
     return (
-      <div className="p-2">
+      <div id="product-icon-grid-simple" className="p-2">
         <div className="grid grid-cols-6 gap-1.5">
           {Object.entries(products).map(([productId, config]: [string, ProductConfig]) => {
             const isActive = !!activeFilters[productId];
@@ -197,7 +197,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
       const grandTotalCount = allCategorizedProducts.length;
 
       return (
-        <div className="p-2 pb-1 border-b border-gray-200">
+        <div id="product-icon-grid-compact" className="p-2 pb-1 border-b border-gray-200">
           {showSummary && (
             <div className="mb-2 text-xs text-gray-600">
               {totalAvailableCount} of {grandTotalCount} available
@@ -208,7 +208,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
             .filter(category => allProducts[category]?.length > 0)
             .map((category) => (
               <div key={category} className="mb-3 last:mb-0">
-                <h4 className="text-xs font-semibold text-gray-700 mb-1.5 capitalize">
+                <h4 id={`product-compact-category-${category.toLowerCase().replace(/\s+/g, '-')}`} className="text-xs font-semibold text-gray-700 mb-1.5 capitalize">
                   {category}
                 </h4>
                 <div className="grid grid-cols-6 gap-1">
@@ -291,7 +291,7 @@ const ProductIconGrid: React.FC<ProductIconGridProps> = ({
             .filter(category => allProducts[category]?.length > 0)
             .map((category) => (
               <div key={category}>
-                <h3 className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 capitalize border-b border-gray-200 dark:border-gray-700 pb-0.5">
+                <h3 id={`product-detail-category-${category.toLowerCase().replace(/\s+/g, '-')}`} className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 capitalize border-b border-gray-200 dark:border-gray-700 pb-0.5">
                   {category}
                 </h3>
                 <div className="flex flex-wrap gap-1.5">

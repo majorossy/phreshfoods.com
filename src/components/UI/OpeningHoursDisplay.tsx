@@ -82,15 +82,15 @@ const OpeningHoursDisplay: React.FC<OpeningHoursDisplayProps> = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div id="opening-hours-display" className="space-y-2">
       {overallStatusText && (
-        <p className={`text-center text-sm sm:text-md font-medium mb-2 ${overallStatusClass}`}>
+        <p id="opening-hours-status" className={`text-center text-sm sm:text-md font-medium mb-2 ${overallStatusClass}`}>
           {overallStatusText}
         </p>
       )}
 
       {hasWeekdayText && processedHours.length > 0 ? (
-        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-gray-200 dark:bg-gray-700 shadow-sm">
+        <div id="opening-hours-grid" className="grid grid-cols-7 gap-px overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-gray-200 dark:bg-gray-700 shadow-sm">
           {processedHours.map((dayInfo) => (
             <div
               key={dayInfo.fullName}
@@ -99,13 +99,16 @@ const OpeningHoursDisplay: React.FC<OpeningHoursDisplayProps> = ({
               `}
             >
               <span
-                className={`day-name font-semibold text-[0.6rem] sm:text-[0.65rem] uppercase mb-0.5 
+                id={`hours-day-name-${dayInfo.shortName.toLowerCase()}`}
+                className={`day-name font-semibold text-[0.6rem] sm:text-[0.65rem] uppercase mb-0.5
                   ${dayInfo.isToday ? 'text-blue-700 dark:text-blue-300' : 'text-gray-500 dark:text-gray-300'}
                 `}
               >
                 {dayInfo.shortName}
               </span>
-              <span className={`day-hours text-[0.55rem] sm:text-[0.65rem] leading-tight whitespace-pre-line text-center break-words
+              <span
+                id={`hours-day-times-${dayInfo.shortName.toLowerCase()}`}
+                className={`day-hours text-[0.55rem] sm:text-[0.65rem] leading-tight whitespace-pre-line text-center break-words
                 ${dayInfo.hours.toLowerCase() === 'closed' ? 'text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-gray-200'}
               `}>
                 {/* Replace multiple hyphen variants for consistent line break */}
@@ -117,7 +120,7 @@ const OpeningHoursDisplay: React.FC<OpeningHoursDisplayProps> = ({
       ) : (
         // Only show this if there was no specific status text and no weekday_text
         (!overallStatusText || overallStatusText === 'Hours status unavailable') && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 text-center italic py-2">Weekly hours not available.</p>
+          <p id="hours-unavailable-message" className="text-xs text-gray-500 dark:text-gray-400 text-center italic py-2">Weekly hours not available.</p>
         )
       )}
     </div>

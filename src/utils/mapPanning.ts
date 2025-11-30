@@ -21,8 +21,8 @@ export async function waitForOverlaysToRender(maxWaitMs: number = OVERLAY_RENDER
 
     const checkOverlays = () => {
       // Check if overlay elements exist and have valid widths
-      const shopOverlay = document.getElementById('detailsOverlayShop');
-      const socialOverlay = document.getElementById('detailsOverlaySocial');
+      const shopOverlay = document.getElementById('shop-details');
+      const socialOverlay = document.getElementById('shop-socials');
 
       const shopWidth = shopOverlay?.getBoundingClientRect().width || 0;
       const socialWidth = socialOverlay?.getBoundingClientRect().width || 0;
@@ -97,8 +97,8 @@ export function extractLatLngFromPlace(place: AutocompletePlace | null | undefin
  * - Y offset: Shifts map DOWN to center in visible area below header (positive = shift down)
  */
 export function calculatePanelOffset(
-  isShopOverlayOpen: boolean,
-  isSocialOverlayOpen: boolean
+  isShopDetailsOpen: boolean,
+  isShopSocialsOpen: boolean
 ): { x: number; y: number } {
   // Only apply offset on desktop/tablet (overlays are full-screen on mobile)
   if (window.innerWidth < DESKTOP_BREAKPOINT_PX) {
@@ -117,22 +117,22 @@ export function calculatePanelOffset(
     headerHeight = header.getBoundingClientRect().height;
   }
 
-  // Get right panel width (ShopDetailsOverlay or ListingsPanel)
-  if (isShopOverlayOpen) {
-    const shopOverlay = document.getElementById('detailsOverlayShop');
+  // Get right panel width (ShopDetails or CardListings)
+  if (isShopDetailsOpen) {
+    const shopOverlay = document.getElementById('shop-details');
     if (shopOverlay) {
       rightPanelWidth = shopOverlay.getBoundingClientRect().width;
     }
   } else {
-    const listingsPanel = document.getElementById('listingsPanel');
+    const listingsPanel = document.getElementById('card-listings');
     if (listingsPanel) {
       rightPanelWidth = listingsPanel.getBoundingClientRect().width;
     }
   }
 
-  // Get left panel width (SocialOverlay, only when both overlays open)
-  if (isSocialOverlayOpen) {
-    const socialOverlay = document.getElementById('detailsOverlaySocial');
+  // Get left panel width (ShopSocials, only when both overlays open)
+  if (isShopSocialsOpen) {
+    const socialOverlay = document.getElementById('shop-socials');
     if (socialOverlay) {
       leftPanelWidth = socialOverlay.getBoundingClientRect().width;
     }
@@ -224,8 +224,8 @@ export function convertPixelOffsetToLatLng(
 export interface PanToWithOffsetsOptions {
   map: google.maps.Map;
   targetLatLng: google.maps.LatLng;
-  isShopOverlayOpen: boolean;
-  isSocialOverlayOpen: boolean;
+  isShopDetailsOpen: boolean;
+  isShopSocialsOpen: boolean;
   includeInfoWindowOffset?: boolean; // Set true when showing shop info window
   bounds?: google.maps.LatLngBounds; // If provided, uses fitBounds instead of panTo
 }
@@ -234,14 +234,14 @@ export function panToWithOffsets(options: PanToWithOffsetsOptions): void {
   const {
     map,
     targetLatLng,
-    isShopOverlayOpen,
-    isSocialOverlayOpen,
+    isShopDetailsOpen,
+    isShopSocialsOpen,
     includeInfoWindowOffset = false,
     bounds,
   } = options;
 
   // Calculate panel and header offsets (horizontal and vertical)
-  const { x: panelOffsetX, y: panelOffsetY } = calculatePanelOffset(isShopOverlayOpen, isSocialOverlayOpen);
+  const { x: panelOffsetX, y: panelOffsetY } = calculatePanelOffset(isShopDetailsOpen, isShopSocialsOpen);
 
   if (bounds) {
     // For search radius: use asymmetric padding instead of center adjustment

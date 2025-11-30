@@ -178,12 +178,14 @@ const QuickActionBar: React.FC<QuickActionBarProps> = ({
 
   return (
     <div
+      id={`quick-action-bar-${shop.slug || shop.GoogleProfileID}`}
       className={`quick-action-bar flex items-center justify-around gap-1 ${className}`}
       role="toolbar"
       aria-label="Shop actions"
     >
       {visibleActions.map((action) => (
         <button
+          id={`action-${action.id}-${shop.slug || shop.GoogleProfileID}`}
           key={action.id}
           onClick={(e) => {
             e.stopPropagation();

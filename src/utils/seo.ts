@@ -44,7 +44,7 @@ export function getHomepageSEO(): SEOConfig {
 /**
  * Generate SEO meta tags for individual shop pages
  */
-export function getFarmStandSEO(shop: Shop): SEOConfig {
+export function getShopSEO(shop: Shop): SEOConfig {
   const baseUrl = window.location.origin;
   const farmName = shop.placeDetails?.name || shop.Name || 'Shop';
   const address = shop.placeDetails?.formatted_address || shop.Address || '';

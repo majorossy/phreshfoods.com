@@ -77,7 +77,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
       // Default fallback UI
       return (
-        <div className="flex items-center justify-center min-h-[200px] p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg" role="alert" aria-live="assertive">
+        <div id="error-boundary-fallback" className="flex items-center justify-center min-h-[200px] p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg" role="alert" aria-live="assertive">
           <div className="text-center max-w-md">
             <div className="mb-4">
               <svg
@@ -96,15 +96,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               </svg>
             </div>
 
-            <h2 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">
+            <h2 id="error-boundary-heading" className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">
               Something went wrong
             </h2>
 
-            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+            <p id="error-boundary-message" className="text-sm text-red-600 dark:text-red-400 mb-4">
               We encountered an error loading this section. Please try refreshing the page.
             </p>
 
             <button
+              id="error-boundary-retry"
               onClick={this.handleReset}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
             >
@@ -113,16 +114,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
             {/* Show error details in development */}
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <details className="mt-6 text-left">
-                <summary className="text-sm font-medium text-red-700 dark:text-red-300 cursor-pointer hover:underline">
+              <details id="error-boundary-details" className="mt-6 text-left">
+                <summary id="error-boundary-details-summary" className="text-sm font-medium text-red-700 dark:text-red-300 cursor-pointer hover:underline">
                   Error Details (Development Only)
                 </summary>
-                <pre className="mt-2 p-3 bg-red-100 dark:bg-red-900/40 rounded text-xs overflow-auto max-h-48 text-red-900 dark:text-red-200">
-                  <div className="font-semibold mb-2">Error:</div>
+                <pre id="error-boundary-stack-trace" className="mt-2 p-3 bg-red-100 dark:bg-red-900/40 rounded text-xs overflow-auto max-h-48 text-red-900 dark:text-red-200">
+                  <div id="error-boundary-error-label" className="font-semibold mb-2">Error:</div>
                   {this.state.error.toString()}
                   {this.state.errorInfo && (
                     <>
-                      <div className="font-semibold mt-3 mb-2">Component Stack:</div>
+                      <div id="error-boundary-stack-label" className="font-semibold mt-3 mb-2">Component Stack:</div>
                       {this.state.errorInfo.componentStack}
                     </>
                   )}

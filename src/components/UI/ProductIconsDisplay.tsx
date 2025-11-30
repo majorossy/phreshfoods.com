@@ -10,7 +10,7 @@ interface ProductIconsDisplayProps {
 
 const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
   if (!shop) {
-    return <p className="text-sm text-gray-500 text-center p-2 col-span-full">Product data unavailable.</p>;
+    return <p id="product-data-unavailable" className="text-sm text-gray-500 text-center p-2 col-span-full">Product data unavailable.</p>;
   }
 
   // Group products by category based on PRODUCT_ICONS_CONFIG
@@ -34,15 +34,15 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
   let atLeastOneCategoryRendered = false;
 
   return (
-    <div className="space-y-4">
+    <div id="product-icons-display" className="space-y-4">
       {CATEGORY_DISPLAY_ORDER.map(categoryName => {
         const productsInThisCategory = productsByCategory[categoryName];
 
         if (productsInThisCategory && productsInThisCategory.length > 0) {
           atLeastOneCategoryRendered = true;
           return (
-            <div key={categoryName} className="category-section">
-              <h4 className="text-sm font-semibold text-gray-700 mb-1.5 border-b border-gray-200 pb-1">
+            <div key={categoryName} id={`product-category-${categoryName.toLowerCase().replace(/\s+/g, '-')}`} className="category-section">
+              <h4 id={`product-category-heading-${categoryName.toLowerCase().replace(/\s+/g, '-')}`} className="text-sm font-semibold text-gray-700 mb-1.5 border-b border-gray-200 pb-1">
                 {escapeHTMLSafe(categoryName)}
               </h4>
               <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-4 lg:grid-cols-5 gap-x-2 gap-y-3"> {/* Adjusted md cols */}
@@ -62,7 +62,7 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
                   const altText = `${escapeHTMLSafe(prodConfig.name)}${isAvailable ? '' : ' (not available)'}`;
 
                   return (
-                    <div key={prodConfig.key} className={itemClasses} title={altText}>
+                    <div key={prodConfig.key} id={`product-item-${prodConfig.key}`} className={itemClasses} title={altText}>
                     <img
                       src={`/images/icons/${iconFileToUse}`}
                       alt={altText}
@@ -81,7 +81,7 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
                           }
                         }}
                       />
-                    <span className="text-[0.65rem] sm:text-[0.7rem] font-medium text-gray-600 leading-tight"> {/* Slightly smaller text too */}
+                    <span id={`product-name-${prodConfig.key}`} className="text-[0.65rem] sm:text-[0.7rem] font-medium text-gray-600 leading-tight"> {/* Slightly smaller text too */}
                       {escapeHTMLSafe(prodConfig.name)}
                     </span>
                     </div>
@@ -94,7 +94,7 @@ const ProductIconsDisplay: React.FC<ProductIconsDisplayProps> = ({ shop }) => {
         return null; // No products in this category or category not found
       })}
       {!atLeastOneCategoryRendered && (
-        <p className="text-sm text-gray-500 text-center p-2">No product categories configured for display.</p>
+        <p id="no-product-categories" className="text-sm text-gray-500 text-center p-2">No product categories configured for display.</p>
       )}
     </div>
   );
