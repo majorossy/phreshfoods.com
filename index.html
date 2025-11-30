@@ -27,12 +27,11 @@
     <meta name="author" content="phind.us" />
 
     <!-- Open Graph / Facebook -->
-    <!-- TODO: Create og-image.jpg (1200x630px, <200KB) and og-image.webp (<100KB) for social sharing -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://phind.us/" />
     <meta property="og:title" content="phind.us - Support Local Maine Businesses" />
     <meta property="og:description" content="Find the freshest local products from farm stands, cheesemongers, fishmongers, and more near you. Search by location and discover what's available." />
-    <meta property="og:image" content="https://phind.us/images/og-image.jpg" />
+    <meta property="og:image" content="https://phind.us/images/logo-600.webp" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="phind.us" />
 
@@ -41,7 +40,7 @@
     <meta property="twitter:url" content="https://phind.us/" />
     <meta property="twitter:title" content="phind.us - Support Local Maine Businesses" />
     <meta property="twitter:description" content="Find the freshest local products from farm stands, cheesemongers, fishmongers, and more near you. Search by location and discover what's available." />
-    <meta property="twitter:image" content="https://phind.us/images/og-image.jpg" />
+    <meta property="twitter:image" content="https://phind.us/images/logo-600.webp" />
 
     <!-- Additional SEO Meta Tags -->
     <meta name="robots" content="index, follow" />
@@ -113,8 +112,13 @@
             <p>Discovering fresh local products near you</p>
             <div class="simple-loader"></div>
         </div>
-    </noscript> <!-- The "noscript" tag itself is for when JS is off -->
-    <!-- Note: The content *inside* #root before React loads is what the user sees briefly. The noscript tag is for total JS disablement. -->
+    </div>
+    <noscript>
+        <div class="initial-loader">
+            <h1>JavaScript Required</h1>
+            <p>Please enable JavaScript to use phind.us</p>
+        </div>
+    </noscript>
 
 
     <!--

@@ -1,6 +1,7 @@
 {
-  "name": "phind.us",
+  "name": "phind.us - Find Local Maine Businesses",
   "short_name": "phind.us",
+  "description": "Find local farm stands, cheesemongers, fishmongers, butchers, and antique shops across Maine",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +16,9 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
+  "theme_color": "#1a6a41",
   "background_color": "#ffffff",
-  "display": "standalone"
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/"
 }
