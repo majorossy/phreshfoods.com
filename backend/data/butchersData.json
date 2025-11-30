@@ -1,0 +1,1162 @@
+[
+  {
+    "type": "butcher",
+    "Name": "Farmers' Gate Market",
+    "Address": "1313 ME-106, Leeds, ME 04263, USA",
+    "City": "Leeds",
+    "Zip": "04263",
+    "Rating": "N/A",
+    "Phone": "(207) 933-3300",
+    "Website": "https://www.farmersgatemarket.com/",
+    "GoogleProfileID": "ChIJO5A2OhgYskwRMmbT1171Sgs",
+    "slug": "farmers-gate-market",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.farmersgatemarket.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.3045154,
+    "lng": -70.118889,
+    "placeDetails": {
+      "place_id": "ChIJO5A2OhgYskwRMmbT1171Sgs",
+      "name": "1313 ME-106",
+      "formatted_address": "1313 ME-106, Leeds, ME 04263, USA",
+      "url": "https://maps.google.com/?cid=813732470390482482",
+      "geometry": {
+        "location": {
+          "lat": 44.3045154,
+          "lng": -70.118889
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.30585728027179,
+            "lng": -70.11763277680163
+          },
+          "southwest": {
+            "lat": 44.3031593196888,
+            "lng": -70.12033073738463
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Barber Bros. Meat + Provisions",
+    "Address": "101 Ocean St, South Portland, ME 04106, USA",
+    "City": "ERROR",
+    "Zip": "ERROR",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "https://www.barberbrosmaine.com/",
+    "GoogleProfileID": "ERROR: Request failed with status code 500",
+    "slug": "barber-bros-meat-provisions",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.barberbrosmaine.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.638585,
+    "lng": -70.2534503,
+    "placeDetails": {
+      "place_id": "ChIJF9ozqYKeskwRasNth9PDFhg",
+      "name": "101 Ocean St",
+      "formatted_address": "101 Ocean St, South Portland, ME 04106, USA",
+      "url": "https://maps.google.com/?cid=1735790019675538282",
+      "geometry": {
+        "location": {
+          "lat": 43.638585,
+          "lng": -70.2534503
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.63995045326713,
+            "lng": -70.25207352338765
+          },
+          "southwest": {
+            "lat": 43.63725249268413,
+            "lng": -70.25477148397066
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Pat's Meat Mart",
+    "Address": "484 Stevens Ave, Portland, ME 04103, USA",
+    "City": "Portland",
+    "Zip": "04103",
+    "Rating": "N/A",
+    "Phone": "(207) 772-3961",
+    "Website": "https://www.patsmeatmart.com/",
+    "GoogleProfileID": "ChIJjarXBZibskwRk8ndHWS8Hks",
+    "slug": "pats-meat-mart",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.patsmeatmart.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.6750468,
+    "lng": -70.29529230000001,
+    "placeDetails": {
+      "place_id": "ChIJjarXBZibskwRk8ndHWS8Hks",
+      "name": "484 Stevens Ave",
+      "formatted_address": "484 Stevens Ave, Portland, ME 04103, USA",
+      "url": "https://maps.google.com/?cid=5412970940329740691",
+      "geometry": {
+        "location": {
+          "lat": 43.6750468,
+          "lng": -70.29529230000001
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.67639367450803,
+            "lng": -70.2939035768251
+          },
+          "southwest": {
+            "lat": 43.67369571392503,
+            "lng": -70.29660153740811
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Maine Meat",
+    "Address": "7 Wallingford Square Ste 104, Kittery, ME 03904, USA",
+    "City": "Kittery",
+    "Zip": "03904",
+    "Rating": "N/A",
+    "Phone": "(207) 703-0219",
+    "Website": "https://memeat.com/",
+    "GoogleProfileID": "ChIJ80_f1R6_4okReLKUiiPB4Wc",
+    "slug": "maine-meat",
+    "XHandle": "https://www.facebook.com/mainemeat/",
+    "FacebookPageID": "mainemeat",
+    "InstagramUsername": "https://www.instagram.com/mainemeat/",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://memeat.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.085819,
+    "lng": -70.7437228,
+    "placeDetails": {
+      "place_id": "ChIJ80_f1R6_4okReLKUiiPB4Wc",
+      "name": "7 Wallingford Square Ste 104",
+      "formatted_address": "7 Wallingford Square Ste 104, Kittery, ME 03904, USA",
+      "url": "https://maps.google.com/?cid=7485476414059491960",
+      "geometry": {
+        "location": {
+          "lat": 43.085819,
+          "lng": -70.7437228
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.0871738302915,
+            "lng": -70.7424458197085
+          },
+          "southwest": {
+            "lat": 43.0844758697085,
+            "lng": -70.7451437802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Emery's Meat & Produce",
+    "Address": "262 State St, Brewer, ME 04412, USA",
+    "City": "Brewer",
+    "Zip": "04412",
+    "Rating": "N/A",
+    "Phone": "(207) 922-2673",
+    "Website": "https://emerysmeatbrewer.com/",
+    "GoogleProfileID": "ChIJ5w5BQZdMrkwR467xew7MVj0",
+    "slug": "emerys-meat-produce",
+    "XHandle": "https://www.facebook.com/EmerysMeatAndProduceBrewer/",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://emerysmeatbrewer.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.7864033,
+    "lng": -68.7519533,
+    "placeDetails": {
+      "place_id": "ChIJ5w5BQZdMrkwR467xew7MVj0",
+      "name": "262 State St",
+      "formatted_address": "262 State St, Brewer, ME 04412, USA",
+      "url": "https://maps.google.com/?cid=4419944446891765475",
+      "geometry": {
+        "location": {
+          "lat": 44.7864033,
+          "lng": -68.7519533
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.7877465302915,
+            "lng": -68.75064851970849
+          },
+          "southwest": {
+            "lat": 44.78504856970851,
+            "lng": -68.7533464802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Johnson's Market & Butcher Shop",
+    "Address": "459 U.S. Rte 1, York, ME 03909, USA",
+    "City": "York",
+    "Zip": "03909",
+    "Rating": "N/A",
+    "Phone": "(207) 606-0019",
+    "Website": "https://www.johnsonsmarkets.com/",
+    "GoogleProfileID": "ChIJW_esDlW64okREDw0sNAxlic",
+    "slug": "johnsons-market-butcher-shop",
+    "XHandle": "https://www.facebook.com/61559803116293/",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.johnsonsmarkets.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.1500609,
+    "lng": -70.66676149999999,
+    "placeDetails": {
+      "place_id": "ChIJW_esDlW64okREDw0sNAxlic",
+      "name": "459 U.S. Rte 1",
+      "formatted_address": "459 U.S. Rte 1, York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=2852522186364959760",
+      "geometry": {
+        "location": {
+          "lat": 43.1500609,
+          "lng": -70.66676149999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.15148439991096,
+            "lng": -70.66541983557232
+          },
+          "southwest": {
+            "lat": 43.14878643932796,
+            "lng": -70.66811779615533
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Southpaw Meat Market",
+    "Address": "1233 Roosevelt Trail Ste 12, Raymond, ME 04071, USA",
+    "City": "Raymond",
+    "Zip": "04071",
+    "Rating": "N/A",
+    "Phone": "(207) 655-2646",
+    "Website": "https://southpawmarket.com/",
+    "GoogleProfileID": "ChIJU9uDoDn1skwRIR_5RpFzEVc",
+    "slug": "southpaw-meat-market",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://southpawmarket.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.8803777,
+    "lng": -70.4650956,
+    "placeDetails": {
+      "place_id": "ChIJU9uDoDn1skwRIR_5RpFzEVc",
+      "name": "1233 Roosevelt Trail Ste 12",
+      "formatted_address": "1233 Roosevelt Trail Ste 12, Raymond, ME 04071, USA",
+      "url": "https://maps.google.com/?cid=6273922823701995297",
+      "geometry": {
+        "location": {
+          "lat": 43.8803777,
+          "lng": -70.4650956
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.88172138029149,
+            "lng": -70.4639167697085
+          },
+          "southwest": {
+            "lat": 43.8790234197085,
+            "lng": -70.46661473029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Southpaw Packing (Windham Butcher Shop)",
+    "Address": "247 Varney Mill Rd, Windham, ME 04062, USA",
+    "City": "Windham",
+    "Zip": "04062",
+    "Rating": "N/A",
+    "Phone": "(207) 892-4203",
+    "Website": "https://southpawpacking.com/",
+    "GoogleProfileID": "ChIJz-G6lL6LskwRdQRWjkib_CU",
+    "slug": "southpaw-packing-windham-butcher-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://southpawpacking.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 43.8380853,
+    "lng": -70.4017506,
+    "placeDetails": {
+      "place_id": "ChIJz-G6lL6LskwRdQRWjkib_CU",
+      "name": "247 Varney Mill Rd",
+      "formatted_address": "247 Varney Mill Rd, Windham, ME 04062, USA",
+      "url": "https://maps.google.com/?cid=2737233409462371445",
+      "geometry": {
+        "location": {
+          "lat": 43.8380853,
+          "lng": -70.4017506
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.8394155660882,
+            "lng": -70.40038986393533
+          },
+          "southwest": {
+            "lat": 43.8367176055052,
+            "lng": -70.40308782451835
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Watson's Custom Butcher Shop",
+    "Address": "61 Carter Rd, Etna, ME 04434, USA",
+    "City": "Etna",
+    "Zip": "04434",
+    "Rating": "N/A",
+    "Phone": "(207) 269-4356",
+    "Website": "http://watsons-custom-butcher-shop-andrew-laurie.hub.biz/",
+    "GoogleProfileID": "ChIJS6p3-votrkwRQKiJJwD6AF4",
+    "slug": "watsons-custom-butcher-shop",
+    "XHandle": "https://www.facebook.com/p/Watsons-Custom-Butcher-Shop-100063662615489/",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.mapquest.com/us/maine/watsons-custom-butcher-shop-26455929",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.8082155,
+    "lng": -69.1062319,
+    "placeDetails": {
+      "place_id": "ChIJS6p3-votrkwRQKiJJwD6AF4",
+      "name": "61 Carter Rd",
+      "formatted_address": "61 Carter Rd, Etna, ME 04434, USA",
+      "url": "https://maps.google.com/?cid=6773688718135502912",
+      "geometry": {
+        "location": {
+          "lat": 44.8082155,
+          "lng": -69.1062319
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.80951666724413,
+            "lng": -69.10488288771889
+          },
+          "southwest": {
+            "lat": 44.80681870666113,
+            "lng": -69.1075808483019
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "B&H Meat Cutting",
+    "Address": "45 Shepherd Rd, Sidney, ME 04330, USA",
+    "City": "Sidney",
+    "Zip": "04330",
+    "Rating": "N/A",
+    "Phone": "(207) 557-3379",
+    "Website": "",
+    "GoogleProfileID": "ChIJk02kaBz5sUwRGdEC8PFa2XY",
+    "slug": "bh-meat-cutting",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.realmaine.com/member/bh-meat-cutting/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.4256708,
+    "lng": -69.7593224,
+    "placeDetails": {
+      "place_id": "ChIJk02kaBz5sUwRGdEC8PFa2XY",
+      "name": "45 Shepherd Rd",
+      "formatted_address": "45 Shepherd Rd, Sidney, ME 04330, USA",
+      "url": "https://maps.google.com/?cid=8563976161582043417",
+      "geometry": {
+        "location": {
+          "lat": 44.4256708,
+          "lng": -69.7593224
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.42693081253191,
+            "lng": -69.75797347064346
+          },
+          "southwest": {
+            "lat": 44.42423285194891,
+            "lng": -69.76067143122648
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Maple Lane Farms",
+    "Address": "222 Upper-Charleston Rd, Charleston, ME 04422, USA",
+    "City": "Charleston",
+    "Zip": "04422",
+    "Rating": "N/A",
+    "Phone": "(207) 285-3591",
+    "Website": "https://maplelanefarmsmaine.com/",
+    "GoogleProfileID": "ChIJhcGHC0nZr0wRExCk-USJRjI",
+    "slug": "maple-lane-farms",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://maplelanefarmsmaine.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 45.0886697,
+    "lng": -69.0197872,
+    "placeDetails": {
+      "place_id": "ChIJhcGHC0nZr0wRExCk-USJRjI",
+      "name": "222 Upper-Charleston Rd",
+      "formatted_address": "222 Upper-Charleston Rd, Charleston, ME 04422, USA",
+      "url": "https://maps.google.com/?cid=3622733879605202963",
+      "geometry": {
+        "location": {
+          "lat": 45.0886697,
+          "lng": -69.0197872
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.08977538029149,
+            "lng": -69.0183650697085
+          },
+          "southwest": {
+            "lat": 45.0870774197085,
+            "lng": -69.0210630302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Castonguay Meats",
+    "Address": "234 Gibbs Mill Rd, Livermore, ME 04253, USA",
+    "City": "Livermore",
+    "Zip": "4253",
+    "Rating": "N/A",
+    "Phone": "(207) 897-4989",
+    "Website": "https://castonguaymeats.com/",
+    "GoogleProfileID": "ChIJQaybsR4nskwRm0_nrucb9-o",
+    "slug": "castonguay-meats",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://castonguaymeats.com/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.4296154,
+    "lng": -70.19835200000001,
+    "placeDetails": {
+      "place_id": "ChIJQaybsR4nskwRm0_nrucb9-o",
+      "name": "234 Gibbs Mill Rd",
+      "formatted_address": "234 Gibbs Mill Rd, Livermore, ME 04253, USA",
+      "url": "https://maps.google.com/?cid=16931032006008459163",
+      "geometry": {
+        "location": {
+          "lat": 44.4296154,
+          "lng": -70.19835200000001
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.43096304103346,
+            "lng": -70.19700296346821
+          },
+          "southwest": {
+            "lat": 44.42826508045047,
+            "lng": -70.19970092405121
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "JB Meats",
+    "Address": "Sprague Mill, Greene, ME 04236, USA",
+    "City": "Greene",
+    "Zip": "4236",
+    "Rating": "N/A",
+    "Phone": "(207) 576-3375",
+    "Website": "",
+    "GoogleProfileID": "ChIJX8iMRnYUskwRe15mSGIxbpA",
+    "slug": "jb-meats",
+    "XHandle": "https://www.facebook.com/100072127963775/",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://primecuttingroom.com/stores/jb-meats-greene/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 44.1939607,
+    "lng": -70.1156084,
+    "placeDetails": {
+      "place_id": "ChIJX8iMRnYUskwRe15mSGIxbpA",
+      "name": "Sprague Mill",
+      "formatted_address": "Sprague Mill, Greene, ME 04236, USA",
+      "url": "https://maps.google.com/?cid=10407310087091019387",
+      "geometry": {
+        "location": {
+          "lat": 44.1939607,
+          "lng": -70.1156084
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.19530968029149,
+            "lng": -70.1142594197085
+          },
+          "southwest": {
+            "lat": 44.19261171970849,
+            "lng": -70.11695738029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Folsom's Custom Meat Cutting",
+    "Address": "237 U.S. Rte 1, Monticello, ME 04760, USA",
+    "City": "Monticello",
+    "Zip": "4760",
+    "Rating": "N/A",
+    "Phone": "(207) 538-2129",
+    "Website": "",
+    "GoogleProfileID": "ChIJLbUqcdy7pEwROSFcibadgOM",
+    "slug": "folsoms-custom-meat-cutting",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://umaine.edu/undiscoveredmaine/aroostook-county-maine/southern-aroostook/monticello/",
+    "products": {
+      "beef": true,
+      "pork": false,
+      "lamb": true,
+      "chicken": false,
+      "turkey": false,
+      "duck": true,
+      "veal": true,
+      "sausages": false,
+      "bacon": true,
+      "ground_meat": true,
+      "steaks": false,
+      "roasts": false
+    },
+    "lat": 46.295283,
+    "lng": -67.8399294,
+    "placeDetails": {
+      "place_id": "ChIJLbUqcdy7pEwROSFcibadgOM",
+      "name": "237 U.S. Rte 1",
+      "formatted_address": "237 U.S. Rte 1, Monticello, ME 04760, USA",
+      "url": "https://maps.google.com/?cid=16393276050942730553",
+      "geometry": {
+        "location": {
+          "lat": 46.295283,
+          "lng": -67.8399294
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 46.29662742661262,
+            "lng": -67.83910147403488
+          },
+          "southwest": {
+            "lat": 46.29392946602962,
+            "lng": -67.8417994346179
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Cedar Grove Meat Processing",
+    "Address": "85 Lake St, Stockholm, ME 04783, USA",
+    "City": "Stockholm",
+    "Zip": "4783",
+    "Rating": "N/A",
+    "Phone": "(207) 899-8257",
+    "Website": "",
+    "GoogleProfileID": "ChIJN89UkB_pvEwRWm-9ToHgjxc",
+    "slug": "cedar-grove-meat-processing",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.mapquest.com/us/maine/cedar-grove-meat-processing-464369575",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": false,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": false,
+      "roasts": true
+    },
+    "lat": 47.0378481,
+    "lng": -68.14851589999999,
+    "placeDetails": {
+      "place_id": "ChIJN89UkB_pvEwRWm-9ToHgjxc",
+      "name": "85 Lake St",
+      "formatted_address": "85 Lake St, Stockholm, ME 04783, USA",
+      "url": "https://maps.google.com/?cid=1697822430518407002",
+      "geometry": {
+        "location": {
+          "lat": 47.0378481,
+          "lng": -68.14851589999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 47.03918597656696,
+            "lng": -68.14715766790108
+          },
+          "southwest": {
+            "lat": 47.03648801598396,
+            "lng": -68.14985562848409
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Kevin's Custom Cuts",
+    "Address": "23 Aspen Rd, Madawaska, ME 04756, USA",
+    "City": "Madawaska",
+    "Zip": "4756",
+    "Rating": "N/A",
+    "Phone": "(207) 728-3561",
+    "Website": "",
+    "GoogleProfileID": "ChIJk1XNOFcAvUwR1d2Bxy5mMsM",
+    "slug": "kevins-custom-cuts",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.mapquest.com/us/maine/kevins-custom-cuts-785521353",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": true,
+      "roasts": true
+    },
+    "lat": 47.3097319,
+    "lng": -68.2845282,
+    "placeDetails": {
+      "place_id": "ChIJk1XNOFcAvUwR1d2Bxy5mMsM",
+      "name": "23 Aspen Rd",
+      "formatted_address": "23 Aspen Rd, Madawaska, ME 04756, USA",
+      "url": "https://maps.google.com/?cid=14065416937333186005",
+      "geometry": {
+        "location": {
+          "lat": 47.3097319,
+          "lng": -68.2845282
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 47.31114028029149,
+            "lng": -68.28332446970849
+          },
+          "southwest": {
+            "lat": 47.30844231970849,
+            "lng": -68.2860224302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Hemlock Ridge Meat Processing & Smokehouse",
+    "Address": "715 Starks Rd, New Sharon, ME 04955, USA",
+    "City": "New Sharon",
+    "Zip": "4955",
+    "Rating": "N/A",
+    "Phone": "(207) 212-4028",
+    "Website": "",
+    "GoogleProfileID": "ChIJ2RfQORSUsUwRIgq1RNzsO_8",
+    "slug": "hemlock-ridge-meat-processing-smokehouse",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": true,
+      "roasts": true
+    },
+    "lat": 44.668511,
+    "lng": -69.9690138,
+    "placeDetails": {
+      "place_id": "ChIJ2RfQORSUsUwRIgq1RNzsO_8",
+      "name": "715 Starks Rd",
+      "formatted_address": "715 Starks Rd, New Sharon, ME 04955, USA",
+      "url": "https://maps.google.com/?cid=18391553934087227938",
+      "geometry": {
+        "location": {
+          "lat": 44.668511,
+          "lng": -69.9690138
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.66985994050764,
+            "lng": -69.9678091725846
+          },
+          "southwest": {
+            "lat": 44.66716197992464,
+            "lng": -69.9705071331676
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Jason's Butcher Shop",
+    "Address": "22 Unity Rd, Albion, ME 04910, USA",
+    "City": "Albion",
+    "Zip": "4910",
+    "Rating": "N/A",
+    "Phone": "(207) 437-2490",
+    "Website": "https://www.jasonsbutchershop.biz/",
+    "GoogleProfileID": "ChIJvYIuKBMcrkwRmA4GkRTCilI",
+    "slug": "jasons-butcher-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "https://www.jasonsbutchershop.biz/",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": true,
+      "roasts": true
+    },
+    "lat": 44.5346693,
+    "lng": -69.43338849999999,
+    "placeDetails": {
+      "place_id": "ChIJvYIuKBMcrkwRmA4GkRTCilI",
+      "name": "22 Unity Rd",
+      "formatted_address": "22 Unity Rd, Albion, ME 04910, USA",
+      "url": "https://maps.google.com/?cid=5947779651484389016",
+      "geometry": {
+        "location": {
+          "lat": 44.5346693,
+          "lng": -69.43338849999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.5359886802915,
+            "lng": -69.4320117697085
+          },
+          "southwest": {
+            "lat": 44.5332907197085,
+            "lng": -69.4347097302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Parlor Butchery",
+    "Address": "2845 Western Ave, Newburgh, ME 04444, USA",
+    "City": "Newburgh",
+    "Zip": "4444",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "(207) 234-7800",
+    "GoogleProfileID": "ChIJnd5DElk3rkwR8TG6cwYQ8ak",
+    "slug": "parlor-butchery",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": true,
+      "roasts": true
+    },
+    "lat": 44.71256140000001,
+    "lng": -69.03457279999999,
+    "placeDetails": {
+      "place_id": "ChIJnd5DElk3rkwR8TG6cwYQ8ak",
+      "name": "2845 Western Ave",
+      "formatted_address": "2845 Western Ave, Newburgh, ME 04444, USA",
+      "url": "https://maps.google.com/?cid=12245586481694519793",
+      "geometry": {
+        "location": {
+          "lat": 44.71256140000001,
+          "lng": -69.03457279999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.71403048029151,
+            "lng": -69.03329201970848
+          },
+          "southwest": {
+            "lat": 44.71133251970851,
+            "lng": -69.03598998029149
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "butcher",
+    "Name": "Good Buddy Meat Shop",
+    "Address": "949 Pond Rd, Mt Vernon, ME 04352, USA",
+    "City": "Mt Vernon",
+    "Zip": "4352",
+    "Rating": "N/A",
+    "Phone": "(207) 931-8755",
+    "Website": "",
+    "GoogleProfileID": "ChIJN0Hkiij1sUwR2rL7V_WO3z0",
+    "slug": "good-buddy-meat-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "beef": false,
+      "pork": true,
+      "lamb": false,
+      "chicken": true,
+      "turkey": true,
+      "duck": false,
+      "veal": false,
+      "sausages": true,
+      "bacon": false,
+      "ground_meat": false,
+      "steaks": true,
+      "roasts": true
+    },
+    "lat": 44.4660555,
+    "lng": -70.0147764,
+    "placeDetails": {
+      "place_id": "ChIJN0Hkiij1sUwR2rL7V_WO3z0",
+      "name": "949 Pond Rd",
+      "formatted_address": "949 Pond Rd, Mt Vernon, ME 04352, USA",
+      "url": "https://maps.google.com/?cid=4458439340514325210",
+      "geometry": {
+        "location": {
+          "lat": 44.4660555,
+          "lng": -70.0147764
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.46737596558089,
+            "lng": -70.01312647445421
+          },
+          "southwest": {
+            "lat": 44.46467800499789,
+            "lng": -70.01582443503722
+          }
+        }
+      }
+    }
+  }
+]

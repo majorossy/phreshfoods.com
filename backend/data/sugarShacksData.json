@@ -1,0 +1,2812 @@
+[
+  {
+    "type": "sugar_shack",
+    "Name": "Northern Reach Maple",
+    "Address": "458 Franklin School Rd, Fort Kent, ME 04743, USA",
+    "City": "Fort Kent",
+    "Zip": "4743",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJjz4lp8BPvEwRDU0-3fnnokE",
+    "slug": "northern-reach-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 47.2077776,
+    "lng": -68.6879704,
+    "placeDetails": {
+      "place_id": "ChIJjz4lp8BPvEwRDU0-3fnnokE",
+      "name": "458 Franklin School Rd",
+      "formatted_address": "458 Franklin School Rd, Fort Kent, ME 04743, USA",
+      "url": "https://maps.google.com/?cid=4729597619037162765",
+      "geometry": {
+        "location": {
+          "lat": 47.2077776,
+          "lng": -68.6879704
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 47.2090625302915,
+            "lng": -68.6865605197085
+          },
+          "southwest": {
+            "lat": 47.2063645697085,
+            "lng": -68.6892584802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Mattakeunk Maple",
+    "Address": "42 Dam Rd, Lee, ME 04455, USA",
+    "City": "Lee",
+    "Zip": "4455",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJz8a9jxZipUwRRIjilGZvCbQ",
+    "slug": "mattakeunk-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.3618744,
+    "lng": -68.2943489,
+    "placeDetails": {
+      "place_id": "ChIJz8a9jxZipUwRRIjilGZvCbQ",
+      "name": "42 Dam Rd",
+      "formatted_address": "42 Dam Rd, Lee, ME 04455, USA",
+      "url": "https://maps.google.com/?cid=12973022687992645700",
+      "geometry": {
+        "location": {
+          "lat": 45.3618744,
+          "lng": -68.2943489
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.3632764802915,
+            "lng": -68.2930123197085
+          },
+          "southwest": {
+            "lat": 45.3605785197085,
+            "lng": -68.2957102802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Waterhouse Family Farm",
+    "Address": "939 River Rd, Hollis, ME 04042, USA",
+    "City": "Hollis Center",
+    "Zip": "4042",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJMZk2M9XqskwRu2qEy1KC4SQ",
+    "slug": "waterhouse-family-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.6618347,
+    "lng": -70.6028583,
+    "placeDetails": {
+      "place_id": "ChIJMZk2M9XqskwRu2qEy1KC4SQ",
+      "name": "939 River Rd",
+      "formatted_address": "939 River Rd, Hollis, ME 04042, USA",
+      "url": "https://maps.google.com/?cid=2657548547238685371",
+      "geometry": {
+        "location": {
+          "lat": 43.6618347,
+          "lng": -70.6028583
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.66313068029149,
+            "lng": -70.6015359697085
+          },
+          "southwest": {
+            "lat": 43.6604327197085,
+            "lng": -70.6042339302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Cole Farm Maple",
+    "Address": "13 Cole Farm Rd, Dayton, ME 04005, USA",
+    "City": "Dayton",
+    "Zip": "4005",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJA8Y3QJ27skwR-RjbZMAV840",
+    "slug": "cole-farm-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.5287967,
+    "lng": -70.5366315,
+    "placeDetails": {
+      "place_id": "ChIJA8Y3QJ27skwR-RjbZMAV840",
+      "name": "13 Cole Farm Rd",
+      "formatted_address": "13 Cole Farm Rd, Dayton, ME 04005, USA",
+      "url": "https://maps.google.com/?cid=10228543094758512889",
+      "geometry": {
+        "location": {
+          "lat": 43.5287967,
+          "lng": -70.5366315
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.53014630704325,
+            "lng": -70.53531723349381
+          },
+          "southwest": {
+            "lat": 43.52744834646025,
+            "lng": -70.53801519407682
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Libby Maple Syrup & Tree Farm",
+    "Address": "117 Bowman Rd, Cornville, ME 04976, USA",
+    "City": "Cornville",
+    "Zip": "4976",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJSRsd_nPJsUwRnOLZgMnuhps",
+    "slug": "libby-maple-syrup-tree-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.8892306,
+    "lng": -69.6482029,
+    "placeDetails": {
+      "place_id": "ChIJSRsd_nPJsUwRnOLZgMnuhps",
+      "name": "117 Bowman Rd",
+      "formatted_address": "117 Bowman Rd, Cornville, ME 04976, USA",
+      "url": "https://maps.google.com/?cid=11206907271975658140",
+      "geometry": {
+        "location": {
+          "lat": 44.8892306,
+          "lng": -69.6482029
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.89061488029149,
+            "lng": -69.6468626697085
+          },
+          "southwest": {
+            "lat": 44.88791691970849,
+            "lng": -69.6495606302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Moosehead Maple Farm",
+    "Address": "1390 Moosehead Trail Hwy, Jackson, ME 04921, USA",
+    "City": "Jackson",
+    "Zip": "4921",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJTwwbjGI8rkwR2lkdFmmW1HA",
+    "slug": "moosehead-maple-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.64441859999999,
+    "lng": -69.1614707,
+    "placeDetails": {
+      "place_id": "ChIJTwwbjGI8rkwR2lkdFmmW1HA",
+      "name": "1390 Moosehead Trail Hwy",
+      "formatted_address": "1390 Moosehead Trail Hwy, Jackson, ME 04921, USA",
+      "url": "https://maps.google.com/?cid=8130288605397342682",
+      "geometry": {
+        "location": {
+          "lat": 44.64441859999999,
+          "lng": -69.1614707
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.64574418029149,
+            "lng": -69.16013531970849
+          },
+          "southwest": {
+            "lat": 44.6430462197085,
+            "lng": -69.1628332802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Tree of Life Maple Farm",
+    "Address": "92 Notch Rd, Hiram, ME 04041, USA",
+    "City": "Bald Mountain Township",
+    "Zip": "4945",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "EiE5MiBOb3RjaCBSZCwgSGlyYW0sIE1FIDA0MDQxLCBVU0EiMBIuChQKEgmNEZpXgv2yTBE-E7zP0wqJ6BBcKhQKEgl_hS7r6v2yTBHPIZt3fgU_LA",
+    "slug": "tree-of-life-maple-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.8676148,
+    "lng": -70.8797203,
+    "placeDetails": {
+      "place_id": "EiE5MiBOb3RjaCBSZCwgSGlyYW0sIE1FIDA0MDQxLCBVU0EiMBIuChQKEgmNEZpXgv2yTBE-E7zP0wqJ6BBcKhQKEgl_hS7r6v2yTBHPIZt3fgU_LA",
+      "name": "92 Notch Rd",
+      "formatted_address": "92 Notch Rd, Hiram, ME 04041, USA",
+      "url": "https://maps.google.com/?q=92+Notch+Rd,+Hiram,+ME+04041,+USA&ftid=0x4cb2fd82579a118d:0x29c4eee9cef0e0af",
+      "geometry": {
+        "location": {
+          "lat": 43.8676148,
+          "lng": -70.8797203
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.8689223302915,
+            "lng": -70.8782400697085
+          },
+          "southwest": {
+            "lat": 43.8662243697085,
+            "lng": -70.8809380302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Votervale Farm",
+    "Address": "783 River Rd, Avon, ME 04966, USA",
+    "City": "Avon",
+    "Zip": "4966",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJXwCVuN8KsUwRE4TGOYbC47g",
+    "slug": "votervale-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.8041322,
+    "lng": -70.2829986,
+    "placeDetails": {
+      "place_id": "ChIJXwCVuN8KsUwRE4TGOYbC47g",
+      "name": "783 River Rd",
+      "formatted_address": "783 River Rd, Avon, ME 04966, USA",
+      "url": "https://maps.google.com/?cid=13322706004442776595",
+      "geometry": {
+        "location": {
+          "lat": 44.8041322,
+          "lng": -70.2829986
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.8056277885508,
+            "lng": -70.28168292868928
+          },
+          "southwest": {
+            "lat": 44.80292982796781,
+            "lng": -70.2843808892723
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Little Farm",
+    "Address": "105 Lambs Mill Rd, Naples, ME 04055, USA",
+    "City": "Naples",
+    "Zip": "4055",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJVRkqU3ZXskwR9AQFndkQfcQ",
+    "slug": "little-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.9696091,
+    "lng": -70.61961029999999,
+    "placeDetails": {
+      "place_id": "ChIJVRkqU3ZXskwR9AQFndkQfcQ",
+      "name": "105 Lambs Mill Rd",
+      "formatted_address": "105 Lambs Mill Rd, Naples, ME 04055, USA",
+      "url": "https://maps.google.com/?cid=14158491330351006964",
+      "geometry": {
+        "location": {
+          "lat": 43.9696091,
+          "lng": -70.61961029999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.97093672565445,
+            "lng": -70.61825671333595
+          },
+          "southwest": {
+            "lat": 43.96823876507145,
+            "lng": -70.62095467391897
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Full Armor Farm",
+    "Address": "12 Stewart Rd, New Vineyard, ME 04956, USA",
+    "City": "New Vineyard",
+    "Zip": "4956",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJa2gVfTGhsUwRsiH47q45yq4",
+    "slug": "full-armor-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.8317714,
+    "lng": -70.1351169,
+    "placeDetails": {
+      "place_id": "ChIJa2gVfTGhsUwRsiH47q45yq4",
+      "name": "12 Stewart Rd",
+      "formatted_address": "12 Stewart Rd, New Vineyard, ME 04956, USA",
+      "url": "https://maps.google.com/?cid=12594942731391345074",
+      "geometry": {
+        "location": {
+          "lat": 44.8317714,
+          "lng": -70.1351169
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.83312679147209,
+            "lng": -70.13366973740659
+          },
+          "southwest": {
+            "lat": 44.83042883088909,
+            "lng": -70.13636769798961
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Scenic View Sugaring",
+    "Address": "90 Sokokis Trail N, Limerick, ME 04048, USA",
+    "City": "Limerick",
+    "Zip": "4048",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJTbd2TtTnskwRs_yD_3EhhhY",
+    "slug": "scenic-view-sugaring",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.6947802,
+    "lng": -70.7991904,
+    "placeDetails": {
+      "place_id": "ChIJTbd2TtTnskwRs_yD_3EhhhY",
+      "name": "90 Sokokis Trail N",
+      "formatted_address": "90 Sokokis Trail N, Limerick, ME 04048, USA",
+      "url": "https://maps.google.com/?cid=1623021489215503539",
+      "geometry": {
+        "location": {
+          "lat": 43.6947802,
+          "lng": -70.7991904
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.69612627051856,
+            "lng": -70.79777831233747
+          },
+          "southwest": {
+            "lat": 43.69342830993557,
+            "lng": -70.80047627292048
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Williams Family Farms",
+    "Address": "50 Airline Rd, Clifton, ME 04428, USA",
+    "City": "Clifton",
+    "Zip": "4428",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJzSLVVc2tr0wRqUVuafGZ0cA",
+    "slug": "williams-family-farms",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.79498530000001,
+    "lng": -68.561967,
+    "placeDetails": {
+      "place_id": "ChIJzSLVVc2tr0wRqUVuafGZ0cA",
+      "name": "50 Airline Rd",
+      "formatted_address": "50 Airline Rd, Clifton, ME 04428, USA",
+      "url": "https://maps.google.com/?cid=13894055587549693353",
+      "geometry": {
+        "location": {
+          "lat": 44.79498530000001,
+          "lng": -68.561967
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.7961929302915,
+            "lng": -68.5605741697085
+          },
+          "southwest": {
+            "lat": 44.79349496970851,
+            "lng": -68.56327213029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Shady Lane Farm",
+    "Address": "108 Brahmer Rd, New Vineyard, ME 04956, USA",
+    "City": "New Vineyard",
+    "Zip": "4956",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJje24zm-ksUwRXd7qkZ_aoEg",
+    "slug": "shady-lane-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.8330952,
+    "lng": -70.057177,
+    "placeDetails": {
+      "place_id": "ChIJje24zm-ksUwRXd7qkZ_aoEg",
+      "name": "108 Brahmer Rd",
+      "formatted_address": "108 Brahmer Rd, New Vineyard, ME 04956, USA",
+      "url": "https://maps.google.com/?cid=5233423145887260253",
+      "geometry": {
+        "location": {
+          "lat": 44.8330952,
+          "lng": -70.057177
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.83438602034182,
+            "lng": -70.05582918985998
+          },
+          "southwest": {
+            "lat": 44.83168805975882,
+            "lng": -70.058527150443
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Cider Hill Maple Farm",
+    "Address": "247 Cider Hill Rd, Exeter, ME 04435, USA",
+    "City": "Exeter",
+    "Zip": "4435",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJRx53MRvWr0wRJk-w3xUdO0M",
+    "slug": "cider-hill-maple-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.9803447,
+    "lng": -69.1830616,
+    "placeDetails": {
+      "place_id": "ChIJRx53MRvWr0wRJk-w3xUdO0M",
+      "name": "247 Cider Hill Rd",
+      "formatted_address": "247 Cider Hill Rd, Exeter, ME 04435, USA",
+      "url": "https://maps.google.com/?cid=4844497803951492902",
+      "geometry": {
+        "location": {
+          "lat": 44.9803447,
+          "lng": -69.1830616
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.98178608029149,
+            "lng": -69.1817369197085
+          },
+          "southwest": {
+            "lat": 44.9790881197085,
+            "lng": -69.1844348802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Marcoux Family Farm LLC",
+    "Address": "155 Gibbs Rd, Wiscasset, ME 04578, USA",
+    "City": "Wiscasset",
+    "Zip": "4578",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJ7TSDpT6NrUwRmMuw9aJSo2A",
+    "slug": "marcoux-family-farm-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.05251459999999,
+    "lng": -69.69799929999999,
+    "placeDetails": {
+      "place_id": "ChIJ7TSDpT6NrUwRmMuw9aJSo2A",
+      "name": "155 Gibbs Rd",
+      "formatted_address": "155 Gibbs Rd, Wiscasset, ME 04578, USA",
+      "url": "https://maps.google.com/?cid=6963500308705102744",
+      "geometry": {
+        "location": {
+          "lat": 44.05251459999999,
+          "lng": -69.69799929999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.0539132802915,
+            "lng": -69.6968502197085
+          },
+          "southwest": {
+            "lat": 44.0512153197085,
+            "lng": -69.6995481802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "207 Tappers",
+    "Address": "125 Dennett Rd, Kennebunkport, ME 04046, USA",
+    "City": "Biddeford",
+    "Zip": "4005",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJex-35Fi6skwR5DWgjXehShc",
+    "slug": "207-tappers",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.4941032,
+    "lng": -70.562485,
+    "placeDetails": {
+      "place_id": "ChIJex-35Fi6skwR5DWgjXehShc",
+      "name": "125 Dennett Rd",
+      "formatted_address": "125 Dennett Rd, Kennebunkport, ME 04046, USA",
+      "url": "https://maps.google.com/?cid=1678331345998198244",
+      "geometry": {
+        "location": {
+          "lat": 43.4941032,
+          "lng": -70.562485
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.49545093029149,
+            "lng": -70.56109501970849
+          },
+          "southwest": {
+            "lat": 43.49275296970849,
+            "lng": -70.5637929802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Wolf Creek Maple",
+    "Address": "3252 Middle Rd, Sidney, ME 04330, USA",
+    "City": "Sidney",
+    "Zip": "4330",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJexmg6tr7sUwRKuYEPFXkuMA",
+    "slug": "wolf-creek-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.4638166,
+    "lng": -69.733673,
+    "placeDetails": {
+      "place_id": "ChIJexmg6tr7sUwRKuYEPFXkuMA",
+      "name": "3252 Middle Rd",
+      "formatted_address": "3252 Middle Rd, Sidney, ME 04330, USA",
+      "url": "https://maps.google.com/?cid=13887100505727231530",
+      "geometry": {
+        "location": {
+          "lat": 44.4638166,
+          "lng": -69.733673
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.46514296980119,
+            "lng": -69.73232407364142
+          },
+          "southwest": {
+            "lat": 44.46244500921819,
+            "lng": -69.73502203422443
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Bemis Family Farm",
+    "Address": "102 Merrill Rd, Corinna, ME 04928, USA",
+    "City": "Corinna",
+    "Zip": "4928",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJhYETfN8rsEwRbHFgMH4Frts",
+    "slug": "bemis-family-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.98651419999999,
+    "lng": -69.2699078,
+    "placeDetails": {
+      "place_id": "ChIJhYETfN8rsEwRbHFgMH4Frts",
+      "name": "102 Merrill Rd",
+      "formatted_address": "102 Merrill Rd, Corinna, ME 04928, USA",
+      "url": "https://maps.google.com/?cid=15829595779789517164",
+      "geometry": {
+        "location": {
+          "lat": 44.98651419999999,
+          "lng": -69.2699078
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.98774963705627,
+            "lng": -69.26854742788566
+          },
+          "southwest": {
+            "lat": 44.98505167647327,
+            "lng": -69.27124538846867
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "River Basin Farms, LLC",
+    "Address": "126 Main Rd, Passadumkeag, ME 04475, USA",
+    "City": "Passadumkeag",
+    "Zip": "4475",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJs4uMDVrrr0wR7rPWe_ktN3Q",
+    "slug": "river-basin-farms-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.1521693,
+    "lng": -68.6176306,
+    "placeDetails": {
+      "place_id": "ChIJs4uMDVrrr0wR7rPWe_ktN3Q",
+      "name": "126 Main Rd",
+      "formatted_address": "126 Main Rd, Passadumkeag, ME 04475, USA",
+      "url": "https://maps.google.com/?cid=8374212581666501614",
+      "geometry": {
+        "location": {
+          "lat": 45.1521693,
+          "lng": -68.6176306
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.15353818029151,
+            "lng": -68.61614641970849
+          },
+          "southwest": {
+            "lat": 45.15084021970851,
+            "lng": -68.61884438029149
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Black Acres Farm",
+    "Address": "123 Black Rd, Wilton, ME 04294, USA",
+    "City": "Wilton",
+    "Zip": "4294",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJEWd_cmuFsUwR7ZA71-rp3PM",
+    "slug": "black-acres-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.59144389999999,
+    "lng": -70.18437829999999,
+    "placeDetails": {
+      "place_id": "ChIJEWd_cmuFsUwR7ZA71-rp3PM",
+      "name": "123 Black Rd",
+      "formatted_address": "123 Black Rd, Wilton, ME 04294, USA",
+      "url": "https://maps.google.com/?cid=17572177040935457005",
+      "geometry": {
+        "location": {
+          "lat": 44.59144389999999,
+          "lng": -70.18437829999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.59279292623785,
+            "lng": -70.18295311572196
+          },
+          "southwest": {
+            "lat": 44.59009496565485,
+            "lng": -70.18565107630496
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Slattery’s Farm and Maple Supply Company",
+    "Address": "1381 Woodman Hill Rd, West Minot, ME 04288, USA",
+    "City": "West Minot",
+    "Zip": "4288",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJlfOlSkdHskwRGeA4TnhxAaE",
+    "slug": "slatterys-farm-and-maple-supply-company",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.1712602,
+    "lng": -70.37072599999999,
+    "placeDetails": {
+      "place_id": "ChIJlfOlSkdHskwRGeA4TnhxAaE",
+      "name": "1381 Woodman Hill Rd",
+      "formatted_address": "1381 Woodman Hill Rd, West Minot, ME 04288, USA",
+      "url": "https://maps.google.com/?cid=11601678876605472793",
+      "geometry": {
+        "location": {
+          "lat": 44.1712602,
+          "lng": -70.37072599999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.1724873802915,
+            "lng": -70.36948841970849
+          },
+          "southwest": {
+            "lat": 44.1697894197085,
+            "lng": -70.3721863802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Thurston And Peters Sugarhouse, LLC",
+    "Address": "299 Bond Spring Rd, West Newfield, ME 04095, USA",
+    "City": "West Newfield",
+    "Zip": "4095",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJqwu2IPbcskwRhT2yt9YCNHQ",
+    "slug": "thurston-and-peters-sugarhouse-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.6268764,
+    "lng": -70.89605,
+    "placeDetails": {
+      "place_id": "ChIJqwu2IPbcskwRhT2yt9YCNHQ",
+      "name": "299 Bond Spring Rd",
+      "formatted_address": "299 Bond Spring Rd, West Newfield, ME 04095, USA",
+      "url": "https://maps.google.com/?cid=8373320728416763269",
+      "geometry": {
+        "location": {
+          "lat": 43.6268764,
+          "lng": -70.89605
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.62823814614151,
+            "lng": -70.89457521282763
+          },
+          "southwest": {
+            "lat": 43.62554018555851,
+            "lng": -70.89727317341064
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Grandpa Joe’s Sugar House",
+    "Address": "103 Murch Rd, East Baldwin, ME 04024, USA",
+    "City": "East Baldwin",
+    "Zip": "4024",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJrWd4qLHwskwRnHY8UdVBqR8",
+    "slug": "grandpa-joes-sugar-house",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.85603,
+    "lng": -70.665688,
+    "placeDetails": {
+      "place_id": "ChIJrWd4qLHwskwRnHY8UdVBqR8",
+      "name": "103 Murch Rd",
+      "formatted_address": "103 Murch Rd, East Baldwin, ME 04024, USA",
+      "url": "https://maps.google.com/?cid=2281427070686623388",
+      "geometry": {
+        "location": {
+          "lat": 43.85603,
+          "lng": -70.665688
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.8573942559203,
+            "lng": -70.66433903201235
+          },
+          "southwest": {
+            "lat": 43.8546962953373,
+            "lng": -70.66703699259536
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "True Mountain Maple",
+    "Address": "227 Federal Row, Industry, ME 04938, USA",
+    "City": "Industry",
+    "Zip": "4938",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJ-Ua-8JqisUwRgThocvpnVRE",
+    "slug": "true-mountain-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.7571165,
+    "lng": -70.07828119999999,
+    "placeDetails": {
+      "place_id": "ChIJ-Ua-8JqisUwRgThocvpnVRE",
+      "name": "227 Federal Row",
+      "formatted_address": "227 Federal Row, Industry, ME 04938, USA",
+      "url": "https://maps.google.com/?cid=1249018797024098433",
+      "geometry": {
+        "location": {
+          "lat": 44.7571165,
+          "lng": -70.07828119999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.75848331354655,
+            "lng": -70.07693225143538
+          },
+          "southwest": {
+            "lat": 44.75578535296355,
+            "lng": -70.07963021201839
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "VA JO WA Maple",
+    "Address": "16 VA Walker Dr, Island Falls, ME 04747, USA",
+    "City": "Island Falls",
+    "Zip": "4730",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJ89LqGtzWpEwR4GmGSuZx8BM",
+    "slug": "va-jo-wa-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 46.0264564,
+    "lng": -68.20928719999999,
+    "placeDetails": {
+      "place_id": "ChIJ89LqGtzWpEwR4GmGSuZx8BM",
+      "name": "16 VA Walker Dr",
+      "formatted_address": "16 VA Walker Dr, Island Falls, ME 04747, USA",
+      "url": "https://maps.google.com/?cid=1436773515037927904",
+      "geometry": {
+        "location": {
+          "lat": 46.0264564,
+          "lng": -68.20928719999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 46.02788813246877,
+            "lng": -68.2079437323598
+          },
+          "southwest": {
+            "lat": 46.02519017188577,
+            "lng": -68.2106416929428
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Crooked Brook Farm",
+    "Address": "210 Meetinghouse Rd, Wells, ME 04090, USA",
+    "City": "Wells",
+    "Zip": "4090",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJK5nG4-iyskwR-_sDcwRDZDI",
+    "slug": "crooked-brook-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.3553724,
+    "lng": -70.6410149,
+    "placeDetails": {
+      "place_id": "ChIJK5nG4-iyskwR-_sDcwRDZDI",
+      "name": "210 Meetinghouse Rd",
+      "formatted_address": "210 Meetinghouse Rd, Wells, ME 04090, USA",
+      "url": "https://maps.google.com/?cid=3631100885956033531",
+      "geometry": {
+        "location": {
+          "lat": 43.3553724,
+          "lng": -70.6410149
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.35671913208107,
+            "lng": -70.63965998242026
+          },
+          "southwest": {
+            "lat": 43.35402117149807,
+            "lng": -70.64235794300328
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Maine Mountain Maple",
+    "Address": "50 Edelheid Rd #8, Rangeley, ME 04970, USA",
+    "City": "Sandy River Plt",
+    "Zip": "4970",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "Eio1MCBFZGVsaGVpZCBSZCAjOCwgUmFuZ2VsZXksIE1FIDA0OTcwLCBVU0EiHRobChYKFAoSCf0cCWsiPrFMEQVHGxKQMcanEgE4",
+    "slug": "maine-mountain-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.9014187,
+    "lng": -70.6149887,
+    "placeDetails": {
+      "place_id": "Eio1MCBFZGVsaGVpZCBSZCAjOCwgUmFuZ2VsZXksIE1FIDA0OTcwLCBVU0EiHRobChYKFAoSCf0cCWsiPrFMEQVHGxKQMcanEgE4",
+      "name": "50 Edelheid Rd #8",
+      "formatted_address": "50 Edelheid Rd #8, Rangeley, ME 04970, USA",
+      "url": "https://maps.google.com/?q=50+Edelheid+Rd+%238,+Rangeley,+ME+04970,+USA&ftid=0x4cb13e226b091cfd:0xc1cce63043b94d3",
+      "geometry": {
+        "location": {
+          "lat": 44.9014187,
+          "lng": -70.6149887
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.9027961040447,
+            "lng": -70.61376840949136
+          },
+          "southwest": {
+            "lat": 44.9000981434617,
+            "lng": -70.61646637007438
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Pop’s Sugarhouse",
+    "Address": "288 Winkumpaugh Rd, Ellsworth, ME 04605, USA",
+    "City": "Ellsworth",
+    "Zip": "4605",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJQ4QTxCpYrkwRBbA47fMcJMc",
+    "slug": "pops-sugarhouse",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.6390518,
+    "lng": -68.5862786,
+    "placeDetails": {
+      "place_id": "ChIJQ4QTxCpYrkwRBbA47fMcJMc",
+      "name": "288 Winkumpaugh Rd",
+      "formatted_address": "288 Winkumpaugh Rd, Ellsworth, ME 04605, USA",
+      "url": "https://maps.google.com/?cid=14349626146691788805",
+      "geometry": {
+        "location": {
+          "lat": 44.6390518,
+          "lng": -68.5862786
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.6404319302915,
+            "lng": -68.58493896970849
+          },
+          "southwest": {
+            "lat": 44.6377339697085,
+            "lng": -68.58763693029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Luce’s Maple Syrup",
+    "Address": "3 Fish Rd, Anson, ME 04911, USA",
+    "City": "Anson",
+    "Zip": "4911",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJjRZDWTWjsUwRXC5-cGa13_Q",
+    "slug": "luces-maple-syrup",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.7950049,
+    "lng": -70.0128689,
+    "placeDetails": {
+      "place_id": "ChIJjRZDWTWjsUwRXC5-cGa13_Q",
+      "name": "3 Fish Rd",
+      "formatted_address": "3 Fish Rd, Anson, ME 04911, USA",
+      "url": "https://maps.google.com/?cid=17645021316639501916",
+      "geometry": {
+        "location": {
+          "lat": 44.7950049,
+          "lng": -70.0128689
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.79633228378179,
+            "lng": -70.01151422418074
+          },
+          "southwest": {
+            "lat": 44.79363432319879,
+            "lng": -70.01421218476375
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Highland Farms Sugar Works",
+    "Address": "152 Towles Hill Rd, Cornish, ME 04020, USA",
+    "City": "Cornish",
+    "Zip": "4020",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJVxpgIGfjskwRJdqDBCXFFxI",
+    "slug": "highland-farms-sugar-works",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.796572,
+    "lng": -70.840126,
+    "placeDetails": {
+      "place_id": "ChIJVxpgIGfjskwRJdqDBCXFFxI",
+      "name": "152 Towles Hill Rd",
+      "formatted_address": "152 Towles Hill Rd, Cornish, ME 04020, USA",
+      "url": "https://maps.google.com/?cid=1303727379927259685",
+      "geometry": {
+        "location": {
+          "lat": 43.796572,
+          "lng": -70.840126
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.7979609802915,
+            "lng": -70.8388106197085
+          },
+          "southwest": {
+            "lat": 43.7952630197085,
+            "lng": -70.8415085802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Maple Rush Sugar House",
+    "Address": "123 Webster Corner Rd, Sabattus, ME 04280, USA",
+    "City": "Sabattus",
+    "Zip": "4280",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJjWtcHv9tskwRkngrVS3CGTY",
+    "slug": "maple-rush-sugar-house",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.06745009999999,
+    "lng": -70.09817079999999,
+    "placeDetails": {
+      "place_id": "ChIJjWtcHv9tskwRkngrVS3CGTY",
+      "name": "123 Webster Corner Rd",
+      "formatted_address": "123 Webster Corner Rd, Sabattus, ME 04280, USA",
+      "url": "https://maps.google.com/?cid=3898360452424104082",
+      "geometry": {
+        "location": {
+          "lat": 44.06745009999999,
+          "lng": -70.09817079999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.06882839567904,
+            "lng": -70.0968295350773
+          },
+          "southwest": {
+            "lat": 44.06613043509604,
+            "lng": -70.09952749566031
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Schanz Family Maple",
+    "Address": "773 Barker Rd, New Vineyard, ME 04956, USA",
+    "City": "New Vineyard",
+    "Zip": "4956",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJWa5U4eyhsUwRB7XXwxnt-2M",
+    "slug": "schanz-family-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.7804172,
+    "lng": -70.1523924,
+    "placeDetails": {
+      "place_id": "ChIJWa5U4eyhsUwRB7XXwxnt-2M",
+      "name": "773 Barker Rd",
+      "formatted_address": "773 Barker Rd, New Vineyard, ME 04956, USA",
+      "url": "https://maps.google.com/?cid=7204612723824899335",
+      "geometry": {
+        "location": {
+          "lat": 44.7804172,
+          "lng": -70.1523924
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.78173571894828,
+            "lng": -70.15104388623008
+          },
+          "southwest": {
+            "lat": 44.77903775836528,
+            "lng": -70.1537418468131
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Maple Hill Enterprises",
+    "Address": "748 Newell Brook Rd, Durham, ME 04222, USA",
+    "City": "Durham",
+    "Zip": "4222",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJqy3rT5dwskwREo5hFNtNOYg",
+    "slug": "maple-hill-enterprises",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.9936415,
+    "lng": -70.0720152,
+    "placeDetails": {
+      "place_id": "ChIJqy3rT5dwskwREo5hFNtNOYg",
+      "name": "748 Newell Brook Rd",
+      "formatted_address": "748 Newell Brook Rd, Durham, ME 04222, USA",
+      "url": "https://maps.google.com/?cid=9815962466165820946",
+      "geometry": {
+        "location": {
+          "lat": 43.9936415,
+          "lng": -70.0720152
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.99486389866404,
+            "lng": -70.07066819979609
+          },
+          "southwest": {
+            "lat": 43.99216593808104,
+            "lng": -70.0733661603791
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Church’s Sugar Shack",
+    "Address": "5 Look Ln, Columbia Falls, ME 04623, USA",
+    "City": "Columbia Falls",
+    "Zip": "4623",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJPe-8krArr0wRLTzHfSdwduc",
+    "slug": "churchs-sugar-shack",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.6433185,
+    "lng": -67.6840685,
+    "placeDetails": {
+      "place_id": "ChIJPe-8krArr0wRLTzHfSdwduc",
+      "name": "5 Look Ln",
+      "formatted_address": "5 Look Ln, Columbia Falls, ME 04623, USA",
+      "url": "https://maps.google.com/?cid=16678641584929455149",
+      "geometry": {
+        "location": {
+          "lat": 44.6433185,
+          "lng": -67.6840685
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.6448088802915,
+            "lng": -67.68254251970849
+          },
+          "southwest": {
+            "lat": 44.64211091970851,
+            "lng": -67.6852404802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Red Door Sugar Shack",
+    "Address": "24 Shellenbarger Rd, Topsham, ME 04086, USA",
+    "City": "Topsham",
+    "Zip": "4086",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJpeyh96N3skwRI486hcxOe7Q",
+    "slug": "red-door-sugar-shack",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.9907385,
+    "lng": -69.98316140000001,
+    "placeDetails": {
+      "place_id": "ChIJpeyh96N3skwRI486hcxOe7Q",
+      "name": "24 Shellenbarger Rd",
+      "formatted_address": "24 Shellenbarger Rd, Topsham, ME 04086, USA",
+      "url": "https://maps.google.com/?cid=13005074989277941539",
+      "geometry": {
+        "location": {
+          "lat": 43.9907385,
+          "lng": -69.98316140000001
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.9922204302915,
+            "lng": -69.98176991970851
+          },
+          "southwest": {
+            "lat": 43.9895224697085,
+            "lng": -69.98446788029152
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Dunn Family Maple",
+    "Address": "419 Chicopee Rd, Buxton, ME 04093, USA",
+    "City": "Buxton",
+    "Zip": "4093",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJkb8VBUCTskwRK2FXGKXFkUI",
+    "slug": "dunn-family-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.7087341,
+    "lng": -70.5433656,
+    "placeDetails": {
+      "place_id": "ChIJkb8VBUCTskwRK2FXGKXFkUI",
+      "name": "419 Chicopee Rd",
+      "formatted_address": "419 Chicopee Rd, Buxton, ME 04093, USA",
+      "url": "https://maps.google.com/?cid=4796832390994944299",
+      "geometry": {
+        "location": {
+          "lat": 43.7087341,
+          "lng": -70.5433656
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.71010970343756,
+            "lng": -70.54221537229209
+          },
+          "southwest": {
+            "lat": 43.70741174285457,
+            "lng": -70.5449133328751
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Michaud Family Farm",
+    "Address": "4 Michaud Farm Rd, Lyman, ME 04002, USA",
+    "City": "Lyman",
+    "Zip": "4002",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJmwf-1suwskwRCIx08VISeFc",
+    "slug": "michaud-family-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.4596655,
+    "lng": -70.6312073,
+    "placeDetails": {
+      "place_id": "ChIJmwf-1suwskwRCIx08VISeFc",
+      "name": "4 Michaud Farm Rd",
+      "formatted_address": "4 Michaud Farm Rd, Lyman, ME 04002, USA",
+      "url": "https://maps.google.com/?cid=6302807825952574472",
+      "geometry": {
+        "location": {
+          "lat": 43.4596655,
+          "lng": -70.6312073
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.46103467855449,
+            "lng": -70.6294386845976
+          },
+          "southwest": {
+            "lat": 43.45833671797149,
+            "lng": -70.63213664518061
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Passamaquoddy Maple",
+    "Address": "Jackman, ME 04945, USA",
+    "City": "Jackman",
+    "Zip": "4945",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJNbZA3pSjsEwRbzdqRs4wXe8",
+    "slug": "passamaquoddy-maple",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.6240392,
+    "lng": -70.2521512,
+    "placeDetails": {
+      "place_id": "ChIJNbZA3pSjsEwRbzdqRs4wXe8",
+      "name": "Jackman",
+      "formatted_address": "Jackman, ME 04945, USA",
+      "photos": [
+        {
+          "photo_reference": "AWn5SU7Pf-c0rsg02D0TtPz51PCieOajiQ-Af5eaOcazLTWsfV5dNb6jwNWtC_ZyK3mbr67ObBfB3IjEykoCn5IBpr3NFNlqjwH8kg6u2mvaLXwWoAokvaIhFVzpUcQbLflcE0we6WI2gTf6Wsrj1IWUcuAfrvqzv69xYVEyI716RGwjuY7ZrBxw0VbViHiTXshill4AfCcoHW8nv4-mcSFV7WcN_GRNMi0wMKI6nSKrBcP6rNZfrls-tSYx4xasFUSvi9a5Kxl-OMd3TNMik7JJqX8WuyZIluUPCVBu_I69g2f_Y3qjnyjk45LE2uBd10PcWEMlD9x_nJh4F0EnvV95bn3q9em6yWESHI0ktwOmoucZONc3jpAtV41CRoirV7ZKqAfcfInQqaTpgVROZT8_gqGSHygu7NCar5NHVZA3JmYDlA",
+          "height": 2620,
+          "width": 4656,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/116841429570593081237\">David Grimmel</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU4iD0d3cNCNj3Q6cvLAYCLYpTcJs14QSqzxcAITcjSm-kwx_DlHjqc2JMZsWNOKWHMqXu0w8F8qZ7-QOGK4Q02PhUJdCsHbYd6wR_PYH8mOejW4vVT19kSskRCDkwjh_WGPrWa_WjgN8rpLgInARwKWd83iAT7QPV1pzA-pXi0yDfS9H3cStWhRBk8u88fHtShwKMlM1ERAMGjMWSlU1d5Gdc9MDXvyrAZOAWRz0vl_sAnEHWiKu9c5lhaplKEi8vqCd971bVfXrrHnwbd2QH_GKgAhmXoUMCYJUBDPeLH8N5T58XmDTBRd0PWgPkwbffOgzAEKyX4Jkl0HcJM5ibHWVyp3cCuJdgA3Od7USrs8C7NfHPu3P4z8-UV2OILzHrCew2_3B6H3KGpTeDYodN2DHphNoGac0IfoWY0tlvJX7Vc",
+          "height": 959,
+          "width": 720,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105845548316836003625\">Ellen Trudeau</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU51IvuBPOZCpXvnKywvqS7iNmxfYVZflYfm6qzaOOOE2e11_bbbMBvWbakiHiWiOjBT65FMlzr4fuElgF_9x63Ya6I4MHx1xVNZHSw1kRDqOZ4j43IR-BdROy1NEXBfxIDxYg3YRDFD_htdhtB3676kot4eI4lsnBc7GmE_G9-XaZ0WVcL3iJTZqE8JY__iaKSvStYOITKTXmPYWGkW2FibGilEAu7p1qcbfX2ziX1h5ZmzhSVRtzysiNZJjsEz5IN1tZmCGvSjvcJp3XQlWAK2hKH14eEUsj8-3sKSnEXjQZww1vzOav2qvRRYLGCB_VZfOnKfijRX8D9jAiHirwYvekcHeipj5YlnGoAj7L_BdAQoEShmzUOE4CJtAaeFVc-Hhh4ndvA4VnlxCQiDlNMrzUTjXeYCNJOznB9oTbmmIPbZ",
+          "height": 1440,
+          "width": 2560,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/102418266377567543752\">Shawn Ruest</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU6uf4DzGf-l2W9IjpoXhnQsU2bfa_Nla8LWvXiMzw0MMmbnGDlWRim9celi3cHfqPTcG7UfqSMcklf7rfuLGkaNC55Ud5XQN0ZaDj3TvadJn2awVpRQYOopOQqcIAOxeC3rSe3ZnVsq1RFUQDkTrYmmcrZxcYGlxHnuO31aoJM5MB8g4a1FmG9-lrGT0zvoEgeukCqZq7KoCwrhTaT7vl_YO13isqGUDWwn6TxFkgt8Qk6wsI0zp9MK6QSJY6bWZsSJTFIPd3IIFzV-a968KcbB3A9etp4Oqs0jagUGfJjjP0BpNg_0BAeWDAnJhu2LjQZjyx_LjTR70f9pnCTFaqbVNh_FrLmKGhvZAYLXnYvNnp4MbHDw0zM3mFY5nWvFl3l8LqaIfUFX0G7t_ZHfNI7NWas-p4VPjbyNow7OPeI",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU5E1OM8k_04rTC1pET6PRV-p70CxShG2H3LSjCocGypWKrjhujSRqOQ9iqXQHpcGqqUbGxaXCr3Hy5POBcwxGK0hLZ4SJtMxCf4kABIy7zSnU_-e5L_THwOL0jgb3nz9yvWftvbG-fqb6ejF8p-TPcbBZ6mH7z20Ty1CNCJWZ4EAopFEYDPD-wPohq69VnYWgM79hl95w1JidvSngvdPRvxZlQ1VQ_864ogSB7ieuZMjmJhC5cZPNKX03GYtkTKyGLHHhdDGx5UxgZ7GDJSWNXvShRTfkPXPLKngI5_wuSRseefl9OEy8nZOgZo9x3di-CdbGFziPrdDGwICwAyqsA8OsjOVFXSaYPK7l5OFA-4tiHHI3CQ7V8WIu9IOZjwqo9h5r3NvF0X3jRkf0XJ0P0156GZ2ih64FH_J1RxNr1_qA",
+          "height": 1440,
+          "width": 2560,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/102418266377567543752\">Shawn Ruest</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU600GVaqqA3kaSOohXhb6rd8VUV-ow2X5Tb1jYTfisvz9cAZycv6v5eKxnJEDSwmF4gEEh7k8JyAuqVhzcpK7d9GBgFkSiUlAFYRRusPnNGHJds94vACC93iqoGpzlJwRSTqykWUdqEQtNGH_OO72ZerdiRaa3ZU8QgFQ0ZJ7YRk3RqqOhE8AvCkPVq6_dtRx42Zl8DD0-D58WpgsLXFjunun8iqfFhxwrh7h6M9OOHGcr0okmIg9MKVE340uut0ow7abFWvi9RculaHWAKM7Frn-Uhyrwir3h2FzcWCGgSLAwjWi8mKFxx5kpMTLyamzXigkdKIxFjDTbZpT8bz6lRB3xadCQb2QVfOsAh5a9_TNaCfXl9yXRRrTrdWB59SHSb1IYhev6NWpEyHZ2UhEyPVOcvuPPVnJ6IIPm6PIH_5w",
+          "height": 3264,
+          "width": 1836,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU5TOj5HWs2i09xONHKgbqsZQVQ_nvN5YihWrh3jhALvKjubswLHXh-mKfarvEpiD2KJyEZd55UZFyrIXZT9WJ6aqKEXA5W_gmz9c0RoXWY2TVIOc2Dir6sypHSogE8Dn1Dk_ZmGU10HjdbUhqOfFgMo9lYwCA4FbsBx2CI7SlVdk-B-Obi4C57WNUT3KveN0gfREckBnqeI1WWHxIBNOb94324cvED-qIGNIJN3ImFn8cpkO6UgsrISk9ezVtij0pLRNgLAMLiykNcBJNjWFfnU-4_mnbfRyvnejZQbqHYQouzvhJ9rO1iyHp1NhCUaB2lZECbJv9s0yRrjFh-JUW-7pVr7ToyjbM9x7UBBAUXKfkYwP7kxH5wJnQ0xuA2hYbWjlThM_ICSu7Q1hhXjrBoGUyuTB4uwhgLF9Mto2sYMKNw",
+          "height": 664,
+          "width": 1181,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/101103915448448003446\">Harald Padeborn</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU5T62mtjm6xsU2Rj10udcdj8zWnNd1P0GUaV3uRDXlcrl3uETJAw8-14ktTHvC5fVZQXhsClV2CLOsWt6TeAFRkUHjrcSw6IwDb3maygo3c9y1Fh1V_faDsVvW53ixDZeQEuVNEqHOTnnC9nNePtVtMcDKtdSqxwsFnfGgPs4C-wJM3G11nopidT6Tr19qhO5ueCP2SPDnslKUjdSjTrVzkGOqRlPpET_ENx5bLt2pcqNncISePkTRV-YJroW6QfEKAnoOeU_1dv8A0UwYZVtyrbcHMPf9ZNWeYf-Jbjx0LvTemrujk5Kncixt1_za0ZTyXCAujE9isqUD430j86P6N1I7yU5mxHFsgatQVpke8I_O6XzgApXWUeTwk4SWYgg0uiCK5u5pJ2lKS6k8CK6800z7dUNByX_dc6-mgJBaBLrM",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU7sKpbVNu6j_vHgfuDxOpaWQhcSfqFYLEJIFVXt8Ii2BlUidAGCF2cX5nsdOWB2QP7CLt2Phcs1HH0KFjvtBAWamxCRHn3xA6Fx2NSfRRJ1OJ0eC0WGu1lzRbKHwlZOwC_Kt_A-Cy-iP7m2d7iBvBZkelTFJHSLibXYim0B5PtzowqyRUL4e8vBKfRh8yb9PL4XzqTgctlHUJMQjyVJNPTlXJYM5SnUr_XSYJpEUMk4ZXLbVmURMsC8XqvXk_D5QeBS83dXoFMfGl20qlT0ncXokpAKx-D3kdVjhP0lXU4P9_yJkBniT-H4Pb2rkLwmX9JH1GrUfEjim0tCWTE6oVrwSkuTU4uE9QdymmEL04LLJtNtcw7HEuzDwpZ2JaouF1hTf6zWXac3jMTeZj1weXD4k8DxKcwsz9ODVvppE9X57Q",
+          "height": 1398,
+          "width": 2745,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/110160054639946927696\">K K</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU4LO0lQtoCrqjXMHo9rL0tXGBn1npXJSZetoBcKYYA85qxhGBUbnPdCNRmmXTgkGdSrm7az0FJ2R8PYSxPY7gCHBeuOvJ8GG7-KP7W6EOHq3UO2HcJVgq_8x50YLHC3fmDmtJvAmhe3LTxMS2tPdudVznsh3SR5xJGD6_F9prMG3ifpfkne1oZ-yyzP8X9kMRdcHcf4FCdqnH5_XAkqRsS4d7BFMMSyDhyHhdQ0f7s_R3v1ObzBVymuD-l0FE0VGx1x486oHfHzQYvTO3BmVa2MxlPRMA_p5MF_9w6CnuTRQrL3GXWt1kI-LmjKNR9AVvd532eUQqPqli18Pk5dcl7BrUAhRaaDX0dJUmvfDTddBzRIb9OV4InP7k8zdtb8VRryOJk_BcArvvAbE-X9rF3M_yK4aXUowVd5gdwcXATO_Vjs",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        }
+      ],
+      "url": "https://maps.google.com/?cid=17247995810401630063",
+      "geometry": {
+        "location": {
+          "lat": 45.6240392,
+          "lng": -70.2521512
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.66365006063621,
+            "lng": -70.1177249963709
+          },
+          "southwest": {
+            "lat": 45.54725298634594,
+            "lng": -70.2686838889673
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Dorothy’s Sugar House",
+    "Address": "561 Poland Range Rd, Pownal, ME 04069, USA",
+    "City": "Pownal",
+    "Zip": "4069",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJS16mJZ58skwRDdvNncRALac",
+    "slug": "dorothys-sugar-house",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.9244163,
+    "lng": -70.1664554,
+    "placeDetails": {
+      "place_id": "ChIJS16mJZ58skwRDdvNncRALac",
+      "name": "561 Poland Range Rd",
+      "formatted_address": "561 Poland Range Rd, Pownal, ME 04069, USA",
+      "url": "https://maps.google.com/?cid=12046355791491226381",
+      "geometry": {
+        "location": {
+          "lat": 43.9244163,
+          "lng": -70.1664554
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.92571483029149,
+            "lng": -70.1651523197085
+          },
+          "southwest": {
+            "lat": 43.92301686970849,
+            "lng": -70.1678502802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Jackman Maple Syrup, LLC",
+    "Address": "Jackman, ME 04945, USA",
+    "City": "Jackman",
+    "Zip": "4945",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJNbZA3pSjsEwRbzdqRs4wXe8",
+    "slug": "jackman-maple-syrup-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.6240392,
+    "lng": -70.2521512,
+    "placeDetails": {
+      "place_id": "ChIJNbZA3pSjsEwRbzdqRs4wXe8",
+      "name": "Jackman",
+      "formatted_address": "Jackman, ME 04945, USA",
+      "photos": [
+        {
+          "photo_reference": "AWn5SU6HU5JCxdXp6wkZ5GY1GkJkI6oVo__DpnHlntOaejOLuB5uZJo-yrFsgooU8NdxGYnip2B-vB0ioht7o6yeX1D1CLgF2WZ8buS9bKgwaS5cEuZ8wGsJpBzu795jLhbsBrbOipw7_GuGPLiX3QttKKgXbNwZdtAo0Pz6K-NjlDerwK8Qb869nk08uQNwNqZaS1pKCxrYywv0sL63N2MSxfa8Oup4-5OFhn-pFK7gqz23nYr3pKNJfjOd31g-8GFTZJ-ubbaVihs0R-f6Ku0hFvyghrvSfdA6HJX0C6_mBens2m1EpUig546xrFXMMDiw0bPe5oVf9Xf5M1GJBymf8SOzhRbkdfYLGizoczX1kJDRfV60iXi_7HCYfktwVR2Q-hMfk4MqphSNEl2QgqL7QCzEko3diV5sfZLzZkD6OeBi7w",
+          "height": 2620,
+          "width": 4656,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/116841429570593081237\">David Grimmel</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU4sFq7JGViI66q4WV-dppHF8_sidM6O0W5uObmbIC-fnTo9k71vc6iPgmZz9zscDMy8LqD4IWqEutVrEfx0aqybkdOZ0ck4jPhua9vKyDhGWI3RliyQbVWNiA4TZmRslEbxvzc7ESTttef4aOx2pwZMrbkoHAjV72fPNeSl9Xp1TL0fBVAovLE58oBhHK8CRqmhYIDhbAdxqAL1rVBJczxeYOedyFnGa-XZduN-RkVORW2-sW7nC77S42Jz_mgoC8X3x39kE9LtZ9Pay8l_P9JliH6atvI3zu_ZFvthLJ7z4OJbEN0ehZDvg6KyzUBCqN2U2TbxPVDg_60HHz5VsgK7mO2lMnIZPcw49JQRI7CNhGkV0kfNf4jo5e4gRfLEpdoWKsplSG9rLj3ERbXNRyoqiwYCy7aThBrawhhDfH16hMc",
+          "height": 959,
+          "width": 720,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105845548316836003625\">Ellen Trudeau</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU6SeKt7DtF6wW5acAcdg8XIyNmL0nmgaOezdO0l6yUM3T0443XmAnByX2gi3NeMszl4ysiGo7MxY_TDrQzTssiKrn1CiGxsUCdib3w_4izkS6J-j26Grg4bZVhAbp8xVDEvgQwpvNsIuzqADI9Qgunp7ZGz_e12u_R5FuD2RNZjWq265e5HWJ9HpfISiDv5GCPKhDTADbYoM_-TJl87XOtncHGWSXzXdk9xkfmgbKQwaq4dtb5xw10C9ISM4xKH37uebEiXoCetvC9KCeLk5qtdCcL2u441CrYhog45GHCAnh-BDRSRa0gBzCGcVDCiTbfVfaxRV1cmPxD7l1ijeNsdYFuCcfFFN9Bu-vkVBy4R_fgRLCoRbHLErsvCtz96V6DegAmnvn0Io2ulOXXuYA4P3V_JqR1aWyu0uSPS1LveeMW_",
+          "height": 1440,
+          "width": 2560,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/102418266377567543752\">Shawn Ruest</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU6RnINCA7ZdLi8RpBWkCCb_65q350N69dBXvVQxt-85N0d5_nGy3J2bIqrC8vc2ctmI5Dycwq0vGjvLSlf91fkCGrWlppgjWnhuUxnRXarrCzw31VJ1Er1kCMY42J8ksdEZxnUVmulDhJr5e1M4GXO3ojQzuoMYGr26Ni483WT_-2ZbcoJvLSDCQIcB2EFLiwnpHu0bIXOxC0ZxxYS0pveT8y0ezvUU8KrIOzzvW_HgDsACPxYDJAThiDeRhBJwspw1gGZ690rGlrFiYpsrHLLt7nMfx6QhZBXeAivT7Ysl9T3H17Jop84DQKmx3urjlnXttKIxtQR69XLcEjuzcKChP8MK1o3q4-CkNd5H_cyowEh9ePRbgHDzbL6zYX7cqy-DQfBtaNOasyFfTV0_CKHd7BbzJwwTS5Bxjz05rLU",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU6gdn7Ry6podoHvmP90IY2GVlUfp4NJVc3mJrWCEVsd4YO8FcboMdD1pYBIdzMHP3TjY84VbVuTIbF2qGLtzSdPdJa_kbzSnshE-dB4JXVH8IuK2wDUavAr2tVMUUcIlP8xWyJwFEoDqrIzFkJ9PitTcfBvvjGLW8Or6CMyg4_HdT2Re8wBHl1G3_-3952-SpZQL7cHLfFCnSXn1FOvHS3rPxOOdn7NkeyVJ2k0uEKV4sU7qn2c3bjsnu_s8jpiToJEQF1Kuf6iLMMMuA7FhxX-6XKMPso93MTzhb2EvFg5Ox3aj0dWqjhRyHN2_TDBGbPu9ql8RGcCMC-nqVuU2oKhDORM5oL4jjtsc0SxUjlcsfWaM2WPmrRpZaPo6LnZS6uwn6P5UOgLGUPv1TrIz6YgZcyZGtcirSWSkUeJpc7evA",
+          "height": 1440,
+          "width": 2560,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/102418266377567543752\">Shawn Ruest</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU63SQtdlOWZWQCWEBVQkWM2OIlPpoSlBVBBNhJuld3qHHjR3Nx1BFwvITyz9Rw3NqHkGCF5XVLU96LnjmZa-RMARwpRa0vE7f-KGIj427xIcZAoJfp6JMoSIKawuJOrzBPscEWVsH-TrXftdy7ZDsFL0BUbLI0ZCadzpM_ab_Ks7UpBnt9Hhxa0vgLRgHAYRH-cTmLM9OcVq1zUhUZdSFRX7nZ73u3KSgPwb_yxibSFAKRdF48J0KxooWN4pvDcNolooCU27V9HJq56eEAhSmcmULw_CSqn2YniSiOS9DJf3Glh0duHSShQ14ZEN7IMmQgQmtfE5j7W8pE-ut38aUcEUPhgIspXmmoi84hN5GOOub8INY5PkITom4b9DVnyjywDxcaOtNLeDt9fB7fo3RvGpHT_GRg4p3LK-Zf6FnOq9Q",
+          "height": 3264,
+          "width": 1836,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU4P3BjIz0HVGzOcwrBscB23jOwWtwb-kINGWCYRTpv5kQD4sHFHhSAa95bC4vwk-F21mlcPxAWChyN0n0lr0N4Lt3b3N0PeQF7ywnQ-1-n-60u5mOrUvisy0UYX2HpXHhARoPP1W_IwMiMdS0hOeFgOQmN8LKkPD0gCK_eHVzOUC_aAyK0EvhRjzebP82oy-oSRHqmJFno0BArU25W25_4-EhdrMq0IwAqrRmdJANZkBA8b1SXeZI1i_JKIn7V4R_wGYyBOlgIMk7f5JYPqB7KqzeKXtN88jQNaJ4-mCN3zjOUXXD07i6QhZRb1PaMnbt2c4ZUyi7ZiryAzM7XdfSf2x-vPHEW0l2bz9Bc10QVE85LQsKub6cR8vOV-Tfp3KRu4aoXemOTuvV8J20_v03NjlGrSmxB6-vXfFXdAenVgbAU",
+          "height": 664,
+          "width": 1181,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/101103915448448003446\">Harald Padeborn</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU7-XYO9BchSRYibP7K6avd1DGuqHw4x--3F5eIQIOrbT1QnF3_OMndvVJ1WkpETQmuV5U6uBcbGVItHYuUziNW5LxgsNiE07vMtYMZEcPBkBf7AUT4r-el-Mt4QiG_Rtuzx6cSh_a7D-XjTdAtmN93QAyYCTFa_BfZ_yDZ5nVImwXoCNlqMUQizbDoaMpyUaORf8WFw-0hPfhKIZ1QeZjWVDeMsXkeF_ozJLqTpEZfpsTvEFrKJ3ney_oSWbNcOss6SEvU-9JwoEcmXi9hWX-rUkLGHR1nJJzWkwx2IZhKdin-3c9s7n7Zrbjw-kyYfs9LNiRQuIJS8n9Xf8Eb13cGnzrznwg-L0pnbny83509VQ-SDa4QaS3gkjE1DuxGiNqBBaD2dzITS7uZX1LoBHRs_kjA6cVOjJRn0LmYxhjWrT4k",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU5KB7EboPPA1jv4HNRgefanpOkrWA5fxDuCdusoslh4scZ4PZXHFDTlZJDPFUPThL4ReJcCA2k9Ggsrec7xunwDUzNGIBcMKGG_90ZKSvRI9e4jZnDHIYWDe31D8_dZeDlJWDegBBxk6Bjl96EBgwfr3kB_6w_Fe5Rulm3m91CpGCPMFUiC2SjffL5V7YGAN8qF8d516qvDWluVAkApbi_N4jLl46Lu0o3Mqix6LQktEAQvRRkDL_fDbRvjcUDJCDSZu_iVzfRKBSEG7P0XZkiArRN6I2j8SziPcv4z6fJc-_XLSULlgyViBRIhutHpKLx_kxpdgbUkTQJYlTAX4E6R9JAz41ejRJVhvmutG5hSKCJaXX-5Lp-uKHFYVh-m3sF-qLSUhR6Zpd6Exzl7ZbQx1J7s4Uy6vBjHHoUiKk3sug",
+          "height": 1398,
+          "width": 2745,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/110160054639946927696\">K K</a>"
+          ]
+        },
+        {
+          "photo_reference": "AWn5SU5kU-1q7OH-mIMu19H8hxVtn4_YBYeabb8nCrTArmCQkgNdn_c9hxATPU3lwx2cO_zAmBJrSnjSLSY88R--Gb5qYFZSftJIh6sDbW2YLRRcDjFBLVZy2m5S_Kfcq29Rlmgpjg_v_jCRuVG_3y-SImTHnJMXUD0pcw7sj4r4L3dZqN8dOFHmmfhjTLhLTMXhMeM9dSH5LXJTbqAVUrJVIlaZ-HKmTd_UDK86WZxNeCZ59TIp7aIits5wq_40ntWIy-ofH5ef1KT5Ync5r-nARXwCmUjq12nn1_Bqp-KlOKbwsRdLvCFW7vdlGl3oNuy8AUAp5T9CDQInD6nRyN3JT-jN85P3YQibhBt3P4rlWl_OBpX2g5OF2IJnzwWGlLdc18y8ySWb19kBMlNTPYlkfet1hl5tXwMyFa6I0zz2_gaPCP8v",
+          "height": 1836,
+          "width": 3264,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/105549985131733144822\">karen dube</a>"
+          ]
+        }
+      ],
+      "url": "https://maps.google.com/?cid=17247995810401630063",
+      "geometry": {
+        "location": {
+          "lat": 45.6240392,
+          "lng": -70.2521512
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.66365006063621,
+            "lng": -70.1177249963709
+          },
+          "southwest": {
+            "lat": 45.54725298634594,
+            "lng": -70.2686838889673
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Hidden Roots Maple Farm",
+    "Address": "265 Stone Hill Rd, Limerick, ME 04048, USA",
+    "City": "Limerick",
+    "Zip": "4048",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJK38AZOnnskwRxMp-dL-Qewk",
+    "slug": "hidden-roots-maple-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.6802451,
+    "lng": -70.825116,
+    "placeDetails": {
+      "place_id": "ChIJK38AZOnnskwRxMp-dL-Qewk",
+      "name": "265 Stone Hill Rd",
+      "formatted_address": "265 Stone Hill Rd, Limerick, ME 04048, USA",
+      "url": "https://maps.google.com/?cid=683298920444381892",
+      "geometry": {
+        "location": {
+          "lat": 43.6802451,
+          "lng": -70.825116
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.68145968745269,
+            "lng": -70.8235570265738
+          },
+          "southwest": {
+            "lat": 43.67876172686969,
+            "lng": -70.8262549871568
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Gray Jay Mapleworks",
+    "Address": "34 Pleasant St, Moose River, ME 04945, USA",
+    "City": "Moose River",
+    "Zip": "4945",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJkZig72SmsEwRxC5xmma6XeI",
+    "slug": "gray-jay-mapleworks",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.648868,
+    "lng": -70.2544886,
+    "placeDetails": {
+      "place_id": "ChIJkZig72SmsEwRxC5xmma6XeI",
+      "name": "34 Pleasant St",
+      "formatted_address": "34 Pleasant St, Moose River, ME 04945, USA",
+      "url": "https://maps.google.com/?cid=16311398375246343876",
+      "geometry": {
+        "location": {
+          "lat": 45.648868,
+          "lng": -70.2544886
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.6501193302915,
+            "lng": -70.25310541970849
+          },
+          "southwest": {
+            "lat": 45.6474213697085,
+            "lng": -70.25580338029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Raider’s Sugarhouse",
+    "Address": "148 Bog Brook Rd, China, ME 04358, USA",
+    "City": "So. China",
+    "Zip": "4358",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJTSd_IHwDrkwRURBqH5TVI9M",
+    "slug": "raiders-sugarhouse",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.4520011,
+    "lng": -69.4828431,
+    "placeDetails": {
+      "place_id": "ChIJTSd_IHwDrkwRURBqH5TVI9M",
+      "name": "148 Bog Brook Rd",
+      "formatted_address": "148 Bog Brook Rd, China, ME 04358, USA",
+      "url": "https://maps.google.com/?cid=15214238798346588241",
+      "geometry": {
+        "location": {
+          "lat": 44.4520011,
+          "lng": -69.4828431
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.45302935877917,
+            "lng": -69.48199714230606
+          },
+          "southwest": {
+            "lat": 44.45033139819617,
+            "lng": -69.48469510288906
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Whipple Lock Farm",
+    "Address": "1010 Naples Rd, Harrison, ME 04040, USA",
+    "City": "Harrison",
+    "Zip": "4040",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJz9sIYpxRskwRjFw0hHpTP18",
+    "slug": "whipple-lock-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 44.0503928,
+    "lng": -70.6375453,
+    "placeDetails": {
+      "place_id": "ChIJz9sIYpxRskwRjFw0hHpTP18",
+      "name": "1010 Naples Rd",
+      "formatted_address": "1010 Naples Rd, Harrison, ME 04040, USA",
+      "url": "https://maps.google.com/?cid=6863296142805064844",
+      "geometry": {
+        "location": {
+          "lat": 44.0503928,
+          "lng": -70.6375453
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.05174454072949,
+            "lng": -70.63617159976874
+          },
+          "southwest": {
+            "lat": 44.04904658014649,
+            "lng": -70.63886956035175
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "G & M Maple Products",
+    "Address": "745 Main Rd, Charleston, ME 04422, USA",
+    "City": "Charleston",
+    "Zip": "4422",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJmweMeRvar0wR0BWQi-w0DuI",
+    "slug": "g-m-maple-products",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.031053,
+    "lng": -69.03123099999999,
+    "placeDetails": {
+      "place_id": "ChIJmweMeRvar0wR0BWQi-w0DuI",
+      "name": "745 Main Rd",
+      "formatted_address": "745 Main Rd, Charleston, ME 04422, USA",
+      "url": "https://maps.google.com/?cid=16289015092804064720",
+      "geometry": {
+        "location": {
+          "lat": 45.031053,
+          "lng": -69.03123099999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.0323885802915,
+            "lng": -69.02999476970848
+          },
+          "southwest": {
+            "lat": 45.0296906197085,
+            "lng": -69.03269273029149
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Maple Moon Farm, LLC",
+    "Address": "289 Chick Rd, Lebanon, ME 04027, USA",
+    "City": "Lebanon",
+    "Zip": "4027",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJS7Iq-PnKskwRigwYxDQVfBg",
+    "slug": "maple-moon-farm-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 43.3989503,
+    "lng": -70.82789079999999,
+    "placeDetails": {
+      "place_id": "ChIJS7Iq-PnKskwRigwYxDQVfBg",
+      "name": "289 Chick Rd",
+      "formatted_address": "289 Chick Rd, Lebanon, ME 04027, USA",
+      "url": "https://maps.google.com/?cid=1764308470394784906",
+      "geometry": {
+        "location": {
+          "lat": 43.3989503,
+          "lng": -70.82789079999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.40033672754202,
+            "lng": -70.82672467135647
+          },
+          "southwest": {
+            "lat": 43.39763876695902,
+            "lng": -70.8294226319395
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Maine Highlands Sugarworks",
+    "Address": "269 Williamsburg Rd, Williamsburg, ME 04414, USA",
+    "City": "Williamsburg Township",
+    "Zip": "4414",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJ7RWindgEsEwRHmiIGGKntDI",
+    "slug": "maine-highlands-sugarworks",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.354388,
+    "lng": -69.0805015,
+    "placeDetails": {
+      "place_id": "ChIJ7RWindgEsEwRHmiIGGKntDI",
+      "name": "269 Williamsburg Rd",
+      "formatted_address": "269 Williamsburg Rd, Williamsburg, ME 04414, USA",
+      "url": "https://maps.google.com/?cid=3653729237464541214",
+      "geometry": {
+        "location": {
+          "lat": 45.354388,
+          "lng": -69.0805015
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.35556917139853,
+            "lng": -69.07914628520265
+          },
+          "southwest": {
+            "lat": 45.35287121081553,
+            "lng": -69.08184424578566
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Northwoods Nectar",
+    "Address": "1426 Sly Brook Rd, Eagle Lake, ME 04739, USA",
+    "City": "Eagle Lake",
+    "Zip": "4739",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJi67mWNlevEwRG1oNbYGgRjM",
+    "slug": "northwoods-nectar",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 47.0722679,
+    "lng": -68.5901655,
+    "placeDetails": {
+      "place_id": "ChIJi67mWNlevEwRG1oNbYGgRjM",
+      "name": "1426 Sly Brook Rd",
+      "formatted_address": "1426 Sly Brook Rd, Eagle Lake, ME 04739, USA",
+      "url": "https://maps.google.com/?cid=3694817022044887579",
+      "geometry": {
+        "location": {
+          "lat": 47.0722679,
+          "lng": -68.5901655
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 47.0736397302915,
+            "lng": -68.58908766970848
+          },
+          "southwest": {
+            "lat": 47.0709417697085,
+            "lng": -68.5917856302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "sugar_shack",
+    "Name": "Baker’s Maple Syrup",
+    "Address": "26 N Rd, Shirley, ME 04485, USA",
+    "City": "Shirley",
+    "Zip": "4485",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJpZ6vWNdlsEwR3UOE0zlculw",
+    "slug": "bakers-maple-syrup",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "maple_syrup": false,
+      "maple_candy": false,
+      "maple_cream": false,
+      "maple_sugar": false,
+      "tours": false,
+      "tastings": false,
+      "pancake_breakfast": false,
+      "seasonal_events": false
+    },
+    "lat": 45.3706864,
+    "lng": -69.63116509999999,
+    "placeDetails": {
+      "place_id": "ChIJpZ6vWNdlsEwR3UOE0zlculw",
+      "name": "26 N Rd",
+      "formatted_address": "26 N Rd, Shirley, ME 04485, USA",
+      "url": "https://maps.google.com/?cid=6681754400589104093",
+      "geometry": {
+        "location": {
+          "lat": 45.3706864,
+          "lng": -69.63116509999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.3719902302915,
+            "lng": -69.62979896970849
+          },
+          "southwest": {
+            "lat": 45.3692922697085,
+            "lng": -69.6324969302915
+          }
+        }
+      }
+    }
+  }
+]

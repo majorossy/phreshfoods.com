@@ -30,9 +30,7 @@ coverage/
 node_modules/
 dist/
 
-# Generated data files (regenerate via: npm run process-data)
-backend/data/*.json
-!backend/data/.gitkeep
+# Note: backend/data/*.json files ARE committed to git for simpler deployments
 
 # Built JS/CSS bundles (hashed filenames change on every build)
 backend/public/assets/

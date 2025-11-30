@@ -1,0 +1,2262 @@
+[
+  {
+    "type": "antique_shop",
+    "Name": "Maine Wicked Goods Mercantile",
+    "Address": "304 U.S. Rte 1, Freeport, ME 04032, USA",
+    "City": "Freeport",
+    "Zip": "04032",
+    "Rating": "N/A",
+    "Phone": "207-869-5251",
+    "Website": "https://www.mainewickedgoods.com",
+    "GoogleProfileID": "ChIJN-DQ8L6AskwRXp4FSQAdZh4",
+    "slug": "maine-wicked-goods-mercantile",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.8277998,
+    "lng": -70.1351373,
+    "placeDetails": {
+      "place_id": "ChIJN-DQ8L6AskwRXp4FSQAdZh4",
+      "name": "304 U.S. Rte 1",
+      "formatted_address": "304 U.S. Rte 1, Freeport, ME 04032, USA",
+      "url": "https://maps.google.com/?cid=2190470155824635486",
+      "geometry": {
+        "location": {
+          "lat": 43.8277998,
+          "lng": -70.1351373
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.82912726307143,
+            "lng": -70.1337689620718
+          },
+          "southwest": {
+            "lat": 43.82642930248844,
+            "lng": -70.13646692265482
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Vacationland Antiques",
+    "Address": "33 Main St, Dixfield, ME 04224, USA",
+    "City": "Dixfield",
+    "Zip": "04224",
+    "Rating": "N/A",
+    "Phone": "207-653-5064",
+    "Website": "https://www.vacationlandantiques.com",
+    "GoogleProfileID": "ChIJdRZvA79_sUwRI0zecBHyoHU",
+    "slug": "vacationland-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.5309387,
+    "lng": -70.4565985,
+    "placeDetails": {
+      "place_id": "ChIJdRZvA79_sUwRI0zecBHyoHU",
+      "name": "33 Main St",
+      "formatted_address": "33 Main St, Dixfield, ME 04224, USA",
+      "url": "https://maps.google.com/?cid=8476040655433255971",
+      "geometry": {
+        "location": {
+          "lat": 44.5309387,
+          "lng": -70.4565985
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.53232779817264,
+            "lng": -70.455245087802
+          },
+          "southwest": {
+            "lat": 44.52962983758965,
+            "lng": -70.457943048385
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Central Maine Antique Mall",
+    "Address": "1372 Union St, Bangor, ME 04401, USA",
+    "City": "Bangor",
+    "Zip": "04401",
+    "Rating": "N/A",
+    "Phone": "207-262-4010",
+    "Website": "https://www.centralmaineantiquemall.net",
+    "GoogleProfileID": "ChIJJ8j8I8tKrkwRgXAsbYFI76g",
+    "slug": "central-maine-antique-mall",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.822325,
+    "lng": -68.8219556,
+    "placeDetails": {
+      "place_id": "ChIJJ8j8I8tKrkwRgXAsbYFI76g",
+      "name": "1372 Union St",
+      "formatted_address": "1372 Union St, Bangor, ME 04401, USA",
+      "url": "https://maps.google.com/?cid=12173028038525350017",
+      "geometry": {
+        "location": {
+          "lat": 44.822325,
+          "lng": -68.8219556
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.82367071744988,
+            "lng": -68.82057602280899
+          },
+          "southwest": {
+            "lat": 44.82097275686689,
+            "lng": -68.82327398339201
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Back In The Day Antique Mall",
+    "Address": "814 Main Rd, Carmel, ME 04419, USA",
+    "City": "Carmel",
+    "Zip": "04419",
+    "Rating": "N/A",
+    "Phone": "207-848-7699",
+    "Website": "https://www.backinthedayantiquemall.com",
+    "GoogleProfileID": "ChIJb3gROS0yrkwRorlGdVlsZSc",
+    "slug": "back-in-the-day-antique-mall",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.7973511,
+    "lng": -69.0472466,
+    "placeDetails": {
+      "place_id": "ChIJb3gROS0yrkwRorlGdVlsZSc",
+      "name": "814 Main Rd",
+      "formatted_address": "814 Main Rd, Carmel, ME 04419, USA",
+      "url": "https://maps.google.com/?cid=2838794271602424226",
+      "geometry": {
+        "location": {
+          "lat": 44.7973511,
+          "lng": -69.0472466
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.79874380473161,
+            "lng": -69.04589761174766
+          },
+          "southwest": {
+            "lat": 44.79604584414861,
+            "lng": -69.04859557233067
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Hobby Horse Antiques Marketplace",
+    "Address": "383 E Main St, Searsport, ME 04974, USA",
+    "City": "Searsport",
+    "Zip": "04974",
+    "Rating": "N/A",
+    "Phone": "207-323-6275",
+    "Website": "https://www.hobbyhorseantiquesmarketplace.com",
+    "GoogleProfileID": "ChIJwWNTODBmrkwRlHiVlPN0vbw",
+    "slug": "hobby-horse-antiques-marketplace",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.47782,
+    "lng": -68.8766192,
+    "placeDetails": {
+      "place_id": "ChIJwWNTODBmrkwRlHiVlPN0vbw",
+      "name": "383 E Main St",
+      "formatted_address": "383 E Main St, Searsport, ME 04974, USA",
+      "url": "https://maps.google.com/?cid=13600155039247464596",
+      "geometry": {
+        "location": {
+          "lat": 44.47782,
+          "lng": -68.8766192
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.47928660674854,
+            "lng": -68.87540071700869
+          },
+          "southwest": {
+            "lat": 44.47658864616555,
+            "lng": -68.8780986775917
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Carboni Antiques",
+    "Address": "1755 Post Rd, Wells, ME 04090, USA",
+    "City": "Wells",
+    "Zip": "04090",
+    "Rating": "N/A",
+    "Phone": "207-475-3877",
+    "Website": "https://www.carboniantiques.com",
+    "GoogleProfileID": "ChIJyxjETSmtskwRAn1shHG02HQ",
+    "slug": "carboni-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.3277563,
+    "lng": -70.5758682,
+    "placeDetails": {
+      "place_id": "ChIJyxjETSmtskwRAn1shHG02HQ",
+      "name": "1755 Post Rd",
+      "formatted_address": "1755 Post Rd, Wells, ME 04090, USA",
+      "photos": [
+        {
+          "photo_reference": "AWn5SU4qulr3qhux894k1D3tOWoZaHK9X_HQCg1dy6oXXsKqAyO7u8z-j6lryhjOAaZuXoeYT9C46xC7NOoikC0Dj66HmdTs3Prqy0ta2jbZKMPCb46K2zTYp6Dwz7NcH0kH01JXpASJvdxEu96Je30_fYl_F32FnlXhmLvGELwYPNpqkNoRpkTEkr_MMC1zNCb6H-6i-LR0U5MRTjV7qNg_WSU1Z2UazHDgDW7UcbohTaxkHWd0CFIQFSwfezT_bffwUYSuOzfVJYh9LlO0pCVYvLVYa1C8knWuvh1gVgj91arGAY3nypjeOx0mWiuMSIgZ6L2IbciOlBGJoe2sKE_stXlgIWhMX8gz6isxt4w8CwQdS3DUJqcNKqyj10c1SVc0KUzz57YWjBHuKx5nDKX5RLbqEAK8W25Im5LcrCJ7KSTfhQ",
+          "height": 2268,
+          "width": 4032,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/108836555290899665219\">Lolo Smith</a>"
+          ]
+        }
+      ],
+      "url": "https://maps.google.com/?cid=8419677903015148802",
+      "geometry": {
+        "location": {
+          "lat": 43.3277563,
+          "lng": -70.5758682
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.32903945123933,
+            "lng": -70.5745560153604
+          },
+          "southwest": {
+            "lat": 43.32634149065633,
+            "lng": -70.5772539759434
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Iron Horse Antiques and Antique Auto Museum",
+    "Address": "586 Wiscasset Rd, Boothbay, ME 04537, USA",
+    "City": "Boothbay",
+    "Zip": "04537",
+    "Rating": "N/A",
+    "Phone": "207-633-4727",
+    "Website": "https://www.railwayvillage.org",
+    "GoogleProfileID": "ChIJSVwWL32XrUwRQvVx_txQkJI",
+    "slug": "iron-horse-antiques-and-antique-auto-museum",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.90294979999999,
+    "lng": -69.62170429999999,
+    "placeDetails": {
+      "place_id": "ChIJSVwWL32XrUwRQvVx_txQkJI",
+      "name": "586 Wiscasset Rd",
+      "formatted_address": "586 Wiscasset Rd, Boothbay, ME 04537, USA",
+      "url": "https://maps.google.com/?cid=10561030036275721538",
+      "geometry": {
+        "location": {
+          "lat": 43.90294979999999,
+          "lng": -69.62170429999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.90451035490057,
+            "lng": -69.62038920913236
+          },
+          "southwest": {
+            "lat": 43.90181239431757,
+            "lng": -69.62308716971536
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Waterfront Flea Market",
+    "Address": "14 Maine St, Brunswick, ME 04011, USA",
+    "City": "Brunswick",
+    "Zip": "04011",
+    "Rating": "N/A",
+    "Phone": "207-729-0378",
+    "Website": "https://www.facebook.com/profile.php?id=100087467504115",
+    "GoogleProfileID": "ChIJQ069nR2HrUwRitqAKQ76Ulo",
+    "slug": "waterfront-flea-market",
+    "XHandle": "https://www.facebook.com/profile.php?id=100087467504115",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.91938080000001,
+    "lng": -69.9672595,
+    "placeDetails": {
+      "place_id": "ChIJQ069nR2HrUwRitqAKQ76Ulo",
+      "name": "14 Maine St",
+      "formatted_address": "14 Maine St, Brunswick, ME 04011, USA",
+      "url": "https://maps.google.com/?cid=6508539350236584586",
+      "geometry": {
+        "location": {
+          "lat": 43.91938080000001,
+          "lng": -69.9672595
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.9206016802915,
+            "lng": -69.96598366970849
+          },
+          "southwest": {
+            "lat": 43.91790371970851,
+            "lng": -69.9686816302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Old House Parts Co",
+    "Address": "1 Trackside Dr, Kennebunk, ME 04043, USA",
+    "City": "Kennebunk",
+    "Zip": "04043",
+    "Rating": "N/A",
+    "Phone": "207-985-1999",
+    "Website": "https://www.oldhouseparts.com",
+    "GoogleProfileID": "ChIJFxWn7yysskwRbm6l-aO52C4",
+    "slug": "old-house-parts-co",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.3821886,
+    "lng": -70.52909869999999,
+    "placeDetails": {
+      "place_id": "ChIJFxWn7yysskwRbm6l-aO52C4",
+      "name": "1 Trackside Dr",
+      "formatted_address": "1 Trackside Dr, Kennebunk, ME 04043, USA",
+      "url": "https://maps.google.com/?cid=3375652034633363054",
+      "geometry": {
+        "location": {
+          "lat": 43.3821886,
+          "lng": -70.52909869999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.38353765264219,
+            "lng": -70.52778916817907
+          },
+          "southwest": {
+            "lat": 43.38083969205919,
+            "lng": -70.53048712876208
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Americana Workshop",
+    "Address": "111 York St, Kennebunk, ME 04043, USA",
+    "City": "Kennebunk",
+    "Zip": "04043",
+    "Rating": "N/A",
+    "Phone": "207-985-8356",
+    "Website": "https://www.americanaworkshop.com",
+    "GoogleProfileID": "ChIJTcAnBbqtskwR5vOEVb8YHNo",
+    "slug": "americana-workshop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.36921,
+    "lng": -70.5546214,
+    "placeDetails": {
+      "place_id": "ChIJTcAnBbqtskwR5vOEVb8YHNo",
+      "name": "111 York St",
+      "formatted_address": "111 York St, Kennebunk, ME 04043, USA",
+      "url": "https://maps.google.com/?cid=15716464009668785126",
+      "geometry": {
+        "location": {
+          "lat": 43.36921,
+          "lng": -70.5546214
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.37057830034197,
+            "lng": -70.5534099462965
+          },
+          "southwest": {
+            "lat": 43.36788033975897,
+            "lng": -70.5561079068795
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "MOTHERS Art & Antique Gallery",
+    "Address": "19 Church Hill Cir, Columbia Falls, ME 04623, USA",
+    "City": "Columbia Falls",
+    "Zip": "04623",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "https://www.mothersartgallery.com",
+    "GoogleProfileID": "ChIJs6ahQWUpr0wRsV4LN0SG9sc",
+    "slug": "mothers-art-antique-gallery",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.6547521,
+    "lng": -67.7269534,
+    "placeDetails": {
+      "place_id": "ChIJs6ahQWUpr0wRsV4LN0SG9sc",
+      "name": "19 Church Hill Cir",
+      "formatted_address": "19 Church Hill Cir, Columbia Falls, ME 04623, USA",
+      "url": "https://maps.google.com/?cid=14408851685357870769",
+      "geometry": {
+        "location": {
+          "lat": 44.6547521,
+          "lng": -67.7269534
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.65609198845948,
+            "lng": -67.72556428156365
+          },
+          "southwest": {
+            "lat": 44.65339402787648,
+            "lng": -67.72826224214667
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Farmer's Antiques",
+    "Address": "36 Cross Rd, Milbridge, ME 04658, USA",
+    "City": "Milbridge",
+    "Zip": "4658",
+    "Rating": "N/A",
+    "Phone": "603-493-2616",
+    "Website": "https://www.farmersantiques.com",
+    "GoogleProfileID": "ChIJS1IG7sjQrkwREF6UUk6rOec",
+    "slug": "farmers-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.5508809,
+    "lng": -67.88140299999999,
+    "placeDetails": {
+      "place_id": "ChIJS1IG7sjQrkwREF6UUk6rOec",
+      "name": "36 Cross Rd",
+      "formatted_address": "36 Cross Rd, Milbridge, ME 04658, USA",
+      "url": "https://maps.google.com/?cid=16661536649315114512",
+      "geometry": {
+        "location": {
+          "lat": 44.5508809,
+          "lng": -67.88140299999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.55212118029149,
+            "lng": -67.88037211970848
+          },
+          "southwest": {
+            "lat": 44.5494232197085,
+            "lng": -67.88307008029149
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Foreside Antiques",
+    "Address": "48 U.S. Rte 1, Falmouth, ME 04105, USA",
+    "City": "Falmouth",
+    "Zip": "4105",
+    "Rating": "N/A",
+    "Phone": "207-781-5367",
+    "Website": "https://www.foresideantiques.com",
+    "GoogleProfileID": "ChIJJ-oniKScskwRdITRjoTIKvo",
+    "slug": "foreside-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 43.6985499,
+    "lng": -70.2415199,
+    "placeDetails": {
+      "place_id": "ChIJJ-oniKScskwRdITRjoTIKvo",
+      "name": "48 U.S. Rte 1",
+      "formatted_address": "48 U.S. Rte 1, Falmouth, ME 04105, USA",
+      "url": "https://maps.google.com/?cid=18026440930161165428",
+      "geometry": {
+        "location": {
+          "lat": 43.6985499,
+          "lng": -70.2415199
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.69988920298938,
+            "lng": -70.2400297395304
+          },
+          "southwest": {
+            "lat": 43.69719124240638,
+            "lng": -70.2427277001134
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "1A Relics",
+    "Address": "444 Bangor Rd, Ellsworth, ME 04605, USA",
+    "City": "Ellsworth",
+    "Zip": "4605",
+    "Rating": "N/A",
+    "Phone": "207-412-0822",
+    "Website": "https://www.1arelics.com",
+    "GoogleProfileID": "ChIJe-PGXzT3rkwRQr6iU8I8EtE",
+    "slug": "1a-relics",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": true,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": true,
+      "vintage_clothing": true
+    },
+    "lat": 44.5775575,
+    "lng": -68.475135,
+    "placeDetails": {
+      "place_id": "ChIJe-PGXzT3rkwRQr6iU8I8EtE",
+      "name": "444 Bangor Rd",
+      "formatted_address": "444 Bangor Rd, Ellsworth, ME 04605, USA",
+      "url": "https://maps.google.com/?cid=15065170508832226882",
+      "geometry": {
+        "location": {
+          "lat": 44.5775575,
+          "lng": -68.475135
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.57897136799355,
+            "lng": -68.47375227436598
+          },
+          "southwest": {
+            "lat": 44.57627340741055,
+            "lng": -68.47645023494898
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Breakaway Design & Antiques",
+    "Address": "1755 Post Rd, Wells, ME 04090, USA",
+    "City": "Wells",
+    "Zip": "4090",
+    "Rating": "N/A",
+    "Phone": "207-360-0530",
+    "Website": "https://www.breakawaydesignandantiques.com",
+    "GoogleProfileID": "ChIJyxjETSmtskwRAn1shHG02HQ",
+    "slug": "breakaway-design-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.3277563,
+    "lng": -70.5758682,
+    "placeDetails": {
+      "place_id": "ChIJyxjETSmtskwRAn1shHG02HQ",
+      "name": "1755 Post Rd",
+      "formatted_address": "1755 Post Rd, Wells, ME 04090, USA",
+      "photos": [
+        {
+          "photo_reference": "AWn5SU5I9AhZpKTCbxwIS7fHLsPn7aJ1ptRnQdzGnvE84TJAD0akJ4iHZ4y8Aw_ibn0WODirU-LjeDNaG69YmzJbvF1yzLg_kOSolQFR3Hssrik_FD7uqQkqEk8WhL9EiVhBMeRbA9sgN0j_i0vZBt7e2Unbd5YOBVe9O9nuQdY7NRW3gt06w4usu3afVNd3a2MQVtT88fcf7e91kOw0NNWfmxK2QMn-nBz-nT-bbS6rDrtZe1iP_wXqR7UqKhGkk8ehq4hq0ZcJBHH2o0DGdQLT79YvgDvFhelMCE2KKfLF8ztxyry52St2guP7dlvige6YZU4OYJEAVdjJgA4OdQyzBm-QKtuDI28lgC9QRIO_iCl1zEvl_pmTd-hivKs9izt8WaPtI2jbDvYvyVSRgdDbd4hODBbyfo6uEfP191E0XXC8sw",
+          "height": 2268,
+          "width": 4032,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/108836555290899665219\">Lolo Smith</a>"
+          ]
+        }
+      ],
+      "url": "https://maps.google.com/?cid=8419677903015148802",
+      "geometry": {
+        "location": {
+          "lat": 43.3277563,
+          "lng": -70.5758682
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.32903945123933,
+            "lng": -70.5745560153604
+          },
+          "southwest": {
+            "lat": 43.32634149065633,
+            "lng": -70.5772539759434
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Generations Antique Mall",
+    "Address": "411 West St, Rockport, ME 04856, USA",
+    "City": "Rockport",
+    "Zip": "4856",
+    "Rating": "N/A",
+    "Phone": "207-236-8300",
+    "Website": "https://www.generationsantiquemall.com",
+    "GoogleProfileID": "ChIJMd8Fv6rQrUwRCRAMdZhhmLY",
+    "slug": "generations-antique-mall",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.1852334,
+    "lng": -69.1154608,
+    "placeDetails": {
+      "place_id": "ChIJMd8Fv6rQrUwRCRAMdZhhmLY",
+      "name": "411 West St",
+      "formatted_address": "411 West St, Rockport, ME 04856, USA",
+      "url": "https://maps.google.com/?cid=13157373618789552137",
+      "geometry": {
+        "location": {
+          "lat": 44.1852334,
+          "lng": -69.1154608
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.18643429340256,
+            "lng": -69.114111798407
+          },
+          "southwest": {
+            "lat": 44.18373633281956,
+            "lng": -69.11680975899
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Orphan Annie's",
+    "Address": "96 Court St, Auburn, ME 04210, USA",
+    "City": "Auburn",
+    "Zip": "4210",
+    "Rating": "N/A",
+    "Phone": "207-782-0638",
+    "Website": "https://www.orphananniesme.net",
+    "GoogleProfileID": "ChIJyRhTw89rskwRvI1_DYne04E",
+    "slug": "orphan-annies",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.0973595,
+    "lng": -70.22665959999999,
+    "placeDetails": {
+      "place_id": "ChIJyRhTw89rskwRvI1_DYne04E",
+      "name": "96 Court St",
+      "formatted_address": "96 Court St, Auburn, ME 04210, USA",
+      "url": "https://maps.google.com/?cid=9355065531197001148",
+      "geometry": {
+        "location": {
+          "lat": 44.0973595,
+          "lng": -70.22665959999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.0988006302915,
+            "lng": -70.22529256970849
+          },
+          "southwest": {
+            "lat": 44.0961026697085,
+            "lng": -70.2279905302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Barn on 26 Antiques",
+    "Address": "361 Shaker Rd, Gray, ME 04039, USA",
+    "City": "Gray",
+    "Zip": "4039",
+    "Rating": "N/A",
+    "Phone": "207-657-3470",
+    "Website": "https://www.barnon26.com",
+    "GoogleProfileID": "ChIJg2gMVRxhskwRdef7-rD0YOU",
+    "slug": "barn-on-26-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.932375,
+    "lng": -70.3529501,
+    "placeDetails": {
+      "place_id": "ChIJg2gMVRxhskwRdef7-rD0YOU",
+      "name": "361 Shaker Rd",
+      "formatted_address": "361 Shaker Rd, Gray, ME 04039, USA",
+      "url": "https://maps.google.com/?cid=16528479673411954549",
+      "geometry": {
+        "location": {
+          "lat": 43.932375,
+          "lng": -70.3529501
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.93371883750003,
+            "lng": -70.35161187540109
+          },
+          "southwest": {
+            "lat": 43.93102087691703,
+            "lng": -70.3543098359841
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Indian Trail Antiques",
+    "Address": "23 Indian Trail Rd, Newcastle, ME 04553, USA",
+    "City": "Newcastle",
+    "Zip": "4553",
+    "Rating": "N/A",
+    "Phone": "207-586-5000",
+    "Website": "https://www.indiantrailantiques.com",
+    "GoogleProfileID": "ChIJDcTsv1qTrUwRAxsjHmwHUFk",
+    "slug": "indian-trail-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.0346603,
+    "lng": -69.5762786,
+    "placeDetails": {
+      "place_id": "ChIJDcTsv1qTrUwRAxsjHmwHUFk",
+      "name": "23 Indian Trail Rd",
+      "formatted_address": "23 Indian Trail Rd, Newcastle, ME 04553, USA",
+      "url": "https://maps.google.com/?cid=6435652028455918339",
+      "geometry": {
+        "location": {
+          "lat": 44.0346603,
+          "lng": -69.5762786
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.0361001802915,
+            "lng": -69.5752444697085
+          },
+          "southwest": {
+            "lat": 44.0334022197085,
+            "lng": -69.57794243029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Columbary House Antiques",
+    "Address": "1286 U.S. Rte 1, Cape Neddick, ME 03902, USA",
+    "City": "Cape Neddick",
+    "Zip": "3902",
+    "Rating": "N/A",
+    "Phone": "207-363-5496",
+    "Website": "https://www.columbaryhouse.com",
+    "GoogleProfileID": "ChIJgWgPNvav4okRd16vh39mgyc",
+    "slug": "columbary-house-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.1927476,
+    "lng": -70.62026689999999,
+    "placeDetails": {
+      "place_id": "ChIJgWgPNvav4okRd16vh39mgyc",
+      "name": "1286 U.S. Rte 1",
+      "formatted_address": "1286 U.S. Rte 1, Cape Neddick, ME 03902, USA",
+      "url": "https://maps.google.com/?cid=2847232087351582327",
+      "geometry": {
+        "location": {
+          "lat": 43.1927476,
+          "lng": -70.62026689999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.19412431221463,
+            "lng": -70.61887393906417
+          },
+          "southwest": {
+            "lat": 43.19142635163163,
+            "lng": -70.62157189964718
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Kennebunk ReStore",
+    "Address": "123 York St, Kennebunk, ME 04043, USA",
+    "City": "Kennebunk",
+    "Zip": "4043",
+    "Rating": "N/A",
+    "Phone": "207-502-7021",
+    "Website": "https://www.habitatyorkcounty.org/restore",
+    "GoogleProfileID": "ChIJqRRWvLqtskwRhgYb2HM_MSY",
+    "slug": "kennebunk-restore",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.3664166,
+    "lng": -70.5570347,
+    "placeDetails": {
+      "place_id": "ChIJqRRWvLqtskwRhgYb2HM_MSY",
+      "name": "123 York St",
+      "formatted_address": "123 York St, Kennebunk, ME 04043, USA",
+      "url": "https://maps.google.com/?cid=2752050614079522438",
+      "geometry": {
+        "location": {
+          "lat": 43.3664166,
+          "lng": -70.5570347
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.36780922499654,
+            "lng": -70.55571219708449
+          },
+          "southwest": {
+            "lat": 43.36511126441354,
+            "lng": -70.5584101576675
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Hathaway Mill Antiques",
+    "Address": "10 Water St 101 4901, Waterville, ME 04901, USA",
+    "City": "Waterville",
+    "Zip": "4901",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "https://www.hathawaymillantiques.com",
+    "GoogleProfileID": "Ei8xMCBXYXRlciBTdCAxMDEgNDkwMSwgV2F0ZXJ2aWxsZSwgTUUgMDQ5MDEsIFVTQSIkGiIKFgoUChIJ4TIL0X3jsUwREYMy1M5UbGYSCDEwMSA0OTAx",
+    "slug": "hathaway-mill-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.5461413,
+    "lng": -69.6296756,
+    "placeDetails": {
+      "place_id": "Ei8xMCBXYXRlciBTdCAxMDEgNDkwMSwgV2F0ZXJ2aWxsZSwgTUUgMDQ5MDEsIFVTQSIkGiIKFgoUChIJ4TIL0X3jsUwREYMy1M5UbGYSCDEwMSA0OTAx",
+      "name": "10 Water St 101 4901",
+      "formatted_address": "10 Water St 101 4901, Waterville, ME 04901, USA",
+      "url": "https://maps.google.com/?q=10+Water+St+101+4901,+Waterville,+ME+04901,+USA&ftid=0x4cb1e37dd10b32e1:0x880dac4bb3ccc346",
+      "geometry": {
+        "location": {
+          "lat": 44.5461413,
+          "lng": -69.6296756
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.54749685436111,
+            "lng": -69.62828542489956
+          },
+          "southwest": {
+            "lat": 44.54479889377811,
+            "lng": -69.63098338548257
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Antiques USA",
+    "Address": "1669 Portland Rd, Arundel, ME 04046, USA",
+    "City": "Arundel",
+    "Zip": "4046",
+    "Rating": "N/A",
+    "Phone": "207-985-7766",
+    "Website": "https://www.antiquesusamaine.com",
+    "GoogleProfileID": "ChIJp59iOK2vskwRuLTbIACiL6I",
+    "slug": "antiques-usa",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.423766,
+    "lng": -70.51363049999999,
+    "placeDetails": {
+      "place_id": "ChIJp59iOK2vskwRuLTbIACiL6I",
+      "name": "1669 Portland Rd",
+      "formatted_address": "1669 Portland Rd, Arundel, ME 04046, USA",
+      "url": "https://maps.google.com/?cid=11686737679484695736",
+      "geometry": {
+        "location": {
+          "lat": 43.423766,
+          "lng": -70.51363049999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.42511516572534,
+            "lng": -70.51229549525638
+          },
+          "southwest": {
+            "lat": 43.42241720514235,
+            "lng": -70.51499345583939
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Cabot Mill Antiques",
+    "Address": "14 Maine St, Brunswick, ME 04011, USA",
+    "City": "Brunswick",
+    "Zip": "04011",
+    "Rating": "N/A",
+    "Phone": "207-725-2855",
+    "Website": "https://www.cabotiques.com",
+    "GoogleProfileID": "ChIJQ069nR2HrUwRitqAKQ76Ulo",
+    "slug": "cabot-mill-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.91938080000001,
+    "lng": -69.9672595,
+    "placeDetails": {
+      "place_id": "ChIJQ069nR2HrUwRitqAKQ76Ulo",
+      "name": "14 Maine St",
+      "formatted_address": "14 Maine St, Brunswick, ME 04011, USA",
+      "url": "https://maps.google.com/?cid=6508539350236584586",
+      "geometry": {
+        "location": {
+          "lat": 43.91938080000001,
+          "lng": -69.9672595
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.9206016802915,
+            "lng": -69.96598366970849
+          },
+          "southwest": {
+            "lat": 43.91790371970851,
+            "lng": -69.9686816302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Arundel Antiques",
+    "Address": "1713 Portland Rd, Arundel, ME 04046, USA",
+    "City": "Arundel",
+    "Zip": "04046",
+    "Rating": "N/A",
+    "Phone": "207-985-7965",
+    "Website": "https://www.arundelantiquevillage.com",
+    "GoogleProfileID": "ChIJ-_p9da2vskwRCBDF6HpQTtE",
+    "slug": "arundel-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.4252405,
+    "lng": -70.5128395,
+    "placeDetails": {
+      "place_id": "ChIJ-_p9da2vskwRCBDF6HpQTtE",
+      "name": "1713 Portland Rd",
+      "formatted_address": "1713 Portland Rd, Arundel, ME 04046, USA",
+      "url": "https://maps.google.com/?cid=15082080690931830792",
+      "geometry": {
+        "location": {
+          "lat": 43.4252405,
+          "lng": -70.5128395
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.42658915943468,
+            "lng": -70.51149745074268
+          },
+          "southwest": {
+            "lat": 43.42389119885168,
+            "lng": -70.51419541132569
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "East Cove Treasures",
+    "Address": "15 Moosehead Lake Rd, Greenville, ME 04441, USA",
+    "City": "Greenville",
+    "Zip": "04441",
+    "Rating": "N/A",
+    "Phone": "207-695-2342",
+    "Website": "https://peaceofmoose5.godaddysites.com",
+    "GoogleProfileID": "ChIJXTmiehh7sEwRH3ZQ5aAApkY",
+    "slug": "east-cove-treasures",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 45.4579847,
+    "lng": -69.592254,
+    "placeDetails": {
+      "place_id": "ChIJXTmiehh7sEwRH3ZQ5aAApkY",
+      "name": "15 Moosehead Lake Rd",
+      "formatted_address": "15 Moosehead Lake Rd, Greenville, ME 04441, USA",
+      "url": "https://maps.google.com/?cid=5090757119830947359",
+      "geometry": {
+        "location": {
+          "lat": 45.4579847,
+          "lng": -69.592254
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 45.45933167264792,
+            "lng": -69.59082504105474
+          },
+          "southwest": {
+            "lat": 45.45663371206492,
+            "lng": -69.59352300163775
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Route 26 Antiques",
+    "Address": "1188 Main St Apt 3, Oxford, ME 04270, USA",
+    "City": "Oxford",
+    "Zip": "04270",
+    "Rating": "N/A",
+    "Phone": "207-744-0232",
+    "Website": "https://www.route26antiques.com",
+    "GoogleProfileID": "ChIJ2dERB_xIskwRBD0qrbruDaU",
+    "slug": "route-26-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.1703716,
+    "lng": -70.5086695,
+    "placeDetails": {
+      "place_id": "ChIJ2dERB_xIskwRBD0qrbruDaU",
+      "name": "1188 Main St Apt 3",
+      "formatted_address": "1188 Main St Apt 3, Oxford, ME 04270, USA",
+      "url": "https://maps.google.com/?cid=11893424676491902212",
+      "geometry": {
+        "location": {
+          "lat": 44.1703716,
+          "lng": -70.5086695
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.1717494802915,
+            "lng": -70.50726316970851
+          },
+          "southwest": {
+            "lat": 44.1690515197085,
+            "lng": -70.50996113029152
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Hilltop Antiques",
+    "Address": "48 Water St, Skowhegan, ME 04976, USA",
+    "City": "Skowhegan",
+    "Zip": "04976",
+    "Rating": "N/A",
+    "Phone": "207-474-0055",
+    "Website": "https://www.hilltopantiques.com",
+    "GoogleProfileID": "ChIJBdNuJrTGsUwRs-7dtACbe7Q",
+    "slug": "hilltop-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": false,
+      "art": true,
+      "books": true,
+      "ceramics": false,
+      "glassware": true,
+      "silverware": true,
+      "textiles": true,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.7652722,
+    "lng": -69.7191292,
+    "placeDetails": {
+      "place_id": "ChIJBdNuJrTGsUwRs-7dtACbe7Q",
+      "name": "48 Water St",
+      "formatted_address": "48 Water St, Skowhegan, ME 04976, USA",
+      "url": "https://maps.google.com/?cid=13005158776299187891",
+      "geometry": {
+        "location": {
+          "lat": 44.7652722,
+          "lng": -69.7191292
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.76657393029149,
+            "lng": -69.7177397197085
+          },
+          "southwest": {
+            "lat": 44.76387596970849,
+            "lng": -69.72043768029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Cranberry Hill Lighting LLC",
+    "Address": "1280 U.S. Rte 1, Cape Neddick, ME 03902, USA",
+    "City": "Cape Neddick",
+    "Zip": "03902",
+    "Rating": "N/A",
+    "Phone": "207-363-5178",
+    "Website": "https://www.cranberryhilllighting.com",
+    "GoogleProfileID": "ChIJR8fXwPev4okRU-jPgfkLvUU",
+    "slug": "cranberry-hill-lighting-llc",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.1915643,
+    "lng": -70.6203883,
+    "placeDetails": {
+      "place_id": "ChIJR8fXwPev4okRU-jPgfkLvUU",
+      "name": "1280 U.S. Rte 1",
+      "formatted_address": "1280 U.S. Rte 1, Cape Neddick, ME 03902, USA",
+      "url": "https://maps.google.com/?cid=5025185925467990099",
+      "geometry": {
+        "location": {
+          "lat": 43.1915643,
+          "lng": -70.6203883
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.19291322608832,
+            "lng": -70.61877040110495
+          },
+          "southwest": {
+            "lat": 43.19021526550532,
+            "lng": -70.62146836168797
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "The York Antiques Gallery",
+    "Address": "746 U.S. Rte 1, York, ME 03909, USA",
+    "City": "York",
+    "Zip": "03909",
+    "Rating": "N/A",
+    "Phone": "207-363-5002",
+    "Website": "https://www.yorkantiques.com",
+    "GoogleProfileID": "ChIJV4YGOOu64okRMz5MIkKfTi8",
+    "slug": "the-york-antiques-gallery",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.16318,
+    "lng": -70.6462398,
+    "placeDetails": {
+      "place_id": "ChIJV4YGOOu64okRMz5MIkKfTi8",
+      "name": "746 U.S. Rte 1",
+      "formatted_address": "746 U.S. Rte 1, York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=3408837074358124083",
+      "geometry": {
+        "location": {
+          "lat": 43.16318,
+          "lng": -70.6462398
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.16449763098255,
+            "lng": -70.64487763484586
+          },
+          "southwest": {
+            "lat": 43.16179967039955,
+            "lng": -70.64757559542886
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Antique Marketplace & Caf√©",
+    "Address": "65 Main St, Bangor, ME 04401, USA",
+    "City": "Bangor",
+    "Zip": "04401",
+    "Rating": "N/A",
+    "Phone": "207-941-2111",
+    "Website": "https://www.antiquemarketplacecafe.com",
+    "GoogleProfileID": "ChIJeXb_xkRLrkwRwWKh9F0H-CQ",
+    "slug": "antique-marketplace-caf",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.8005004,
+    "lng": -68.7723683,
+    "placeDetails": {
+      "place_id": "ChIJeXb_xkRLrkwRwWKh9F0H-CQ",
+      "name": "65 Main St",
+      "formatted_address": "65 Main St, Bangor, ME 04401, USA",
+      "url": "https://maps.google.com/?cid=2663887279707218625",
+      "geometry": {
+        "location": {
+          "lat": 44.8005004,
+          "lng": -68.7723683
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.80181647383925,
+            "lng": -68.77099392846279
+          },
+          "southwest": {
+            "lat": 44.79911851325625,
+            "lng": -68.77369188904579
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Fairfield Antiques Mall",
+    "Address": "382 Skowhegan Rd, Clinton, ME 04927, USA",
+    "City": "Clinton",
+    "Zip": "04927",
+    "Rating": "N/A",
+    "Phone": "207-453-4100",
+    "Website": "https://www.facebook.com/fairfieldantiquesmall",
+    "GoogleProfileID": "ChIJ4915HBTnsUwRYqRRqRKLDM4",
+    "slug": "fairfield-antiques-mall",
+    "XHandle": "https://www.facebook.com/fairfieldantiquesmall",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.6374259,
+    "lng": -69.5986946,
+    "placeDetails": {
+      "place_id": "ChIJ4915HBTnsUwRYqRRqRKLDM4",
+      "name": "382 Skowhegan Rd",
+      "formatted_address": "382 Skowhegan Rd, Clinton, ME 04927, USA",
+      "url": "https://maps.google.com/?cid=14847394983800054882",
+      "geometry": {
+        "location": {
+          "lat": 44.6374259,
+          "lng": -69.5986946
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.63864519397034,
+            "lng": -69.59757889143536
+          },
+          "southwest": {
+            "lat": 44.63594723338734,
+            "lng": -69.60027685201837
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Leona May‚Äôs Antique & Gift Shoppe",
+    "Address": "147 Main St, Newport, ME 04953, USA",
+    "City": "Newport",
+    "Zip": "04953",
+    "Rating": "N/A",
+    "Phone": "207-368-6089",
+    "Website": "https://www.leonamaysantiquesandgifts.com",
+    "GoogleProfileID": "ChIJT0DVeB8qrkwRkgnMX8raHro",
+    "slug": "leona-mays-antique-gift-shoppe",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.8349654,
+    "lng": -69.2748999,
+    "placeDetails": {
+      "place_id": "ChIJT0DVeB8qrkwRkgnMX8raHro",
+      "name": "147 Main St",
+      "formatted_address": "147 Main St, Newport, ME 04953, USA",
+      "url": "https://maps.google.com/?cid=13411397303081372050",
+      "geometry": {
+        "location": {
+          "lat": 44.8349654,
+          "lng": -69.2748999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.8363851161699,
+            "lng": -69.27353626962972
+          },
+          "southwest": {
+            "lat": 44.83368715558691,
+            "lng": -69.27623423021274
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Bo-Mar Hall Antiques and Collectibles",
+    "Address": "1622 Post Rd, Wells, ME 04090, USA",
+    "City": "Wells",
+    "Zip": "04090",
+    "Rating": "N/A",
+    "Phone": "207-360-0943",
+    "Website": "https://www.bomarhallantiques.com",
+    "GoogleProfileID": "ChIJ8aC3kyytskwRMHJJAP8FNpg",
+    "slug": "bo-mar-hall-antiques-and-collectibles",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": false,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.3245908,
+    "lng": -70.5804355,
+    "placeDetails": {
+      "place_id": "ChIJ8aC3kyytskwRMHJJAP8FNpg",
+      "name": "1622 Post Rd",
+      "formatted_address": "1622 Post Rd, Wells, ME 04090, USA",
+      "url": "https://maps.google.com/?cid=10967960535287034416",
+      "geometry": {
+        "location": {
+          "lat": 43.3245908,
+          "lng": -70.5804355
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.32593980108048,
+            "lng": -70.57908650882148
+          },
+          "southwest": {
+            "lat": 43.32324184049748,
+            "lng": -70.58178446940448
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Kezar Falls Curiosity Shop",
+    "Address": "85 Federal Rd, Parsonsfield, ME 04047, USA",
+    "City": "Parsonsfield",
+    "Zip": "04047",
+    "Rating": "N/A",
+    "Phone": "207-625-7830",
+    "Website": "https://www.kezarfallscuriosityshop.com",
+    "GoogleProfileID": "ChIJ-0zW6N_iskwRh7XtJoXdng8",
+    "slug": "kezar-falls-curiosity-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.8064827,
+    "lng": -70.88034350000001,
+    "placeDetails": {
+      "place_id": "ChIJ-0zW6N_iskwRh7XtJoXdng8",
+      "name": "85 Federal Rd",
+      "formatted_address": "85 Federal Rd, Parsonsfield, ME 04047, USA",
+      "url": "https://maps.google.com/?cid=1125580520842704263",
+      "geometry": {
+        "location": {
+          "lat": 43.8064827,
+          "lng": -70.88034350000001
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.80787967523589,
+            "lng": -70.87900950077567
+          },
+          "southwest": {
+            "lat": 43.80518171465289,
+            "lng": -70.88170746135867
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Peter Mavris Antique Shows",
+    "Address": "515 N Rd, Parsonsfield, ME 04047, USA",
+    "City": "Parsonsfield",
+    "Zip": "4047",
+    "Rating": "N/A",
+    "Phone": "207-608-3086",
+    "Website": "https://www.petermavrisantiqueshows.com",
+    "GoogleProfileID": "ChIJwbrPqR_iskwRI7OuX7W_K04",
+    "slug": "peter-mavris-antique-shows",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.758367,
+    "lng": -70.9261916,
+    "placeDetails": {
+      "place_id": "ChIJwbrPqR_iskwRI7OuX7W_K04",
+      "name": "515 N Rd",
+      "formatted_address": "515 N Rd, Parsonsfield, ME 04047, USA",
+      "url": "https://maps.google.com/?cid=5632806544672207651",
+      "geometry": {
+        "location": {
+          "lat": 43.758367,
+          "lng": -70.9261916
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.7597149302915,
+            "lng": -70.92484301970849
+          },
+          "southwest": {
+            "lat": 43.7570169697085,
+            "lng": -70.9275409802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Porter's Antiques",
+    "Address": "878 Rockland Rd, Somerville, ME 04348, USA",
+    "City": "Somerville",
+    "Zip": "4348",
+    "Rating": "N/A",
+    "Phone": "207-549-4601",
+    "Website": "https://www.portersantiquesme.com",
+    "GoogleProfileID": "ChIJH-m8uWPjrUwRNZWn1Ifmi4U",
+    "slug": "porters-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": true,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.257152,
+    "lng": -69.474349,
+    "placeDetails": {
+      "place_id": "ChIJH-m8uWPjrUwRNZWn1Ifmi4U",
+      "name": "878 Rockland Rd",
+      "formatted_address": "878 Rockland Rd, Somerville, ME 04348, USA",
+      "url": "https://maps.google.com/?cid=9623038499869922613",
+      "geometry": {
+        "location": {
+          "lat": 44.257152,
+          "lng": -69.474349
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.25842498029149,
+            "lng": -69.47299681970848
+          },
+          "southwest": {
+            "lat": 44.2557270197085,
+            "lng": -69.47569478029149
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "Wiscasset Antiques Mall",
+    "Address": "536 Bath Rd, Wiscasset, ME 04578, USA",
+    "City": "Wiscasset",
+    "Zip": "4578",
+    "Rating": "N/A",
+    "Phone": "207-882-4029",
+    "Website": "https://www.wiscassetantiquesmallme.com",
+    "GoogleProfileID": "ChIJaUj5ke-RrUwRZg0vGElfkBs",
+    "slug": "wiscasset-antiques-mall",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.9807163,
+    "lng": -69.70220379999999,
+    "placeDetails": {
+      "place_id": "ChIJaUj5ke-RrUwRZg0vGElfkBs",
+      "name": "536 Bath Rd",
+      "formatted_address": "536 Bath Rd, Wiscasset, ME 04578, USA",
+      "url": "https://maps.google.com/?cid=1986192203213376870",
+      "geometry": {
+        "location": {
+          "lat": 43.9807163,
+          "lng": -69.70220379999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.98207196354092,
+            "lng": -69.70086000802225
+          },
+          "southwest": {
+            "lat": 43.97937400295793,
+            "lng": -69.70355796860525
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "DAAC Designs - Art & Antiques",
+    "Address": "49 Bay View St, Camden, ME 04843, USA",
+    "City": "Camden",
+    "Zip": "4843",
+    "Rating": "N/A",
+    "Phone": "561-202-8718",
+    "Website": "https://www.daacdesigns.com",
+    "GoogleProfileID": "ChIJuYmEkA7XrUwR3k0mZ_WdSeI",
+    "slug": "daac-designs-art-antiques",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 44.2081657,
+    "lng": -69.0634278,
+    "placeDetails": {
+      "place_id": "ChIJuYmEkA7XrUwR3k0mZ_WdSeI",
+      "name": "49 Bay View St",
+      "formatted_address": "49 Bay View St, Camden, ME 04843, USA",
+      "url": "https://maps.google.com/?cid=16305737603194703326",
+      "geometry": {
+        "location": {
+          "lat": 44.2081657,
+          "lng": -69.0634278
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.20951465573378,
+            "lng": -69.0620665147215
+          },
+          "southwest": {
+            "lat": 44.20681669515078,
+            "lng": -69.06476447530451
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "antique_shop",
+    "Name": "The Art of Antiquing",
+    "Address": "4 Back Shore Rd, Round Pond, ME 04564, USA",
+    "City": "Round Pond",
+    "Zip": "4564",
+    "Rating": "N/A",
+    "Phone": "207-529-5300",
+    "Website": "https://www.theartofantiquing.com",
+    "GoogleProfileID": "ChIJmQXqx4G-rUwRqsdVzFmlQrk",
+    "slug": "the-art-of-antiquing",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "furniture": true,
+      "jewelry": false,
+      "art": false,
+      "books": false,
+      "ceramics": false,
+      "glassware": false,
+      "silverware": false,
+      "textiles": false,
+      "collectibles": false,
+      "vintage_clothing": false
+    },
+    "lat": 43.9477421,
+    "lng": -69.45993349999999,
+    "placeDetails": {
+      "place_id": "ChIJmQXqx4G-rUwRqsdVzFmlQrk",
+      "name": "4 Back Shore Rd",
+      "formatted_address": "4 Back Shore Rd, Round Pond, ME 04564, USA",
+      "url": "https://maps.google.com/?cid=13349414050578417578",
+      "geometry": {
+        "location": {
+          "lat": 43.9477421,
+          "lng": -69.45993349999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.9490467302915,
+            "lng": -69.45859031970849
+          },
+          "southwest": {
+            "lat": 43.9463487697085,
+            "lng": -69.4612882802915
+          }
+        }
+      }
+    }
+  }
+]

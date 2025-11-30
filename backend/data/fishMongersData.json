@@ -1,0 +1,1346 @@
+[
+  {
+    "type": "fish_monger",
+    "Name": "Harbor Fish Market (Portland)",
+    "Address": "9 Custom House Wharf, Portland, ME 04101, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-775-0251",
+    "Website": "https://harborfish.com",
+    "GoogleProfileID": "ChIJ5zUabD-cskwROTXd0oydLes",
+    "slug": "harbor-fish-market-portland",
+    "XHandle": "https://x.com/harborfish",
+    "FacebookPageID": "harborfishmarket",
+    "InstagramUsername": "harborfishmarket",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "harborfishmarket",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": false,
+      "haddock": true,
+      "tuna": true,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.65632,
+    "lng": -70.2505276,
+    "placeDetails": {
+      "place_id": "ChIJ5zUabD-cskwROTXd0oydLes",
+      "name": "9 Custom House Wharf",
+      "formatted_address": "9 Custom House Wharf, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=16946374201023739193",
+      "geometry": {
+        "location": {
+          "lat": 43.65632,
+          "lng": -70.2505276
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.65758816230655,
+            "lng": -70.24904422822182
+          },
+          "southwest": {
+            "lat": 43.65489020172355,
+            "lng": -70.25174218880483
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Harbor Fish Market (Scarborough)",
+    "Address": "246 U.S. Rte 1, Scarborough, ME 04074, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-503-5900",
+    "Website": "https://harborfish.com",
+    "GoogleProfileID": "ChIJxU0wI7KYskwRUMurzRe9yok",
+    "slug": "harbor-fish-market-scarborough",
+    "XHandle": "https://x.com/harborfish",
+    "FacebookPageID": "harborfishmarket",
+    "InstagramUsername": "harborfishmarket",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "harborfishmarket",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": false,
+      "haddock": true,
+      "tuna": true,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.5893231,
+    "lng": -70.3361804,
+    "placeDetails": {
+      "place_id": "ChIJxU0wI7KYskwRUMurzRe9yok",
+      "name": "246 U.S. Rte 1",
+      "formatted_address": "246 U.S. Rte 1, Scarborough, ME 04074, USA",
+      "url": "https://maps.google.com/?cid=9928956238424165200",
+      "geometry": {
+        "location": {
+          "lat": 43.5893231,
+          "lng": -70.3361804
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.59068327936879,
+            "lng": -70.33469453252198
+          },
+          "southwest": {
+            "lat": 43.5879853187858,
+            "lng": -70.33739249310499
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Free Range Fish & Lobster",
+    "Address": "450 Commercial St, Portland, ME 04101, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "866-700-8469",
+    "Website": "https://freerangefish.com",
+    "GoogleProfileID": "ChIJWZ5LyyKcskwRfwbdQkrF_Ng",
+    "slug": "free-range-fish-lobster",
+    "XHandle": "",
+    "FacebookPageID": "freerangefish",
+    "InstagramUsername": "freerangefish",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "freerangefish",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": false,
+      "haddock": true,
+      "tuna": true,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.6490647,
+    "lng": -70.2580368,
+    "placeDetails": {
+      "place_id": "ChIJWZ5LyyKcskwRfwbdQkrF_Ng",
+      "name": "450 Commercial St",
+      "formatted_address": "450 Commercial St, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=15635588929063552639",
+      "geometry": {
+        "location": {
+          "lat": 43.6490647,
+          "lng": -70.2580368
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6505199302915,
+            "lng": -70.25690681970849
+          },
+          "southwest": {
+            "lat": 43.6478219697085,
+            "lng": -70.2596047802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "SoPo Seafood Market & Raw Bar",
+    "Address": "171 Ocean St, South Portland, ME 04106, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "877-282-7676",
+    "Website": "https://www.soposeafood.com",
+    "GoogleProfileID": "ChIJ5yp9_YKeskwRK2Wpp1eKrUo",
+    "slug": "sopo-seafood-market-raw-bar",
+    "XHandle": "",
+    "FacebookPageID": "soposeafood",
+    "InstagramUsername": "soposeafood",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "soposeafood",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.6363996,
+    "lng": -70.2528213,
+    "placeDetails": {
+      "place_id": "ChIJ5yp9_YKeskwRK2Wpp1eKrUo",
+      "name": "171 Ocean St",
+      "formatted_address": "171 Ocean St, South Portland, ME 04106, USA",
+      "url": "https://maps.google.com/?cid=5381109238857295147",
+      "geometry": {
+        "location": {
+          "lat": 43.6363996,
+          "lng": -70.2528213
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.63773273755366,
+            "lng": -70.25148642504439
+          },
+          "southwest": {
+            "lat": 43.63503477697066,
+            "lng": -70.25418438562741
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "P.J. Merrill Seafood",
+    "Address": "681 Forest Ave, Portland, ME 04103, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-773-1321",
+    "Website": "https://www.pjmerrillseafood.com",
+    "GoogleProfileID": "ChIJ7VW43Y-bskwR5qZT7Gd0aB4",
+    "slug": "pj-merrill-seafood",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.6713495,
+    "lng": -70.2843261,
+    "placeDetails": {
+      "place_id": "ChIJ7VW43Y-bskwR5qZT7Gd0aB4",
+      "name": "681 Forest Ave",
+      "formatted_address": "681 Forest Ave, Portland, ME 04103, USA",
+      "url": "https://maps.google.com/?cid=2191129208411104998",
+      "geometry": {
+        "location": {
+          "lat": 43.6713495,
+          "lng": -70.2843261
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.67269446676255,
+            "lng": -70.28302603211549
+          },
+          "southwest": {
+            "lat": 43.66999650617955,
+            "lng": -70.2857239926985
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Bob's Seafood",
+    "Address": "901 Roosevelt Trail, Windham, ME 04062, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-893-2882",
+    "Website": "https://bobsseafoodwindham.com",
+    "GoogleProfileID": "ChIJP4DLOzyLskwRczCem6_1jN0",
+    "slug": "bobs-seafood",
+    "XHandle": "",
+    "FacebookPageID": "bobs.seafood",
+    "InstagramUsername": "bobs.seafood",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "bobs.seafood",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.8485799,
+    "lng": -70.4480323,
+    "placeDetails": {
+      "place_id": "ChIJP4DLOzyLskwRczCem6_1jN0",
+      "name": "901 Roosevelt Trail",
+      "formatted_address": "901 Roosevelt Trail, Windham, ME 04062, USA",
+      "url": "https://maps.google.com/?cid=15964404913700483187",
+      "geometry": {
+        "location": {
+          "lat": 43.8485799,
+          "lng": -70.4480323
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.84992887181132,
+            "lng": -70.44673314674498
+          },
+          "southwest": {
+            "lat": 43.84723091122832,
+            "lng": -70.449431107328
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Pine Tree Seafood & Produce",
+    "Address": "655 U.S. Rte 1, Scarborough, ME 04074, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-730-7121",
+    "Website": "https://pinetreeseafood.com",
+    "GoogleProfileID": "ChIJX1TxyF2iskwRDrjtPCj-4oM",
+    "slug": "pine-tree-seafood-produce",
+    "XHandle": "",
+    "FacebookPageID": "PineTreeSeafood",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.5678547,
+    "lng": -70.3912788,
+    "placeDetails": {
+      "place_id": "ChIJX1TxyF2iskwRDrjtPCj-4oM",
+      "name": "655 U.S. Rte 1",
+      "formatted_address": "655 U.S. Rte 1, Scarborough, ME 04074, USA",
+      "url": "https://maps.google.com/?cid=9503437612479526926",
+      "geometry": {
+        "location": {
+          "lat": 43.5678547,
+          "lng": -70.3912788
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.5691252302915,
+            "lng": -70.38980476970848
+          },
+          "southwest": {
+            "lat": 43.5664272697085,
+            "lng": -70.3925027302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Mainely Seafood Company",
+    "Address": "12 Mallett Dr, Freeport, ME 04032, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-865-2002",
+    "Website": "https://mainelyseafoodcompany.com",
+    "GoogleProfileID": "ChIJSSWfYUF-skwRELvMGWpAp3U",
+    "slug": "mainely-seafood-company",
+    "XHandle": "",
+    "FacebookPageID": "61553707640539",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.8611742,
+    "lng": -70.1023325,
+    "placeDetails": {
+      "place_id": "ChIJSSWfYUF-skwRELvMGWpAp3U",
+      "name": "12 Mallett Dr",
+      "formatted_address": "12 Mallett Dr, Freeport, ME 04032, USA",
+      "url": "https://maps.google.com/?cid=8477815647991806736",
+      "geometry": {
+        "location": {
+          "lat": 43.8611742,
+          "lng": -70.1023325
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.86251372786876,
+            "lng": -70.10096562355625
+          },
+          "southwest": {
+            "lat": 43.85981576728576,
+            "lng": -70.10366358413926
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Fishermen's Net",
+    "Address": "36 Bath Rd, Brunswick, ME 04011, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-844-8402",
+    "Website": "https://fishnetmaine.com",
+    "GoogleProfileID": "ChIJtcmuWheHrUwRQBMiTQi-umg",
+    "slug": "fishermens-net",
+    "XHandle": "",
+    "FacebookPageID": "fishermensnetmaine",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.90860869999999,
+    "lng": -69.9499634,
+    "placeDetails": {
+      "place_id": "ChIJtcmuWheHrUwRQBMiTQi-umg",
+      "name": "36 Bath Rd",
+      "formatted_address": "36 Bath Rd, Brunswick, ME 04011, USA",
+      "url": "https://maps.google.com/?cid=7546553068475781952",
+      "geometry": {
+        "location": {
+          "lat": 43.90860869999999,
+          "lng": -69.9499634
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.91005839453318,
+            "lng": -69.94863708227665
+          },
+          "southwest": {
+            "lat": 43.90736043395018,
+            "lng": -69.95133504285967
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Allen's Seafood",
+    "Address": "119 Lookout Point Rd, Harpswell, ME 04079, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-833-2828",
+    "Website": "https://www.allensseafood.com",
+    "GoogleProfileID": "ChIJmayVvW9_rUwRDNE8z_tmCi0",
+    "slug": "allens-seafood",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.8072386,
+    "lng": -69.99341369999999,
+    "placeDetails": {
+      "place_id": "ChIJmayVvW9_rUwRDNE8z_tmCi0",
+      "name": "119 Lookout Point Rd",
+      "formatted_address": "119 Lookout Point Rd, Harpswell, ME 04079, USA",
+      "url": "https://maps.google.com/?cid=3245519713173557516",
+      "geometry": {
+        "location": {
+          "lat": 43.8072386,
+          "lng": -69.99341369999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.80859641041499,
+            "lng": -69.99201241694658
+          },
+          "southwest": {
+            "lat": 43.80589844983199,
+            "lng": -69.9947103775296
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Cook's Wharf (Cook's Lobster & Ale House)",
+    "Address": "68 Garrison Cove Rd, Bailey Island, ME 04003, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-833-2818",
+    "Website": "https://cookslobster.com",
+    "GoogleProfileID": "ChIJazSlSlJ5rUwRFM0CIuT0o9Q",
+    "slug": "cooks-wharf-cooks-lobster-ale-house",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.7492798,
+    "lng": -69.9917743,
+    "placeDetails": {
+      "place_id": "ChIJazSlSlJ5rUwRFM0CIuT0o9Q",
+      "name": "68 Garrison Cove Rd",
+      "formatted_address": "68 Garrison Cove Rd, Bailey Island, ME 04003, USA",
+      "url": "https://maps.google.com/?cid=15322359617904889108",
+      "geometry": {
+        "location": {
+          "lat": 43.7492798,
+          "lng": -69.9917743
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.7506782302915,
+            "lng": -69.9905253197085
+          },
+          "southwest": {
+            "lat": 43.7479802697085,
+            "lng": -69.9932232802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Erica's Seafood",
+    "Address": "505 Basin Point Rd, Harpswell, ME 04079, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-833-7354",
+    "Website": "https://www.ericasseafood.com",
+    "GoogleProfileID": "ChIJMzxeJjt8rUwR9MpaW5XlNzg",
+    "slug": "ericas-seafood",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.7408384,
+    "lng": -70.0402931,
+    "placeDetails": {
+      "place_id": "ChIJMzxeJjt8rUwR9MpaW5XlNzg",
+      "name": "505 Basin Point Rd",
+      "formatted_address": "505 Basin Point Rd, Harpswell, ME 04079, USA",
+      "url": "https://maps.google.com/?cid=4050958819488615156",
+      "geometry": {
+        "location": {
+          "lat": 43.7408384,
+          "lng": -70.0402931
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.74213059957877,
+            "lng": -70.03894287281469
+          },
+          "southwest": {
+            "lat": 43.73943263899578,
+            "lng": -70.0416408333977
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Gurnet Trading Co.",
+    "Address": "602 Gurnet Rd, Brunswick, ME 04011, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-729-7300",
+    "Website": "https://gurnettradingcompany.com",
+    "GoogleProfileID": "ChIJCezeyFiBrUwR3IwRZLFtql0",
+    "slug": "gurnet-trading-co",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.865343,
+    "lng": -69.9141521,
+    "placeDetails": {
+      "place_id": "ChIJCezeyFiBrUwR3IwRZLFtql0",
+      "name": "602 Gurnet Rd",
+      "formatted_address": "602 Gurnet Rd, Brunswick, ME 04011, USA",
+      "url": "https://maps.google.com/?cid=6749327600223620316",
+      "geometry": {
+        "location": {
+          "lat": 43.865343,
+          "lng": -69.9141521
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.86688360305136,
+            "lng": -69.91276811012195
+          },
+          "southwest": {
+            "lat": 43.86418564246836,
+            "lng": -69.91546607070495
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Hawke's Lobster",
+    "Address": "992 Cundy's Harbor Rd, Harpswell, ME 04079, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-721-0472",
+    "Website": "https://hawkeslobstermaine.com",
+    "GoogleProfileID": "ChIJK-gSdW54rUwRpKjNnqWxv8k",
+    "slug": "hawkes-lobster",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": true,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": true,
+      "crab": true,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.788836,
+    "lng": -69.8927175,
+    "placeDetails": {
+      "place_id": "ChIJK-gSdW54rUwRpKjNnqWxv8k",
+      "name": "992 Cundy's Harbor Rd",
+      "formatted_address": "992 Cundy's Harbor Rd, Harpswell, ME 04079, USA",
+      "url": "https://maps.google.com/?cid=14537533447067248804",
+      "geometry": {
+        "location": {
+          "lat": 43.788836,
+          "lng": -69.8927175
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.79018025043993,
+            "lng": -69.89141489217867
+          },
+          "southwest": {
+            "lat": 43.78748228985693,
+            "lng": -69.89411285276168
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Interstate Lobster",
+    "Address": "Ash Point Rd, Harpswell, ME 04079, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-833-5516",
+    "Website": "",
+    "GoogleProfileID": "ChIJ30t3X59-rUwRBlk5Bo7h7-s",
+    "slug": "interstate-lobster",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": false,
+      "crab": false,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 43.7522683,
+    "lng": -70.023855,
+    "placeDetails": {
+      "place_id": "ChIJ30t3X59-rUwRBlk5Bo7h7-s",
+      "name": "Ash Point Road",
+      "formatted_address": "Ash Point Rd, Harpswell, ME 04079, USA",
+      "photos": [
+        {
+          "photo_reference": "AWn5SU7v178T-l9kDmqRRGhlNBK5HNaDGEi2itHGUfN6zmlgf966Y3Yh0ElnqGoLkf-wCwHDrfg8PlHrYD956SFxRGpHqV3fSIV0BjIDJDEWeVI9nuIj_XeFm1rfBpDCC5JvYgOn2xzAw5zylmXMq_9o7T_6N9GS9X-lwYpazkfB1T_Q405u31u69vFsJQ-Ehl6eig2xdBiIFug2c3kKgvdTO9YntGmVxn5wkScsA72pmctJOMUScJYVgctJsCEBtwPVL2Qfm5TmK3ztIDS0kdGVzgUmDtTEZsmsSFuVB3kNSAZ54I9zwsPWiIF6L88E7LAhllFQJ5pms7bvJrffD9ktxCN7F1pSDHqK_XfmPwbpkuGWvLMhaih9CXSKHQTaYmPoDYWXbn6ozaMlFL6jdWqoOyOXyH5cTQYDmfSk5RcEaT3M-w",
+          "height": 2340,
+          "width": 4160,
+          "html_attributions": [
+            "<a href=\"https://maps.google.com/maps/contrib/116269034972357574963\">James Vogel</a>"
+          ]
+        }
+      ],
+      "url": "https://maps.google.com/?cid=17001055118452939014",
+      "geometry": {
+        "location": {
+          "lat": 43.7522683,
+          "lng": -70.023855
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.75909924829268,
+            "lng": -70.01212367219773
+          },
+          "southwest": {
+            "lat": 43.74406614918486,
+            "lng": -70.03253845835522
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Coldwater Seafood Market & Smokehouse",
+    "Address": "100 N Main St, Stonington, ME 04681, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-348-3084",
+    "Website": "https://www.coldwaterseafoodmaine.com",
+    "GoogleProfileID": "ChIJx_MAuO0nrEwRzJeh0ibBGI0",
+    "slug": "coldwater-seafood-market-smokehouse",
+    "XHandle": "",
+    "FacebookPageID": "ColdwaterSeafood",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": false,
+      "crab": false,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 44.163382,
+    "lng": -68.6592902,
+    "placeDetails": {
+      "place_id": "ChIJx_MAuO0nrEwRzJeh0ibBGI0",
+      "name": "100 N Main St",
+      "formatted_address": "100 N Main St, Stonington, ME 04681, USA",
+      "url": "https://maps.google.com/?cid=10167088531275618252",
+      "geometry": {
+        "location": {
+          "lat": 44.163382,
+          "lng": -68.6592902
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.164729733426,
+            "lng": -68.65793699087456
+          },
+          "southwest": {
+            "lat": 44.16203177284301,
+            "lng": -68.66063495145757
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Jess's Market",
+    "Address": "118 Main St, Rockland, ME 04841, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-596-6068",
+    "Website": "https://jessmarket.com",
+    "GoogleProfileID": "ChIJTx0FszvOrUwRH9VdLaSPaEI",
+    "slug": "jesss-market",
+    "XHandle": "",
+    "FacebookPageID": "jessmarketmaine",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": true,
+      "haddock": true,
+      "tuna": false,
+      "lobster": false,
+      "shrimp": false,
+      "crab": false,
+      "oysters": true,
+      "clams": true,
+      "mussels": false,
+      "scallops": false,
+      "halibut": false
+    },
+    "lat": 44.09634519999999,
+    "lng": -69.1109876,
+    "placeDetails": {
+      "place_id": "ChIJTx0FszvOrUwRH9VdLaSPaEI",
+      "name": "118 Main St",
+      "formatted_address": "118 Main St, Rockland, ME 04841, USA",
+      "url": "https://maps.google.com/?cid=4785232539379684639",
+      "geometry": {
+        "location": {
+          "lat": 44.09634519999999,
+          "lng": -69.1109876
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.0976877817119,
+            "lng": -69.10958197530911
+          },
+          "southwest": {
+            "lat": 44.0949898211289,
+            "lng": -69.11227993589212
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Delano Seafood Market",
+    "Address": "2090 Atlantic Hwy, Waldoboro, ME 04572, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-832-7902",
+    "Website": "https://www.delanoseafoodmarket.com",
+    "GoogleProfileID": "ChIJ0Su7A0XCrUwRCBAdrS6XeTk",
+    "slug": "delano-seafood-market",
+    "XHandle": "",
+    "FacebookPageID": "delanoseafoodmarket",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": false,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": false,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 44.1069138,
+    "lng": -69.3618328,
+    "placeDetails": {
+      "place_id": "ChIJ0Su7A0XCrUwRCBAdrS6XeTk",
+      "name": "2090 Atlantic Hwy",
+      "formatted_address": "2090 Atlantic Hwy, Waldoboro, ME 04572, USA",
+      "url": "https://maps.google.com/?cid=4141507559072534536",
+      "geometry": {
+        "location": {
+          "lat": 44.1069138,
+          "lng": -69.3618328
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.10826276408338,
+            "lng": -69.3605166386529
+          },
+          "southwest": {
+            "lat": 44.10556480350039,
+            "lng": -69.3632145992359
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Augusta Seafood",
+    "Address": "2002 N Belfast Ave, Augusta, ME 04330, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-622-6951",
+    "Website": "https://augusta-seafood.com",
+    "GoogleProfileID": "ChIJ2SrzkT4BskwRn_PmZgFHI7k",
+    "slug": "augusta-seafood",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": true,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": true,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 44.3237868,
+    "lng": -69.76331739999999,
+    "placeDetails": {
+      "place_id": "ChIJ2SrzkT4BskwRn_PmZgFHI7k",
+      "name": "2002 N Belfast Ave",
+      "formatted_address": "2002 N Belfast Ave, Augusta, ME 04330, USA",
+      "url": "https://maps.google.com/?cid=13340584592548492191",
+      "geometry": {
+        "location": {
+          "lat": 44.3237868,
+          "lng": -69.76331739999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.32520062481047,
+            "lng": -69.7619621631534
+          },
+          "southwest": {
+            "lat": 44.32250266422747,
+            "lng": -69.7646601237364
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Off the Boat Lobsters",
+    "Address": "2 Seabury Rd, York, ME 03909, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-337-8885",
+    "Website": "https://offtheboatlobsters.com",
+    "GoogleProfileID": "ChIJswKZJkm64okRHCzY1XwOvlA",
+    "slug": "off-the-boat-lobsters",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "offtheboatlobsters",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "offtheboatlobsters",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": true,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": true,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 43.1356976,
+    "lng": -70.66068039999999,
+    "placeDetails": {
+      "place_id": "ChIJswKZJkm64okRHCzY1XwOvlA",
+      "name": "2 Seabury Rd",
+      "formatted_address": "2 Seabury Rd, York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=5818103697935707164",
+      "geometry": {
+        "location": {
+          "lat": 43.1356976,
+          "lng": -70.66068039999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.13704724469734,
+            "lng": -70.65935049169957
+          },
+          "southwest": {
+            "lat": 43.13434928411434,
+            "lng": -70.66204845228259
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Southern Maine Lobster Company",
+    "Address": "1021 U.S. Rte 1, York, ME 03909, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-420-7652",
+    "Website": "https://southernmainelobster.com",
+    "GoogleProfileID": "ChIJU8h_Za664okRd8FgMstdnqk",
+    "slug": "southern-maine-lobster-company",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "southernmainelobster",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "southernmainelobster",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": true,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": true,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 43.1773715,
+    "lng": -70.631316,
+    "placeDetails": {
+      "place_id": "ChIJU8h_Za664okRd8FgMstdnqk",
+      "name": "1021 U.S. Rte 1",
+      "formatted_address": "1021 U.S. Rte 1, York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=12222309566035050871",
+      "geometry": {
+        "location": {
+          "lat": 43.1773715,
+          "lng": -70.631316
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.17879993267449,
+            "lng": -70.6300294263802
+          },
+          "southwest": {
+            "lat": 43.17610197209149,
+            "lng": -70.63272738696323
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "Maine Lobster Outlet",
+    "Address": "360 U.S. Rte 1, York, ME 03909, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-363-9899",
+    "Website": "https://mainelobsteroutlet.com",
+    "GoogleProfileID": "ChIJc0i2-Ku74okRp7ZRt-ehk-Q",
+    "slug": "maine-lobster-outlet",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "mainelobsteroutlet",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "mainelobsteroutlet",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": true,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": true,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 43.1483432,
+    "lng": -70.6748805,
+    "placeDetails": {
+      "place_id": "ChIJc0i2-Ku74okRp7ZRt-ehk-Q",
+      "name": "360 U.S. Rte 1",
+      "formatted_address": "360 U.S. Rte 1, York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=16470686278809138855",
+      "geometry": {
+        "location": {
+          "lat": 43.1483432,
+          "lng": -70.6748805
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.14965763401304,
+            "lng": -70.67342528265951
+          },
+          "southwest": {
+            "lat": 43.14695967343005,
+            "lng": -70.67612324324251
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "fish_monger",
+    "Name": "New England Fishmongers",
+    "Address": "57 State Rd, Kittery, ME 03904, USA",
+    "City": "N/A",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "207-994-9219",
+    "Website": "https://www.newenglandfishmongers.com",
+    "GoogleProfileID": "ChIJ_yddgx2_4okRx45tgYTeDRY",
+    "slug": "new-england-fishmongers",
+    "XHandle": "",
+    "FacebookPageID": "nefishmongers",
+    "InstagramUsername": "nefishmongers",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "nefishmongers",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "salmon": false,
+      "cod": false,
+      "haddock": false,
+      "tuna": true,
+      "lobster": true,
+      "shrimp": false,
+      "crab": false,
+      "oysters": false,
+      "clams": false,
+      "mussels": true,
+      "scallops": true,
+      "halibut": true
+    },
+    "lat": 43.09069299999999,
+    "lng": -70.7492312,
+    "placeDetails": {
+      "place_id": "ChIJ_yddgx2_4okRx45tgYTeDRY",
+      "name": "57 State Rd",
+      "formatted_address": "57 State Rd, Kittery, ME 03904, USA",
+      "url": "https://maps.google.com/?cid=1589170904220143303",
+      "geometry": {
+        "location": {
+          "lat": 43.09069299999999,
+          "lng": -70.7492312
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.09202378843309,
+            "lng": -70.74791033240483
+          },
+          "southwest": {
+            "lat": 43.08932582785009,
+            "lng": -70.75060829298783
+          }
+        }
+      }
+    }
+  }
+]

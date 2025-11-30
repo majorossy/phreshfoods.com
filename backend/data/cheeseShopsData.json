@@ -1,0 +1,988 @@
+[
+  {
+    "type": "cheese_shop",
+    "Name": "Sissle & Daughters",
+    "Address": "107 Washington Ave #1, Portland, ME 04101, USA",
+    "City": "Portland",
+    "Zip": "04101",
+    "Rating": "N/A",
+    "Phone": "(207) 400-5344",
+    "Website": "https://www.sissleanddaughters.com",
+    "GoogleProfileID": "ChIJVVWFoGicskwRUENYFlOi79k",
+    "slug": "sissle-daughters",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "sisslecheesemongers",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "sisslecheesemongers",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.6668988,
+    "lng": -70.2526408,
+    "placeDetails": {
+      "place_id": "ChIJVVWFoGicskwRUENYFlOi79k",
+      "name": "107 Washington Ave #1",
+      "formatted_address": "107 Washington Ave #1, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=15703948903405077328",
+      "geometry": {
+        "location": {
+          "lat": 43.6668988,
+          "lng": -70.2526408
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6682163302915,
+            "lng": -70.2514190197085
+          },
+          "southwest": {
+            "lat": 43.6655183697085,
+            "lng": -70.2541169802915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "The Cheese Iron",
+    "Address": "200 U.S. Rte 1 #300, Scarborough, ME 04074, USA",
+    "City": "Scarborough",
+    "Zip": "04074",
+    "Rating": "N/A",
+    "Phone": "(207) 883-4057",
+    "Website": "https://www.thecheeseiron.com",
+    "GoogleProfileID": "ChIJ51ATvLSYskwR-3x1RUQFRqo",
+    "slug": "the-cheese-iron",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "cheesemanmaniaci",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "cheesemanmaniaci",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.5922702,
+    "lng": -70.3292848,
+    "placeDetails": {
+      "place_id": "ChIJ51ATvLSYskwR-3x1RUQFRqo",
+      "name": "200 U.S. Rte 1 #300",
+      "formatted_address": "200 U.S. Rte 1 #300, Scarborough, ME 04074, USA",
+      "url": "https://maps.google.com/?cid=12269500025598737659",
+      "geometry": {
+        "location": {
+          "lat": 43.5922702,
+          "lng": -70.3292848
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.5936671302915,
+            "lng": -70.32813851970849
+          },
+          "southwest": {
+            "lat": 43.5909691697085,
+            "lng": -70.33083648029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Nibblesford Cheese Shop",
+    "Address": "5 Washington St Suite 1, Biddeford, ME 04005, USA",
+    "City": "Biddeford",
+    "Zip": "04005",
+    "Rating": "N/A",
+    "Phone": "(207) 710-2770",
+    "Website": "https://www.nibblesford.com",
+    "GoogleProfileID": "ChIJAQBAxPikskwRRDOUJn6CDdI",
+    "slug": "nibblesford-cheese-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "nibblesford",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "nibblesford",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.4928965,
+    "lng": -70.4550433,
+    "placeDetails": {
+      "place_id": "ChIJAQBAxPikskwRRDOUJn6CDdI",
+      "name": "5 Washington St Suite 1",
+      "formatted_address": "5 Washington St Suite 1, Biddeford, ME 04005, USA",
+      "url": "https://maps.google.com/?cid=15135897400986841924",
+      "geometry": {
+        "location": {
+          "lat": 43.4928965,
+          "lng": -70.4550433
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.4942842802915,
+            "lng": -70.45379466970849
+          },
+          "southwest": {
+            "lat": 43.4915863197085,
+            "lng": -70.4564926302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Smiling Hill Farm (Dairy Store)",
+    "Address": "781 County Rd, Westbrook, ME 04092, USA",
+    "City": "Westbrook",
+    "Zip": "04092",
+    "Rating": "N/A",
+    "Phone": "(207) 775-4818",
+    "Website": "https://www.smilinghill.com",
+    "GoogleProfileID": "ChIJJ2pHj-KZskwRyCZZDwONHFQ",
+    "slug": "smiling-hill-farm-dairy-store",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "smilinghill",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "smilinghill",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.652316,
+    "lng": -70.39238399999999,
+    "placeDetails": {
+      "place_id": "ChIJJ2pHj-KZskwRyCZZDwONHFQ",
+      "name": "781 County Rd",
+      "formatted_address": "781 County Rd, Westbrook, ME 04092, USA",
+      "url": "https://maps.google.com/?cid=6060874242815764168",
+      "geometry": {
+        "location": {
+          "lat": 43.652316,
+          "lng": -70.39238399999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6542427302915,
+            "lng": -70.39142146970849
+          },
+          "southwest": {
+            "lat": 43.6515447697085,
+            "lng": -70.39411943029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Board. Wine & Cheese Bar",
+    "Address": "5 Shapleigh Rd #108, Kittery, ME 03904, USA",
+    "City": "Kittery",
+    "Zip": "03904",
+    "Rating": "N/A",
+    "Phone": "(207) 438-0300",
+    "Website": "https://boardwineandcheese.com",
+    "GoogleProfileID": "ChIJVVUFfd--4okRIQ0H75eaTA8",
+    "slug": "board-wine-cheese-bar",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "boardwineandcheese",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "boardwineandcheese",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.0891563,
+    "lng": -70.7370583,
+    "placeDetails": {
+      "place_id": "ChIJVVUFfd--4okRIQ0H75eaTA8",
+      "name": "5 Shapleigh Rd #108",
+      "formatted_address": "5 Shapleigh Rd #108, Kittery, ME 03904, USA",
+      "url": "https://maps.google.com/?cid=1102425986139884833",
+      "geometry": {
+        "location": {
+          "lat": 43.0891563,
+          "lng": -70.7370583
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.09054838029149,
+            "lng": -70.7355153697085
+          },
+          "southwest": {
+            "lat": 43.0878504197085,
+            "lng": -70.7382133302915
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Galley Provisions (Charcuterie & Graze Tables)",
+    "Address": "York, ME 03909, USA",
+    "City": "ME 03909",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "",
+    "Website": "",
+    "GoogleProfileID": "ChIJT4brkhC74okRwdMCzxBaNEE",
+    "slug": "galley-provisions-charcuterie-graze-tables",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "galleyprovisions",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "galleyprovisions",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.1617687,
+    "lng": -70.648292,
+    "placeDetails": {
+      "place_id": "ChIJT4brkhC74okRwdMCzxBaNEE",
+      "name": "03909",
+      "formatted_address": "York, ME 03909, USA",
+      "url": "https://maps.google.com/?cid=4698479339493315521",
+      "geometry": {
+        "location": {
+          "lat": 43.1617687,
+          "lng": -70.648292
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.22894101967952,
+            "lng": -70.58585302879547
+          },
+          "southwest": {
+            "lat": 43.09709702538665,
+            "lng": -70.75742694723719
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Balfour Farm / The Little Cheese Shop",
+    "Address": "461 Webb Rd, Pittsfield, ME 04967, USA",
+    "City": "Pittsfield",
+    "Zip": "04967",
+    "Rating": "N/A",
+    "Phone": "(207) 213-3159",
+    "Website": "https://balfourfarm.com",
+    "GoogleProfileID": "ChIJ3-f1db3ZsUwRZZarh2MVKXI",
+    "slug": "balfour-farm-the-little-cheese-shop",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "the_little_cheese_shop_maine",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "the_little_cheese_shop_maine",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 44.7600539,
+    "lng": -69.4432106,
+    "placeDetails": {
+      "place_id": "ChIJ3-f1db3ZsUwRZZarh2MVKXI",
+      "name": "461 Webb Rd",
+      "formatted_address": "461 Webb Rd, Pittsfield, ME 04967, USA",
+      "url": "https://maps.google.com/?cid=8226129711591036517",
+      "geometry": {
+        "location": {
+          "lat": 44.7600539,
+          "lng": -69.4432106
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.76128115663732,
+            "lng": -69.44186121836454
+          },
+          "southwest": {
+            "lat": 44.75858319605432,
+            "lng": -69.44455917894754
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "State of Maine Cheese Co. / Rockport Marketplace",
+    "Address": "461 Commercial St, Rockport, ME 04856, USA",
+    "City": "Rockport",
+    "Zip": "04856",
+    "Rating": "N/A",
+    "Phone": "(207) 236-8895",
+    "Website": "http://cheese-me.com/",
+    "GoogleProfileID": "ChIJ31Cpn9DQrUwRdE6F_GPSmLg",
+    "slug": "state-of-maine-cheese-co-rockport-marketplace",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "stateofmainecheeseco",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "stateofmainecheeseco",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 44.1703205,
+    "lng": -69.0811658,
+    "placeDetails": {
+      "place_id": "ChIJ31Cpn9DQrUwRdE6F_GPSmLg",
+      "name": "461 Commercial St",
+      "formatted_address": "461 Commercial St, Rockport, ME 04856, USA",
+      "url": "https://maps.google.com/?cid=13301612826318950004",
+      "geometry": {
+        "location": {
+          "lat": 44.1703205,
+          "lng": -69.0811658
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.17164531535401,
+            "lng": -69.079615832698
+          },
+          "southwest": {
+            "lat": 44.16894735477101,
+            "lng": -69.08231379328102
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Five Islands Farm (seasonal market)",
+    "Address": "1375 5 Islands Rd, Georgetown, ME 04548, USA",
+    "City": "Georgetown",
+    "Zip": "04548",
+    "Rating": "N/A",
+    "Phone": "(207) 371-9383",
+    "Website": "http://www.fiveislandsfarm.com/",
+    "GoogleProfileID": "ChIJXeJ34ZierUwRpq_eGSgabf0",
+    "slug": "five-islands-farm-seasonal-market",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.8214259,
+    "lng": -69.7153496,
+    "placeDetails": {
+      "place_id": "ChIJXeJ34ZierUwRpq_eGSgabf0",
+      "name": "1375 5 Islands Rd",
+      "formatted_address": "1375 5 Islands Rd, Georgetown, ME 04548, USA",
+      "url": "https://maps.google.com/?cid=18261280823592267686",
+      "geometry": {
+        "location": {
+          "lat": 43.8214259,
+          "lng": -69.7153496
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.82282542521931,
+            "lng": -69.71392494324729
+          },
+          "southwest": {
+            "lat": 43.82012746463631,
+            "lng": -69.7166229038303
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Morning Glory Natural Foods (big wine & cheese selection)",
+    "Address": "60 Maine St, Brunswick, ME 04011, USA",
+    "City": "Brunswick",
+    "Zip": "04011",
+    "Rating": "N/A",
+    "Phone": "(207) 729-0546",
+    "Website": "https://www.moglonf.com/",
+    "GoogleProfileID": "ChIJNdRi1HGHrUwR77mEiKGPbm4",
+    "slug": "morning-glory-natural-foods-big-wine-cheese-selection",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "morningglorynaturalfoods",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "morningglorynaturalfoods",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.917295,
+    "lng": -69.9666195,
+    "placeDetails": {
+      "place_id": "ChIJNdRi1HGHrUwR77mEiKGPbm4",
+      "name": "60 Maine St",
+      "formatted_address": "60 Maine St, Brunswick, ME 04011, USA",
+      "url": "https://maps.google.com/?cid=7957455515553151471",
+      "geometry": {
+        "location": {
+          "lat": 43.917295,
+          "lng": -69.9666195
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.91865796372658,
+            "lng": -69.96531154808189
+          },
+          "southwest": {
+            "lat": 43.91596000314359,
+            "lng": -69.96800950866489
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Portland Food Co-op",
+    "Address": "Congress Plaza, 290 Congress St, Portland, ME 04101, USA",
+    "City": "Congress Plaza",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "(207) 805-1599",
+    "Website": "https://www.portlandfood.coop",
+    "GoogleProfileID": "ChIJg_a1EmqcskwRBNiEzvkBL9w",
+    "slug": "portland-food-co-op",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "portlandfoodcoop",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "portlandfoodcoop",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.6610821,
+    "lng": -70.25243669999999,
+    "placeDetails": {
+      "place_id": "ChIJg_a1EmqcskwRBNiEzvkBL9w",
+      "name": "Congress Plaza",
+      "formatted_address": "Congress Plaza, 290 Congress St, Portland, ME 04101, USA",
+      "url": "https://maps.google.com/?cid=15865902184672843780",
+      "geometry": {
+        "location": {
+          "lat": 43.6610821,
+          "lng": -70.25243669999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.6623871802915,
+            "lng": -70.2513194697085
+          },
+          "southwest": {
+            "lat": 43.6596892197085,
+            "lng": -70.25401743029151
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Market at Pineland Farms",
+    "Address": "Windham Hall, 15 Farm View Dr, New Gloucester, ME 04260, USA",
+    "City": "Windham Hall",
+    "Zip": "N/A",
+    "Rating": "N/A",
+    "Phone": "(207) 688-4539",
+    "Website": "https://pinelandfarms.org",
+    "GoogleProfileID": "ChIJLSl2ov1iskwR1XSwTcL4Rac",
+    "slug": "market-at-pineland-farms",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "pinelandfarms",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "pinelandfarms",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.902501,
+    "lng": -70.2590656,
+    "placeDetails": {
+      "place_id": "ChIJLSl2ov1iskwR1XSwTcL4Rac",
+      "name": "Windham Hall",
+      "formatted_address": "Windham Hall, 15 Farm View Dr, New Gloucester, ME 04260, USA",
+      "url": "https://maps.google.com/?cid=12053313491137754325",
+      "geometry": {
+        "location": {
+          "lat": 43.902501,
+          "lng": -70.2590656
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.90389051019575,
+            "lng": -70.25771152359485
+          },
+          "southwest": {
+            "lat": 43.90119254961275,
+            "lng": -70.26040948417786
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Lakin‚Äôs Gorges Cheese at East Forty Farm",
+    "Address": "2361 Friendship Rd 220 s, Waldoboro, ME 04572, USA",
+    "City": "Waldoboro",
+    "Zip": "04572",
+    "Rating": "N/A",
+    "Phone": "(207) 230-4318",
+    "Website": "https://www.lakinsgorgescheese.com",
+    "GoogleProfileID": "EjIyMzYxIEZyaWVuZHNoaXAgUmQgMjIwIHMsIFdhbGRvYm9ybywgTUUgMDQ1NzIsIFVTQSIhGh8KFgoUChIJE5CSWc3GrUwRrYuAB34CDcESBTIyMCBz",
+    "slug": "lakins-gorges-cheese-at-east-forty-farm",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "lakinsgorgescheese",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "lakinsgorgescheese",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 44.046629,
+    "lng": -69.3333049,
+    "placeDetails": {
+      "place_id": "EjIyMzYxIEZyaWVuZHNoaXAgUmQgMjIwIHMsIFdhbGRvYm9ybywgTUUgMDQ1NzIsIFVTQSIhGh8KFgoUChIJE5CSWc3GrUwRrYuAB34CDcESBTIyMCBz",
+      "name": "2361 Friendship Rd 220 s",
+      "formatted_address": "2361 Friendship Rd 220 s, Waldoboro, ME 04572, USA",
+      "url": "https://maps.google.com/?q=2361+Friendship+Rd+220+s,+Waldoboro,+ME+04572,+USA&ftid=0x4cadc6cd59929013:0xcc66b12ff3ed9b14",
+      "geometry": {
+        "location": {
+          "lat": 44.046629,
+          "lng": -69.3333049
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 44.04795398780235,
+            "lng": -69.33195480685595
+          },
+          "southwest": {
+            "lat": 44.04525602721935,
+            "lng": -69.33465276743897
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Maine Tasting Center (tasting room & boards)",
+    "Address": "506 Old Bath Rd, Wiscasset, ME 04578, USA",
+    "City": "Wiscasset",
+    "Zip": "04578",
+    "Rating": "N/A",
+    "Phone": "(207) 558-5772",
+    "Website": "https://www.mainetastingcenter.com",
+    "GoogleProfileID": "ChIJTQfQleWRrUwRZ4A6UMreR0M",
+    "slug": "maine-tasting-center-tasting-room-boards",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "mainetastingcenter",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "mainetastingcenter",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": true,
+      "brie": true,
+      "gouda": true,
+      "mozzarella": true,
+      "feta": true,
+      "blue_cheese": false,
+      "parmesan": false,
+      "swiss": true,
+      "provolone": true,
+      "cow_milk": true,
+      "goat_milk": true,
+      "sheep_milk": false
+    },
+    "lat": 43.9795245,
+    "lng": -69.7055439,
+    "placeDetails": {
+      "place_id": "ChIJTQfQleWRrUwRZ4A6UMreR0M",
+      "name": "506 Old Bath Rd",
+      "formatted_address": "506 Old Bath Rd, Wiscasset, ME 04578, USA",
+      "url": "https://maps.google.com/?cid=4848088484398399591",
+      "geometry": {
+        "location": {
+          "lat": 43.9795245,
+          "lng": -69.7055439
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.9809243226772,
+            "lng": -69.70419975186353
+          },
+          "southwest": {
+            "lat": 43.9782263620942,
+            "lng": -69.70689771244653
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Noisy Acres Farm (goat cheese & farm store)",
+    "Address": "145 Back Nippen Rd, Buxton, ME 04093, USA",
+    "City": "Buxton",
+    "Zip": "04093",
+    "Rating": "N/A",
+    "Phone": "(207) 608-1816",
+    "Website": "https://noisyacresfarm.com",
+    "GoogleProfileID": "ChIJK58dZAyVskwRvAXTxrkaiHM",
+    "slug": "noisy-acres-farm-goat-cheese-farm-store",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "noisyacres_farm",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "noisyacres_farm",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": false,
+      "brie": false,
+      "gouda": false,
+      "mozzarella": false,
+      "feta": false,
+      "blue_cheese": false,
+      "parmesan": true,
+      "swiss": false,
+      "provolone": false,
+      "cow_milk": false,
+      "goat_milk": false,
+      "sheep_milk": false
+    },
+    "lat": 43.6417251,
+    "lng": -70.57107789999999,
+    "placeDetails": {
+      "place_id": "ChIJK58dZAyVskwRvAXTxrkaiHM",
+      "name": "145 Back Nippen Rd",
+      "formatted_address": "145 Back Nippen Rd, Buxton, ME 04093, USA",
+      "url": "https://maps.google.com/?cid=8324933296401352124",
+      "geometry": {
+        "location": {
+          "lat": 43.6417251,
+          "lng": -70.57107789999999
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.64302442628817,
+            "lng": -70.56972639402909
+          },
+          "southwest": {
+            "lat": 43.64032646570517,
+            "lng": -70.5724243546121
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Winter Hill Farm (farmstead creamery & stand)",
+    "Address": "35 Hill Farm Rd, Freeport, ME 04032, USA",
+    "City": "Freeport",
+    "Zip": "04032",
+    "Rating": "N/A",
+    "Phone": "(207) 869-5122",
+    "Website": "https://www.winterhillfarm.com",
+    "GoogleProfileID": "ChIJLSFOgKN-skwRg1Jbc3VQDBw",
+    "slug": "winter-hill-farm-farmstead-creamery-stand",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "winterhillfarmer",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "winterhillfarmer",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": false,
+      "brie": false,
+      "gouda": false,
+      "mozzarella": false,
+      "feta": false,
+      "blue_cheese": true,
+      "parmesan": true,
+      "swiss": false,
+      "provolone": false,
+      "cow_milk": false,
+      "goat_milk": false,
+      "sheep_milk": true
+    },
+    "lat": 43.8980817,
+    "lng": -70.0975354,
+    "placeDetails": {
+      "place_id": "ChIJLSFOgKN-skwRg1Jbc3VQDBw",
+      "name": "35 Hill Farm Rd",
+      "formatted_address": "35 Hill Farm Rd, Freeport, ME 04032, USA",
+      "url": "https://maps.google.com/?cid=2021078798159270531",
+      "geometry": {
+        "location": {
+          "lat": 43.8980817,
+          "lng": -70.0975354
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.89942786055345,
+            "lng": -70.09618594285776
+          },
+          "southwest": {
+            "lat": 43.89672989997045,
+            "lng": -70.09888390344076
+          }
+        }
+      }
+    }
+  },
+  {
+    "type": "cheese_shop",
+    "Name": "Broad Arrow Farm Market & Butcher / The Rooting Pig",
+    "Address": "33 Benner Rd, Bristol, ME 04539, USA",
+    "City": "Bristol",
+    "Zip": "04539",
+    "Rating": "N/A",
+    "Phone": "(207) 553-0747",
+    "Website": "https://www.broadarrowfarm.com",
+    "GoogleProfileID": "ChIJgZkWTAK-rUwRZnL1K_pNOgY",
+    "slug": "broad-arrow-farm-market-butcher-the-rooting-pig",
+    "XHandle": "",
+    "FacebookPageID": "",
+    "InstagramUsername": "broadarrowfarm",
+    "InstagramRecentPostEmbedCode": "",
+    "InstagramLink": "broadarrowfarm",
+    "ImageOne": "",
+    "ImageTwo": "",
+    "ImageThree": "",
+    "products": {
+      "cheddar": false,
+      "brie": false,
+      "gouda": false,
+      "mozzarella": false,
+      "feta": false,
+      "blue_cheese": true,
+      "parmesan": true,
+      "swiss": false,
+      "provolone": false,
+      "cow_milk": false,
+      "goat_milk": false,
+      "sheep_milk": true
+    },
+    "lat": 43.9616029,
+    "lng": -69.5063821,
+    "placeDetails": {
+      "place_id": "ChIJgZkWTAK-rUwRZnL1K_pNOgY",
+      "name": "33 Benner Rd",
+      "formatted_address": "33 Benner Rd, Bristol, ME 04539, USA",
+      "url": "https://maps.google.com/?cid=448756849751454310",
+      "geometry": {
+        "location": {
+          "lat": 43.9616029,
+          "lng": -69.5063821
+        },
+        "viewport": {
+          "northeast": {
+            "lat": 43.96303542938871,
+            "lng": -69.50504106483555
+          },
+          "southwest": {
+            "lat": 43.96033746880571,
+            "lng": -69.50773902541857
+          }
+        }
+      }
+    }
+  }
+]
